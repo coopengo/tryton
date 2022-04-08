@@ -934,8 +934,10 @@ class Warning_(ModelSQL, ModelView):
 
     @classmethod
     def check(cls, warning_name):
-        user = Transaction().user
-        if not user:
+        transaction = Transaction()
+        user = transaction.user
+        key = (user, warning_name)
+        if key in transaction.check_warnings:
             return False
         warnings = cls.search([
             ('user', '=', user),
@@ -943,6 +945,7 @@ class Warning_(ModelSQL, ModelView):
             ])
         if not warnings:
             return True
+        transaction.check_warnings.add(key)
         cls.delete([x for x in warnings if not x.always])
         return False
 
