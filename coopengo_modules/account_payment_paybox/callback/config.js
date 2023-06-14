@@ -1,14 +1,19 @@
-const _ = require('lodash');
-var fromEnv = {};
-const PREFIX = 'COOG_PAYBOX_';
-fromEnv = _.pickBy(process.env, (v, k) => k.startsWith(PREFIX));
-fromEnv = _.mapKeys(fromEnv, (v, k) => k.substring(PREFIX.length));
-module.exports = _.assign({
+const PREFIX = 'PAYBOX_'
+
+const keys = Object.keys(process.env).filter((k) => k.startsWith(PREFIX))
+const vals = keys.map((k) => process.env[k])
+
+const settings = {}
+keys.forEach((k, i) => { settings[k.substring(PREFIX.length)] = vals[i] })
+
+const defaults = {
   PORT: 3000,
-  COOG_URL: 'http://localhost:8000',
-  COOG_DB: '',
-  COOG_USER: '',
-  COOG_PASS: '',
-  HASH: 'RSA-SHA1',
-  PUBKEY_PATH: './paybox.pem',
-}, fromEnv);
+  TRYTON_URL: 'http://localhost:8000',
+  TRYTON_DB: 'coog',
+  TRYTON_USERNAME: 'admin',
+  TRYTON_PASSWORD: 'admin',
+  HASH_METHOD: 'RSA-SHA1',
+  PEM_URL: 'http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem'
+}
+
+module.exports = Object.assign(defaults, settings)
