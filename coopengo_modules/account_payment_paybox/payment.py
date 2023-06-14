@@ -48,8 +48,8 @@ class Group(metaclass=PoolMeta):
             required_param = config.get('paybox', required_paybox_param)
             if required_param is None:
                 cls.logger.warning('[PAYBOX]: variable "%s" is not set in '
-                    'paybox section. It is required in order to process paybox '
-                    'payments' % required_paybox_param)
+                    'paybox section. It is required in order to process paybox'
+                    ' payments' % required_paybox_param)
         cls.__rpc__.update({
             'reject_payment_group': RPC(readonly=False, instantiate=0),
             'succeed_payment_group': RPC(readonly=False, instantiate=0),
@@ -88,41 +88,41 @@ class Group(metaclass=PoolMeta):
                 return method.hexdigest()
         return identifier
 
-    def generate_hmac(self, url):
-        secret = config.get('paybox', 'secret')
+    def generate_hmac(self, url, config):
+        secret = config.get('secret')
         binary_key = binascii.unhexlify(secret)
         return hmac.new(binary_key, url.encode('utf-8'),
             hashlib.sha512).hexdigest().upper()
 
     def paybox_url_builder(self):
-        main_url = config.get('paybox', 'payment_url')
+        config = self.journal.get_paybox_config()
+        main_url = config.get('payment_url')
         Company = Pool().get('company.company')
         company = Company(Transaction().context.get('company'))
         parameters = OrderedDict()
-        parameters['PBX_SITE'] = config.get('paybox', 'PBX_SITE')
-        parameters['PBX_RANG'] = config.get('paybox', 'PBX_RANG')
-        parameters['PBX_IDENTIFIANT'] = config.get('paybox', 'PBX_IDENTIFIANT')
+        parameters['PBX_SITE'] = config.get('PBX_SITE')
+        parameters['PBX_RANG'] = config.get('PBX_RANG')
+        parameters['PBX_IDENTIFIANT'] = config.get('PBX_IDENTIFIANT')
         parameters['PBX_TOTAL'] = int(self.processing_payment_amount() * 100)
         parameters['PBX_DEVISE'] = company.currency.numeric_code
         parameters['PBX_CMD'] = self.number
         parameters['PBX_PORTEUR'] = self.payments[0].party.email
-        parameters['PBX_RETOUR'] = config.get('paybox', 'PBX_RETOUR')
+        parameters['PBX_RETOUR'] = config.get('PBX_RETOUR')
         parameters['PBX_HASH'] = 'SHA512'
         parameters['PBX_TIME'] = datetime.datetime.now().isoformat()
-        parameters['PBX_REPONDRE_A'] = config.get('paybox', 'PBX_REPONDRE_A')
-        if config.get('paybox', 'PBX_TYPEPAIEMENT'):
-            parameters['PBX_TYPEPAIEMENT'] = config.get(
-                'paybox', 'PBX_TYPEPAIEMENT')
-        if config.get('paybox', 'PBX_TYPEPAIEMENT'):
-            parameters['PBX_TYPECARTE'] = config.get(
-                'paybox', 'PBX_TYPECARTE')
+        parameters['PBX_REPONDRE_A'] = config.get('PBX_REPONDRE_A')
+        if config.get('PBX_TYPEPAIEMENT'):
+            parameters['PBX_TYPEPAIEMENT'] = config.get('PBX_TYPEPAIEMENT')
+        if config.get('PBX_TYPEPAIEMENT'):
+            parameters['PBX_TYPECARTE'] = config.get('PBX_TYPECARTE')
 
         valid_values = [(key, value) for key, value in parameters.items()
             if value is not None]
         get_url_part = '&'.join(['%s=%s' % (var_name, value) for
                 var_name, value in valid_values])
         final_url = '%s?%s' % (main_url, get_url_part)
-        final_url += ('&PBX_HMAC=%s' % self.generate_hmac(get_url_part))
+        final_url += ('&PBX_HMAC=%s' % self.generate_hmac(get_url_part,
+                config))
         return final_url
 
     def get_payments(self, state=None):
@@ -158,6 +158,9 @@ class Journal(metaclass=PoolMeta):
         sepa_method = ('paybox', 'Paybox')
         if sepa_method not in cls.process_method.selection:
             cls.process_method.selection.append(sepa_method)
+
+    def get_paybox_config(self):
+        return config['paybox']
 
 
 class ProcessPaymentStart(metaclass=PoolMeta):
