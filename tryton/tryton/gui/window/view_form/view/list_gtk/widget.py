@@ -506,7 +506,7 @@ class Boolean(GenericText):
             self.view.treeview.set_cursor(path)
         return True
 
-    def set_editable(self, record):
+    def set_editable(self):
         pass
 
 
