@@ -27,7 +27,11 @@ from psycopg2 import DataError as DatabaseDataError
 from psycopg2 import IntegrityError as DatabaseIntegrityError
 from psycopg2 import InterfaceError
 from psycopg2 import OperationalError as DatabaseOperationalError
-from psycopg2.errors import QueryCanceled as DatabaseTimeoutError
+try:
+    from psycopg2.errors import QueryCanceled as DatabaseTimeoutError
+except ModuleNotFoundError:
+    # Pypy
+    from psycopg2 import QueryCanceledError as DatabaseTimeoutError
 from psycopg2.errors import UndefinedColumn
 from psycopg2.extras import register_default_json, register_default_jsonb
 from sql import Cast, Flavor, For, Literal, Table
