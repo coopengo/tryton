@@ -506,6 +506,11 @@ class LazyStringTestCase(unittest.TestCase):
 
         self.assertEqual(s, 'barfoo')
 
+    def test_get_server_zoneinfo(self):
+        zi = timezone._get_zoneinfo('foo')
+        now = dt.datetime(2022, 5, 17, tzinfo=zi)
+        self.assertEqual(str(now), "2022-05-17 00:00:00+00:00")
+
 
 class ImmutableDictTestCase(unittest.TestCase):
     "Test ImmutableDict"
