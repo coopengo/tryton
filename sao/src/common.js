@@ -4342,4 +4342,14 @@
         snd.play();
     };
 
+    Sao.common.clone = function(obj) {
+        var copy = obj.constructor();
+        for (var attr in obj) {
+            if (Object.hasOwn(obj, attr)) {
+                copy[attr] = obj[attr];
+            }
+        }
+        return copy;
+    };
+
 }());
