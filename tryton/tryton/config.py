@@ -251,4 +251,4 @@ if not os.path.isdir(SOUNDS_DIR):
         SOUNDS_DIR = pkg_resources.resource_filename('tryton', 'data/sounds')
 
 TRYTON_ICON = GdkPixbuf.Pixbuf.new_from_file(
-    os.path.join(PIXMAPS_DIR, 'tryton-icon.png'))
+    os.path.join(PIXMAPS_DIR, 'coog_no_text.svg'))
