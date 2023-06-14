@@ -35,7 +35,7 @@ class Group:
                 'invisible': Eval('journal_method') != 'paybox',
                 }, depends=['journal_method'])
     journal_method = fields.Function(fields.Char('Journal Method'),
-            'get_journal_method')
+            'get_journal_method', searcher='search_journal_method')
 
     @classmethod
     def __setup__(cls):
@@ -61,6 +61,10 @@ class Group:
     def get_journal_method(self, name):
         if self.journal:
             return self.journal.process_method
+
+    @classmethod
+    def search_journal_method(cls, name, clause):
+        return [('journal.process_method',) + tuple(clause[1:])]
 
     def process_paybox(self):
         pass
@@ -164,11 +168,20 @@ class ProcessPayment:
     __metaclass__ = PoolMeta
     __name__ = 'account.payment.process'
 
+    @classmethod
+    def __setup__(cls):
+        super(ProcessPayment, cls).__setup__()
+        cls._error_messages.update({
+                'error_url_generation': 'Could not generate the paybox link',
+                })
+
     def do_process(self, action):
         action, res = super(ProcessPayment, self).do_process(action)
         if res['res_id'] and self.start.is_paybox:
             group = Pool().get('account.payment.group')(res['res_id'][0])
             res['paybox_url'] = group.generate_paybox_url()
+            if not res['paybox_url']:
+                self.raise_user_error('error_url_generation')
             group.save()
         return action, res
 

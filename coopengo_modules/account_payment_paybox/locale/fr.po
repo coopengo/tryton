@@ -6,6 +6,10 @@ msgctxt "error:account.payment.group:"
 msgid "Only receivable payments are allowed with a Paybox journal"
 msgstr "Seuls les paiements à recevoir sont autorisés avec un journal Paybox"
 
+msgctxt "error:account.payment.process:"
+msgid "Could not generate the paybox link"
+msgstr "Impossible de générer le lien paybox"
+
 msgctxt "error:account.payment.group:"
 msgid "You must process only one paybox payment at the same time"
 msgstr "Vous ne devez traiter qu'un seul paiement paybox à la fois."
