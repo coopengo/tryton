@@ -193,6 +193,7 @@ class Transaction(object):
             self.timestamp = {}
             self.counter = 0
             self._datamanagers = []
+            self._sub_transactions = []
 
             count = 0
             while True:
@@ -322,6 +323,9 @@ class Transaction(object):
         if self.log_records:
             self.log_records.clear()
 
+    def add_sub_transactions(self, sub_transactions):
+        self._sub_transactions.extend(sub_transactions)
+
     def commit(self):
         from trytond.cache import Cache
         try:
@@ -333,6 +337,13 @@ class Transaction(object):
                     datamanager.commit(self)
                 for datamanager in self._datamanagers:
                     datamanager.tpc_vote(self)
+            # ABD: Some datamanager may returns transactions which should
+            # be committed just before the main transaction
+            for sub_transaction in self._sub_transactions:
+                # Does not handle TPC or recursive transaction commit
+                # This just commits the sub transactions to avoid any crashes
+                # which could occur otherwise.
+                sub_transaction.connection.commit()
             self.started_at = self.monotonic_time()
             for cache in self.cache.values():
                 cache.clear()
@@ -354,6 +365,8 @@ class Transaction(object):
         from trytond.cache import Cache
         for cache in self.cache.values():
             cache.clear()
+        for sub_transaction in self._sub_transactions:
+            sub_transaction.rollback()
         for datamanager in self._datamanagers:
             datamanager.tpc_abort(self)
         Cache.rollback(self)
