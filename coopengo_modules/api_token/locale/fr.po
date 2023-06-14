@@ -2,57 +2,46 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
-#, fuzzy
 msgctxt "field:api.token,active:"
 msgid "Active"
 msgstr "Active"
 
-#, fuzzy
 msgctxt "field:api.token,create_date:"
 msgid "Create Date"
 msgstr "Date de Création"
 
-#, fuzzy
 msgctxt "field:api.token,create_uid:"
 msgid "Create User"
 msgstr "Créé par"
 
-#, fuzzy
 msgctxt "field:api.token,id:"
 msgid "ID"
 msgstr "Identifiant"
 
-#, fuzzy
 msgctxt "field:api.token,key:"
 msgid "Key"
 msgstr "Clé"
 
-#, fuzzy
 msgctxt "field:api.token,name:"
 msgid "Name"
 msgstr "Nom"
 
-#, fuzzy
 msgctxt "field:api.token,party:"
 msgid "Party"
 msgstr "Tiers"
 
-#, fuzzy
 msgctxt "field:api.token,rec_name:"
 msgid "Record Name"
 msgstr "Nom de l' enregistrement"
 
-#, fuzzy
 msgctxt "field:api.token,user:"
 msgid "User"
 msgstr "Utilisateur"
 
-#, fuzzy
 msgctxt "field:api.token,write_date:"
 msgid "Write Date"
 msgstr "Modifié par"
 
-#, fuzzy
 msgctxt "field:api.token,write_uid:"
 msgid "Write User"
 msgstr "Modifié par"
