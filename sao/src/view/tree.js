@@ -937,6 +937,10 @@
                     if (Sao.common.contains(expanded, path)) {
                         const children = record.field_get_client(
                             this.children_field);
+                        // JMO add_fields here is to prevent error
+                        // in field_get_client with 'multi_mixed_view'
+                        // on loan contracts. Not sure this is exactly right.
+                        children.model.add_fields(this.children_definitions[children.model.name]);
                         Array.prototype.push.apply(
                             records, group_records(children, path));
                     }
@@ -1633,7 +1637,7 @@
                         break;
                     }
                 }
-                if (field_name && !record.is_loaded(field_name)) {
+                if (field_name && !record.is_loaded(column.attributes.name)) {
                     // Prefetch the first field to prevent promises in
                     // Cell.render
                     record.load(field_name, true, false).done(redraw);
