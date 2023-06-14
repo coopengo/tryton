@@ -85,14 +85,15 @@ class Group(metaclass=PoolMeta):
         if hash_method:
             method = getattr(hashlib, hash_method)()
             if method:
-                method.update(identifier)
+                method.update(identifier.encode('utf-8'))
                 return method.hexdigest()
         return identifier
 
     def generate_hmac(self, url):
         secret = config.get('paybox', 'secret')
         binary_key = binascii.unhexlify(secret)
-        return hmac.new(binary_key, url, hashlib.sha512).hexdigest().upper()
+        return hmac.new(binary_key, url.encode('utf-8'),
+            hashlib.sha512).hexdigest().upper()
 
     def paybox_url_builder(self):
         main_url = config.get('paybox', 'payment_url')
