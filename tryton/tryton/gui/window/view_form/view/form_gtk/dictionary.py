@@ -161,6 +161,11 @@ class DictSelectionEntry(DictEntry):
                 GLib.idle_add(self.widget.set_active, i)
                 break
 
+    def disconnect_signals(self):
+        child = self.widget.get_child()
+        for handler_id in self.signals:
+            child.disconnect(handler_id)
+
     def get_value(self):
         active = self.widget.get_active()
         if active < 0:
@@ -235,6 +240,12 @@ class DictMultiSelectionEntry(DictEntry):
         self.tree.append_column(name_column)
 
         return widget
+
+    def disconnect_signals(self):
+        tree_handler, selection_handler = self.signals
+        self.tree.disconnect(tree_handler)
+        selection = self.tree.get_selection()
+        selection.disconnect(selection_handler)
 
     def get_value(self):
         model, paths = self.tree.get_selection().get_selected_rows()
