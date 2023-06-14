@@ -82,8 +82,8 @@ def run(options):
             raise Exception('"%s" is not a Tryton database.' % db_name)
 
     for db_name in options.database_names:
-        if options.update:
-            with Transaction().start(db_name, 0) as transaction, \
+        if options.update or options.check_update:
+            with Transaction().start(db_name, 0) as transaction,\
                     transaction.connection.cursor() as cursor:
                 database = backend.Database(db_name)
                 database.connect()
