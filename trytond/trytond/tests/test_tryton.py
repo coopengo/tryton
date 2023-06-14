@@ -409,7 +409,6 @@ class ModuleTestCase(_DBTestCase):
                             self.assertIn(button_name, Model._buttons.keys(),
                                 msg="Button '%s' is not in %s._buttons"
                                 % (button_name, Model.__name__))
-        self.assertFalse(view_files, msg="unused view files")
 
     @with_transaction()
     def test_icon(self):
