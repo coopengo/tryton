@@ -26,6 +26,8 @@ from .wrappers import HTTPStatus, Response, abort, with_pool
 
 __all__ = ['register_authentication_service']
 
+__all__ = ['register_authentication_service']
+
 logger = logging.getLogger(__name__)
 
 # JCA: log slow RPC (> log_time_threshold)
