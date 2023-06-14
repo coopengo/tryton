@@ -115,6 +115,12 @@ class Group(metaclass=PoolMeta):
             parameters['PBX_TYPEPAIEMENT'] = config.get('PBX_TYPEPAIEMENT')
         if config.get('PBX_TYPEPAIEMENT'):
             parameters['PBX_TYPECARTE'] = config.get('PBX_TYPECARTE')
+        if config.get('PBX_EFFECTUE'):
+            parameters['PBX_EFFECTUE'] = config.get('PBX_EFFECTUE')
+        if config.get('PBX_REFUSE'):
+            parameters['PBX_REFUSE'] = config.get('PBX_REFUSE')
+        if config.get('PBX_ANNULE'):
+            parameters['PBX_ANNULE'] = config.get('PBX_ANNULE')
 
         valid_values = [(key, value) for key, value in parameters.items()
             if value is not None]
