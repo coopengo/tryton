@@ -96,7 +96,20 @@ class Request(_Request):
         authorization = super().authorization
         if authorization is None:
             header = self.headers.get('Authorization')
-            return parse_authorization_header(header)
+            auth = parse_authorization_header(header)
+            if auth and auth.type == 'token':
+                database_name = self.view_args.get('database_name')
+                if not database_name:
+                    return None
+                user_id, party_id = security.check_token(
+                    database_name, auth.get('token'))
+                return Authorization('token', {
+                        'token': auth.get('token'),
+                        'user_id': user_id,
+                        'party_id': party_id
+                    })
+            else:
+                return auth
         elif authorization.type == 'session':
             # Werkzeug may parse the session as parameters
             # if the base64 uses the padding sign '='
@@ -121,6 +134,8 @@ class Request(_Request):
             user_id = security.check(
                 database_name, auth.get('userid'), auth.get('session'),
                 context=context)
+        elif auth.type == 'token':
+            user_id = auth.get('user_id')
         elif auth.username:
             parameters = getattr(auth, 'parameters', auth)
             try:
@@ -155,6 +170,8 @@ def parse_authorization_header(value):
         return
     if auth_type == 'session':
         return parse_session(auth_info)
+    elif auth_type == b'token':
+        return Authorization('token', {'token': auth_info})
     else:
         authorization = Authorization(auth_type)
         authorization.token = auth_info
