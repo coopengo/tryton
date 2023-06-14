@@ -897,7 +897,10 @@ class ModelStorage(Model):
                 elif language:
                     value = field.translated().__get__(value, eModel)(language)
                 else:
-                    value = getattr(value, field_name)
+                    try:
+                        value = getattr(value, field_name)
+                    except AccessError:
+                        value = 'UNAUTHORIZED_401'
                 if isinstance(value, (list, tuple)):
                     first = True
                     child_fields_names = [(x[:i + 1] == fields_tree[:i + 1]
