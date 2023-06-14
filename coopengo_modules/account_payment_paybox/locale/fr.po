@@ -2,18 +2,6 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
-msgctxt "error:account.payment.group:"
-msgid "Only receivable payments are allowed with a Paybox journal"
-msgstr "Seuls les paiements à recevoir sont autorisés avec un journal Paybox"
-
-msgctxt "error:account.payment.process:"
-msgid "Could not generate the paybox link"
-msgstr "Impossible de générer le lien paybox"
-
-msgctxt "error:account.payment.group:"
-msgid "You must process only one paybox payment at the same time"
-msgstr "Vous ne devez traiter qu'un seul paiement paybox à la fois."
-
 msgctxt "field:account.payment.group,journal_method:"
 msgid "Journal Method"
 msgstr "Methode de traitement du journal"
@@ -29,6 +17,14 @@ msgstr "Paiements créés"
 msgctxt "field:account.payment.process.start,is_paybox:"
 msgid "Is Paybox"
 msgstr "Est Paybox"
+
+msgctxt "model:ir.message,text:msg_error_url_generation"
+msgid "Could not generate the paybox link."
+msgstr "Impossible de générer le lien paybox"
+
+msgctxt "model:ir.message,text:msg_only_receivable_allowed"
+msgid "Only receivable payments are allowed with a Paybox journal."
+msgstr "Seuls les paiements à recevoir sont autorisés avec le journal Paybox."
 
 msgctxt "selection:account.payment.journal,process_method:"
 msgid "Paybox"
