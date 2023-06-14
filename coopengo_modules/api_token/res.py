@@ -15,5 +15,8 @@ class User(metaclass=PoolMeta):
     tokens = fields.One2Many('api.token', 'user', 'Tokens')
 
     @classmethod
-    def _export_skips(cls):
-        return super(UserWithApi, cls)._export_skips() | {'tokens'}
+    def copy(cls, instances, default=None):
+        if default is None:
+            default = {}
+        default.setdefault('tokens', None)
+        return super().copy(instances, default)
