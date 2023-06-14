@@ -261,7 +261,7 @@ class Reconciliation(metaclass=PoolMeta):
         reconciliations = super(Reconciliation, cls).create(vlist)
         with transaction.set_context(
                 queue_batch=context.get('queue_batch', True)):
-            Invoice.__queue__.process(
+            Invoice.process(
                 list(_invoices_to_process(reconciliations)))
         return reconciliations
 
@@ -274,7 +274,7 @@ class Reconciliation(metaclass=PoolMeta):
         super(Reconciliation, cls).delete(reconciliations)
         with transaction.set_context(
                 queue_batch=context.get('queue_batch', True)):
-            Invoice.__queue__.process(list(invoices_to_process))
+            Invoice.process(list(invoices_to_process))
 
 
 class RenewFiscalYear(metaclass=PoolMeta):
