@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import http.client
 import logging
 import pydoc
 import time
@@ -10,6 +11,7 @@ from sql import Table
 
 from trytond import __series__, backend, security
 from trytond.config import config, get_hostname
+from trytond.error_handling import error_wrap
 from trytond.exceptions import (
     ConcurrencyException, LoginException, RateLimitException, UserError,
     UserWarning)
@@ -25,8 +27,11 @@ from .wrappers import HTTPStatus, Response, abort, with_pool
 __all__ = ['register_authentication_service']
 
 logger = logging.getLogger(__name__)
-# JCA : enable performance log mode to ease slow calls detection
-log_threshold = config.getfloat('web', 'log_time_threshold', default=-1)
+
+# JCA: log slow RPC (> log_time_threshold)
+slow_threshold = config.getfloat('web', 'log_time_threshold', default=-1)
+if slow_threshold >= 0:
+    slow_logger = logging.getLogger('slowness')
 
 ir_configuration = Table('ir_configuration')
 ir_lang = Table('ir_lang')
@@ -34,6 +39,7 @@ ir_module = Table('ir_module')
 res_user = Table('res_user')
 
 
+# JCA: log slow RPC
 def log_exception(method, *args, **kwargs):
     kwargs['exc_info'] = False
     method(*args, **kwargs)
@@ -173,6 +179,7 @@ def help_method(request, pool):
     return pydoc.getdoc(getattr(obj, method))
 
 
+@error_wrap
 @app.auth_required
 @with_pool
 def _dispatch(request, pool, *args, **kwargs):
@@ -182,36 +189,39 @@ def _dispatch(request, pool, *args, **kwargs):
     else:
         abort(HTTPStatus.FORBIDDEN)
 
-    user = request.user_id
-    session = None
     if request.authorization.type == 'session':
         session = request.authorization.get('session')
 
+    user = request.user_id
     if rpc.fresh_session and session:
         context = {'_request': request.context}
         if not security.check_timeout(
                 pool.database_name, user, session, context=context):
-            abort(HTTPStatus.UNAUTHORIZED)
+            abort(http.client.UNAUTHORIZED)
 
-    # JCA : If log_threshold is != -1, we only log the times for calls that
-    # exceed the configured value
-    if log_threshold == -1:
-        log_message = '%s.%s%s from %s@%s%s in %i ms'
-        username = request.authorization.username
-        if isinstance(username, bytes):
-            username = username.decode('utf-8')
-        log_args = (
-            obj.__name__, method,
-            format_args(args, kwargs, not logger.isEnabledFor(logging.DEBUG)),
-            username, request.remote_addr, request.path)
+    log_message = '%s.%s%s from %s@%s%s in %i ms'
+    username = request.authorization.username
+    if isinstance(username, bytes):
+        username = username.decode('utf-8')
+    log_args = (
+        obj.__name__, method,
+        format_args(args, kwargs, not logger.isEnabledFor(logging.DEBUG)),
+        username, request.remote_addr, request.path)
 
-        def duration():
-            return (time.monotonic() - started) * 1000
-        started = time.monotonic()
-    else:
-        log_message = '%s.%s (%s s)'
-        log_args = (obj, method)
-        log_start = time.time()
+    def duration():
+        return (time.monotonic() - started) * 1000
+    started = time.monotonic()
+
+    # JCA: log slow RPC
+    if slow_threshold >= 0:
+        slow_msg = '%s.%s (%s s)'
+        slow_args = (obj, method)
+        slow_start = time.time()
+
+    # AKE: add session to transaction context
+    session = None
+    if request.authorization.type == 'session':
+        session = request.authorization.get('session')
 
     retry = config.getint('database', 'retry')
     count = 0
@@ -254,10 +264,12 @@ def _dispatch(request, pool, *args, **kwargs):
                     count += 1
                     logger.debug("Retry: %i", count)
                     continue
-                if log_threshold != -1:
-                    log_end = time.time()
-                    log_args += (str(log_end - log_start),)
-                log_exception(logger.error, log_message, *log_args, duration())
+                logger.exception(log_message, *log_args, duration())
+
+                # JCA: log slow RPC
+                if slow_threshold >= 0:
+                    slow_args += (str(time.time() - slow_start),)
+                    log_exception(slow_logger.error, slow_msg, *slow_args)
                 raise
             except RPCReturnException as e:
                 transaction.rollback()
@@ -265,16 +277,23 @@ def _dispatch(request, pool, *args, **kwargs):
                 result = e.result()
             except (ConcurrencyException, UserError, UserWarning,
                     LoginException):
-                if log_threshold != -1:
-                    log_end = time.time()
-                    log_args += (str(log_end - log_start),)
-                log_exception(logger.debug, log_message, *log_args, duration())
+                logger.info(
+                    log_message, *log_args, duration(),
+                    exc_info=logger.isEnabledFor(logging.DEBUG))
+
+                # JCA: log slow RPC
+                if slow_threshold >= 0:
+                    slow_args += (str(time.time() - slow_start),)
+                    log_exception(slow_logger.debug, slow_msg, *slow_args)
+
                 raise
             except Exception:
-                if log_threshold != -1:
-                    log_end = time.time()
-                    log_args += (str(log_end - log_start),)
-                log_exception(logger.error, log_message, *log_args, duration())
+                logger.exception(log_message, *log_args, duration())
+
+                # JCA: log slow RPC
+                if slow_threshold >= 0:
+                    slow_args += (str(time.time() - slow_start),)
+                    log_exception(slow_logger.error, slow_msg, *slow_args)
                 raise
             # Need to commit to unlock SQLite database
             transaction.commit()
@@ -284,13 +303,18 @@ def _dispatch(request, pool, *args, **kwargs):
         if session:
             context = {'_request': request.context}
             security.reset(pool.database_name, session, context=context)
-        if log_threshold == -1:
-            logger.debug('Result: %s', result)
-        else:
-            if log_end - log_start > log_threshold:
-                logger.info(log_message, *log_args, duration())
+        logger.info(log_message, *log_args, duration())
+        logger.debug('Result: %s', result)
+
+        # JCA: log slow RPC
+        if slow_threshold >= 0:
+            slow_diff = time.time() - slow_start
+            slow_args += (str(slow_diff),)
+            if slow_diff > slow_threshold:
+                slow_logger.info(slow_msg, *slow_args)
             else:
-                logger.debug(log_message, *log_args, duration())
+                slow_logger.debug(slow_msg, *slow_args)
+
         response = app.make_response(request, result)
         if rpc.readonly and rpc.cache:
             response.headers.extend(rpc.cache.headers())
