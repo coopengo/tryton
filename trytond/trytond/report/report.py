@@ -450,6 +450,12 @@ class Report(URLMixin, PoolBase):
                     time.sleep(0.02 * (retry - count))
                 try:
                     subprocess.check_call(cmd, timeout=timeout, shell=True)
+                    nb_retry = 0
+                    while nb_retry < 10:
+                        nb_retry += 1
+                        if os.path.exists(output_path):
+                            break
+                        time.sleep(0.2)
                 except subprocess.CalledProcessError:
                     if count:
                         continue
