@@ -235,6 +235,7 @@ def _pg_dump(cache_file):
                 None, 0, close=True, autocommit=True) as transaction:
             transaction.database.create(
                 transaction.connection, cache_name, DB_NAME)
+        Cache.purge_listeners(DB_NAME)
         return True
 
     def dump_on_file():
@@ -1086,6 +1087,7 @@ def drop_db(name=DB_NAME):
     if db_exist(name):
         database = backend.Database(name)
         database.close()
+        Cache.purge_listeners(name)
 
         with Transaction().start(
                 None, 0, close=True, autocommit=True) as transaction:
