@@ -50,6 +50,10 @@ msgctxt "model:api.token,name:"
 msgid "API Token"
 msgstr "Jeton API"
 
+msgctxt "model:res.user,tokens:"
+msgid "Tokens"
+msgstr "Jetons"
+
 msgctxt "model:ir.action,name:act_token_form"
 msgid "Tokens"
 msgstr "Jetons"
@@ -57,3 +61,11 @@ msgstr "Jetons"
 msgctxt "model:ir.ui.menu,name:menu_token"
 msgid "Tokens"
 msgstr "Jetons"
+
+msgctxt "model:ir.message,text:msg_token_uniq_key"
+msgid "The key on token must be unique."
+msgstr "Le clé du token doit être unique."
+
+msgctxt "view:api.token:"
+msgid "Generate"
+msgstr "Générer"

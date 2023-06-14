@@ -6,10 +6,14 @@ this repository contains the full copyright notices and license terms. -->
     <field name="active"/>
     <label name="name"/>
     <field name="name"/>
+    <newline/>
     <label name="user"/>
     <field name="user"/>
+    <newline/>
     <label name="party"/>
     <field name="party"/>
+    <newline/>
     <label name="key"/>
     <field name="key"/>
+    <button name="generate_key" string="Generate" icon="tryton-refresh" colspan="2"/>
 </form>

@@ -4,7 +4,7 @@ import os
 import binascii
 
 from trytond.pool import PoolMeta
-from trytond.model import ModelSQL, ModelView, fields
+from trytond.model import ModelSQL, ModelView, fields, Unique
 
 __all__ = [
     'Token',
@@ -22,6 +22,16 @@ class Token(ModelSQL, ModelView, metaclass=PoolMeta):
     party = fields.Many2One('party.party', 'Party')
 
     @classmethod
+    def __setup__(cls):
+        super(Token, cls).__setup__()
+        t = cls.__table__()
+        cls._sql_constraints += [('token_uniq_key', Unique(t, t.key),
+                'api_token.msg_token_uniq_key')]
+        cls._buttons.update({
+                'generate_key': {},
+                })
+
+    @classmethod
     def default_active(cls):
         return True
 
@@ -37,3 +47,16 @@ class Token(ModelSQL, ModelView, metaclass=PoolMeta):
             return token.user.id, token.party.id if token.party else None
         else:
             return None, None
+
+    @ModelView.button_change('key')
+    def generate_key(self):
+        self.key = self.__class__.default_key()
+
+    @fields.depends('user', 'party', 'name')
+    def on_change_with_name(self):
+        if self.name:
+            return self.name
+        if self.user:
+            return self.user.name
+        if self.party:
+            return self.party.rec_name
