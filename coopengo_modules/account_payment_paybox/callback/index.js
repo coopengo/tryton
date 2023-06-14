@@ -1,122 +1,101 @@
-const _ = require('lodash');
-const fs = require('fs');
-const co = require('co');
-const koa = require('koa');
-const crypto = require('crypto');
-const debug = require('debug');
-const winston = require('winston');
-const moment = require('moment');
-const Session = require('tryton-session');
-const model = require('tryton-model');
-const qs = require('querystring');
-const config = require('./config');
+const crypto = require('crypto')
 
-function PayboxError(message) {
-  Error.captureStackTrace(this, this.constructor);
-  this.name = this.constructor.name;
-  this.message = message;
+const Koa = require('koa')
+const logger = require('koa-logger')
+
+const request = require('superagent')
+const Session = require('tryton-session')
+const model = require('tryton-model')
+const qs = require('querystring')
+
+const debug = require('debug')('paybox')
+const config = require('./config')
+
+let pubkey
+
+const init = async () => {
+  const res = await request.get(config.PEM_URL).buffer()
+  debug('init:pem')
+  pubkey = Buffer.from(res.text)
 }
 
-const logger = new (winston.Logger)({
-  transports: [
-    new (winston.transports.Console)({
-      timestamp: function() {
-        return '[' + moment().format('YYYY-MM-DD HH:MM:SS') + ']';
-      },
-      colorize: true,
-      prettyPrint: true
-    })
-  ]
-});
-
-function* verify() {
-  if (fs.existsSync(config.PUBKEY_PATH) === false) {
-    throw new PayboxError('public key: no such file');
+const verify = async (ctx, next) => {
+  debug('verify')
+  const query = Object.assign({}, ctx.query)
+  ctx.assert(query.signature, 'missing signature')
+  const signature = Buffer.from(qs.unescape(query.signature), 'base64')
+  delete query.signature
+  const buffer = qs.unescape(qs.stringify(query))
+  const verifier = crypto.createVerify(config.HASH_METHOD)
+  verifier.update(buffer)
+  if (verifier.verify(pubkey, signature)) {
+    debug('verify:ok')
+  } else {
+    debug('verify:ko (%j)', ctx.query)
+    ctx.throw(403, 'signature check failed')
   }
-  debug('verifying signature');
-  const pubkey = fs.readFileSync(config.PUBKEY_PATH, 'utf-8');
-  const verifier = crypto.createVerify(config.HASH);
-  var buffer = _.join(_.map(_.omit(this.query, 'signature'), (value, key) => {
-    return `${key}=${value}`
-  }), '&');
-  var signature = _.get(this.query, 'signature');
-  buffer = qs.unescape(buffer);
-  signature = Buffer.from(qs.unescape(signature), 'base64');
-  verifier.update(buffer);
-  if (verifier.verify(pubkey, signature) === false) {
-    throw new PayboxError('invalid signature');
-  }
+  await next()
 }
 
-function* login() {
-  debug('login');
-  this.tryton = new Session(config.COOG_URL, config.COOG_DB);
-  yield this.tryton.start(config.COOG_USER, {
-    password: config.COOG_PASS
-  });
+const auth = async (ctx, next) => {
+  debug('auth:login')
+  ctx.tryton = new Session(config.TRYTON_URL, config.TRYTON_DB)
+  await ctx.tryton.start(config.TRYTON_USERNAME, {password: config.TRYTON_PASSWORD})
+  await next()
+  debug('auth:logout')
+  var tryton = ctx.tryton
+  delete ctx.tryton
+  await tryton.stop()
 }
 
-function* logout() {
-  debug('logout');
-  var tryton = this.tryton;
-  delete this.tryton;
-  yield tryton.stop();
-  this.response.status = 200;
-}
-
-function* paybox() {
-  const query = this.request.query;
-  const code = _.get(query, 'code');
-  const number = _.get(query, 'number');
-  const payments = yield model.Group.search(this.tryton,
+const treat = async (ctx) => {
+  const {code, number} = ctx.query
+  debug('treat:search (%s)', number)
+  const payments = await model.Group.search(ctx.tryton,
     'account.payment.group', {
-      domain: ['number', '=', number],
-    });
-  if (payments.size() !== 1) {
-    throw new PayboxError('invalid search');
+      domain: ['number', '=', number]
+    })
+  const nb = payments.size()
+  debug('treat:found (%s)', nb)
+  if (nb !== 1) {
+    ctx.throw(500, 'payment search failed')
   }
-  const record = _.first(payments.records);
-  if (_.isEqual(code, '00000')) {
-    debug('payment success');
+  const payment = payments.first()
+  if (code === '00000') {
+    debug('treat:ok')
     const method = 'model.account.payment.group.succeed_payment_group'
-    yield this.tryton.rpc(method, [
-      [record.id]
-    ]);
-  }
-  else {
-    debug('payment fail');
+    await ctx.tryton.rpc(method, [
+      [payment.id]
+    ])
+  } else {
+    debug('treat:ko')
     const method = 'model.account.payment.group.reject_payment_group'
-    yield this.tryton.rpc(method, [
-      [record.id], code
-    ]);
+    await ctx.tryton.rpc(method, [
+      [payment.id], code
+    ])
   }
+  ctx.body = 'OK'
 }
 
-function* main() {
-  yield verify.apply(this);
-  yield login.apply(this);
-  yield paybox.apply(this);
-  yield logout.apply(this);
+const main = async () => {
+  await model.init(Session)
+  await init()
+
+  var app = new Koa()
+  app.on('error', function (err) {
+    console.error(err)
+  })
+
+  app.use(logger())
+  app.use(verify)
+  app.use(auth)
+  app.use(treat)
+
+  app.listen(config.PORT)
+  return 'web server started on port ' + config.PORT
 }
 
-co(function* () {
-    model.init(Session);
-    var app = new koa();
-    app.on('error', function (err) {
-      logger.error(err);
-    });
-    app.use(function* (next) {
-      logger.info('received request from: ' + this.origin);
-      logger.info(this.query);
-      try {
-        yield next;
-      }
-      catch (err) {
-        this.app.emit('error', err, this);
-      }
-    });
-    app.use(main);
-    app.listen(config.PORT);
-    return 'Listening on port: ' + config.PORT + '...';
+main().then(console.log, (err) => {
+  console.error(err)
+  process.exit(1)
 })
-.then(logger.info, logger.error);
