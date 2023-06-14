@@ -1,0 +1,1 @@
+# trytond-account-payment-paybox
