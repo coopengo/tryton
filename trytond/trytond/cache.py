@@ -454,6 +454,16 @@ class MemoryCache(BaseCache):
                 if cls._local.listeners.get(dbname) == current_thread:
                     del cls._local.listeners[dbname]
 
+    @classmethod
+    def purge_listeners(cls, dbname):
+        '''
+        Purges all listeners for a given database
+        '''
+        pid = os.getpid()
+        with cls._listener_lock[pid]:
+            if (pid, dbname) in cls._listener:
+                del cls._listener[pid, dbname]
+
 
 if config.get('cache', 'class'):
     Cache = resolve(config.get('cache', 'class'))
