@@ -24,8 +24,7 @@ __all__ = [
     ]
 
 
-class Group:
-    __metaclass__ = PoolMeta
+class Group(metaclass=PoolMeta):
     __name__ = 'account.payment.group'
 
     logger = logging.getLogger(__name__)
@@ -112,7 +111,7 @@ class Group:
         parameters['PBX_TIME'] = datetime.datetime.now().isoformat()
         parameters['PBX_REPONDRE_A'] = config.get('paybox', 'PBX_REPONDRE_A')
 
-        valid_values = [(key, value) for key, value in parameters.iteritems()
+        valid_values = [(key, value) for key, value in parameters.items()
             if value is not None]
         get_url_part = '&'.join(['%s=%s' % (var_name, value) for
                 var_name, value in valid_values])
@@ -144,8 +143,7 @@ class Group:
         Group.update_payments(groups, 'succeed')
 
 
-class Journal:
-    __metaclass__ = PoolMeta
+class Journal(metaclass=PoolMeta):
     __name__ = 'account.payment.journal'
 
     @classmethod
@@ -156,16 +154,14 @@ class Journal:
             cls.process_method.selection.append(sepa_method)
 
 
-class ProcessPaymentStart:
-    __metaclass__ = PoolMeta
+class ProcessPaymentStart(metaclass=PoolMeta):
     __name__ = 'account.payment.process.start'
 
     is_paybox = fields.Boolean('Is Paybox', states={
             'invisible': True})
 
 
-class ProcessPayment:
-    __metaclass__ = PoolMeta
+class ProcessPayment(metaclass=PoolMeta):
     __name__ = 'account.payment.process'
 
     @classmethod
