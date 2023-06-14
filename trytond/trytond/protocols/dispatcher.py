@@ -24,6 +24,8 @@ from .wrappers import HTTPStatus, Response, abort, with_pool
 __all__ = ['register_authentication_service']
 
 logger = logging.getLogger(__name__)
+# JCA : enable performance log mode to ease slow calls detection
+log_threshold = config.getfloat('web', 'log_time_threshold', default=-1)
 
 ir_configuration = Table('ir_configuration')
 ir_lang = Table('ir_lang')
@@ -183,18 +185,25 @@ def _dispatch(request, pool, *args, **kwargs):
                 pool.database_name, user, session, context=context):
             abort(HTTPStatus.UNAUTHORIZED)
 
-    log_message = '%s.%s%s from %s@%s%s in %i ms'
-    username = request.authorization.username
-    if isinstance(username, bytes):
-        username = username.decode('utf-8')
-    log_args = (
-        obj.__name__, method,
-        format_args(args, kwargs, logger.isEnabledFor(logging.DEBUG)),
-        username, request.remote_addr, request.path)
+    # JCA : If log_threshold is != -1, we only log the times for calls that
+    # exceed the configured value
+    if log_threshold == -1:
+        log_message = '%s.%s%s from %s@%s%s in %i ms'
+        username = request.authorization.username
+        if isinstance(username, bytes):
+            username = username.decode('utf-8')
+        log_args = (
+            obj.__name__, method,
+            format_args(args, kwargs, not logger.isEnabledFor(logging.DEBUG)),
+            username, request.remote_addr, request.path)
 
-    def duration():
-        return (time.monotonic() - started) * 1000
-    started = time.monotonic()
+        def duration():
+            return (time.monotonic() - started) * 1000
+        started = time.monotonic()
+    else:
+        log_message = '%s.%s (%s s)'
+        log_args = (obj, method)
+        log_start = time.time()
 
     retry = config.getint('database', 'retry')
     count = 0
@@ -237,7 +246,10 @@ def _dispatch(request, pool, *args, **kwargs):
                     count += 1
                     logger.debug("Retry: %i", count)
                     continue
-                logger.exception(log_message, *log_args, duration())
+                if log_threshold != -1:
+                    log_end = time.time()
+                    log_args += (str(log_end - log_start),)
+                logger.error(log_message, *log_args, duration(), exc_info=True)
                 raise
             except RPCReturnException as e:
                 transaction.rollback()
@@ -245,12 +257,16 @@ def _dispatch(request, pool, *args, **kwargs):
                 result = e.result()
             except (ConcurrencyException, UserError, UserWarning,
                     LoginException):
-                logger.info(
-                    log_message, *log_args, duration(),
-                    exc_info=logger.isEnabledFor(logging.DEBUG))
+                if log_threshold != -1:
+                    log_end = time.time()
+                    log_args += (str(log_end - log_start),)
+                logger.debug(log_message, *log_args, duration(), exc_info=True)
                 raise
             except Exception:
-                logger.exception(log_message, *log_args, duration())
+                if log_threshold != -1:
+                    log_end = time.time()
+                    log_args += (str(log_end - log_start),)
+                logger.error(log_message, *log_args, duration(), exc_info=True)
                 raise
             # Need to commit to unlock SQLite database
             transaction.commit()
@@ -260,8 +276,13 @@ def _dispatch(request, pool, *args, **kwargs):
         if session:
             context = {'_request': request.context}
             security.reset(pool.database_name, session, context=context)
-        logger.info(log_message, *log_args, duration())
-        logger.debug('Result: %r', result)
+        if log_threshold == -1:
+            logger.debug('Result: %s', result)
+        else:
+            if log_end - log_start > log_threshold:
+                logger.info(log_message, *log_args, duration())
+            else:
+                logger.debug(log_message, *log_args, duration())
         response = app.make_response(request, result)
         if rpc.readonly and rpc.cache:
             response.headers.extend(rpc.cache.headers())
