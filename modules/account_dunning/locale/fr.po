@@ -275,7 +275,7 @@ msgstr "Relance"
 
 msgctxt "view:account.dunning.create.start:"
 msgid "Create Dunning for date"
-msgstr "Créer les relance pour la date"
+msgstr "Créer les relances pour la date"
 
 msgctxt "view:account.dunning.process.start:"
 msgid "Process Dunning?"
