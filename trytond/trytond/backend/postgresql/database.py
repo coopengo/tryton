@@ -13,8 +13,8 @@ from threading import RLock
 
 from psycopg2 import Binary, connect
 from psycopg2.extensions import (
-    ISOLATION_LEVEL_REPEATABLE_READ, UNICODE, AsIs, cursor, register_adapter,
-    register_type)
+    ISOLATION_LEVEL_REPEATABLE_READ, ISOLATION_LEVEL_AUTOCOMMIT, UNICODE, AsIs,
+    cursor, register_adapter, register_type)
 from psycopg2.pool import PoolError, ThreadedConnectionPool
 from psycopg2.sql import SQL, Identifier
 from sql.operators import NotEqual
@@ -281,22 +281,35 @@ class Database(DatabaseInterface):
                 logger.error(
                     'connection to "%s" failed', self.name, exc_info=True)
                 raise
+
             try:
-                conn.set_session(
-                    isolation_level=ISOLATION_LEVEL_REPEATABLE_READ,
-                    readonly=readonly,
-                    autocommit=autocommit)
                 with conn.cursor() as cur:
-                    if statement_timeout:
-                        cur.execute('SET statement_timeout=%s' %
-                            (statement_timeout * 1000))
-                    else:
-                        # Detect disconnection
-                        cur.execute('SELECT 1')
+                    # Detect disconnection
+                    cur.execute('SELECT 1')
             except DatabaseOperationalError:
                 self._connpool.putconn(conn, close=True)
                 continue
             break
+
+        # We do not use set_session because psycopg2 < 2.7 and psycopg2cffi
+        # change the default_transaction_* attributes which breaks external
+        # pooling at the transaction level.
+        if autocommit:
+            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        else:
+            conn.set_isolation_level(ISOLATION_LEVEL_REPEATABLE_READ)
+        statements = []
+        # psycopg2cffi does not have the readonly property
+        if hasattr(conn, 'readonly'):
+            conn.readonly = readonly
+        elif not autocommit and readonly:
+            statements.append('SET TRANSACTION READ ONLY')
+        if statement_timeout:
+            statements.append(
+                'SET statement_timeout=%s' % (statement_timeout * 1000))
+        if statements:
+            cursor = conn.cursor()
+            cursor.execute(';'.join(statements))
         return conn
 
     def put_connection(self, connection, close=False):
