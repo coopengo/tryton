@@ -4,7 +4,10 @@ this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath expr="/form/field[@name='kind']" position="after">
         <field name="journal_method" invisible="1"/>
-        <label name="payment_url"/>
-        <field name="payment_url" widget="url" xexpand="0" xfill="0"/>
+        <group id='payment_url' col="3" colspan="4">
+            <label name="payment_url"/>
+            <field name="payment_url" widget="url" xexpand="0" xfill="0"/>
+            <field name="payment_url" xexpand="1" xfill="1"/>
+        </group>
     </xpath>
 </data>
