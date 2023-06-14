@@ -1540,28 +1540,40 @@ function eval_pyson(value){
     // [Coog] widget Source (engine)
     Sao.View.Form.Source = Sao.class_(Sao.View.Form.Widget, {
         class_: 'form-source',
-        init: function(field_name, model, attributes) {
-            Sao.View.Form.Source._super.init.call(this, field_name, model,
-                attributes);
+        init: function(view, attributes) {
+            Sao.View.Form.Source._super.init.call(this, view, attributes);
             this.el = jQuery('<div/>', {
                 'class': this.class_
             });
             this.tree_data_field = attributes.context_tree || null;
 
-            this.init_tree(4);
-            this.init_editor(8);
-
+            this.init_tree();
             this.tree_data = [];
             this.tree_elements = [];
             this.value = '';
             this.json_data = '';
+            this.prev_record = undefined;
+            this.init_editor();
         },
-        init_editor: function(width){
+        init_editor: function(){
             var button_apply_command = function(evt) {
-                var success = document.execCommand(evt.data);
-                // if (!success)
-                //     my_custom_exec(evt.data);
-            };
+                console.log(evt.data);
+                var cmDoc = this.codeMirror.getDoc();
+                switch (evt.data) {
+                    case 'undo':
+                        cmDoc.undo();
+                        break;
+                    case 'redo':
+                        cmDoc.redo();
+                        break;
+                    case 'check':
+                        console.log('todo');
+                        break;
+                    case 'toggle_menu':
+                        this.toggle_menu();
+                        break;;
+                }
+            }.bind(this);
 
             var add_buttons = function(buttons) {
                 var i, properties, button;
@@ -1581,7 +1593,7 @@ function eval_pyson(value){
                 }
             }.bind(this);
             this.sc_editor = jQuery('<div/>', {
-                'class': 'panel panel-default col-md-' + parseInt(width)
+                'class': 'panel panel-default'
             }).appendTo(this.el).css('padding', '0');
 
             this.toolbar = jQuery('<div/>', {
@@ -1596,6 +1608,9 @@ function eval_pyson(value){
 
             add_buttons([
                     {
+                        'icon': 'menu-hamburger',
+                        'command': 'toggle_menu'
+                    }, {
                         'icon': 'arrow-left',
                         'command': 'undo'
                     }, {
@@ -1620,21 +1635,62 @@ function eval_pyson(value){
                 indentUnit: 4,
                 indentWithTabs: false,
                 matchBrackets: true,
+                autoRefresh: true,
                 gutters: ["CodeMirror-lint-markers"],
                 lint: {
-                    lintOnChange: false,
-                    getAnnotations: this.pythonLinter,
+                    lintOnChange: true,
+                    getAnnotations: this.pythonLinter.bind(this),
                     async: true
                 }
             });
+            this.codeMirror.on('change', this.send_modified.bind(this));
+            this.codeMirror.setOption("extraKeys" ,{
+                "Alt-R": "replace",
+                "Shift-Alt-R": "replaceAll",
+                "Ctrl-S": this._save.bind(this),
+            });
         },
-        init_tree: function(width){
-            var container = jQuery('<div/>', {
-                'class': 'col-md-' + parseInt(width)
-            }).appendTo(this.el);
+        _save: function() {
+            var current_tab = Sao.Tab.tabs.get_current();
+            if (current_tab) {
+                this._focus_out();
+                current_tab.save();
+            }
+        },
+        _focus_out: function() {
+            this.send_modified();
+            this.focus_out();
+        },
+        toggle_menu: function() {
+            if (this.container.data('collapsed') === true) {
+                this.container.data('collapsed', false)
+                this.container.css(
+                    'width', this.container.data('previous-width'));
+                this.container.css('display', 'block');
+            } else {
+                this.container.data('collapsed', true)
+                this.container.data(
+                    'previous-width', this.container.css('width'));
+                this.container.css('display', 'none');
+            }
+        },
+        init_tree: function() {
+            this.container = jQuery('<div/>').appendTo(this.el);
+            this.container.css('flex', '1');
+            const tree_resizer_obs = new MutationObserver((mutationList) => {
+                if (mutationList.length == 0) {
+                    return;
+                }
+                this.container.css('flex', 'unset');
+                tree_resizer_obs.disconnect();
+            });
+            tree_resizer_obs.observe(this.container[0], {
+                attributeFilter: ["style"],
+                subtree: false,
+            });
             this.sc_tree = jQuery('<div/>', {
                 'class': 'treeview responsive'
-            }).appendTo(container).css('padding', '0');
+            }).appendTo(this.container).css('padding', '0');
 
             this.table = jQuery('<table/>', {
                 'class': 'tree table table-hover'
@@ -1646,16 +1702,45 @@ function eval_pyson(value){
                 'height': '490px'
             });
         },
-        display: function(record, field){
-            Sao.View.Form.Source._super.display.call(this, record, field);
+        get modified() {
+            if (this.record && this.field) {
+                var value = this.get_client_value();
+                return value != this.get_value();
+            }
+            return false;
+        },
+        get_client_value: function() {
+            var field = this.field;
+            var record = this.record;
+            var value = '';
+            if (field) {
+                value = field.get_client(record);
+            }
+            return value;
+        },
+        get_value: function() {
+            return this.codeMirror.getValue();
+        },
+        display: function(){
+            Sao.View.Form.Source._super.display.call(this);
 
             var display_code = function(str){
-                var lines = str.split('\n');
-                var ret = [];
-                for (var i in lines){
-                    jQuery('<div/>').appendTo(this.input).text(lines[i]).css(
-                        'font-family', 'monospace'
-                    );
+                // Resetting the same value will reset the view at the top,
+                // and it serves no purpose anyway
+                if (str === this.codeMirror.getValue()) {
+                    return
+                }
+                let prev_position = this.codeMirror.getScrollInfo()
+                this.codeMirror.setValue(str);
+                this.codeMirror.refresh();
+                this.codeMirror.scrollTo(prev_position.left, prev_position.top);
+                // We must do this to avoid considering the previously
+                // displayed record's algorithm as an history entry for the
+                // current one (meaning using "Ctrl+Z" can replace the current
+                // algorithm with the previous record's)
+                if (this.record !== this.prev_record) {
+                    this.prev_record = this.record;
+                    this.codeMirror.clearHistory();
                 }
             }.bind(this);
 
@@ -1678,7 +1763,6 @@ function eval_pyson(value){
             var value = field.get_client(record);
             if (value != this.value){
                 this.value = value;
-                this.input.empty();
                 display_code(this.value);
             }
 
@@ -1732,6 +1816,29 @@ function eval_pyson(value){
                 this.sc_editor.removeClass('readonly');
             }
             this.codeMirror.setOption('readOnly', readonly);
+        },
+        pythonLinter: function(doc, updateLint, options, editor) {
+            var known_funcs = [];
+            var linter = new Sao.Model('linter.Linter');
+            var code = editor.getValue();
+
+            var to_parse = "[]";
+            if (this.json_data) { to_parse = this.json_data ;}
+            this._populate_funcs(JSON.parse(to_parse), known_funcs);
+
+            linter.execute('lint', [code, known_funcs]).done(function(errors) {
+                var codeMirrorErrors = [];
+                for (var idx in errors) {
+                    var error = errors[idx];
+                    codeMirrorErrors.push({
+                        message: error[2],
+                        severity: 'error',
+                        from: CodeMirror.Pos(error[0] - 1, error[1]),
+                        to: CodeMirror.Pos(error[0] - 1, error[1]),
+                    });
+                }
+                updateLint(codeMirrorErrors);
+            }.bind(this));
         }
     });
 
