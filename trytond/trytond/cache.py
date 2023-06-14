@@ -24,6 +24,7 @@ __all__ = ['BaseCache', 'Cache', 'LRUDict', 'LRUDictTransaction']
 _clear_timeout = config.getint('cache', 'clean_timeout', default=5 * 60)
 _default_size_limit = config.getint('cache', 'default')
 logger = logging.getLogger(__name__)
+show_debug_logs = logger.isEnabledFor(logging.DEBUG)
 
 
 def _cast(column):
@@ -207,6 +208,12 @@ class MemoryCache(BaseCache):
             expire = dt.datetime.now() + self.duration
         else:
             expire = None
+
+        # JCA: Log cases where the cache size is exceeded
+        if show_debug_logs:
+            if len(cache) >= cache.size_limit:
+                logger.debug('Cache limit exceeded for %s' % self._name)
+
         try:
             cache[key] = (expire, deepcopy(value))
         except TypeError:
