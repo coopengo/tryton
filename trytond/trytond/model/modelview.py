@@ -897,9 +897,12 @@ class ModelView(Model):
                 if value:
                     if (isinstance(value, ModelStorage)
                             and value.id and value.id >= 0):
-                        changed['%s.' % fname] = {
-                            'rec_name': value.rec_name,
-                            }
+                        try:
+                            changed['%s.' % fname] = {
+                                'rec_name': value.rec_name,
+                                }
+                        except AttributeError:
+                            pass
                     if value.id is None:
                         # Don't consider temporary instance as a change
                         continue
