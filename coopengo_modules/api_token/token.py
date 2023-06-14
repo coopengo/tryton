@@ -53,7 +53,7 @@ class Token(ModelSQL, ModelView, metaclass=PoolMeta):
     def generate_key(self):
         self.key = self.__class__.default_key()
 
-    @fields.depends('user', 'party', 'name')
+    @fields.depends('user', '_parent_user.name', 'party', 'name')
     def on_change_with_name(self):
         if self.name:
             return self.name
