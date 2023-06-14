@@ -72,7 +72,6 @@ def catch_errors(error_value=_('#ERROR')):
 
 
 def realized(func):
-
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         has_been_realized = _REALIZED.get(self.view.treeview, False)
