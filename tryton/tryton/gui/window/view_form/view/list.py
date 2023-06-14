@@ -56,7 +56,8 @@ def path_convert_id2pos(model, id_path):
         try:
             record = group.get(current_id)
             indexes.append(group.index(record))
-            group = record.children_group(model.children_field)
+            group = record.children_group(model.children_field,
+                model.children_definitions)
         except (KeyError, AttributeError, ValueError):
             return None
     return tuple(indexes)
@@ -64,11 +65,12 @@ def path_convert_id2pos(model, id_path):
 
 class AdaptModelGroup(GenericTreeModel):
 
-    def __init__(self, group, children_field=None):
+    def __init__(self, group, children_field=None, children_definitions=None):
         super(AdaptModelGroup, self).__init__()
         self.group = group
         self.set_property('leak_references', False)
         self.children_field = children_field
+        self.children_definitions = children_definitions or []
         self.__removed = None  # XXX dirty hack to allow update of has_child
 
     def added(self, group, record):
@@ -78,7 +80,8 @@ class AdaptModelGroup(GenericTreeModel):
             path = record.get_index_path(self.group)
             iter_ = self.get_iter(path)
             self.row_inserted(path, iter_)
-            if record.children_group(self.children_field):
+            if record.children_group(self.children_field,
+                    self.children_definitions):
                 self.row_has_child_toggled(path, iter_)
             if (record.parent
                     and record.group is not self.group):
@@ -133,7 +136,8 @@ class AdaptModelGroup(GenericTreeModel):
     def move_into(self, record, path):
         iter_ = self.get_iter(path)
         parent = self.get_value(iter_, 0)
-        group = parent.children_group(self.children_field)
+        group = parent.children_group(self.children_field,
+            self.children_definitions)
         if group is not record.group:
             record.group.remove(record, remove=True, force_remove=True)
             # Don't remove record from previous group
@@ -196,7 +200,10 @@ class AdaptModelGroup(GenericTreeModel):
             record = group[i]
             if not self.children_field:
                 break
-            group = record.children_group(self.children_field)
+            if self.children_field not in group.fields:
+                break
+            group = record.children_group(self.children_field,
+                self.children_definitions)
         return record
 
     def on_get_value(self, record, column):
@@ -210,7 +217,12 @@ class AdaptModelGroup(GenericTreeModel):
     def on_iter_has_child(self, record):
         if record is None or not self.children_field:
             return False
-        children = record.children_group(self.children_field)
+        if (record.model_name not in self.children_definitions
+                or self.children_field not in
+                self.children_definitions[record.model_name]):
+            return False
+        children = record.children_group(self.children_field,
+            self.children_definitions)
         if children is None:
             return False
         length = len(children)
@@ -225,7 +237,8 @@ class AdaptModelGroup(GenericTreeModel):
             else:
                 return None
         if self.children_field:
-            children = record.children_group(self.children_field)
+            children = record.children_group(self.children_field,
+                self.children_definitions)
             if children:
                 return children[0]
         return None
@@ -235,7 +248,8 @@ class AdaptModelGroup(GenericTreeModel):
             return len(self.group)
         if not self.children_field:
             return 0
-        return len(record.children_group(self.children_field))
+        return len(record.children_group(self.children_field,
+            self.children_definitions))
 
     def on_iter_nth_child(self, record, nth):
         if record is None:
@@ -244,8 +258,10 @@ class AdaptModelGroup(GenericTreeModel):
             return None
         if not self.children_field:
             return None
-        if nth < len(record.children_group(self.children_field)):
-            return record.children_group(self.children_field)[nth]
+        if nth < len(record.children_group(self.children_field,
+                    self.children_definitions)):
+            return record.children_group(self.children_field,
+                self.children_definitions)[nth]
         return None
 
     def on_iter_parent(self, record):
@@ -435,8 +451,10 @@ class ViewTree(View):
     xml_parser = TreeXMLViewParser
     draggable = False
 
-    def __init__(self, view_id, screen, xml, children_field):
+    def __init__(self, view_id, screen, xml, children_field,
+            children_definitions):
         self.children_field = children_field
+        self.children_definitions = children_definitions
         self.optionals = []
         self.sum_widgets = []
         self.sum_box = Gtk.HBox()
@@ -1036,54 +1054,67 @@ class ViewTree(View):
                     treeview.expand_row(path, False)
 
     def __select_changed(self, tree_sel):
-        previous_record = self.record
-        if (previous_record
-                and (previous_record not in previous_record.group
-                    or previous_record.destroyed)):
-            previous_record = None
+        def do_selection_changed():
+            previous_record = self.record
+            if (previous_record
+                    and (previous_record not in previous_record.group
+                        or previous_record.destroyed)):
+                previous_record = None
 
-        if tree_sel.get_mode() == Gtk.SelectionMode.SINGLE:
-            model, iter_ = tree_sel.get_selected()
-            if model and iter_:
-                record = model.get_value(iter_, 0)
-                self.record = record
-            else:
-                self.record = None
+            # Because do_selection_changed is call through an idle_add it can
+            # be called when the treeview of the selection has had it's
+            # underlying model modified we should thus check if the treeview
+            # linked to the selections still exists
+            has_treeview = tree_sel.get_tree_view() is not None
+            if has_treeview:
+                if tree_sel.get_mode() == Gtk.SelectionMode.SINGLE:
+                    model, iter_ = tree_sel.get_selected()
+                    if model and iter_:
+                        record = model.get_value(iter_, 0)
+                        self.record = record
+                    else:
+                        self.record = None
 
-        elif tree_sel.get_mode() == Gtk.SelectionMode.MULTIPLE:
-            model, paths = tree_sel.get_selected_rows()
-            if model and paths:
-                iter_ = model.get_iter(paths[0])
-                record = model.get_value(iter_, 0)
-                self.record = record
-            else:
-                self.record = None
+                elif tree_sel.get_mode() == Gtk.SelectionMode.MULTIPLE:
+                    model, paths = tree_sel.get_selected_rows()
+                    if model and paths:
+                        iter_ = model.get_iter(paths[0])
+                        record = model.get_value(iter_, 0)
+                        self.record = record
+                    else:
+                        self.record = None
 
-        if self.editable and previous_record:
-            def go_previous():
-                self.record = previous_record
-                self.set_cursor()
-            if not self.screen.parent and previous_record != self.record:
+            if self.editable and previous_record:
+                def go_previous():
+                    self.record = previous_record
+                    self.set_cursor()
+                if not self.screen.parent and previous_record != self.record:
 
-                def save():
-                    if not previous_record.destroyed:
-                        if not previous_record.save():
-                            go_previous()
+                    def save():
+                        if not previous_record.destroyed:
+                            if not previous_record.save():
+                                go_previous()
 
-                if not previous_record.validate(self.get_fields()):
-                    go_previous()
-                    return True
-                # Delay the save to let GTK process the current event
-                GLib.idle_add(save)
-            elif previous_record != self.record and self.screen.pre_validate:
+                    if not previous_record.validate(self.get_fields()):
+                        go_previous()
+                        return True
+                    # Delay the save to let GTK process the current event
+                    GLib.idle_add(save)
+                elif (previous_record != self.record
+                        and self.screen.pre_validate):
 
-                def pre_validate():
-                    if not previous_record.destroyed:
-                        if not previous_record.pre_validate():
-                            go_previous()
-                # Delay the pre_validate to let GTK process the current event
-                GLib.idle_add(pre_validate)
-        self.update_sum()
+                    def pre_validate():
+                        if not previous_record.destroyed:
+                            if not previous_record.pre_validate():
+                                go_previous()
+                    # Delay the pre_validate to let GTK process the current
+                    # event
+                    GLib.idle_add(pre_validate)
+            self.update_sum()
+
+        # Delay the switch to the record so that focus-out event of the mixed
+        # widget can be triggered
+        GLib.idle_add(do_selection_changed)
 
     def set_value(self):
         if self.editable:
@@ -1098,7 +1129,8 @@ class ViewTree(View):
         if (force
                 or not self.treeview.get_model()
                 or self.group != self.treeview.get_model().group):
-            model = AdaptModelGroup(self.group, self.children_field)
+            model = AdaptModelGroup(self.group, self.children_field,
+                self.children_definitions)
             self.treeview.set_model(model)
             # __select_changed resets current_record to None
             self.record = current_record
