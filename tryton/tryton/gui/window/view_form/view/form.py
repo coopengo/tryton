@@ -235,6 +235,9 @@ class FormXMLViewParser(XMLViewParser):
         if attributes.get('loading') == 'eager':
             self.field_attrs[name]['loading'] = 'eager'
 
+        # RSE Display more useful info when trying to display unexisting field
+        if 'widget' not in attributes:
+            raise Exception('Unknown field %s' % attributes['name'])
         widget = self.WIDGETS[attributes['widget']](self.view, attributes)
         self.view.widgets[name].append(widget)
 
