@@ -2214,57 +2214,57 @@ class Reconcile(Wizard):
                 having=having))
         return [p for p, in cursor]
 
+    def _next_account(self):
+        accounts = list(self.show.accounts)
+        if not accounts:
+            return
+        account = accounts.pop()
+        self.show.account = account
+        self.show.accounts = accounts
+        self.show.parties = self.get_parties(account)
+        return account
+
+    def _next_party(self):
+        parties = list(self.show.parties)
+        if not parties:
+            return
+        party = parties.pop()
+        self.show.party = party
+        self.show.parties = parties
+        self.show.currencies = self.get_currencies(
+            self.show.account, party)
+        return party,
+
+    def _next_currency(self):
+        currencies = list(self.show.currencies)
+        if not currencies:
+            return
+        currency = currencies.pop()
+        self.show.currency = currency
+        self.show.currencies = currencies
+        return currency
+
     @check_access
     def transition_next_(self):
         pool = Pool()
         Line = pool.get('account.move.line')
 
-        def next_account():
-            accounts = list(self.show.accounts)
-            if not accounts:
-                return
-            account = accounts.pop()
-            self.show.account = account
-            self.show.accounts = accounts
-            self.show.parties = self.get_parties(account)
-            return account
-
-        def next_party():
-            parties = list(self.show.parties)
-            if not parties:
-                return
-            party = parties.pop()
-            self.show.party = party
-            self.show.parties = parties
-            self.show.currencies = self.get_currencies(
-                self.show.account, party)
-            return party,
-
-        def next_currency():
-            currencies = list(self.show.currencies)
-            if not currencies:
-                return
-            currency = currencies.pop()
-            self.show.currency = currency
-            self.show.currencies = currencies
-            return currency
-
         if getattr(self.show, 'accounts', None) is None:
             self.show.accounts = self.get_accounts()
-            if not (next_account() and next_party()):
+            if not (self._next_account() and self._next_party()):
                 return 'end'
         if getattr(self.show, 'parties', None) is None:
             self.show.parties = self.get_parties(self.show.account)
-            if not next_party():
+            if not self._next_party():
                 return 'end'
         if getattr(self.show, 'currencies', None) is None:
             self.show.currencies = self.get_currencies(
                 self.show.account, self.show.party)
 
         while True:
-            while not next_currency():
-                while not next_party():
-                    if not next_account():
+            while not self._next_currency():
+                while not self._next_party():
+                    if not self._next_account():
                         return 'end'
             if self.start.automatic or self.start.only_balanced:
                 lines = self._default_lines()
