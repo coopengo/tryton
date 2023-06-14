@@ -107,6 +107,7 @@ this repository contains the full copyright notices and license terms. -->
                         jQuery('#tabs').toggleClass('hidden-xs');
                     });
                     jQuery('#tabs').on('ready', function() {
+                        // MAB: I removed b08b13cb commit code in this script as it seems contradictory with what b2ck do
                         var mq = window.matchMedia('(max-width: 991px)');
                         if (mq.matches) {
                             if (jQuery('#tablist').children().length) {
