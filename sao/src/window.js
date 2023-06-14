@@ -350,6 +350,7 @@
                     'aria-label': Sao.i18n.gettext("New"),
                     'title': Sao.i18n.gettext("New"),
                 }).append(jQuery('<span/>', {
+                    // Coog Override Icon
                     'class': 'glyphicon glyphicon-plus'
                 })).appendTo(buttons);
                 this.but_new.click(disable_during(this.new_.bind(this)));
@@ -380,6 +381,7 @@
                     'type': 'button',
                     'aria-label': Sao.i18n.gettext('Switch')
                 }).append(jQuery('<span/>', {
+                    // Coog Override Icon
                     'class': 'glyphicon glyphicon-resize-full'
                 })).appendTo(buttons);
                 this.but_switch.click(this.switch_.bind(this));
