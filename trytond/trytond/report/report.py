@@ -79,6 +79,7 @@ FORMAT2EXT = {
     'doc95': 'doc',
     'docbook': 'xml',
     'docx7': 'docx',
+    'docx': 'docx',
     'ooxml': 'xml',
     'latex': 'ltx',
     'sdc4': 'sdc',
@@ -93,6 +94,7 @@ FORMAT2EXT = {
     'xhtml': 'html',
     'xls5': 'xls',
     'xls95': 'xls',
+    'xlsx': 'xlsx',
     }
 
 TIMEDELTA_DEFAULT_CONVERTER = {
