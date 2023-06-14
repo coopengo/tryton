@@ -1540,6 +1540,15 @@
                 }
             }
             this.destroyed = true;
+        },
+        _set_modified: function() {
+            var parent = this.group.parent;
+            if (parent) {
+                parent._changed[this.group.child_name] = true;
+                parent.model.fields[this.group.child_name].changed(parent);
+                parent.validate(null, true, false, true);
+                parent._set_modified();
+            }
         }
     });
 
