@@ -1,0 +1,11 @@
+#!/bin/sh
+
+[ -z "$1" ] && echo missing branch or tag >&2 && exit 1
+
+(cd .. && git archive -o docker/coog-paybox-callback.tar.gz "$1")
+
+mkdir coog-paybox-callback && \
+   tar -xf coog-paybox-callback.tar.gz -C coog-paybox-callback && \
+   docker build -t "coog/paybox-callback:$1" .
+
+rm -rf coog-paybox-callback*
