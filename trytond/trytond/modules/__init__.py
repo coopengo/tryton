@@ -4,14 +4,18 @@ import configparser
 import itertools
 import logging
 import os
+import sys
+import os.path
 import pkgutil
 import warnings
 from collections import defaultdict
 from functools import cache
 from glob import iglob
 
-from sql import Table
+from sql import Table, Literal, Column, With
 from sql.functions import CurrentTimestamp
+from sql.aggregate import Count
+from sql.operators import Concat
 
 from trytond import __series__, config, convert, tools
 from trytond.const import MODULES_GROUP
@@ -27,6 +31,8 @@ ir_configuration = Table('ir_configuration')
 MODULES_PATH = os.path.abspath(os.path.dirname(__file__))
 
 MODULES = []
+
+AUTO_UNINSTALL = os.environ.get('COOG_AUTO_UNINSTALL')
 
 
 @cache
@@ -543,6 +549,139 @@ def load_modules(
     else:
         update = []
 
+    def migrate_modules(cursor):
+        modules_in_dir = get_modules(pool.test)
+        modules_to_migrate = {}
+        for module_dir in modules_in_dir:
+            try:
+                with tools.file_open(
+                        os.path.join(module_dir, '__migrated_modules')) as f:
+                    for line in f.readlines():
+                        line = line.replace(' ', '').strip('\n')
+                        if not line:
+                            continue
+                        action, old_module = line.split(':')
+                        modules_to_migrate[old_module] = (action, module_dir)
+            except IOError:
+                continue
+
+        cursor.execute(*ir_module.select(ir_module.name, ir_module.state))
+        for module_in_db, module_state_in_db in cursor.fetchall():
+            if (module_in_db in modules_in_dir
+                    or module_in_db in modules_to_migrate):
+                continue
+            elif module_state_in_db == "not activated":
+                modules_to_migrate[module_in_db] = ('to_drop', None)
+            elif AUTO_UNINSTALL:
+                logger.warning(f'{module_in_db} is about to be uninstalled')
+                modules_to_migrate[module_in_db] = ('to_drop', None)
+            else:
+                logger.critical(f'To uninstall {module_in_db} you should set'
+                    ' COOG_AUTO_UNINSTALL environnement variable')
+                sys.exit(1)
+
+        def rename(cursor, table_name, old_name, new_name, var_name):
+            table = Table(table_name)
+            fields = None
+            # If the view already exists in destination module
+            if table_name == 'ir_model_data':
+                fields = ['fs_id', 'model']
+            if table_name == 'ir_ui_view':
+                fields = ['model', 'name']
+            if fields:
+                table_select = Table(table_name)
+                table_fields = [Column(table_select, field)
+                                for field in fields]
+                # This query identify if the instance exist in the module to merge
+                select = table_select.select(
+                    *table_fields,
+                    where=table_select.module.in_([old_name, new_name]),
+                    group_by=table_fields,
+                    having=Count(table_select.module) > 1)
+                where_clause = (table.module == Literal(old_name))
+                # If the table is ir_model_data, we need to change the fs_id
+                # to handle a better cleaning of the old module records
+                if table_name == 'ir_model_data':
+                    query = table.update(
+                        columns=[table.fs_id],
+                        from_=[select],
+                        values=[Concat(old_name, select.fs_id)],
+                        where=where_clause & (
+                            table.fs_id == select.fs_id) & (
+                            table.model == select.model)
+                    )
+                # But if it's a view and the old module views name are similar to
+                # the new module views name, we will delete the old views name.
+                else:
+                    sub_table_select = Table(table_name)
+                    sub_query = sub_table_select.join(
+                        select, condition=(sub_table_select.model == select.model) & (
+                            sub_table_select.name == select.name)
+                    ).select(
+                        sub_table_select.id,
+                        where=where_clause
+                    )
+                    query = table.delete(
+                        where=table.id.in_(sub_query)
+                    )
+                cursor.execute(*query)
+
+            query = table.update([getattr(table, var_name)],
+                    [new_name],
+                    where=(getattr(table, var_name) == old_name))
+            cursor.execute(*query)
+
+        def delete(cursor, table_name, old_name, var_name):
+            table = Table(table_name)
+            cursor.execute(*table.delete(
+                    where=(getattr(table, var_name) == old_name)))
+
+        for old_name, (action, new_name) in modules_to_migrate.items():
+            cursor.execute(*ir_module.select(Count(ir_module.id),
+                    where=ir_module.name == old_name))
+            count, = cursor.fetchone()
+            if not count:
+                continue
+
+            if action == 'to_drop':
+                logger.info('%s directory has been removed from filesystem,'
+                    ' deleting entries from database...' % old_name)
+            else:
+                logger.info('%s has been %s %s, updating database...' % (
+                    old_name, {'to_rename': 'renamed into',
+                        'to_merge': 'merged with'}[action], new_name))
+            if new_name:
+                rename(cursor, 'ir_model', old_name, new_name, 'module')
+                rename(cursor, 'ir_action_report', old_name, new_name,
+                    'module')
+                rename(cursor, 'ir_model_field', old_name, new_name, 'module')
+                rename(cursor, 'ir_model_data', old_name, new_name, 'module')
+                rename(cursor, 'ir_translation', old_name, new_name, 'module')
+                rename(cursor, 'ir_translation', old_name, new_name,
+                    'overriding_module')
+                rename(cursor, 'ir_ui_icon', old_name, new_name, 'module')
+                rename(cursor, 'ir_ui_view', old_name, new_name, 'module')
+
+            if action == 'to_rename':
+                rename(cursor, 'ir_module_dependency', old_name, new_name,
+                    'name')
+                rename(cursor, 'ir_module', old_name, new_name, 'name')
+            elif action == 'to_merge':
+                delete(cursor, 'ir_module_dependency', old_name,
+                    'name')
+                delete(cursor, 'ir_module', old_name, 'name')
+            elif action == 'to_drop':
+                delete(cursor, 'ir_model', old_name, 'module')
+                delete(cursor, 'ir_action_report', old_name, 'module')
+                delete(cursor, 'ir_model_field', old_name, 'module')
+                delete(cursor, 'ir_model_data', old_name, 'module')
+                delete(cursor, 'ir_translation', old_name, 'module')
+                delete(cursor, 'ir_translation', old_name, 'overriding_module')
+                delete(cursor, 'ir_ui_icon', old_name, 'module')
+                delete(cursor, 'ir_ui_view', old_name, 'module')
+                delete(cursor, 'ir_module_dependency', old_name, 'name')
+                delete(cursor, 'ir_module', old_name, 'name')
+
     def _load_modules(update):
         global res
         transaction = Transaction()
@@ -550,6 +689,8 @@ def load_modules(
         with transaction.set_context(_no_trigger=True), \
                 transaction.connection.cursor() as cursor:
             if update:
+                migrate_modules(cursor)
+
                 cursor.execute(*ir_module.select(ir_module.name,
                         where=ir_module.state.in_(('activated', 'to activate',
                                 'to upgrade', 'to remove'))))
