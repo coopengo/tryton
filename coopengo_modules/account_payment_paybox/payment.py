@@ -13,6 +13,7 @@ from trytond.config import config
 from trytond.pool import PoolMeta, Pool
 from trytond.transaction import Transaction
 from trytond.pyson import Eval
+from trytond.exceptions import UserError
 
 from trytond.model import fields
 
@@ -43,13 +44,6 @@ class Group(metaclass=PoolMeta):
     @classmethod
     def __setup__(cls):
         super(Group, cls).__setup__()
-        for required_paybox_param in ('PBX_SITE', 'PBX_RANG', 'secret',
-                'PBX_IDENTIFIANT', 'PBX_RETOUR', 'payment_url'):
-            required_param = config.get('paybox', required_paybox_param)
-            if required_param is None:
-                cls.logger.warning('[PAYBOX]: variable "%s" is not set in '
-                    'paybox section. It is required in order to process paybox'
-                    ' payments' % required_paybox_param)
         cls.__rpc__.update({
             'reject_payment_group': RPC(readonly=False, instantiate=0),
             'succeed_payment_group': RPC(readonly=False, instantiate=0),
@@ -100,6 +94,13 @@ class Group(metaclass=PoolMeta):
         Company = Pool().get('company.company')
         company = Company(Transaction().context.get('company'))
         parameters = OrderedDict()
+        for required_paybox_param in ('PBX_SITE', 'PBX_RANG', 'secret',
+                'PBX_IDENTIFIANT', 'PBX_RETOUR', 'payment_url'):
+            required_param = config.get(required_paybox_param)
+            if required_param is None:
+                raise UserError(gettext(
+                    'account_payment_paybox.msg_missing_paybox_configuration',
+                    required_paybox_param))
         parameters['PBX_SITE'] = config.get('PBX_SITE')
         parameters['PBX_RANG'] = config.get('PBX_RANG')
         parameters['PBX_IDENTIFIANT'] = config.get('PBX_IDENTIFIANT')

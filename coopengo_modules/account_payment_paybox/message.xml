@@ -7,5 +7,8 @@
         <record model="ir.message" id="msg_error_url_generation">
             <field name="text">Could not generate the paybox link.</field>
         </record>
+        <record model="ir.message" id="msg_missing_paybox_configuration">
+            <field name="text">Variable %(required_paybox_param)s is not set in paybox section. It is required in order to process paybox payments.</field>
+        </record>
     </data>
 </tryton>
