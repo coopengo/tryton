@@ -7,6 +7,7 @@ import hashlib
 import datetime
 from collections import OrderedDict
 
+from trytond.i18n import gettext
 from trytond.rpc import RPC
 from trytond.config import config
 from trytond.pool import PoolMeta, Pool
@@ -14,6 +15,9 @@ from trytond.transaction import Transaction
 from trytond.pyson import Eval
 
 from trytond.model import fields
+
+from trytond.modules.account_payment.exceptions import (
+    PaymentValidationError, ProcessError)
 
 
 __all__ = [
@@ -39,12 +43,6 @@ class Group(metaclass=PoolMeta):
     @classmethod
     def __setup__(cls):
         super(Group, cls).__setup__()
-        cls._error_messages.update({
-                'only_receivable_allowed': 'Only receivable payments are '
-                'allowed with a Paybox journal',
-                'only_single_payment': 'You must process only one paybox '
-                'payment at the same time',
-                })
         for required_paybox_param in ('PBX_SITE', 'PBX_RANG', 'secret',
                 'PBX_IDENTIFIANT', 'PBX_RETOUR', 'payment_url'):
             required_param = config.get('paybox', required_paybox_param)
@@ -73,7 +71,8 @@ class Group(metaclass=PoolMeta):
 
     def generate_paybox_url(self):
         if self.kind != 'receivable':
-            self.raise_user_error('only_receivable_allowed')
+            raise PaymentValidationError(
+                gettext('account_payment_paybox.msg_only_receivable_allowed'))
         self.number = self.generate_paybox_transaction_id()
         if self.processing_payment_amount() > 0:
             self.payment_url = self.paybox_url_builder()
@@ -165,20 +164,14 @@ class ProcessPaymentStart(metaclass=PoolMeta):
 class ProcessPayment(metaclass=PoolMeta):
     __name__ = 'account.payment.process'
 
-    @classmethod
-    def __setup__(cls):
-        super(ProcessPayment, cls).__setup__()
-        cls._error_messages.update({
-                'error_url_generation': 'Could not generate the paybox link',
-                })
-
     def do_process(self, action):
         action, res = super(ProcessPayment, self).do_process(action)
         if res['res_id'] and self.start.is_paybox:
             group = Pool().get('account.payment.group')(res['res_id'][0])
             res['paybox_url'] = group.generate_paybox_url()
             if not res['paybox_url']:
-                self.raise_user_error('error_url_generation')
+                raise ProcessError(
+                    gettext('account_payment_paybox.msg_error_url_generation'))
             group.save()
         return action, res
 
