@@ -1987,6 +1987,16 @@ function eval_pyson(value){
         cast: function(value){
             return value;
         },
+        display: function() {
+            let prm = Sao.View.Form.DateTime._super.display.call(this);
+            if (this.record) {
+                let value = this.record.field_get_client(this.field_name);
+                if (value && (value.millisecond() > 0)) {
+                    Sao.Logger.debug(`Field ${this.field_name} uses milliseconds in a datetime`);
+                }
+            }
+            return prm
+        },
     });
 
     Sao.View.Form.Time = Sao.class_(Sao.View.Form.Date, {
@@ -2315,6 +2325,9 @@ function eval_pyson(value){
                     }
                 }
                 if (!found) {
+                    Sao.Logger.debug(
+                        `Selection value "${value}" not found for `
+                        + `"${record.model.name}->${field.name}"`);
                     prm = Sao.common.selection_mixin.get_inactive_selection
                         .call(this, value);
                     prm.done(inactive => {
