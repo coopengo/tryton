@@ -66,7 +66,7 @@ class Group:
         pass
 
     def processing_payment_amount(self):
-        return sum([x.amount for x in self.get_processing_payments()])
+        return sum([x.amount for x in self.get_payments(state='processing')])
 
     def generate_paybox_url(self):
         if self.kind != 'receivable':
@@ -116,26 +116,28 @@ class Group:
         final_url += ('&PBX_HMAC=%s' % self.generate_hmac(get_url_part))
         return final_url
 
-    def get_processing_payments(self):
+    def get_payments(self, state=None):
         Payment = Pool().get('account.payment')
-        return Payment.search([('group', '=', self.id),
-                ('state', '=', 'processing')])
+        condition = [('group', '=', self.id)]
+        if state:
+            condition.append(('state', '=', state))
+        return Payment.search(condition)
 
     @classmethod
-    def update_processing_payments(cls, groups, method_name):
+    def update_payments(cls, groups, method_name, state=None):
         Payment = Pool().get('account.payment')
         method = getattr(Payment, method_name)
-        method(sum([list(x.get_processing_payments()) for x in groups], []))
+        method(sum([list(x.get_payments(state)) for x in groups], []))
 
     @classmethod
     def reject_payment_group(cls, groups, *args):
         Group = Pool().get('account.payment.group')
-        Group.update_processing_payments(groups, 'fail')
+        Group.update_payments(groups, 'fail')
 
     @classmethod
-    def succeed_payment_group(cls, groups, **kwargs):
+    def succeed_payment_group(cls, groups, *args):
         Group = Pool().get('account.payment.group')
-        Group.update_processing_payments(groups, 'succeed')
+        Group.update_payments(groups, 'succeed')
 
 
 class Journal:
