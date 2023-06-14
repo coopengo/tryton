@@ -215,6 +215,7 @@ class DictMultiSelectionEntry(DictEntry):
         self._signal_handlers[selection].append(
             selection.connect('changed', self._changed))
         widget.add(self.tree)
+        widget_class(widget, 'multiselection', True)
 
         self.selection = self.definition['selection']
         width = 10
