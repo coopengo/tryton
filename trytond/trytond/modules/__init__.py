@@ -101,8 +101,9 @@ def get_module_register(name, path=(), with_test=False):
                     'depends': depends,
                     }
     for directory in _get_subdirs(module_config, with_test):
+        dir_path = directory.split("/")
         yield from get_module_register(
-            name, (*path, directory), with_test)
+            name, (*path, *dir_path), with_test)
 
 
 def get_module_register_mixin(name, path=(), with_test=False):
@@ -116,8 +117,51 @@ def get_module_register_mixin(name, path=(), with_test=False):
                 'module': name,
                 }
     for directory in _get_subdirs(module_config, with_test):
+        dir_path = directory.split("/")
         yield from get_module_register_mixin(
-            name, (*path, directory), with_test)
+            name, (*path, *dir_path), with_test)
+
+
+def get_module_hooks(name, path=(), with_test=False):
+    """
+Return hooks to register from tryton.cfg
+
+Expected declaration is similar to the models:
+
+    [hooks]
+    post_init:
+        api.register_api_routes
+        config.check_database_configuration
+
+    [hooks authentication_saml]
+    callbacks:
+        reload_saml_configuration:saml.refresh_metadata_files
+    """
+    module_config, _ = parse_module_config(name, path)
+    if module_config is None:
+        return
+    for section in module_config.sections():
+        if section == 'hooks' or section.startswith('hooks '):
+            depends = section[len('hooks'):].strip().split()
+            for type_ in ['post_init', 'final_init',
+                    'final_migration', 'callbacks']:
+                if not module_config.has_option(section, type_):
+                    continue
+                hooks = module_config.get(
+                    section, type_).strip().splitlines()
+                if path:
+                    prefix = ".".join(path)
+                    hooks = [f'{prefix}.{c}' for c in
+                        hooks]
+                yield hooks, {
+                    'module': name,
+                    'type_': type_,
+                    'depends': depends,
+                    }
+    for directory in _get_subdirs(module_config, with_test):
+        dir_path = directory.split("/")
+        yield from get_module_hooks(
+            name, (*path, *dir_path), with_test)
 
 
 class Graph(dict):
@@ -265,6 +309,7 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
         if update:
             for module in early_modules:
                 pool.setup(early_classes[module])
+                pool.apply_post_init_hooks(module)
             for module in early_modules:
                 if (is_module_to_install(module, update)
                         or module2state[module] in to_install_states):
@@ -284,6 +329,7 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
                     # linger
                     transaction.cache.clear()
                     pool.setup(classes)
+                    pool.apply_post_init_hooks(module)
             package_state = module2state[module]
             if (is_module_to_install(module, update)
                     or (update and package_state in to_install_states)):
@@ -345,6 +391,13 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
         if not update:
             pool.setup()
         else:
+            class Options:
+                pass
+
+            options = Options()
+            options.indexes = indexes
+
+            pool.apply_final_migration_hooks(options)
             # As the caches are cleared at the end of the process there's
             # no need to do it here.
             # It may deadlock on the ir_cache SELECT if the table schema has
@@ -356,6 +409,9 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
             Model.clean()
             ModelField = pool.get('ir.model.field')
             ModelField.clean()
+
+        # JCA: Add update parameter to post init hooks
+        pool.apply_post_init_hooks(None)
 
         pool.setup_mixin()
 
@@ -402,6 +458,8 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
             # Ensure cache is clear for other instances
             Cache.clear_all()
             Cache.refresh_pool(transaction)
+
+        pool.apply_final_init_hooks(update)
     logger.info('all modules loaded')
 
 
@@ -430,6 +488,8 @@ def register_classes(with_test=False):
             Pool.register(*args, **kwargs)
         for args, kwargs in get_module_register_mixin(module_name):
             Pool.register_mixin(*args, **kwargs)
+        for args, kwargs in get_module_hooks(module_name):
+            Pool.register_hooks(*args, **kwargs)
     if with_test:
         base_modules.append('tests')
         import trytond.tests
@@ -449,6 +509,9 @@ def register_classes(with_test=False):
         for args, kwargs in get_module_register_mixin(
                 module_name, with_test=with_test):
             Pool.register_mixin(*args, **kwargs)
+        for args, kwargs in get_module_hooks(
+                module_name, with_test=with_test):
+            Pool.register_hooks(*args, **kwargs)
         module = tools.import_module(module_name)
         if hasattr(module, 'register'):
             warnings.warn(
