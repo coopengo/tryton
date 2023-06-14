@@ -5271,9 +5271,14 @@ function eval_pyson(value){
             field.labelled.attr('aria-labelledby', label.attr('id'));
             label.attr('for', field.labelled.attr('id'));
 
-            field.button.click(() => {
-                this.remove(key, true);
-            });
+            // MAB: For extra data
+            if (!this.attributes.no_command) {
+                field.button.click(() => {
+                    this.remove(key, true);
+                });
+            } else {
+                field.button.parent().css('visibility', 'hidden');
+            }
 
             var previous = null;
             if (position > 0) {
