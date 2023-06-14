@@ -208,6 +208,7 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
                     # linger
                     transaction.cache.clear()
                     pool.setup(classes)
+                    pool.post_init(module)
             package_state = module2state[module]
             if (is_module_to_install(module, update)
                     or (update and package_state in to_install_states)):
@@ -276,6 +277,9 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
             Model.clean()
             ModelField = pool.get('ir.model.field')
             ModelField.clean()
+
+        # JCA: Add update parameter to post init hooks
+        pool.post_init(None)
 
         pool.setup_mixin()
 
