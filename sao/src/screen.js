@@ -1442,6 +1442,8 @@
                         ~['tree', 'graph', 'calendar'].indexOf(
                             this.current_view.view_type));
                 deferreds.push(search_prm);
+                // [Coog specific]
+                // JMO: report https://github.com/coopengo/tryton/pull/13
                 // for (const view of this.views) {
                 //     if (view &&
                 //         ((view == this.current_view) ||
