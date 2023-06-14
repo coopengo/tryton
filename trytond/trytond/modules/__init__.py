@@ -175,10 +175,14 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
                     [ir_module.name, ir_module.state],
                     [[m, 'not activated'] for m in new_modules]))
 
-        def register_classes(classes, module):
+        count = len(modules)
+
+        def register_classes(classes, module, idx=0):
+            logging_prefix = '%i%% (%i/%i):%s' % (
+                int(idx * 100 / (count + 1)), idx, count, module)
             for type in list(classes.keys()):
                 for cls in classes[type]:
-                    logger.info('%s register %s', module, cls.__name__)
+                    logger.info('%s:register %s', logging_prefix, cls.__name__)
                     cls.__register__(module)
 
         to_install_states = {'to activate', 'to upgrade'}
@@ -194,11 +198,17 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
                         or module2state[module] in to_install_states):
                     register_classes(early_classes[module], module)
 
+        idx = 0
         for node in graph:
             module = node.name
             if module not in MODULES:
                 continue
-            logger.info('%s load', module)
+
+            # JCA: Add loading indicator in the logs
+            idx += 1
+            logging_prefix = '%i%% (%i/%i):%s' % (
+                int(idx * 100 / (count + 1)), idx, count, module)
+            logger.info(logging_prefix)
             if module in early_modules:
                 classes = early_classes[module]
             else:
@@ -220,7 +230,7 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
                 for child in node:
                     module2state[child.name] = package_state
                 if module not in early_modules:
-                    register_classes(classes, module)
+                    register_classes(classes, module, idx)
                 for model in classes['model']:
                     if hasattr(model, '_history'):
                         models_to_update_history.add(model.__name__)
@@ -233,7 +243,7 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
 
                 for filename in node.info.get('xml', []):
                     filename = filename.replace('/', os.sep)
-                    logger.info('%s load %s', module, filename)
+                    logger.info('%s:loading %s', logging_prefix, filename)
                     # Feed the parser with xml content:
                     with tools.file_open(
                             os.path.join(module, filename), 'rb') as fp:
