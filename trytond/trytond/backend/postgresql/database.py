@@ -346,7 +346,11 @@ class Database(DatabaseInterface):
             connection.reset()
         except InterfaceError:
             pass
-        self._connpool.putconn(connection, close=close)
+        try:
+            self._connpool.putconn(connection, close=close)
+        except PoolError:
+            # When cleaning up, the pool may already be closed
+            pass
 
     def close(self):
         with self._lock:
