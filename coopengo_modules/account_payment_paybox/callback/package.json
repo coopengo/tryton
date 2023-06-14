@@ -12,10 +12,12 @@
   "author": "Coopengo <dev@coopengo.com>",
   "dependencies": {
     "co": "^4",
+    "debug": "^2",
     "koa": "^1",
     "lodash": "^4",
-    "debug": "^2",
+    "moment": "^2.18.1",
     "tryton-model": "~4.2",
-    "tryton-session": "~4.2"
+    "tryton-session": "~4.2",
+    "winston": "^2.3.1"
   }
 }
