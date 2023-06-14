@@ -1287,8 +1287,11 @@ class TaxableMixin(object):
                 for params in self.taxable_lines]
             for line in taxable_lines:
                 assert all(t.company == self.company for t in line.taxes)
+                date = getattr(
+                    line, 'tax_date',
+                    getattr(self, 'tax_date', pool.get('ir.date').today()))
                 l_taxes = Tax.compute(Tax.browse(line.taxes), line.unit_price,
-                    line.quantity, line.tax_date or self.tax_date)
+                    line.quantity, date)
                 current_taxes = {}
                 for tax in l_taxes:
                     taxline = self._compute_tax_line(**tax)
