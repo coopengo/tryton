@@ -7,7 +7,7 @@ import os
 import threading
 from io import StringIO
 
-__all__ = ['app']
+__all__ = ['app', 'application']
 
 log_file = os.environ.get('WSGI_LOG_FILE')
 log_level = os.environ.get('LOG_LEVEL', 'ERROR')
@@ -45,4 +45,5 @@ if db_names:
     for thread in threads:
         thread.join()
 
+application = app
 assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
