@@ -284,6 +284,11 @@ Char
    storage level and in the client input.
    The value can be a :class:`~trytond.pyson.PYSON` statement.
 
+.. attribute:: Char.strip
+
+    If false, the leading and trailing whitespace characters of the value are
+    kept. Defaults to true.
+
 .. attribute:: Char.translate
 
    If ``True``, the value of the field is translatable.
