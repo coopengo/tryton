@@ -1,0 +1,21 @@
+{
+  "name": "payback_callback",
+  "version": "1.1.0",
+  "description": "Callback server for Paybox",
+  "main": "index.js",
+  "scripts": {
+    "start": "forever start -w index.js",
+    "beautify": "js-beautify --config .jsbeautifyrc -r $(find -name '*.js' | grep -v node_modules)",
+    "lint": "jshint -c .jshintrc $(find -name '*.js' | grep -v node_modules)",
+    "pem": "wget http://www1.paybox.com/wp-content/uploads/2014/03/pubkey.pem -O paybox.pem"
+  },
+  "author": "Coopengo <dev@coopengo.com>",
+  "dependencies": {
+    "co": "^4",
+    "koa": "^1",
+    "lodash": "^4",
+    "debug": "^2",
+    "tryton-model": "~4.2",
+    "tryton-session": "~4.2"
+  }
+}
