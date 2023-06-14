@@ -512,7 +512,7 @@ class Screen:
             self.search_count, record and record.id)
         # Coog Specific for multimixed view
         if self._multiview_form and self.current_view.view_type == 'tree':
-            view = self._mutliview_form
+            view = self._multiview_form
             wgroup = view.widget_group[self._multiview_group]
             self._sync_group(view, wgroup, self.current_record, validate)
         self.update_resources(record.resources if record else None)
