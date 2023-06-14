@@ -13,6 +13,7 @@ __all__ = [
 
 class Token(ModelSQL, ModelView, metaclass=PoolMeta):
     'API Token'
+
     __name__ = 'api.token'
 
     active = fields.Boolean('Active')

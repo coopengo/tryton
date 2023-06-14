@@ -28,5 +28,9 @@ this repository contains the full copyright notices and license terms. -->
             <field name="act_window" ref="act_token_form"/>
         </record>
         <menuitem parent="res.menu_res" action="act_token_form" id="menu_token"/>
+        <record model="ir.model.button" id="button_api_token_generate_key">
+            <field name="name">generate_key</field>
+            <field name="model" search="[('model', '=', 'api.token')]"/>
+        </record>
     </data>
 </tryton>
