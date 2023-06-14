@@ -2094,7 +2094,7 @@
                         return this.client_action(action);
                     });
                 }
-                else if (action_id) {
+                if (action_id) {
                     return Sao.Action.execute(action_id, {
                         model: this.model_name,
                         id: this.current_record.id,
