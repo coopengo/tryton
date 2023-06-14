@@ -84,13 +84,13 @@ DB_CACHE_JOBS = os.environ.get('DB_CACHE_JOBS', str(_cpu_count()))
 TEST_NETWORK = bool(int(os.getenv('TEST_NETWORK', 1)))
 
 
-def activate_module(modules, lang='en'):
+def activate_module(modules, lang='en', cache_name=None):
     '''
     Activate modules for the tested database
     '''
     if isinstance(modules, str):
         modules = [modules]
-    name = '-'.join(modules)
+    name = cache_name or '-'.join(modules)
     if lang != 'en':
         name += '--' + lang
     if not db_exist(DB_NAME) and restore_db_cache(name):
@@ -371,7 +371,7 @@ class _DBTestCase(TestCase):
         modules = [cls.module]
         if cls.extras:
             modules.extend(cls.extras)
-        activate_module(modules, lang=cls.language)
+        activate_module(modules, lang=cls.language, cache_name=cls.module)
 
     @classmethod
     def tearDownClass(cls):
