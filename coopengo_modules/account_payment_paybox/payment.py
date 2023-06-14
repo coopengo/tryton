@@ -172,11 +172,10 @@ class ProcessPayment:
             group.save()
         return action, res
 
-    def default_start(self, fields):
+    def default_start(self, name):
+        defaults = super(ProcessPayment, self).default_start(name)
         Payment = Pool().get('account.payment')
         payments = Payment.browse(Transaction().context['active_ids'])
-        paybox = any(p.journal.process_method == 'paybox'
+        defaults['is_paybox'] = any(p.journal.process_method == 'paybox'
             for p in payments)
-        return {
-            'is_paybox': paybox,
-            }
+        return defaults
