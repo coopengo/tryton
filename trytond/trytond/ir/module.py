@@ -11,7 +11,7 @@ from trytond.model import ModelSQL, ModelView, Unique, fields, sequence_ordered
 from trytond.model.exceptions import AccessError
 from trytond.modules import get_module_info, get_modules
 from trytond.pool import Pool
-from trytond.pyson import Eval
+from trytond.pyson import Eval, If
 from trytond.rpc import RPC
 from trytond.tools import grouped_slice
 from trytond.transaction import Transaction
@@ -134,6 +134,15 @@ class Module(ModelSQL, ModelView):
                         'to activate',
                         ):
                     raise AccessError(gettext('ir.msg_module_delete_state'))
+
+    @classmethod
+    def view_attributes(cls):
+        return [('/tree', 'colors',
+                If(Eval('state').in_(['to upgrade', 'to install']),
+                    'blue',
+                    If(Eval('state') == 'uninstalled',
+                        'grey',
+                        'black')))]
 
     @classmethod
     def on_written(cls, modules):
