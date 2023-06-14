@@ -287,6 +287,7 @@ class _DBTestCase(unittest.TestCase):
     module = None
     extras = None
     language = 'en'
+    cache_name = None
 
     @classmethod
     def setUpClass(cls):
@@ -294,7 +295,7 @@ class _DBTestCase(unittest.TestCase):
         modules = [cls.module]
         if cls.extras:
             modules.extend(cls.extras)
-        activate_module(modules, lang=cls.language, cache_name=cls.module)
+        activate_module(modules, lang=cls.language, cache_name=cls.cache_name)
         super().setUpClass()
 
     @classmethod
