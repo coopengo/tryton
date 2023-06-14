@@ -219,9 +219,12 @@ def _dispatch(request, pool, *args, **kwargs):
         slow_start = time.time()
 
     # AKE: add session to transaction context
-    session = None
     if request.authorization.type == 'session':
         session = request.authorization.get('session')
+        party = None
+    elif request.authorization.type == 'token':
+        session = request.authorization.get('token')
+        party = request.authorization.get('party_id')
 
     retry = config.getint('database', 'retry')
     count = 0
