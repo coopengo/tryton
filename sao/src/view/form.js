@@ -1557,7 +1557,6 @@ function eval_pyson(value){
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
-                console.log(evt.data);
                 var cmDoc = this.codeMirror.getDoc();
                 switch (evt.data) {
                     case 'undo':
@@ -1567,7 +1566,7 @@ function eval_pyson(value){
                         cmDoc.redo();
                         break;
                     case 'check':
-                        console.log('todo');
+                        this.codeMirror.performLint();
                         break;
                     case 'toggle_menu':
                         this.toggle_menu();
@@ -1628,7 +1627,7 @@ function eval_pyson(value){
             this.codeMirror = CodeMirror.fromTextArea(input[0], {
                 mode: {
                     name: 'python',
-                    version: 2,
+                    version: 3,
                     singleLineStringErrors: false
                 },
                 lineNumbers: true,
@@ -1644,6 +1643,7 @@ function eval_pyson(value){
                 }
             });
             this.codeMirror.on('change', this.send_modified.bind(this));
+            this.codeMirror.on('blur', this._focus_out.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
                 "Alt-R": "replace",
                 "Shift-Alt-R": "replaceAll",
@@ -1760,6 +1760,12 @@ function eval_pyson(value){
                 }
             }.bind(this);
 
+            if (!field || !record) {
+                this.codeMirror.setValue('');
+                this.clear_tree();
+                return;
+            }
+
             var value = field.get_client(record);
             if (value != this.value){
                 this.value = value;
@@ -1839,7 +1845,27 @@ function eval_pyson(value){
                 }
                 updateLint(codeMirrorErrors);
             }.bind(this));
-        }
+        },
+        _populate_funcs: function (tree_data, func_list) {
+            // Feed hint and lint context with general rule context
+            if (!tree_data) { return ;}
+            var element;
+            var duplicate;
+            for (var cnt in tree_data) {
+                element = tree_data[cnt];
+                if (element.translated) {
+                    // Remove function duplicate from current rule to replace
+                    // them with appropriate name_of_func() completion
+                    duplicate = func_list.indexOf(element.translated)
+                    if (duplicate > -1)
+                        func_list.splice(duplicate, 1)
+                    func_list.push({text: element.translated.concat('(', element.fct_args, ')'), displayText: element.translated});
+                }
+                if (element.children && element.children.length > 0) {
+                    this._populate_funcs(element.children, func_list);
+                }
+            }
+        },
     });
 
     Sao.View.Form.TranslateDialog = Sao.class_(Object,  {
