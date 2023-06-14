@@ -2313,7 +2313,7 @@
                     }
                 }
             }
-            if (focus_widget) {
+            if (focus_widget && focus_widget.focus) {
                 focus_widget.focus();
             }
         },
