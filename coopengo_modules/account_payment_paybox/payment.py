@@ -110,6 +110,12 @@ class Group(metaclass=PoolMeta):
         parameters['PBX_HASH'] = 'SHA512'
         parameters['PBX_TIME'] = datetime.datetime.now().isoformat()
         parameters['PBX_REPONDRE_A'] = config.get('paybox', 'PBX_REPONDRE_A')
+        if config.get('paybox', 'PBX_TYPEPAIEMENT'):
+            parameters['PBX_TYPEPAIEMENT'] = config.get(
+                'paybox', 'PBX_TYPEPAIEMENT')
+        if config.get('paybox', 'PBX_TYPEPAIEMENT'):
+            parameters['PBX_TYPECARTE'] = config.get(
+                'paybox', 'PBX_TYPECARTE')
 
         valid_values = [(key, value) for key, value in parameters.items()
             if value is not None]
