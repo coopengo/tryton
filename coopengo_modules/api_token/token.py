@@ -17,7 +17,7 @@ class Token(ModelSQL, ModelView, metaclass=PoolMeta):
 
     active = fields.Boolean('Active')
     name = fields.Char('Name', required=True)
-    key = fields.Char('Key', required=True, readonly=True)
+    key = fields.Char('Key', required=True)
     user = fields.Many2One('res.user', 'User', required=True)
     party = fields.Many2One('party.party', 'Party')
 
@@ -27,7 +27,7 @@ class Token(ModelSQL, ModelView, metaclass=PoolMeta):
 
     @classmethod
     def default_key(cls):
-        return binascii.hexlify(os.urandom(24))
+        return binascii.hexlify(os.urandom(24)).decode('utf-8')
 
     @classmethod
     def check(cls, key):
