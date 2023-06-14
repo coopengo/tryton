@@ -432,6 +432,7 @@ class Record:
         return self.id
 
     def default_get(self, defaults=None):
+        vals = None
         if len(self.group.fields):
             context = self.get_context()
             if defaults is not None:
