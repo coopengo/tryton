@@ -3906,8 +3906,7 @@ function eval_pyson(value){
 
             function display_form(widget, record) {
                 return function () {
-                    widget.screen.current_record = record;
-                    widget.display(widget.record(), widget.field());
+                    widget.display(widget.record, widget.field);
                 };
             }
 
@@ -3941,6 +3940,7 @@ function eval_pyson(value){
                     }
                 }
 
+                widget.screen.current_record = record;
                 display_prm = jQuery.when.apply(jQuery, record_load_promises)
                     .then(display_form(widget, record).bind(this));
                 if (record){
