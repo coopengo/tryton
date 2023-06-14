@@ -241,7 +241,7 @@ class Transport(xmlrpc.client.SafeTransport):
 
         ssl_ctx = ssl.create_default_context(cafile=self.__ca_certs)
 
-        def http_connection():
+        def get_connection(ConnectionClass, **kwargs):
             if self.http_proxy:
                 netloc = urlparse(self.http_proxy).netloc
                 proxy_host, proxy_port = netloc.split(':')
@@ -249,12 +249,17 @@ class Transport(xmlrpc.client.SafeTransport):
                 proxy_port = int(proxy_port)
                 real_port = int(real_port)
 
-                connection = http.client.HTTPConnection(proxy_host, proxy_port)
+                connection = ConnectionClass(proxy_host, proxy_port, **kwargs)
                 connection.set_tunnel(
                     real_host, real_port, self.get_proxy_headers())
             else:
-                connection = http.client.HTTPConnection(
-                    chost, timeout=CONNECT_TIMEOUT)
+                connection = ConnectionClass(chost, **kwargs)
+            return connection
+
+        def http_connection():
+            connection = get_connection(
+                http.client.HTTPConnection,
+                timeout=CONNECT_TIMEOUT)
             self._connection = host, connection
             connection.connect()
             sock = connection.sock
@@ -263,21 +268,9 @@ class Transport(xmlrpc.client.SafeTransport):
             return connection
 
         def https_connection(allow_http=False):
-            if self.http_proxy:
-                netloc = urlparse(self.http_proxy).netloc
-                proxy_host, proxy_port = netloc.split(':')
-                real_host, real_port = host.split(':')
-                proxy_port = int(proxy_port)
-                real_port = int(real_port)
-
-                connection = http.client.HTTPSConnection(
-                    proxy_host, proxy_port, timeout=CONNECT_TIMEOUT,
-                    context=ssl_ctx)
-                connection.set_tunnel(
-                    real_host, real_port, self.get_proxy_headers())
-            else:
-                connection = http.client.HTTPSConnection(
-                    chost, timeout=CONNECT_TIMEOUT, context=ssl_ctx)
+            connection = get_connection(
+                http.client.HTTPSConnection,
+                timeout=CONNECT_TIMEOUT, context=ssl_ctx)
             self._connection = host, connection
             try:
                 connection.connect()
