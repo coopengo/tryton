@@ -220,7 +220,16 @@ class View(
             xml = view.arch.strip()
             if not xml:
                 continue
-            tree = etree.fromstring(xml)
+            try:
+                tree = etree.fromstring(xml)
+            except Exception:
+                # JCA : print faulty xml
+                try:
+                    import pprint
+                    pprint.pprint(xml)
+                except Exception:
+                    print(xml)
+                raise
 
             if hasattr(etree, 'RelaxNG'):
                 validator = etree.RelaxNG(etree=cls.get_rng(view.rng_type))
