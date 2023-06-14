@@ -4,6 +4,7 @@
 import logging
 import pydoc
 import time
+import traceback
 
 from sql import Table
 
@@ -31,6 +32,13 @@ ir_configuration = Table('ir_configuration')
 ir_lang = Table('ir_lang')
 ir_module = Table('ir_module')
 res_user = Table('res_user')
+
+
+def log_exception(method, *args, **kwargs):
+    kwargs['exc_info'] = False
+    method(*args, **kwargs)
+    for elem in traceback.format_exc().split('\n'):
+        method(elem)
 
 
 @app.route('/<string:database_name>/', methods=['POST'])
@@ -249,7 +257,7 @@ def _dispatch(request, pool, *args, **kwargs):
                 if log_threshold != -1:
                     log_end = time.time()
                     log_args += (str(log_end - log_start),)
-                logger.error(log_message, *log_args, duration(), exc_info=True)
+                log_exception(logger.error, log_message, *log_args, duration())
                 raise
             except RPCReturnException as e:
                 transaction.rollback()
@@ -260,13 +268,13 @@ def _dispatch(request, pool, *args, **kwargs):
                 if log_threshold != -1:
                     log_end = time.time()
                     log_args += (str(log_end - log_start),)
-                logger.debug(log_message, *log_args, duration(), exc_info=True)
+                log_exception(logger.debug, log_message, *log_args, duration())
                 raise
             except Exception:
                 if log_threshold != -1:
                     log_end = time.time()
                     log_args += (str(log_end - log_start),)
-                logger.error(log_message, *log_args, duration(), exc_info=True)
+                log_exception(logger.error, log_message, *log_args, duration())
                 raise
             # Need to commit to unlock SQLite database
             transaction.commit()
