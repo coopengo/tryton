@@ -124,6 +124,9 @@ class ViewListForm(View):
         return list(self._model.group)
 
     def group_list_changed(self, group, action, *args):
+        # Only those actions have a record in the signal data
+        if action not in {'record-added', 'record-removed'}:
+            return
         if action == 'record-added':
             record, position = args
             if group != record.group:
