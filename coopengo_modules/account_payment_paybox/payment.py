@@ -10,13 +10,10 @@ from collections import OrderedDict
 from trytond.rpc import RPC
 from trytond.config import config
 from trytond.pool import PoolMeta, Pool
-from trytond.wizard import StateAction
 from trytond.transaction import Transaction
-from trytond.pyson import Eval, Bool, If, Equal
-from trytond.wizard import StateView, Button, StateTransition
+from trytond.pyson import Eval
 
-from trytond.modules.coog_core import fields, model
-from trytond.modules.account_payment.payment import KINDS
+from trytond.model import fields
 
 
 __all__ = [
@@ -50,7 +47,7 @@ class Group:
                 'payment at the same time',
                 })
         for required_paybox_param in ('PBX_SITE', 'PBX_RANG', 'secret',
-                'PBX_IDENTIFIANT', 'PBX_RETOUR', 'paybox_url'):
+                'PBX_IDENTIFIANT', 'PBX_RETOUR', 'payment_url'):
             required_param = config.get('paybox', required_paybox_param)
             if required_param is None:
                 cls.logger.warning('[PAYBOX]: variable "%s" is not set in '
@@ -58,9 +55,8 @@ class Group:
                     'payments' % required_paybox_param)
         cls.__rpc__.update({
             'reject_payment_group': RPC(readonly=False, instantiate=0),
-            'succeed_payment_group': RPC(readonly=False,instantiate=0),
+            'succeed_payment_group': RPC(readonly=False, instantiate=0),
             })
-
 
     def get_journal_method(self, name):
         if self.journal:
@@ -75,7 +71,6 @@ class Group:
     def generate_paybox_url(self):
         if self.kind != 'receivable':
             self.raise_user_error('only_receivable_allowed')
-        Payment = Pool().get('account.payment')
         self.number = self.generate_paybox_transaction_id()
         if self.processing_payment_amount() > 0:
             self.payment_url = self.paybox_url_builder()
