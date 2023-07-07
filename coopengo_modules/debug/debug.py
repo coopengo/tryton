@@ -652,7 +652,7 @@ class DebugModelInstance(ModelSQL, ModelView):
     __name__ = 'debug.model'
     _history = True
 
-    name = fields.Char('Name', select=True, readonly=True)
+    name = fields.Char('Name', readonly=True)
     string = fields.Char('String', readonly=True)
     mro = fields.One2Many('debug.model.mro', 'model', 'MRO',
         order=[('order', 'ASC')])
@@ -916,7 +916,7 @@ class DebugMROInstance(ModelSQL, ModelView):
 
     __name__ = 'debug.model.mro'
 
-    model = fields.Many2One('debug.model', 'model', select=True, required=True,
+    model = fields.Many2One('debug.model', 'model', required=True,
         ondelete='CASCADE')
     order = fields.Integer('Order', readonly=True)
     base_name = fields.Char('Base Name', readonly=True)
@@ -945,20 +945,20 @@ class DebugFieldInstance(ModelSQL, ModelView):
 
     __name__ = 'debug.model.field'
 
-    model = fields.Many2One('debug.model', 'model', select=True, required=True,
+    model = fields.Many2One('debug.model', 'model', required=True,
         ondelete='CASCADE')
-    name = fields.Char('Name', select=True, readonly=True)
+    name = fields.Char('Name', readonly=True)
     module = fields.Char('Module', readonly=True)
     string = fields.Char('String', readonly=True)
     kind = fields.Char('Kind', readonly=True)
     function = fields.Boolean('Function', readonly=True)
     target_model = fields.Many2One('debug.model', 'Target Model',
         ondelete='SET NULL', states={'invisible': ~Eval('target_model')},
-        depends=['target_model'], readonly=True, select=True)
+        depends=['target_model'], readonly=True)
     selection_method = fields.Many2One('debug.model.method',
         'Selection Method', ondelete='SET NULL',
         states={'invisible': ~Eval('selection_method')},
-        depends=['selection_method'], readonly=True, select=True)
+        depends=['selection_method'], readonly=True)
     selection_values = fields.Text('Selection Values', states={'invisible':
             ~Eval('selection_values')}, depends=['selection_values'],
         readonly=True)
@@ -967,23 +967,22 @@ class DebugFieldInstance(ModelSQL, ModelView):
     readonly = fields.Text('Readonly', readonly=True)
     required = fields.Text('Required', readonly=True)
     default_method = fields.Many2One('debug.model.method', 'Default Method',
-        ondelete='SET NULL', readonly=True, select=True)
+        ondelete='SET NULL', readonly=True)
     on_change_method = fields.Many2One('debug.model.method',
-        'On Change Method', ondelete='SET NULL', readonly=True, select=True)
+        'On Change Method', ondelete='SET NULL', readonly=True)
     on_change_with_method = fields.Many2One('debug.model.method',
-        'On Change With Method', ondelete='SET NULL', readonly=True,
-        select=True)
+        'On Change With Method', ondelete='SET NULL', readonly=True)
     order_method = fields.Many2One('debug.model.method', 'Order Method',
-        ondelete='SET NULL', readonly=True, select=True)
+        ondelete='SET NULL', readonly=True)
     getter = fields.Many2One('debug.model.method', 'Getter',
         ondelete='SET NULL', states={'invisible': ~Eval('getter')},
-        depends=['getter'], readonly=True, select=True)
+        depends=['getter'], readonly=True)
     setter = fields.Many2One('debug.model.method', 'Setter',
         ondelete='SET NULL', states={'invisible': ~Eval('setter')},
-        depends=['setter'], readonly=True, select=True)
+        depends=['setter'], readonly=True)
     searcher = fields.Many2One('debug.model.method', 'Searcher',
         ondelete='SET NULL', states={'invisible': ~Eval('searcher')},
-        depends=['searcher'], readonly=True, select=True)
+        depends=['searcher'], readonly=True)
     on_change_fields = fields.Many2Many('debug.model.field.on_change',
         'from_field', 'to_field', 'On Change Fields', readonly=True)
     on_change_with_fields = fields.Many2Many(
@@ -1001,9 +1000,9 @@ class DebugMethodInstance(ModelSQL, ModelView):
 
     __name__ = 'debug.model.method'
 
-    model = fields.Many2One('debug.model', 'name', select=True, required=True,
+    model = fields.Many2One('debug.model', 'name', required=True,
         ondelete='CASCADE')
-    name = fields.Char('Name', select=True, readonly=True)
+    name = fields.Char('Name', readonly=True)
     mro = fields.One2Many('debug.model.method.mro', 'method', 'MRO',
         order=[('order', 'ASC')])
     initial_frame = fields.Function(
@@ -1030,7 +1029,7 @@ class DebugMethodMROInstance(ModelSQL, ModelView):
 
     __name__ = 'debug.model.method.mro'
 
-    method = fields.Many2One('debug.model.method', 'method', select=True,
+    method = fields.Many2One('debug.model.method', 'method',
         required=True, ondelete='CASCADE')
     order = fields.Integer('Order', readonly=True)
     base_name = fields.Char('Base Name', readonly=True)
@@ -1060,11 +1059,11 @@ class DebugViewInstance(ModelSQL, ModelView):
 
     __name__ = 'debug.model.view'
 
-    model = fields.Many2One('debug.model', 'model', select=True,
+    model = fields.Many2One('debug.model', 'model',
         ondelete='CASCADE')
     parent_view = fields.Many2One('debug.model.view', 'Parent View',
-        select=True, ondelete='CASCADE', readonly=True)
-    name = fields.Char('File Name', select=True, readonly=True)
+        ondelete='CASCADE', readonly=True)
+    name = fields.Char('File Name', readonly=True)
     functional_id = fields.Char('Functional Id', readonly=True)
     module = fields.Char('Module', readonly=True)
     kind = fields.Selection([('form', 'Form'), ('tree', 'Tree'),
@@ -1074,7 +1073,7 @@ class DebugViewInstance(ModelSQL, ModelView):
     priority = fields.Integer('Priority', readonly=True)
     order = fields.Integer('Order', readonly=True)
     field_childs = fields.Many2One('debug.model.field', 'Fields Childs',
-        ondelete='SET NULL', readonly=True, select=True)
+        ondelete='SET NULL', readonly=True)
     inherit = fields.One2Many('debug.model.view', 'parent_view', 'Inherit',
         order=[('order', 'ASC')], readonly=True)
 
@@ -1098,9 +1097,9 @@ class DebugOnChangeRelation(ModelSQL, ModelView):
     __name__ = 'debug.model.field.on_change'
 
     from_field = fields.Many2One('debug.model.field', 'From Field',
-        required=True, select=True, ondelete='CASCADE')
+        required=True, ondelete='CASCADE')
     to_field = fields.Many2One('debug.model.field', 'From Field',
-        required=True, select=True, ondelete='CASCADE')
+        required=True, ondelete='CASCADE')
 
 
 class DebugOnChangeWithRelation(ModelSQL, ModelView):
@@ -1109,9 +1108,9 @@ class DebugOnChangeWithRelation(ModelSQL, ModelView):
     __name__ = 'debug.model.field.on_change_with'
 
     from_field = fields.Many2One('debug.model.field', 'From Field',
-        required=True, select=True, ondelete='CASCADE')
+        required=True, ondelete='CASCADE')
     to_field = fields.Many2One('debug.model.field', 'From Field',
-        required=True, select=True, ondelete='CASCADE')
+        required=True, ondelete='CASCADE')
 
 
 class RefreshDebugData(Wizard):
