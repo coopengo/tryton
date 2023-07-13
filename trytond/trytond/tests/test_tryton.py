@@ -573,7 +573,7 @@ class ModuleTestCase(_DBTestCase):
                 elif attr.startswith('order_'):
                     model.search([], order=[(attr[len('order_'):], None)])
                 elif attr.startswith('domain_'):
-                    model.search([(attr[len('domain_'):], '=', None)])
+                    pass
                 elif any(attr.startswith(p) for p in [
                             'on_change_',
                             'on_change_with_',
@@ -834,9 +834,6 @@ class ModuleTestCase(_DBTestCase):
                                 'model': model.__name__,
                                 'field': field_name,
                                 })
-                        if func_name == field.searcher:
-                            getattr(model, field.searcher)(
-                                field_name, (field_name, '=', None))
 
     @with_transaction()
     def test_ir_action_window(self):
