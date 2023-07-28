@@ -936,6 +936,8 @@ class Warning_(ModelSQL, ModelView):
     def check(cls, warning_name):
         transaction = Transaction()
         user = transaction.user
+        if not user:
+            return False
         key = (user, warning_name)
         if key in transaction.check_warnings:
             return False
