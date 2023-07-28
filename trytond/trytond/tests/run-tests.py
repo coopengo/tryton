@@ -15,6 +15,13 @@ from trytond.config import config
 if __name__ != '__main__':
     raise ImportError('%s can not be imported' % __name__)
 
+
+def _convert_select_pattern(pattern):
+    if '*' not in pattern:
+        pattern = '*%s*' % pattern
+    return pattern
+
+
 logging.disable(logging.CRITICAL)
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", dest="config",
@@ -29,6 +36,9 @@ parser.add_argument("-v", action="count", default=0, dest="verbosity",
     help="Increase verbosity")
 parser.add_argument("-x", "--xmloutput", action="store_true",
     default=False, dest="xmloutput", help="Generate XML files")
+parser.add_argument('-k', dest='testNamePatterns',
+    action='append', type=_convert_select_pattern,
+    help='Only run tests which match the given substring')
 parser.add_argument('tests', metavar='test', nargs='*')
 parser.epilog = ('The database name can be specified in the DB_NAME '
     'environment variable.\n'
@@ -50,7 +60,8 @@ from trytond.tests.test_tryton import all_suite, modules_suite  # noqa: E402
 if not opt.modules:
     suite = all_suite(opt.tests)
 else:
-    suite = modules_suite(opt.tests, doc=opt.doctest)
+    suite = modules_suite(opt.tests, doc=opt.doctest,
+        testNamePatterns=opt.testNamePatterns)
 
 if not opt.xmloutput:
     result = unittest.TextTestRunner(

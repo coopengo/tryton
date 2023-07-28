@@ -14,6 +14,7 @@ from configparser import ConfigParser
 from functools import reduce
 from functools import wraps
 from itertools import chain
+from fnmatch import fnmatch
 try:
     import pkg_resources
 except ImportError:
@@ -976,7 +977,7 @@ def all_suite(modules=None):
     return suite_
 
 
-def modules_suite(modules=None, doc=True):
+def modules_suite(modules=None, doc=True, testNamePatterns=None):
     '''
     Return all tests suite of all modules
     '''
@@ -996,6 +997,10 @@ def modules_suite(modules=None, doc=True):
         except ImportError:
             continue
         for test in test_mod.suite():
+            if testNamePatterns and not any(
+                    fnmatch(str(test), pattern)
+                    for pattern in testNamePatterns):
+                continue
             if isinstance(test, doctest.DocTestCase) and not doc:
                 continue
             suite_.addTest(test)
