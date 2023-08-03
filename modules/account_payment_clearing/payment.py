@@ -163,7 +163,6 @@ class Payment(metaclass=PoolMeta):
     def succeed(cls, payments):
         pool = Pool()
         Move = pool.get('account.move')
-        Line = pool.get('account.move.line')
 
         super(Payment, cls).succeed(payments)
 
@@ -177,7 +176,11 @@ class Payment(metaclass=PoolMeta):
             Move.save(moves)
             cls.write(*sum((([m.origin], {'clearing_move': m.id})
                         for m in moves), ()))
+        cls.reconcile_lines_from_payments(payments)
 
+    @classmethod
+    def reconcile_lines_from_payments(cls, payments):
+        Line = Pool().get('account.move.line')
         to_reconcile = []
         for payment in payments:
             if (payment.line
