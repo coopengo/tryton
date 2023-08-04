@@ -66,7 +66,8 @@ def _get_modules(cursor):
 class BaseCache(object):
     _instances = {}
 
-    def __init__(self, name, size_limit=1024, duration=None, context=True):
+    def __init__(self, name, size_limit=10**6, duration=None, context=True):
+        # JMO: test are significantly faster with a bigger cache
         self._name = name
         self.size_limit = size_limit
         self.context = context

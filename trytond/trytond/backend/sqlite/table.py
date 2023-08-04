@@ -349,6 +349,9 @@ class TableHandler(TableHandlerInterface):
         warnings.warn('Unable to drop constraint with SQLite backend')
 
     def drop_column(self, column_name):
+        # JMO TODO: fix this with sqlite backend
+        return
+
         if not self.column_exist(column_name):
             return
         transaction = Transaction()
