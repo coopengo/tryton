@@ -44,6 +44,10 @@ class _Local(local):
         self.tasks = []
 
 
+my_pool = None
+my_lru_dict = None
+
+
 class Transaction(object):
     '''
     Control the transaction
@@ -69,18 +73,25 @@ class Transaction(object):
     started_at = None
 
     def __new__(cls, new=False):
-        from trytond.cache import LRUDict
-        from trytond.pool import Pool
+        # JMO WORK
+        global my_pool
+        global my_lru_dict
+        if my_pool is None:
+            from trytond.pool import Pool
+            my_pool = Pool
+        if my_lru_dict is None:
+            from trytond.cache import LRUDict
+            my_lru_dict = LRUDict
         transactions = cls._local.transactions
         if new or not transactions:
             instance = super(Transaction, cls).__new__(cls)
-            instance.cache = LRUDict(
+            instance.cache = my_lru_dict(
                 _cache_transaction,
-                lambda: LRUDict(
+                lambda: my_lru_dict(
                     _cache_model,
-                    lambda name: LRUDict(
+                    lambda name: my_lru_dict(
                         record_cache_size(instance),
-                        Pool().get(name)._record),
+                        my_pool().get(name)._record),
                     default_factory_with_key=True))
             instance._atexit = []
             transactions.append(instance)
