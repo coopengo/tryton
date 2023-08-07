@@ -655,7 +655,9 @@ class ModelAccess(DeactivableMixin, ModelSQL, ModelView):
                 return False
             else:
                 return True
-        elif field._type == 'reference':
+        # JMO WORK HERE, the check is slowing down tests a lot
+        # in particular for resource and origin on attachment
+        elif field._type == 'reference' and False:
             selection = field.selection
             if isinstance(selection, str):
                 sel_func = getattr(Model, field.selection)

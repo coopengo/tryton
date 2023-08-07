@@ -64,7 +64,7 @@ class Model(URLMixin, PoolBase, metaclass=ModelMeta):
                 if isinstance(parent_field, fields.Field):
                     field = parent_field
 
-            # JMO: pickle seems much faster than deepcopy
+            # JMO: pickle seems a bit faster than deepcopy
             # the idea here is to run the test faster
 
             #field = copy.deepcopy(field)

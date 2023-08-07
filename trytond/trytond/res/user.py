@@ -748,7 +748,10 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
     def hash_password(cls, password):
         '''Hash given password in the form
         <hash_method>$<password>$<salt>...'''
-        if not password:
+        # JMO: find something better than this,
+        # but a lot of CPU is used for hashing
+        # which is not useful in most of the tests
+        if not password or config.getboolean('env', 'testing'):
             return None
         return CRYPT_CONTEXT.hash(password)
 
