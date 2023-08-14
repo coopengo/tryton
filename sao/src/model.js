@@ -1280,6 +1280,12 @@
             this.button_clicks = {};
             this.links_counts = {};
         },
+        unload: function() {
+            this.cancel();
+            this.exception = false;
+            this.destroyed = false;
+            this._values = {};
+        },
         _check_load: function(fields) {
             if (!this.get_loaded(fields)) {
                 return this.reload(fields);

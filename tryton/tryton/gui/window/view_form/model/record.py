@@ -347,6 +347,12 @@ class Record:
         self.button_clicks.clear()
         self.links_counts.clear()
 
+    def unload(self):
+        self.cancel()
+        self.exception = False
+        self.destroyed = False
+        self.value = {}
+
     def get_timestamp(self):
         result = {self.model_name + ',' + str(self.id): self._timestamp}
         for name, field in self.group.fields.items():
