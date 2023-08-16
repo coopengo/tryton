@@ -900,6 +900,7 @@
                 });
             }
             this.table.css('min-width', 'calc(' + min_width.join(' + ') + ')');
+            this.scrollbar.css('min-width', this.table.css('min-width'));
 
             if (!this.table.hasClass('no-responsive') &
                 (this.columns.filter(function(c) {

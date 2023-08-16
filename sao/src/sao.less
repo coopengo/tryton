@@ -774,6 +774,12 @@ img.icon {
             vertical-align: middle;
         }
     }
+    .xexpand {
+        width: 100%;
+    }
+    .yexpand {
+        height: 100%;
+    }
 }
 
 .form-binary, .editabletree-binary {
@@ -879,14 +885,6 @@ input.column-boolean {
     }
 }
 
-.xexpand {
-    width: 100%;
-}
-
-.yexpand {
-    height: 100%;
-}
-
 @media screen and (max-width: @screen-xs-max) {
     .treeview {
         height: calc(100vh - 370px);
@@ -903,8 +901,10 @@ input.column-boolean {
         display: block !important;
     }
 
-    .xexpand {
-        width: unset !important;
+    .form-container > *,
+    .form-hcontainer > *,
+    .form-vcontainer > * {
+        text-align: start !important;
     }
 }
 

@@ -508,6 +508,9 @@ function eval_pyson(value){
             this.el = jQuery('<div/>', {
                 'class': 'form-container'
             });
+            this.el[0].addEventListener("StateChanged", (event) => {
+                this.set_grid_template();
+            });
             if (this.col <= 0) {
                 this.el.addClass('form-hcontainer');
             } else if (this.col == 1) {
@@ -544,11 +547,8 @@ function eval_pyson(value){
                 el = widget.el;
             }
             var cell = jQuery('<div/>', {
-                'class': 'form-item',
+                'class': 'form-item ' + (widget ? widget.class_ | '' : ''),
             }).append(el);
-            if (widget && widget.class_) {
-                cell.addClass(widget.class_);
-            }
             cell.css('grid-column', `${this._col} / ${this._col + colspan}`);
             cell.css('grid-row', `${this._row} / ${this._row + 1}`);
             this.el.append(cell);
@@ -648,7 +648,8 @@ function eval_pyson(value){
             if (this._yexpand.size) {
                 for (i = 1; i <= this._row; i++) {
                     if (this._yexpand.has(i)) {
-                        this._grid_rows.push(`minmax(min-content, ${this._row}fr)`);
+                        this._grid_rows.push(
+                            `minmax(min-content, ${this._row}fr)`);
                     } else {
                         this._grid_rows.push('min-content');
                     }
@@ -675,10 +676,10 @@ function eval_pyson(value){
             for (var child of this.el.children()) {
                 child = jQuery(child);
                 col_start = parseInt(
-                    child.css('grid-column-start'));
-                col_end = parseInt(child.css('grid-column-end'));
-                row_start = parseInt(child.css('grid-row-start'));
-                row_end = parseInt(child.css('grid-row-end'));
+                    child.css('grid-column-start'), 10);
+                col_end = parseInt(child.css('grid-column-end'), 10);
+                row_start = parseInt(child.css('grid-row-start'), 10);
+                row_end = parseInt(child.css('grid-row-end'), 10);
 
                 for (i = col_start; i < col_end; i++) {
                     cols[i - 1].push(child);
@@ -979,9 +980,8 @@ function eval_pyson(value){
         set_state: function(record) {
             Sao.View.Form.Link._super.set_state.call(this, record);
 
-            var prm = null, promesses = [];
             if (this.el.css('display') == 'none') {
-                return prm;
+                return;
             }
             var data = {},
                 context = {},
@@ -1048,7 +1048,7 @@ function eval_pyson(value){
                 if (tab_domains.length) {
                     tab_domains.map(function(d, i) {
                         var tab_domain = d[1];
-                        promesses.push(Sao.rpc({
+                        Sao.rpc({
                             'method': (
                                 'model.' + action.res_model + '.search_count'),
                             'params': [
@@ -1058,11 +1058,11 @@ function eval_pyson(value){
                             this._set_count(
                                 value, i, current, counter,
                                 action.name, tab_domains);
-                        }));
+                        });
                     }, this);
                     prm = jQuery.when.apply(jQuery, promesses);
                 } else {
-                    prm = Sao.rpc({
+                    Sao.rpc({
                         'method': (
                             'model.' + action.res_model + '.search_count'),
                         'params': [domain, 0, 100, context],
@@ -1075,6 +1075,18 @@ function eval_pyson(value){
                 }
             }
             return prm;
+        },
+        show: function() {
+            Sao.View.Form.Link._super.show.call(this);
+            this.el[0].dispatchEvent(new Event("StateChanged", {
+                bubbles: true,
+            }));
+        },
+        hide: function() {
+            Sao.View.Form.Link._super.hide.call(this);
+            this.el[0].dispatchEvent(new Event("StateChanged", {
+                bubbles: true,
+            }));
         },
         _set_count: function(value, idx, current, counter, name, domains) {
             if (current != this._current) {
