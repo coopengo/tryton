@@ -283,8 +283,7 @@ class ModelInfo(ModelView):
         all_fields_infos = [
             info for info in all_fields_infos if info is not None]
         if self.name_filter:
-            name_filter = self.name_filter.replace('_', '').replace(
-                ' ', '').lower()
+            name_filter = self.name_filter.lower()
             all_fields_infos = [
                 info for info in all_fields_infos
                 if self.match_filter_name(name_filter, info)]
@@ -303,8 +302,7 @@ class ModelInfo(ModelView):
 
     @staticmethod
     def match_filter_name(name_filter, info):
-        return (name_filter in info.string.replace(' ', '').lower() or
-            name_filter in info.name.replace('_', ''))
+        return name_filter in info.string.lower()
 
     @classmethod
     def raw_field_info(cls, base_model, field_name):
