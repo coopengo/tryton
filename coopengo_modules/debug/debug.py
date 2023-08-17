@@ -5,6 +5,7 @@ import inspect
 from collections import defaultdict
 import pprint
 import logging
+import unicodedata
 
 from trytond.wizard import Wizard, StateTransition, StateView, Button
 from trytond.config import config
@@ -289,7 +290,9 @@ class ModelInfo(ModelView):
                 if self.match_filter_name(name_filter, info)]
         self.field_infos = sorted(
             [x for x in all_fields_infos],
-            key=lambda x: getattr(x, self.filter_value))
+            key=lambda x: unicodedata.normalize('NFKD',
+                    getattr(x, self.filter_value)).encode('ascii',
+                        'ignore').decode('ascii'))
         if self.id_to_calculate:
             for field in self.field_infos:
                 try:
