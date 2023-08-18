@@ -302,7 +302,8 @@ class ModelInfo(ModelView):
 
     @staticmethod
     def match_filter_name(name_filter, info):
-        return name_filter in info.string.lower()
+        return (name_filter in info.string.lower() or
+            name_filter in info.name)
 
     @classmethod
     def raw_field_info(cls, base_model, field_name):
