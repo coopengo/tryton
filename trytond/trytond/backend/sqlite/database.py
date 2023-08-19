@@ -267,7 +267,7 @@ def prepare_comparison(items):
         if item is None:
             continue
         if type(item) is bytes:
-            item = float(item.decode())
+            item = float(item)
         res.append(item)
     return res
 
