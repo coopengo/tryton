@@ -179,7 +179,7 @@ class Link(StateMixin, Gtk.Button):
 
     def state_set(self, record):
         super().state_set(record)
-        if not self.get_visible():
+        if not self.is_visible():
             return
         if CONFIG['client.modepda']:
             self.hide()
@@ -248,7 +248,8 @@ class Link(StateMixin, Gtk.Button):
                         counter=counter, label=label))
 
     def _set_count(self, value, idx=0, current=None, counter=None, label=''):
-        if current != self._current and not self.get_parent():
+        parent = self.get_parent()
+        if current != self._current or not parent or not parent.is_visible():
             return
         try:
             count = value()
