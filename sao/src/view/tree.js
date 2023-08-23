@@ -1792,6 +1792,13 @@
             }
         },
         collapse_row: function() {
+            if (this.children_field) {
+                for (const row of this.rows) {
+                    if (row.exception) {
+                        row.record.unload();
+                    }
+                }
+            }
             this.update_expander(false);
             this.tree.expanded.delete(this);
             this.collapse_children();
