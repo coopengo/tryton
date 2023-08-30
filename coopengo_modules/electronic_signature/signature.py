@@ -195,7 +195,7 @@ class Signature(Workflow, ModelSQL, ModelView):
         if req.status_code > 299:
             prefix_msg = gettext('electronic_signature.msg_provider_error')
             raise Exception(prefix_msg + ':' + req.content)
-        response, _ = xmlrpc.client.loads(req.content)
+        response, _ = xmlrpc.client.loads(req.content.decode('utf8'))
         if conf['log']:
             signature.append_log(conf, method, data, response)
         return response
