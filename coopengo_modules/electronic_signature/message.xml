@@ -11,7 +11,7 @@
             <field name="text">The signature service is not available</field>
         </record>
         <record model="ir.message" id="msg_provider_error">
-            <field name="text">The signature service returned the following error</field>
+            <field name="text">The signature service returned the following error :\n\n%(trace)s</field>
         </record>
     </data>
 </tryton>

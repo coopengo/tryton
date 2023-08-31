@@ -193,9 +193,10 @@ class Signature(Workflow, ModelSQL, ModelView):
         except requests.Timeout:
             raise TimeoutException()
         if req.status_code > 299:
-            prefix_msg = gettext('electronic_signature.msg_provider_error')
-            raise UserError(prefix_msg + ':\n\n' + req.content.decode('utf8'))
-        response, _ = xmlrpc.client.loads(req.content)
+            raise UserError(
+                gettext('electronic_signature.msg_provider_error',
+                    trace=req.content.decode('utf8')))
+        response, _ = xmlrpc.client.loads(req.content.decode('utf8'))
         if conf['log']:
             signature.append_log(conf, method, data, response)
         return response
