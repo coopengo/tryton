@@ -196,7 +196,7 @@ class Signature(Workflow, ModelSQL, ModelView):
             raise UserError(
                 gettext('electronic_signature.msg_provider_error',
                     trace=req.content.decode('utf8')))
-        response, _ = xmlrpc.client.loads(req.content.decode('utf8'))
+        response, _ = xmlrpc.client.loads(req.content)
         if conf['log']:
             signature.append_log(conf, method, data, response)
         return response
