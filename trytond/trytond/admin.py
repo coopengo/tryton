@@ -59,7 +59,7 @@ def _check_update_needed(db_name, options):
         logger.warning(
             f'Current code version ({current_main_module_version}) is '
             'different from the last update version '
-            '({db_main_module_version}), updating')
+            f'({db_main_module_version}), updating')
         return True, current_main_module_version
 
     logger.warning(
