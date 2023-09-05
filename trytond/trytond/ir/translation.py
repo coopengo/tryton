@@ -534,6 +534,8 @@ class Translation(ModelSQL, ModelView):
         "Return translation for source"
         args = (name, ttype, lang, source)
         result = cls.get_sources([args])
+        if not result[args] and source and source.startswith('ir.msg'):
+            result[args] = gettext(source)
         return result[args]
 
     @classmethod
