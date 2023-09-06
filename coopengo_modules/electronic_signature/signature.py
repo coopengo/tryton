@@ -2,6 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from werkzeug.exceptions import BadRequest
 import datetime
+import logging
 import xmlrpc.client
 import requests
 from unidecode import unidecode
@@ -71,6 +72,7 @@ class Signature(Workflow, ModelSQL, ModelView):
 
     __name__ = 'document.signature'
     _transition_state = 'status'
+    logger = logging.getLogger(__name__)
 
     provider_credential = fields.Many2One('document.signature.credential',
         'Provider Credential', readonly=True)
@@ -193,9 +195,9 @@ class Signature(Workflow, ModelSQL, ModelView):
         except requests.Timeout:
             raise TimeoutException()
         if req.status_code > 299:
-            raise UserError(
-                gettext('electronic_signature.msg_provider_error',
-                    trace=(req.text if req.text else req.status_code))
+            message = gettext('electronic_signature.msg_provider_error')
+            cls.logger.info(f'{message} : {req.status_code} - {req.text}')
+            raise UserError(message)
         response, _ = xmlrpc.client.loads(req.content)
         if conf['log']:
             signature.append_log(conf, method, data, response)

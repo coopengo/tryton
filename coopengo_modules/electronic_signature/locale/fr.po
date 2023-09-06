@@ -200,8 +200,8 @@ msgid "The signature service is not available"
 msgstr "Le service de signature ne répond pas"
 
 msgctxt "model:ir.message,text:msg_provider_error"
-msgid "The signature service returned the following error :\n\n%(trace)s"
-msgstr "Le service de signature a renvoyé l'erreur suivante :\n\n%(trace)s"
+msgid "The signature service returned an error"
+msgstr "Le service de signature a renvoyé une erreur"
 
 msgctxt "model:ir.message,text:msg_unauthorized_transition"
 msgid ""
