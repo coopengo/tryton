@@ -159,7 +159,7 @@ Post invoice::
     >>> len(line.commissions)
     2
     >>> [c.base_amount for c in line.commissions]
-    [Decimal('100.0000'), Decimal('100.0000')]
+    [Decimal('100.000000'), Decimal('100.000000')]
     >>> [c.amount for c in line.commissions]
     [Decimal('10.000000'), Decimal('10.000000')]
     >>> [c.invoice_state for c in line.commissions]
@@ -240,7 +240,7 @@ Check commission reporting per agent::
 
     >>> reporting_agent.base_amount == Decimal('100.00')
     True
-    >>> reporting_agent.amount == Decimal('10.0000')
+    >>> reporting_agent.amount == Decimal('10.000000')
     True
     >>> reporting_agent.number
     1
