@@ -2204,8 +2204,8 @@ class Reconcile(Wizard):
                 self.show.account, self.show.party)
 
         while not self._next_currency():
-            while not self.next_party():
-                if not self.next_account():
+            while not self._next_party():
+                if not self._next_account():
                     return 'end'
         if self.start.automatic or self.start.only_balanced:
             lines = self._default_lines()
