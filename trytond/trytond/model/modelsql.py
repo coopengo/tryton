@@ -820,7 +820,7 @@ class ModelSQL(ModelStorage):
 
         to_insert = []
         previous_columns = [table.create_uid, table.create_date]
-        previous_column_names = set()
+        previous_column_names = []
 
         for values in vlist:
             # Clean values
@@ -855,7 +855,7 @@ class ModelSQL(ModelStorage):
                     defaults_cache.update(default_values)
             values.update(missing_defaults[values_schema])
 
-            current_column_names = set()
+            current_column_names = []
             current_columns = [table.create_uid, table.create_date]
             current_values = [transaction.user, CurrentTimestamp()]
 
@@ -865,7 +865,7 @@ class ModelSQL(ModelStorage):
                 if not hasattr(field, 'set'):
                     current_columns.append(Column(table, fname))
                     current_values.append(field.sql_format(value))
-                    current_column_names.add(fname)
+                    current_column_names.append(fname)
 
             if current_column_names != previous_column_names:
                 if to_insert:
