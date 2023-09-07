@@ -2,6 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from werkzeug.exceptions import BadRequest
 import datetime
+from http import HTTPStatus
 import logging
 import xmlrpc.client
 import requests
@@ -195,8 +196,14 @@ class Signature(Workflow, ModelSQL, ModelView):
         except requests.Timeout:
             raise TimeoutException()
         if req.status_code > 299:
-            message = gettext('electronic_signature.msg_provider_error')
-            cls.logger.info(f'{message} : {req.status_code} - {req.text}')
+            message = gettext('electronic_signature.msg_provider_error',
+                description=HTTPStatus(req.status_code).description)
+            cls.logger.error(f'{message} : {req.text}')
+            if conf['log']:
+                with Transaction().new_transaction():
+                    signature.append_log(conf, method, data,
+                        f'{message} : {req.status_code}\n\n {req.text}')
+                    signature.save()
             raise UserError(message)
         response, _ = xmlrpc.client.loads(req.content)
         if conf['log']:
