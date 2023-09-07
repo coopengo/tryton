@@ -10,5 +10,8 @@
         <record model="ir.message" id="msg_service_timeout">
             <field name="text">The signature service is not available</field>
         </record>
+        <record model="ir.message" id="msg_provider_error">
+            <field name="text">The signature service returned an error : %(description)s</field>
+        </record>
     </data>
 </tryton>
