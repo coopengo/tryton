@@ -14,6 +14,7 @@ from trytond.model import ModelSQL, ModelView, fields
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.pyson import Eval, Bool
+from trytond.i18n import gettext
 
 logger = logging.getLogger(__name__)
 METHOD_TEMPLATES = ['default_', 'on_change_with_', 'on_change_', 'order_']
@@ -152,8 +153,10 @@ class ModelInfo(ModelView):
         ttype = 'field'
         missing_translation_src = src + ' [Missing Translation]'
         try:
-            return Translation.get_source(
-                target, ttype, language, src) or missing_translation_src
+            translation = Translation.get_source(target, ttype, language, src)
+            if not translation and src and '.msg_' in src:
+                translation = gettext(src)
+            return translation or missing_translation_src
         except ValueError:
             return missing_translation_src
 
