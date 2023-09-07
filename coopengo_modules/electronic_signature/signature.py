@@ -2,6 +2,8 @@
 # this repository contains the full copyright notices and license terms.
 from werkzeug.exceptions import BadRequest
 import datetime
+from http import HTTPStatus
+import logging
 import xmlrpc.client
 import requests
 from unidecode import unidecode
@@ -9,7 +11,7 @@ from unidecode import unidecode
 from trytond import backend
 from trytond.i18n import gettext
 from trytond.config import config as config_parser
-from trytond.exceptions import TimeoutException
+from trytond.exceptions import TimeoutException, UserError
 from trytond.model import ModelSQL, ModelView, fields, Workflow
 from trytond.pyson import Eval, Not, In
 from trytond.pool import Pool
@@ -71,6 +73,7 @@ class Signature(Workflow, ModelSQL, ModelView):
 
     __name__ = 'document.signature'
     _transition_state = 'status'
+    logger = logging.getLogger(__name__)
 
     provider_credential = fields.Many2One('document.signature.credential',
         'Provider Credential', readonly=True)
@@ -193,7 +196,15 @@ class Signature(Workflow, ModelSQL, ModelView):
         except requests.Timeout:
             raise TimeoutException()
         if req.status_code > 299:
-            raise Exception(req.content)
+            message = gettext('electronic_signature.msg_provider_error',
+                description=HTTPStatus(req.status_code).description)
+            cls.logger.error(f'{message} : {req.text}')
+            if conf['log']:
+                with Transaction().new_transaction():
+                    signature.append_log(conf, method, data,
+                        f'{message} : {req.status_code}\n\n {req.text}')
+                    signature.save()
+            raise UserError(message)
         response, _ = xmlrpc.client.loads(req.content)
         if conf['log']:
             signature.append_log(conf, method, data, response)
