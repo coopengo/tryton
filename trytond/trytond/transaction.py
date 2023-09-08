@@ -323,8 +323,11 @@ class Transaction(object):
         return manager
 
     def lock_table(self, table):
-        if table not in self._locked_tables:
-            raise _TransactionLockError(table)
+        # JCA (merge 6.8): restore previous behaviour until inlined commits can
+        # be managed
+        self.database.lock(self.connection, table)
+        # if table not in self._locked_tables:
+        #     raise _TransactionLockError(table)
 
     def lock_records(self, table, ids):
         if table not in self._locked_tables:
