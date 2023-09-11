@@ -118,20 +118,20 @@ class Invoice(metaclass=PoolMeta):
         pool = Pool()
         Commission = pool.get('commission')
 
-        invoices_to_revert_commission = []
-        invoices_to_set_date = []
-        for invoice in invoices:
-            if invoice.move:
-                invoices_to_set_date.append(invoice)
-            else:
-                invoices_to_revert_commission.append(invoice)
+        # invoices_to_revert_commission = []
+        # invoices_to_set_date = []
+        # for invoice in invoices:
+        #     if invoice.move:
+        #         invoices_to_set_date.append(invoice)
+        #     else:
+        #         invoices_to_revert_commission.append(invoice)
 
         super().cancel(invoices)
         # Do not set commissions date on cancel
         # cls.set_commissions_date(invoices_to_set_date)
 
         to_delete = []
-        for sub_invoices in grouped_slice(invoices_to_revert_commission):
+        for sub_invoices in grouped_slice(invoices):
             ids = [i.id for i in sub_invoices]
             to_delete += cls._get_commissions_to_delete(ids)
             to_cancel = cls._get_commissions_to_cancel(ids)
