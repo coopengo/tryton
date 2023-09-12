@@ -119,10 +119,11 @@ class XMLViewParser:
             for name in [
                     'relation', 'domain', 'selection', 'string', 'states',
                     'relation_field', 'views', 'invisible', 'add_remove',
-                    'sort', 'context', 'size', 'filename', 'autocomplete',
-                    'translate', 'create', 'delete', 'selection_change_with',
-                    'schema_model', 'required', 'help_selection',
-                    'help_field', 'order', 'symbol', 'monetary']:
+                    'sort', 'context', 'size', 'filename', 'filedir',
+                    'autocomplete', 'translate', 'create', 'delete',
+                    'selection_change_with', 'schema_model', 'required',
+                    'help_selection', 'help_field', 'order', 'symbol',
+                    'monetary']:
                 if name in field:
                     node_attrs.setdefault(name, field[name])
         return node_attrs

@@ -28,10 +28,11 @@ class Binary(Field):
     def __init__(self, string='', help='', required=False, readonly=False,
             domain=None, states=None, on_change=None,
             on_change_with=None, depends=None, context=None, loading='lazy',
-            filename=None, file_id=None, store_prefix=None):
+            filename=None, file_id=None, store_prefix=None, filedir=None):
         self.filename = filename
         self.file_id = file_id
         self.store_prefix = store_prefix
+        self.filedir = filedir
         super(Binary, self).__init__(string=string, help=help,
             required=required, readonly=readonly, domain=domain, states=states,
             on_change=on_change, on_change_with=on_change_with,
@@ -42,6 +43,8 @@ class Binary(Field):
         depends = super().display_depends
         if self.filename:
             depends.add(self.filename)
+        if self.filedir:
+            depends.add(self.filedir)
         return depends
 
     def get(self, ids, model, name, values=None):
@@ -130,4 +133,5 @@ class Binary(Field):
         definition = super().definition(model, language)
         definition['searchable'] = False
         definition['filename'] = self.filename
+        definition['filedir'] = self.filedir
         return definition

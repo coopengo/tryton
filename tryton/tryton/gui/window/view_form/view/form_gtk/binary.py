@@ -20,6 +20,7 @@ class BinaryMixin(Widget):
     def __init__(self, view, attrs):
         super(BinaryMixin, self).__init__(view, attrs)
         self.filename = attrs.get('filename')
+        self.filedir = attrs.get('filedir')
 
     def toolbar(self):
         'Return HBox with the toolbar'
@@ -63,6 +64,10 @@ class BinaryMixin(Widget):
     @property
     def filename_field(self):
         return self.record.group.fields.get(self.filename)
+
+    @property
+    def filedir_field(self):
+        return self.record.group.fields.get(self.filedir)
 
     @property
     def filters(self):
@@ -130,10 +135,13 @@ class BinaryMixin(Widget):
 
     def save_as(self, widget=None):
         filename = ''
+        filedir = ''
         if self.filename_field:
             filename = self.filename_field.get(self.record)
+        if self.filedir_field:
+            filedir = self.filedir_field.get(self.record)
         filename = file_selection(_('Save As...'), filename=filename,
-            action=Gtk.FileChooserAction.SAVE)
+            action=Gtk.FileChooserAction.SAVE, filedir=filedir)
         if filename:
             with open(filename, 'wb') as fp:
                 fp.write(self.get_data())
