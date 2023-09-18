@@ -12,6 +12,10 @@ terraform {
 provider "aws" {
   region = "eu-west-3"
 
+  assume_role {
+    role_arn    = "arn:aws:iam::${var.assume_role}:role/gitlab-ci"
+  }
+
 
   default_tags {
     tags = {

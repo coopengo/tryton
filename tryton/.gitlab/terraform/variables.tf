@@ -54,3 +54,12 @@ variable "availability_zone" {
   type        = string
   default     = null
 }
+
+variable "assume_role" {
+  description = "Define which AWS Account assume"
+  type        = string
+  validation {
+    condition     = length(var.assume_role) >= 12
+    error_message = "Add AWS Account ID to assume"
+  }
+}
