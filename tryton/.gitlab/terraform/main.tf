@@ -41,16 +41,8 @@ module "asg_gitlab_runner_manager" {
         weighted_capacity = "5"
       },
       {
-        instance_type     = "c6i.large"
-        weighted_capacity = "4"
-      },
-      {
         instance_type     = "c5n.large"
         weighted_capacity = "3"
-      },
-      {
-        instance_type     = "t3.medium"
-        weighted_capacity = "2"
       },
       {
         instance_type     = "c5.large"
@@ -67,15 +59,11 @@ module "asg_gitlab_runner_manager" {
       ebs = {
         delete_on_termination = true
         encrypted             = false
-        volume_size           = 50
+        volume_size           = 70
         volume_type           = "gp3"
       }
     }
   ]
-
-  credit_specification = {
-    cpu_credits = "standard"
-  }
 
   network_interfaces = [
     {

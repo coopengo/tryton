@@ -2,9 +2,9 @@
 set password=%1
 set cert_path=C:\Users\Administrator\Desktop\certificat\coopengo-software-cert.pfx
 set current_directory=%cd%
-set folder=C:\msys32\home\Administrator\tryton\dist
+set folder=C:\msys32\home\Administrator\tryton\tryton\dist
 
-cd "C:\msys32\home\Administrator\tryton"
+cd "C:\msys32\home\Administrator\tryton\tryton"
 
 if exist %folder% (
   echo Signing coog.exe ...
