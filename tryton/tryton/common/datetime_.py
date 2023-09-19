@@ -2,6 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 import datetime
 import gettext
+import re
 
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
@@ -58,7 +59,10 @@ def date_parse(text, format_='%x'):
         monthfirst = False
     yearfirst = not dayfirst and not monthfirst
     if len(text) == 8 and dayfirst:
-        return datetime.datetime.strptime(text, '%d%m%Y')
+        if re.match(r"\d{8}", text):
+            return datetime.datetime.strptime(text, '%d%m%Y')
+        elif re.match(r"\d{6}", text):
+            return datetime.datetime.strptime(text, '%d%m%y')
     return parse(text, dayfirst=dayfirst, yearfirst=yearfirst, ignoretz=True)
 
 
