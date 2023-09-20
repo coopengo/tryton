@@ -71,7 +71,16 @@ def date_parse(text, format_='%x'):
 
     def parse_time(text):
         h, m, *s = text.split(':', 2)
-        return datetime.time(int(h), int(m), int(s[0] if s else 0))
+        if s:
+            if '.' in s[0]:
+                s, us = s[0].split('.')
+            else:
+                s, us = s[0], None
+        else:
+            s, us = None, None
+        return datetime.time(
+            int(h), int(m), int(s) if s else 0,
+            int(us) if us else 0)
 
     date, time = None, None
     if ' ' in text:
