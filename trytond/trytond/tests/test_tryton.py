@@ -176,7 +176,7 @@ def _pg_restore(cache_file):
     with Transaction().start(
             None, 0, close=True, autocommit=True) as transaction:
         transaction.database.create(transaction.connection, DB_NAME)
-    cmd = ['pg_restore', '-d', DB_NAME]
+    cmd = ['pg_restore', '-d', DB_NAME, '-j', '5']
     options, env = _pg_options()
     cmd.extend(options)
     cmd.append(cache_file)

@@ -261,8 +261,19 @@ def sign(value):
         return value
 
 
+def prepare_comparison(items):
+    res = []
+    for item in items:
+        if item is None:
+            continue
+        if type(item) is bytes:
+            item = float(item)
+        res.append(item)
+    return res
+
+
 def greatest(*args):
-    args = [a for a in args if a is not None]
+    args = prepare_comparison(args)
     if args:
         return max(args)
     else:
@@ -270,7 +281,7 @@ def greatest(*args):
 
 
 def least(*args):
-    args = [a for a in args if a is not None]
+    args = prepare_comparison(args)
     if args:
         return min(args)
     else:

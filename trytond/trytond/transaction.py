@@ -245,12 +245,14 @@ class Transaction(object):
                     finally:
                         self.database.put_connection(
                             self.connection, self.close)
-                        to_put = {x.connection for x in
-                            self._sub_transactions_to_close
-                            if not x.connection.closed}
-                        for conn in to_put:
-                            self.database.put_connection(
-                                conn, self.close)
+                        from trytond import backend
+                        if backend.name != 'sqlite':
+                            to_put = {x.connection for x in
+                                self._sub_transactions_to_close
+                                if not x.connection.closed}
+                            for conn in to_put:
+                                self.database.put_connection(
+                                    conn, self.close)
                 finally:
                     self.database = None
                     self.readonly = False

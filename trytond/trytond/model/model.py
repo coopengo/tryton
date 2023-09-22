@@ -3,6 +3,7 @@
 
 import collections.abc
 import copy
+import pickle
 import sys
 from collections import defaultdict
 from functools import total_ordering
@@ -62,7 +63,13 @@ class Model(URLMixin, PoolBase, metaclass=ModelMeta):
                 parent_field = getattr(parent_cls, field_name, None)
                 if isinstance(parent_field, fields.Field):
                     field = parent_field
-            field = copy.deepcopy(field)
+
+            # JMO: pickle seems a bit faster than deepcopy
+            # the idea here is to run the test faster
+
+            #field = copy.deepcopy(field)
+            field = pickle.loads(pickle.dumps(field))
+
             setattr(cls, field_name, field)
 
     @classmethod

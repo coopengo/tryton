@@ -630,6 +630,7 @@ class Translation(ModelSQL, ModelView):
 
         in_max = transaction.database.IN_MAX // 7
         for sub_clause in grouped_slice(clauses, in_max):
+            # JMO: this is slowing down tests
             for translation in cls.search(['OR'] + list(sub_clause)):
                 key = (translation.name, translation.type,
                     translation.lang, translation.src)

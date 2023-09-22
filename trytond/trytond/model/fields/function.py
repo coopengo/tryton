@@ -71,6 +71,12 @@ class Function(Field):
             loading=self.loading)
 
     def __getattr__(self, name):
+        # JMO: allow to use pickle instead of deepcopy
+        # This remains to be investigated
+        # but deepcopy does not trigger a infinite recursion
+        # while pickle does without this change
+        if name == '_field':
+            return object.__getattribute__(self, name)
         return getattr(self._field, name)
 
     def __getitem__(self, name):
