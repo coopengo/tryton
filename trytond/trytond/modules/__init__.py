@@ -6,6 +6,7 @@ import itertools
 import logging
 import os
 import sys
+import tempfile
 from collections import defaultdict
 from glob import iglob
 from importlib.machinery import SOURCE_SUFFIXES, FileFinder, SourceFileLoader
@@ -327,7 +328,16 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
                     create_indexes()
                     transaction.commit()
             else:
-                logger.warning('index:skipping indexes creation')
+                with tempfile.NamedTemporaryFile(
+                        suffix='.sql', delete=False) as tfd:
+                    for model_name in models_with_indexes:
+                        model = pool.get(model_name)
+                        if model._sql_indexes:
+                            model._dump_sql_indexes(
+                                tfd, concurrently=options.hot)
+                    logger.warning(
+                        'index:skipping indexes creation. SQL dumped on %s',
+                        tfd.name)
             for model_name in models_to_update_history:
                 model = pool.get(model_name)
                 if model._history:
