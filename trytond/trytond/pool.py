@@ -161,7 +161,7 @@ class Pool(object):
         '''
         return self._locks[self.database_name]
 
-    def init(self, update=None, lang=None, activatedeps=False):
+    def init(self, update=None, lang=None, options=None):
         '''
         Init pool
         Set update to proceed to update
@@ -185,7 +185,7 @@ class Pool(object):
                 with ServerContext().set_context(disable_auto_cache=True):
                     restart = not load_modules(
                         self.database_name, self, update=update, lang=lang,
-                        activatedeps=activatedeps)
+                        options=options)
             except Exception:
                 del self._pool[self.database_name]
                 self._modules = None

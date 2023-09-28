@@ -482,11 +482,11 @@ class ModelSQL(ModelStorage):
                             [h_table.write_date], [None]))
 
     @classmethod
-    def _update_sql_indexes(cls):
+    def _update_sql_indexes(cls, concurrently):
         if not callable(cls.table_query):
             table_h = cls.__table_handler__()
             # TODO: remove overlapping indexes
-            table_h.set_indexes(cls._sql_indexes)
+            table_h.set_indexes(cls._sql_indexes, concurrently)
 
     @classmethod
     def _update_history_table(cls):
