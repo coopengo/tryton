@@ -1154,6 +1154,12 @@ msgstr "Supprimer l'enregistrement sélectionné"
 msgid "%s%%"
 msgstr "%s%%"
 
+msgid "Replace"
+msgstr "Remplacer"
+
+msgid "Replace All"
+msgstr "Remplacer tout"
+
 msgid "L"
 msgstr "L"
 
@@ -1192,3 +1198,4 @@ msgstr "#ERREUR"
 
 msgid "Translate view"
 msgstr "Traduire la vue"
+
