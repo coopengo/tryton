@@ -593,7 +593,6 @@ class IndexMixin:
             include=include,
             where=where)
         name = cls._get_name(query, params)
-        print(name, str(query))
         return name, query, params
 
     @classmethod
