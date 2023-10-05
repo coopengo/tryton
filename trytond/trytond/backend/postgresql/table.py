@@ -551,11 +551,11 @@ class TableHandler(TableHandlerInterface):
                 name = ('idx_'
                     + self.convert_name(name, reserved=len('idx_')))
                 file.write(
-                    ('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {}\n'
+                    ('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {};\n'
                     .format(
                         'CONCURRENTLY' if concurrently else '',
-                        name,
-                        self.table_name,
+                        Identifier(name),
+                        Identifier(self.table_name),
                         query.as_string({})) % tuple(map(sql_quote, params))
                     ).encode('utf8'))
 

@@ -337,7 +337,7 @@ class TableHandler(TableHandlerInterface):
                 name = 'idx_' + self.convert_name(name, reserved=len('idx_'))
                 if not params:
                     file.write(
-                        'CREATE INDEX IF NOT EXISTS %s ON %s %s' % (
+                        'CREATE INDEX IF NOT EXISTS %s ON %s %s;' % (
                             _escape_identifier(name),
                             _escape_identifier(self.table_name),
                             query).encode('utf8'))
