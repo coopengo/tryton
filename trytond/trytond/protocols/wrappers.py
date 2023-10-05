@@ -156,8 +156,8 @@ def parse_authorization_header(value):
         return
     if auth_type == 'session':
         return parse_session(auth_info)
-    elif auth_type in (b'token', b'bearer'):
-        return Authorization('token', {'token': auth_info.decode('latin1')})
+    elif auth_type in ('token', 'bearer'):
+        return Authorization('token', {'token': auth_info})
     else:
         authorization = Authorization(auth_type)
         authorization.token = auth_info
