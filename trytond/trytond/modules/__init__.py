@@ -217,8 +217,6 @@ def load_module_graph(graph, pool, update=None, lang=None):
 
         idx = 0
         count = len(modules)
-        # JCA : Delay cache clears
-        caches_to_clear = []
         for node in graph:
             module = node.name
             if module not in MODULES:
