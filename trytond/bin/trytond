@@ -35,6 +35,7 @@ if options.coroutine:
 
 from trytond.modules import get_module_info, get_module_list
 from trytond.pool import Pool
+from trytond.transaction import Transaction
 # Import trytond things after it is configured
 from trytond.wsgi import app
 
@@ -43,10 +44,16 @@ with commandline.pidfile(options):
     # will be restarted anyway in "reloader" mode, so no need to init the pool
     if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' \
             or not options.dev or options.coroutine:
-        Pool.start()
+
+        def pre_load_database(name):
+            def load():
+                with Transaction().start(name, 0):
+                    Pool(name).init()
+            return load
+
         threads = []
         for name in options.database_names:
-            thread = threading.Thread(target=Pool(name).init)
+            thread = threading.Thread(target=pre_load_database(name))
             thread.start()
             threads.append(thread)
         for thread in threads:

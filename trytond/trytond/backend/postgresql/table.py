@@ -536,6 +536,29 @@ class TableHandler(TableHandlerInterface):
                 cursor.execute(SQL('DROP INDEX {}').format(Identifier(name)))
         self.__indexes = None
 
+    def dump_indexes(self, indexes, file, concurrently=False):
+        def sql_quote(o):
+            if isinstance(o, str):
+                return f"'{o}'"
+            else:
+                return str(o)
+
+        for index in indexes:
+            translator = self.index_translator_for(index)
+            if translator:
+                name, query, params = translator.definition(index)
+                name = '_'.join([self.table_name, name])
+                name = ('idx_'
+                    + self.convert_name(name, reserved=len('idx_')))
+                file.write(
+                    ('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {};\n'
+                    .format(
+                        'CONCURRENTLY' if concurrently else '',
+                        Identifier(name),
+                        Identifier(self.table_name),
+                        query.as_string({})) % tuple(map(sql_quote, params))
+                    ).encode('utf8'))
+
     def drop_column(self, column_name):
         if not self.column_exist(column_name):
             return

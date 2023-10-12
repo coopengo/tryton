@@ -1410,8 +1410,9 @@
                 var row = rows[i];
                 var record = row.record;
                 var field_name;
+                var column;
                 for (var j=0; j < row.tree.columns.length; j++) {
-                    var column = row.tree.columns[j];
+                    column = row.tree.columns[j];
                     if (column.type == 'field') {
                         field_name = column.attributes.name;
                         break;

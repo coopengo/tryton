@@ -1,6 +1,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import logging
+import time
 
 from trytond import backend
 from trytond.config import config
@@ -15,6 +16,20 @@ def _get_pool(dbname):
     database_list = Pool.database_list()
     pool = Pool(dbname)
     if dbname not in database_list:
+        # This solves the following case.
+        #
+        # When the server starts, it will automatically load the pool for all
+        # configured databases, and start the associated cache listeners.
+        #
+        # However, if a user tries to connect to a database that was not
+        # preloaded, the dispatcher has to do all this, right here.
+        # The problem is that the cache listener will be started as soon as the
+        # transaction is created, and its first action will be to stop the pool
+        # / clear the caches.
+        # If unfortunately the pool initialization starts before the listener
+        # clears it, the listener will clear the pool that was just
+        # initialized, which will cause errors down the line.
+        time.sleep(2)
         pool.init()
     return pool
 
