@@ -5,6 +5,7 @@ import itertools
 import logging
 import os
 import pkgutil
+import tempfile
 from collections import defaultdict
 from glob import iglob
 
@@ -275,7 +276,15 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=True):
             if indexes:
                 create_indexes(concurrently=False)
             else:
-                logger.info('index:skipping indexes creation')
+                with tempfile.NamedTemporaryFile(
+                        suffix='.sql', delete=False) as tfd:
+                    for model_name in models_with_indexes:
+                        model = pool.get(model_name)
+                        if model._sql_indexes:
+                            model._dump_sql_indexes(tfd)
+                    logger.warning(
+                        'index:skipping indexes creation. SQL dumped on %s',
+                        tfd.name)
             for model_name in models_to_update_history:
                 model = pool.get(model_name)
                 if model._history:
