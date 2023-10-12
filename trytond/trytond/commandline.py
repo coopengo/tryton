@@ -130,11 +130,14 @@ def get_parser_admin():
         nargs='+', default=[], metavar='VALUE',
         help="Verify if installed module versions has changed before playing "
         "the update")
+    parser.add_argument(
+        "--no-indexes", dest="indexes", action="store_false",
+        help="Do not create indexes")
     parser.add_argument("--all", dest="update", action="append_const",
         const="ir", help="update all activated modules")
     parser.add_argument("--activate-dependencies", dest="activatedeps",
         action="store_true",
-        help="activate missing dependencies of updated modules")
+        help="Activate missing dependencies of updated modules")
     parser.add_argument("--email", dest="email", type=validate_email,
         help="set the admin email")
     parser.add_argument("-p", "--password", dest="password",
