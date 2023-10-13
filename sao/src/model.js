@@ -1834,7 +1834,7 @@
         },
         get_eval: function(record) {
             var value = Sao.field.DateTime._super.get_eval.call(this, record);
-            if (!value.isValid()) {
+            if (value && !value.isValid()) {
                 value = null;
             }
             return value;
@@ -1878,7 +1878,7 @@
         _default: null,
         get_eval: function(record) {
             var value = Sao.field.DateTime._super.get_eval.call(this, record);
-            if (!value.isValid()) {
+            if (value && !value.isValid()) {
                 value = null;
             }
             return value;
@@ -1915,7 +1915,7 @@
         },
         get_eval: function(record) {
             var value = Sao.field.DateTime._super.get_eval.call(this, record);
-            if (!value.isValid()) {
+            if (value && !value.isValid()) {
                 value = null;
             }
             return value;
