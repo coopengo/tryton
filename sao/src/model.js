@@ -1901,9 +1901,9 @@
         time_format: function(record) {
             return record.expr_eval(this.description.format);
         },
-        get_eval: function() {
-            var value = Sao.field.DateTime._super.get_eval.call(this);
-            if (!value.isValid()) {
+        get_eval: function(record) {
+            var value = Sao.field.DateTime._super.get_eval.call(this, record);
+            if (value && !value.isValid()) {
                 value = null;
             }
             return value;
@@ -1945,9 +1945,9 @@
 
     Sao.field.Date = Sao.class_(Sao.field.Field, {
         _default: null,
-        get_eval: function() {
-            var value = Sao.field.DateTime._super.get_eval.call(this);
-            if (!value.isValid()) {
+        get_eval: function(record) {
+            var value = Sao.field.DateTime._super.get_eval.call(this, record);
+            if (value && !value.isValid()) {
                 value = null;
             }
             return value;
@@ -1982,9 +1982,9 @@
         time_format: function(record) {
             return record.expr_eval(this.description.format);
         },
-        get_eval: function() {
-            var value = Sao.field.DateTime._super.get_eval.call(this);
-            if (!value.isValid()) {
+        get_eval: function(record) {
+            var value = Sao.field.DateTime._super.get_eval.call(this, record);
+            if (value && !value.isValid()) {
                 value = null;
             }
             return value;
