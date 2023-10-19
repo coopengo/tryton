@@ -38,12 +38,6 @@ class Category(
     def validate(cls, categories):
         super(Category, cls).validate(categories)
         cls.check_recursion(categories)
-        for category in categories:
-            category.check_name()
-
-    def check_name(self):
-        if SEPARATOR in self.name:
-            self.raise_user_error('wrong_name', (self.name,))
 
     def get_rec_name(self, name):
         if self.parent:
