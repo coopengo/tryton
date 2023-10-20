@@ -194,6 +194,9 @@ class Not(PYSON):
         elif isinstance(self._value, Equal):
             val = self._value
             return f'({repr(val._statement1)} ≠ {repr(val._statement2)})'
+        elif isinstance(self._value, In):
+            val = self._value
+            return f'({repr(val._key)} not in {repr(val._obj)})'
         return f'!({repr(self._value)})'
 
     @property
@@ -309,7 +312,7 @@ class Equal(PYSON):
         self._statement2 = statement2
 
     def __repr__(self):
-        return f'({repr(self._statement1)} == {repr(self._statement2)})'
+        return f'({repr(self._statement1)} = {repr(self._statement2)})'
 
     @property
     def __repr_params__(self):
