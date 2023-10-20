@@ -129,7 +129,8 @@ class XMLViewParser:
                 for k, v in field.items():
                     if k in (
                             'on_change', 'on_change_with', 'relation_fields',
-                            'help', 'name', 'type', 'views'):
+                            'help', 'name', 'type', 'views',
+                            'selection_change_with'):
                         continue
                     if k == 'domain':
                         v = decoder.decode(v)
@@ -138,6 +139,13 @@ class XMLViewParser:
                         for state, value in decoder.decode(v).items():
                             value = pprint.pformat(value)
                             help += f'states[{state}]: {value}\n'
+                    elif k == 'selection' and isinstance(v, list_) and any(
+                            x[0] for x in v):
+                        help += 'selection:\n'
+                        for i, j in v[:10]:
+                            help += f'    {i}: {j}\n'
+                        if len(v) > 10:
+                            help += f'    ... {len(v) - 10} elements ommitted\n'
                     else:
                         help += f"{k}: {pprint.pformat(v)}\n"
             node_attrs['help'] = help
