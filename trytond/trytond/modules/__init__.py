@@ -6,6 +6,7 @@ import itertools
 import logging
 import os
 import sys
+import tempfile
 from collections import defaultdict
 from glob import iglob
 from importlib.machinery import SOURCE_SUFFIXES, FileFinder, SourceFileLoader
@@ -185,7 +186,7 @@ def load_translations(pool, node, languages, prefix):
         Translation.translation_import(language, module, files)
 
 
-def load_module_graph(graph, pool, update=None, lang=None):
+def load_module_graph(graph, pool, update=None, lang=None, options=None):
     # Prevent to import backend when importing module
     from trytond.cache import Cache
     from trytond.ir.lang import get_parent_language
@@ -310,12 +311,31 @@ def load_module_graph(graph, pool, update=None, lang=None):
         pool.setup_mixin()
 
         if update:
-            for model_name in models_with_indexes:
-                model = pool.get(model_name)
-                if model._sql_indexes:
-                    logger.info('index:create %s', model_name)
-                    model._update_sql_indexes()
-            transaction.commit()
+            if options.indexes:
+                def create_indexes():
+                    for model_name in models_with_indexes:
+                        model = pool.get(model_name)
+                        if model._sql_indexes:
+                            logger.info('index:create %s', model_name)
+                            model._update_sql_indexes(concurrently=options.hot)
+
+                if options.hot:
+                    with transaction.new_transaction(autocommit=True):
+                        create_indexes()
+                else:
+                    create_indexes()
+                    transaction.commit()
+            else:
+                with tempfile.NamedTemporaryFile(
+                        suffix='.sql', delete=False) as tfd:
+                    for model_name in models_with_indexes:
+                        model = pool.get(model_name)
+                        if model._sql_indexes:
+                            model._dump_sql_indexes(
+                                tfd, concurrently=options.hot)
+                    logger.warning(
+                        'index:skipping indexes creation. SQL dumped on %s',
+                        tfd.name)
             for model_name in models_to_update_history:
                 model = pool.get(model_name)
                 if model._history:
@@ -382,7 +402,7 @@ def register_classes(with_test=False):
 
 
 def load_modules(
-        database_name, pool, update=None, lang=None, activatedeps=False):
+        database_name, pool, update=None, lang=None, options=None):
     # Do not import backend when importing module
     from trytond import backend
     res = True
@@ -390,6 +410,11 @@ def load_modules(
         update = update[:]
     else:
         update = []
+    if options is None:
+        options = type('obj', (object,), {})()
+        options.activatedeps = False
+        options.indexes = True
+        options.hot = False
 
     def migrate_modules(cursor):
         modules_in_dir = get_module_list()
@@ -533,11 +558,11 @@ def load_modules(
                 try:
                     graph = create_graph(module_list)
                 except MissingDependenciesException as e:
-                    if not activatedeps:
+                    if not options.activatedeps:
                         raise
                     update += e.missings
 
-            load_module_graph(graph, pool, update, lang)
+            load_module_graph(graph, pool, update, lang, options)
 
             Configuration = pool.get('ir.configuration')
             Configuration(1).check()

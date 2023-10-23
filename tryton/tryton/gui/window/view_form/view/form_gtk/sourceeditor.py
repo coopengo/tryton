@@ -153,17 +153,17 @@ class SourceView(Widget):
         self.search_band.connect('key-press-event', self._hide_search)
         self.search_entry = Gtk.Entry()
         self.search_entry.props.max_width_chars = 40
-        self.search_entry.props.placeholder_text = "Search"
+        self.search_entry.props.placeholder_text = _("Search")
         self.search_entry.connect('activate', self.do_search)
         self.search_entry.set_icon_from_icon_name(
             Gtk.EntryIconPosition.PRIMARY, 'system-search-symbolic')
         self.replace_entry = Gtk.Entry()
         self.replace_entry.props.max_width_chars = 40
-        self.replace_entry.props.placeholder_text = "Replace"
+        self.replace_entry.props.placeholder_text = _("Replace")
         self.replace_entry.connect('activate', self.do_replace)
-        replace = Gtk.Button.new_with_label("Replace")
+        replace = Gtk.Button.new_with_label(_("Replace"))
         replace.connect('clicked', self.do_replace)
-        replace_all = Gtk.Button.new_with_label("Replace All")
+        replace_all = Gtk.Button.new_with_label(_("Replace All"))
         replace_all.connect('clicked', self.do_replace_all)
         self.occurrence_label = Gtk.Label()
         prev_button = Gtk.Button.new_from_icon_name(
