@@ -136,9 +136,14 @@ def backup_db_cache(name):
 
 def _db_cache_file(path, name):
     if DB_CACHE.startswith('postgresql://'):
+        uri = parse_uri(DB_CACHE)
+        prefix_len = len('test-') + len(uri.netloc) + 1
         hash_name = hashlib.shake_128(name.encode('utf8')).hexdigest(
-            (63 - len('test-')) // 2)
-        return f"{DB_CACHE}/test-{hash_name}"
+            (63 - prefix_len) // 2)
+        if not uri.netloc:
+            return f"{DB_CACHE}/test-{hash_name}"
+        else:
+            return f"{DB_CACHE}/{uri.netloc}-test-{hash_name}"
     else:
         return os.path.join(path, '%s-%s.dump' % (name, backend.name))
 
