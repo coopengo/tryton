@@ -276,8 +276,6 @@ def prepare_comparison(items):
 
 def greatest(*args):
     args = prepare_comparison(args)
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' * 3)
-    print('gr', args)
     if args:
         return max(args)
     else:
@@ -286,8 +284,6 @@ def greatest(*args):
 
 def least(*args):
     args = prepare_comparison(args)
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' * 3)
-    print('lea', args)
     if args:
         return min(args)
     else:
@@ -295,32 +291,22 @@ def least(*args):
 
 
 def bool_and(*args):
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' * 3)
-    print('and', args)
     return all(args)
 
 
 def bool_or(*args):
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' * 3)
-    print('or', args)
     return any(args)
 
 
 def cbrt(value):
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' * 3)
-    print('cb', value)
     return math.pow(value, 1 / 3)
 
 
 def div(a, b):
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' * 3)
-    print('div', a, b)
     return a // b
 
 
 def trunc(value, digits):
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' * 3)
-    print('trunc', value, digits)
     return math.trunc(value * 10 ** digits) / 10 ** digits
 
 
@@ -396,54 +382,54 @@ class Database(DatabaseInterface):
             detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES,
             factory=SQLiteConnection)
         self._conn.create_function('extract', 2, SQLiteExtract.extract)
-        #self._conn.create_function('date_trunc', 2, date_trunc)
-        #self._conn.create_function('split_part', 3, split_part)
-        #self._conn.create_function('to_char', 2, to_char)
-        #if sqlite.sqlite_version_info < (3, 3, 14):
-        #    self._conn.create_function('replace', 3, replace)
+        self._conn.create_function('date_trunc', 2, date_trunc)
+        self._conn.create_function('split_part', 3, split_part)
+        self._conn.create_function('to_char', 2, to_char)
+        if sqlite.sqlite_version_info < (3, 3, 14):
+            self._conn.create_function('replace', 3, replace)
         self._conn.create_function('now', 0, now)
-        #self._conn.create_function('greatest', -1, greatest)
-        #self._conn.create_function('least', -1, least)
-        #self._conn.create_function('bool_and', -1, bool_and)
-        #self._conn.create_function('bool_or', -1, bool_or)
+        self._conn.create_function('greatest', -1, greatest)
+        self._conn.create_function('least', -1, least)
+        self._conn.create_function('bool_and', -1, bool_and)
+        self._conn.create_function('bool_or', -1, bool_or)
 
-        ## Mathematical functions
-        #self._conn.create_function('cbrt', 1, cbrt)
-        #self._conn.create_function('ceil', 1, math.ceil)
-        #self._conn.create_function('degrees', 1, math.degrees)
-        #self._conn.create_function('div', 2, div)
-        #self._conn.create_function('exp', 1, math.exp)
-        #self._conn.create_function('floor', 1, math.floor)
-        #self._conn.create_function('ln', 1, math.log)
-        #self._conn.create_function('log', 1, math.log10)
-        #self._conn.create_function('mod', 2, math.fmod)
-        #self._conn.create_function('pi', 0, lambda: math.pi)
-        #self._conn.create_function('power', 2, math.pow)
-        #self._conn.create_function('radians', 1, math.radians)
-        #self._conn.create_function('sign', 1, sign)
-        #self._conn.create_function('sqrt', 1, math.sqrt)
-        #self._conn.create_function('trunc', 1, math.trunc)
-        #self._conn.create_function('trunc', 2, trunc)
+        # Mathematical functions
+        self._conn.create_function('cbrt', 1, cbrt)
+        self._conn.create_function('ceil', 1, math.ceil)
+        self._conn.create_function('degrees', 1, math.degrees)
+        self._conn.create_function('div', 2, div)
+        self._conn.create_function('exp', 1, math.exp)
+        self._conn.create_function('floor', 1, math.floor)
+        self._conn.create_function('ln', 1, math.log)
+        self._conn.create_function('log', 1, math.log10)
+        self._conn.create_function('mod', 2, math.fmod)
+        self._conn.create_function('pi', 0, lambda: math.pi)
+        self._conn.create_function('power', 2, math.pow)
+        self._conn.create_function('radians', 1, math.radians)
+        self._conn.create_function('sign', 1, sign)
+        self._conn.create_function('sqrt', 1, math.sqrt)
+        self._conn.create_function('trunc', 1, math.trunc)
+        self._conn.create_function('trunc', 2, trunc)
 
-        ## Trigonomentric functions
-        #self._conn.create_function('acos', 1, math.acos)
-        #self._conn.create_function('asin', 1, math.asin)
-        #self._conn.create_function('atan', 1, math.atan)
-        #self._conn.create_function('atan2', 2, math.atan2)
-        #self._conn.create_function('cos', 1, math.cos)
-        #self._conn.create_function(
-        #    'cot', 1, lambda x: 1 / math.tan(x) if x else math.inf)
-        #self._conn.create_function('sin', 1, math.sin)
-        #self._conn.create_function('tan', 1, math.tan)
+        # Trigonomentric functions
+        self._conn.create_function('acos', 1, math.acos)
+        self._conn.create_function('asin', 1, math.asin)
+        self._conn.create_function('atan', 1, math.atan)
+        self._conn.create_function('atan2', 2, math.atan2)
+        self._conn.create_function('cos', 1, math.cos)
+        self._conn.create_function(
+            'cot', 1, lambda x: 1 / math.tan(x) if x else math.inf)
+        self._conn.create_function('sin', 1, math.sin)
+        self._conn.create_function('tan', 1, math.tan)
 
-        ## Random functions
-        #self._conn.create_function('random', 0, random.random)
-        #self._conn.create_function('setseed', 1, random.seed)
+        # Random functions
+        self._conn.create_function('random', 0, random.random)
+        self._conn.create_function('setseed', 1, random.seed)
 
-        ## String functions
-        #self._conn.create_function('overlay', 3, SQLiteOverlay.overlay)
-        #self._conn.create_function('overlay', 4, SQLiteOverlay.overlay)
-        #self._conn.create_function('position', 2, SQLitePosition.position)
+        # String functions
+        self._conn.create_function('overlay', 3, SQLiteOverlay.overlay)
+        self._conn.create_function('overlay', 4, SQLiteOverlay.overlay)
+        self._conn.create_function('position', 2, SQLitePosition.position)
 
         if (hasattr(self._conn, 'set_trace_callback')
                 and logger.isEnabledFor(logging.DEBUG)):
