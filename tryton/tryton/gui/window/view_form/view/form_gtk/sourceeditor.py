@@ -590,6 +590,8 @@ class SourceView(Widget):
         self.search_context.replace(
             start, end, replacement_text, replacement_text_length)
         self.replacing = False
+        # We have to simulate the record modification because the calling
+        # focus_out triggers a redisplay which removes all the changes
         self._simulate_record_modified(self.field.name)
 
         selection_bound = self.sourcebuffer.get_selection_bound()
@@ -618,6 +620,8 @@ class SourceView(Widget):
         self.replacements = context.replace_all(
             replacement_text, replacement_text_length)
         if self.replacements:
+            # We have to simulate the record modification because the calling
+            # focus_out triggers a redisplay which removes all the changes
             self._simulate_record_modified(self.field.name)
 
     def update_occurrences(self, context, param):
