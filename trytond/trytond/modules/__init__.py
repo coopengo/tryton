@@ -232,6 +232,7 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
             if update:
                 pool.setup(classes)
                 pool.post_init(module)
+                transaction.cache.clear()
             package_state = module2state.get(module, 'not activated')
             if (is_module_to_install(module, update)
                     or (update
@@ -284,17 +285,6 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
                                 ]))
                 module2state[module] = 'activated'
 
-            # Rollback cache changes to prevent dead lock on ir.cache table
-            Cache.rollback(transaction)
-            transaction.commit()
-            # Clear the cache so that the transaction has an empty cache
-            # from now on. The cache is not empty because the rollback might
-            # have filled it with old data from before the transaction
-            # started.
-            Cache.clear_all()
-            # Clear transaction cache to update default_factory
-            transaction.cache.clear()
-
         if not update:
             pool.setup()
         else:
@@ -310,29 +300,24 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
 
         pool.setup_mixin()
 
+        def create_indexes(concurrently):
+            for model_name in models_with_indexes:
+                model = pool.get(model_name)
+                if model._sql_indexes:
+                    logger.info('index:create %s', model_name)
+                    model._update_sql_indexes(concurrently=concurrently)
+
         if update:
             if options.indexes:
-                def create_indexes():
-                    for model_name in models_with_indexes:
-                        model = pool.get(model_name)
-                        if model._sql_indexes:
-                            logger.info('index:create %s', model_name)
-                            model._update_sql_indexes(concurrently=options.hot)
-
-                if options.hot:
-                    with transaction.new_transaction(autocommit=True):
-                        create_indexes()
-                else:
-                    create_indexes()
-                    transaction.commit()
+                create_indexes(concurrently=False)
+                transaction.commit()
             else:
                 with tempfile.NamedTemporaryFile(
                         suffix='.sql', delete=False) as tfd:
                     for model_name in models_with_indexes:
                         model = pool.get(model_name)
                         if model._sql_indexes:
-                            model._dump_sql_indexes(
-                                tfd, concurrently=options.hot)
+                            model._dump_sql_indexes(tfd, concurrently=True)
                     logger.warning(
                         'index:skipping indexes creation. SQL dumped on %s',
                         tfd.name)
@@ -342,6 +327,9 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
                     logger.info('history:update %s', model.__name__)
                     model._update_history_table()
             transaction.commit()
+        elif options.indexes:
+            with transaction.new_transaction(autocommit=True):
+                create_indexes(concurrently=True)
 
         # Vacuum :
         while modules_todo:
@@ -414,7 +402,6 @@ def load_modules(
         options = type('obj', (object,), {})()
         options.activatedeps = False
         options.indexes = True
-        options.hot = False
 
     def migrate_modules(cursor):
         modules_in_dir = get_module_list()

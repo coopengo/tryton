@@ -122,9 +122,6 @@ def get_parser_admin():
     parser.add_argument("--activate-dependencies", dest="activatedeps",
         action="store_true",
         help="Activate missing dependencies of updated modules")
-    parser.add_argument(
-        "--hot", action="store_true",
-        help="Proceed with the tasks while another Tryton daemon is running")
     parser.add_argument("--email", dest="email", help="set the admin email")
     parser.add_argument("-p", "--password", dest="password",
         action='store_true', help="set the admin password")
