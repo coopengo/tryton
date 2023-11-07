@@ -230,9 +230,9 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
             logger.info(logging_prefix)
             classes = pool.fill(module, modules)
             if update:
+                transaction.cache.clear()
                 pool.setup(classes)
                 pool.post_init(module)
-                transaction.cache.clear()
             package_state = module2state.get(module, 'not activated')
             if (is_module_to_install(module, update)
                     or (update
@@ -288,12 +288,13 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
         if not update:
             pool.setup()
         else:
+            Cache._reset.clear()
+            transaction.commit()
             # Remove unknown models and fields
             Model = pool.get('ir.model')
             Model.clean()
             ModelField = pool.get('ir.model.field')
             ModelField.clean()
-            transaction.commit()
 
         # JCA: Add update parameter to post init hooks
         pool.post_init(None)
