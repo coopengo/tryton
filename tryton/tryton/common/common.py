@@ -1042,6 +1042,10 @@ def process_exception(exception, *args, **kwargs):
                 msg_type=Gtk.MessageType.ERROR)
         elif exception.faultCode == str(int(HTTPStatus.NOT_FOUND)):
             message(_("Not found."), msg_type=Gtk.MessageType.ERROR)
+        elif exception.faultCode == str(int(HTTPStatus.SERVICE_UNAVAILABLE)):
+            message(
+                _("Service Unavailable. Please contact your administrator."),
+                msg_type=Gtk.MessageType.ERROR)
         else:
             error(exception, exception.faultString)
     else:
