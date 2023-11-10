@@ -1983,10 +1983,15 @@ class ModelStorage(Model):
                         without_check_access():
                     if to_create:
                         news = cls.create([save_values[r] for r in to_create])
+                        new_ids = []
                         for record, new in zip(to_create, news):
                             record._ids.remove(record.id)
                             record._id = new.id
-                            record._ids.append(record.id)
+                            if not record._ids:
+                                new_ids.append(record.id)
+                                record._ids = new_ids
+                            else:
+                                record._ids.append(record.id)
                     if to_write:
                         cls.write(*sum(
                                 (([r], save_values[r]) for r in to_write), ()))
