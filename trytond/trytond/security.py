@@ -8,8 +8,6 @@ from trytond.transaction import Transaction
 from trytond import backend
 from trytond.exceptions import LoginException, RateLimitException
 
-import trytond.security_redis as redis
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,21 +17,6 @@ def _get_pool(dbname):
     if dbname not in database_list:
         pool.init()
     return pool
-
-
-# AKE: manage session on redis
-def config_session_redis():
-    return config.get('session', 'redis', default=None)
-
-
-# AKE: manage session on redis
-def config_session_exclusive():
-    return config.getboolean('session', 'exclusive', default=True)
-
-
-# AKE: manage session on redis
-def config_session_audit():
-    return config.getboolean('session', 'audit', default=True)
 
 
 def _get_remote_addr(context):
@@ -65,11 +48,6 @@ def login(dbname, loginname, parameters, cache=True, context=None):
             with Transaction().start(dbname, user_id):
                 Session = pool.get('ir.session')
                 session = user_id, Session.new()
-                # AKE: manage session on redis
-                if config_session_redis():
-                    if config_session_exclusive():
-                        redis.del_sessions(dbname, user_id)
-                    redis.set_session(dbname, user_id, session.key, loginname)
 
         logger.info("login succeeded for '%s' from '%s' on database '%s'",
             loginname, _get_remote_addr(context), dbname)
@@ -80,12 +58,6 @@ def login(dbname, loginname, parameters, cache=True, context=None):
 
 
 def logout(dbname, user, session, context=None):
-    # AKE: manage session on redis
-    if config_session_redis():
-        name = redis.get_session(dbname, user, session)
-        if name:
-            redis.del_session(dbname, user, session)
-        return name
     for count in range(config.getint('database', 'retry'), -1, -1):
         with Transaction().start(dbname, 0, context=context):
             pool = _get_pool(dbname)
@@ -106,14 +78,6 @@ def logout(dbname, user, session, context=None):
 
 
 def check(dbname, user, session, context=None):
-    # AKE: manage session on redis
-    if config_session_redis():
-        ttl = redis.hit_session(dbname, user, session)
-        if ttl is not None:
-            if config_session_audit():
-                redis.time_user(dbname, user, ttl)
-            return user
-        return
     for count in range(config.getint('database', 'retry'), -1, -1):
         with Transaction().start(dbname, user, context=context) as transaction:
             pool = _get_pool(dbname)
