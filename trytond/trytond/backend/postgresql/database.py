@@ -32,7 +32,7 @@ except ImportError:
 from psycopg2 import DataError as DatabaseDataError
 from psycopg2 import IntegrityError as DatabaseIntegrityError
 from psycopg2 import OperationalError as DatabaseOperationalError
-from psycopg2 import ProgrammingError
+from psycopg2 import InterfaceError, ProgrammingError
 try:
     from psycopg2.errors import QueryCanceled as DatabaseTimeoutError
 except ModuleNotFoundError:
@@ -332,9 +332,11 @@ class Database(DatabaseInterface):
         return conn
 
     def put_connection(self, connection, close=False):
+        if not connection:
+            return
         try:
             self._connpool.putconn(connection, close=close)
-        except PoolError:
+        except InterfaceError:
             # When cleaning up, the pool may already be closed
             pass
 

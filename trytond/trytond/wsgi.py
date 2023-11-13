@@ -26,6 +26,7 @@ try:
 except ImportError:
     from werkzeug.wsgi import SharedDataMiddleware
 
+from trytond import backend
 from trytond.config import config
 from . import opentelemetry
 from trytond.protocols.jsonrpc import JSONProtocol
@@ -112,6 +113,10 @@ class TrytondWSGI(object):
             logger.debug(
                 "Exception when processing %s", request, exc_info=True)
             return e
+        except backend.DatabaseOperationalError as db_error:
+            logger.debug(
+                "Exception when processing %s", request, exc_info=True)
+            return exceptions.ServiceUnavailable(description=str(db_error))
         except Exception as e:
             logger.debug(
                 "Exception when processing %s", request, exc_info=True)

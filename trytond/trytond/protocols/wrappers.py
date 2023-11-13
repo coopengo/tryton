@@ -115,28 +115,23 @@ class Request(_Request):
         if not auth:
             return None
         context = {'_request': self.context}
-        try:
-            if auth.type == 'session':
-                user_id = security.check(
-                    database_name, auth.get('userid'), auth.get('session'),
+        if auth.type == 'session':
+            user_id = security.check(
+                database_name, auth.get('userid'), auth.get('session'),
+                context=context)
+        elif auth.type == 'token':
+            user_id, __ = security.check_token(
+                database_name, auth.get('token'))
+        elif auth.username:
+            parameters = getattr(auth, 'parameters', auth)
+            try:
+                user_id = security.login(
+                    database_name, auth.username, parameters, cache=False,
                     context=context)
-            elif auth.type == 'token':
-                user_id, __ = security.check_token(
-                    database_name, auth.get('token'))
-            elif auth.username:
-                parameters = getattr(auth, 'parameters', auth)
-                try:
-                    user_id = security.login(
-                        database_name, auth.username, parameters, cache=False,
-                        context=context)
-                except RateLimitException:
-                    abort(HTTPStatus.TOO_MANY_REQUESTS)
-            else:
-                user_id = None
-        except backend.DatabaseOperationalError:
-            unavailable = exceptions.ServiceUnavailable(
-                "The database is unavailable")
-            raise unavailable
+            except RateLimitException:
+                abort(HTTPStatus.TOO_MANY_REQUESTS)
+        else:
+            user_id = None
         return user_id
 
     @cached_property
