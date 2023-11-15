@@ -565,6 +565,15 @@ class SourceView(Widget):
         if Gdk.keyval_name(event.keyval) in {'Escape'}:
             self.search_band_hide()
 
+    def _simulate_record_modified(self, field=None):
+        if not self.record:
+            return
+        if field:
+            self.record.modified_fields.setdefault(field)
+        if not self.record.group.parent:
+            for screen in self.record.group.screens:
+                screen.record_modified(display=False)
+
     def do_replace(self, *args):
         self.replacements = None
         replacement_text = self.replace_entry.get_text()
@@ -582,6 +591,9 @@ class SourceView(Widget):
         self.search_context.replace(
             start, end, replacement_text, replacement_text_length)
         self.replacing = False
+        # We have to simulate the record modification because the calling
+        # focus_out triggers a redisplay which removes all the changes
+        self._simulate_record_modified(self.field.name)
 
         selection_bound = self.sourcebuffer.get_selection_bound()
         end = self.sourcebuffer.get_iter_at_mark(selection_bound)
@@ -608,6 +620,10 @@ class SourceView(Widget):
         replacement_text_length = self.replace_entry.get_buffer().get_bytes()
         self.replacements = context.replace_all(
             replacement_text, replacement_text_length)
+        if self.replacements:
+            # We have to simulate the record modification because the calling
+            # focus_out triggers a redisplay which removes all the changes
+            self._simulate_record_modified(self.field.name)
 
     def update_occurrences(self, context, param):
         count = context.get_occurrences_count()
