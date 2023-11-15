@@ -5211,6 +5211,7 @@ function eval_pyson(value){
             this.schema_model = attributes.schema_model;
             this.fields = {};
             this.rows = {};
+            this._row_order = [];
 
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default'
@@ -5328,6 +5329,11 @@ function eval_pyson(value){
             delete this.fields[key];
             this.rows[key].remove();
             delete this.rows[key];
+            var key_idx = this._row_order.findIndex(
+                (element) => Sao.common.compare(element, this._order_key(key)));
+            if (key_idx > -1) {
+                this._row_order.splice(key_idx, 1);
+            }
             if (modified) {
                 this.send_modified();
                 this.set_value(this.record, this.field);
@@ -5390,9 +5396,26 @@ function eval_pyson(value){
                 button.prop('disabled', this._readonly || !delete_);
             }
         },
+        _order_key: function(key) {
+            var key_schema = this.field.keys[key];
+            return [
+                key_schema.sequence || 0,
+                key_schema.string || "",
+                key
+            ];
+        },
         add_line: function(key) {
             var field, row;
             var key_schema = this.field.keys[key];
+            var order_key = this._order_key(key);
+            var position = this._row_order.findIndex(
+                (element) => Sao.common.compare(element, order_key));
+            this._row_order.splice(position, 0, order_key);
+            var previous = null;
+            if (position > -1) {
+                previous = this.rows[this._row_order[position - 1].at(-1)];
+            }
+
             this.fields[key] = field = new (
                 this.get_entries(key_schema.type))(key, this);
             this.rows[key] = row = jQuery('<div/>', {
@@ -5420,7 +5443,11 @@ function eval_pyson(value){
                 field.button.remove();
             }
 
-            row.appendTo(this.container);
+            if (previous) {
+                previous.after(row);
+            } else {
+                this.container.prepend(row);
+            }
         },
         display: function() {
             Sao.View.Form.Dict._super.display.call(this);
