@@ -8,10 +8,13 @@ __all__ = ['activate_modules', 'set_user']
 
 
 # PKU add cache_file_name
-def activate_modules(modules, cache_file_name=None):
+def activate_modules(modules, cache_file_name=None, setup_function=None):
     if isinstance(modules, str):
         modules = [modules]
     cache_name = cache_file_name or '-'.join(modules)
+    assert setup_function is None or callable(setup_function)
+    if callable(setup_function):
+        cache_name += f'-{setup_function.__qualname__}'
     if restore_db_cache(cache_name):
         return _get_config()
     drop_create()
@@ -24,6 +27,8 @@ def activate_modules(modules, cache_file_name=None):
     Module.click(records, 'activate')
     Wizard('ir.module.activate_upgrade').execute('upgrade')
 
+    if callable(setup_function):
+        setup_function(cfg)
     backup_db_cache(cache_name)
     return cfg
 
