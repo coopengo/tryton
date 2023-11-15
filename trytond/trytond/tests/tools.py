@@ -9,10 +9,11 @@ __all__ = ['activate_modules', 'set_user']
 
 
 # PKU add cache_file_name
-def activate_modules(modules, *, cache_file_name=None, setup_function=None):
+def activate_modules(modules, *, setup_function=None, cache_file_name=None):
     if isinstance(modules, str):
         modules = [modules]
     cache_name = cache_file_name or '-'.join(modules)
+    assert setup_function is None or callable(setup_function)
     if callable(setup_function):
         cache_name += f'-{setup_function.__qualname__}'
     if restore_db_cache(cache_name):
