@@ -82,6 +82,8 @@ def authentication_services(host, port):
         logger.debug('%r', services)
         return connection.url, services
     except Exception as e:
+        import tryton.common as common
+        common.warning(str(e), "Can not access the authentication services")
         logger.exception(e)
         return '', []
 

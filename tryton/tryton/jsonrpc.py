@@ -292,7 +292,7 @@ class Transport(xmlrpc.client.SafeTransport):
             else:
                 http_connection()
         else:
-            fingerprint = https_connection(allow_http=True)
+            fingerprint = https_connection()
 
         if self.__fingerprints is not None:
             self.__fingerprints.set(chost, fingerprint)
