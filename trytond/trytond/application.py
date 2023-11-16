@@ -31,6 +31,7 @@ if os.environ.get('TRYTOND_COROUTINE'):
 from trytond.pool import Pool  # noqa: E402
 from trytond.wsgi import app  # noqa: E402
 
+Pool.start_app_initialization()
 Pool.start()
 # TRYTOND_CONFIG it's managed by importing config
 db_names = os.environ.get('TRYTOND_DATABASE_NAMES')
@@ -60,4 +61,6 @@ if db_names:
 #
 # If this is not the cause, good luck
 application = app
+
+Pool.app_initialization_completed()
 assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
