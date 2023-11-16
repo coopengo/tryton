@@ -278,7 +278,9 @@ class Transport(xmlrpc.client.SafeTransport):
                         + ((y[0] % 2 and y[0] + 1 < len(value)) and ':' or ''),
                         enumerate(value), '')
                 return format_hash(hashlib.sha1(peercert).hexdigest())
-            except (socket.error, ssl.SSLError, ssl.CertificateError):
+            except (socket.error, ssl.SSLError, ssl.CertificateError) as e:
+                import tryton.common as common
+                common.warning(str(e), "Can not connect in SSL")
                 if allow_http:
                     http_connection()
                 else:
@@ -292,7 +294,7 @@ class Transport(xmlrpc.client.SafeTransport):
             else:
                 http_connection()
         else:
-            fingerprint = https_connection()
+            fingerprint = https_connection(allow_http=True)
 
         if self.__fingerprints is not None:
             self.__fingerprints.set(chost, fingerprint)
