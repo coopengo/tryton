@@ -584,8 +584,30 @@ class DictWidget(Widget):
         label = Gtk.Label(
             label=set_underline(text),
             use_underline=True, halign=Gtk.Align.END)
+
+        # Look for the previous key according to the "sequence" attribute
+        previous_key, previous_widget = None, None
+        value = self.field.get_client(self.record) if self.field else {}
+        if key not in value:
+            value |= {key: None}
+        position = Gtk.PositionType.TOP
+        for other_key in sorted(
+                [x for x in value.keys() if x in self.field.keys],
+                key=lambda x: self.field.keys[x]['sequence'] or 0):
+            if other_key == key:
+                break
+            previous_key = other_key
+        else:
+            position = Gtk.PositionType.BOTTOM
+        if previous_key:
+            previous_widget = self.rows[previous_key][0]
+            # Insert a new row below the previous widget
+            self.grid.insert_next_to(
+                previous_widget, Gtk.PositionType.BOTTOM)
+            position = Gtk.PositionType.BOTTOM
         self.grid.attach_next_to(
-            label, None, Gtk.PositionType.BOTTOM, 1, 1)
+            label, previous_widget, position, 1, 1)
+
         label.set_mnemonic_widget(field.widget)
         label.show()
         hbox = Gtk.HBox(hexpand=True)

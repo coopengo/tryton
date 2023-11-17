@@ -53,7 +53,7 @@ class Request(_Request):
             if self.url is None or isinstance(self.url, str):
                 url = self.url
             else:
-                url = self.url.decode(self.url_charset)
+                url = self.url.decode(getattr(self, 'url_charset', 'utf-8'))
             auth = self.authorization
             if auth:
                 args.append("%s@%s" % (
@@ -91,7 +91,7 @@ class Request(_Request):
     @cached_property
     def authorization(self):
         authorization = super(Request, self).authorization
-        if authorization is None:
+        if authorization is None or authorization.type in ('token', 'bearer'):
             header = self.headers.get('Authorization')
             return parse_authorization_header(header)
         elif authorization.type == 'session':
