@@ -3767,7 +3767,7 @@ function eval_pyson(value){
                 to_display_prm.done(function() {
                     for (var j in to_display.view.containers) {
                         var container = widget.view.containers[j];
-                        container.resize();
+                        container.set_grid_template();
                     }
                     to_display.display(to_display.record, to_display.field);
                 });
