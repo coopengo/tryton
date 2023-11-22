@@ -589,7 +589,7 @@ class DictWidget(Widget):
         previous_key, previous_widget = None, None
         value = self.field.get_client(self.record) if self.field else {}
         if key not in value:
-            value |= {key: None}
+            value[key] = None
         position = Gtk.PositionType.TOP
         for other_key in sorted(
                 [x for x in value.keys() if x in self.field.keys],
