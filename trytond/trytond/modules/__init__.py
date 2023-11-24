@@ -230,6 +230,9 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
             logger.info(logging_prefix)
             classes = pool.fill(module, modules)
             if update:
+                # Clear all caches to prevent _record with wrong schema to
+                # linger
+                transaction.cache.clear()
                 pool.setup(classes)
                 pool.post_init(module)
                 transaction.cache.clear()
@@ -285,26 +288,20 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
                                 ]))
                 module2state[module] = 'activated'
 
-            # Rollback cache changes to prevent dead lock on ir.cache table
-            Cache.rollback(transaction)
-            transaction.commit()
-            # Clear the cache so that the transaction has an empty cache
-            # from now on. The cache is not empty because the rollback might
-            # have filled it with old data from before the transaction
-            # started.
-            Cache.clear_all()
-            # Clear transaction cache to update default_factory
-            transaction.cache.clear()
-
         if not update:
             pool.setup()
         else:
+            # As the caches will be clearer at the end of the process there's
+            # no need to do it here.
+            # It would deadlock the ir_cache SELECT in the cache when altering
+            # the table anyway
+            Cache._reset.clear()
+            transaction.commit()
             # Remove unknown models and fields
             Model = pool.get('ir.model')
             Model.clean()
             ModelField = pool.get('ir.model.field')
             ModelField.clean()
-            transaction.commit()
 
         # JCA: Add update parameter to post init hooks
         pool.post_init(None)
@@ -325,7 +322,6 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
                         create_indexes()
                 else:
                     create_indexes()
-                    transaction.commit()
             else:
                 with tempfile.NamedTemporaryFile(
                         suffix='.sql', delete=False) as tfd:
