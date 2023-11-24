@@ -370,6 +370,9 @@ class MemoryCache(BaseCache):
 
     @classmethod
     def _listen(cls, dbname):
+        if Pool.app_initializing():
+            return
+
         current_thread = threading.current_thread()
         pid = os.getpid()
 

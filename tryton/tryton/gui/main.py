@@ -112,6 +112,10 @@ class Main(Gtk.Application):
         self.add_action(action)
         self.set_accels_for_action('app.shortcuts', ['<Primary>F1'])
 
+        action = Gio.SimpleAction.new('logout', None)
+        action.connect('activate', self.logout)
+        self.add_action(action)
+
         action = Gio.SimpleAction.new('about', None)
         action.connect('activate', lambda *a: self.about())
         self.add_action(action)
@@ -298,6 +302,7 @@ class Main(Gtk.Application):
     def _get_primary_menu(self):
         menu = Gio.Menu.new()
         menu.append(_("Preferences..."), 'app.preferences')
+        menu.append(_("Log out"), 'app.logout')
 
         section = Gio.Menu.new()
         toolbar = Gio.Menu.new()
@@ -658,6 +663,7 @@ class Main(Gtk.Application):
                 ('app.tab-previous', _("Previous tab"), ),
                 ('app.tab-next', _("Next tab")),
                 ('app.shortcuts', _("Shortcuts")),
+                ('app.logout', _("Log out")),
                 ('app.quit', _("Quit")),
                 ]:
             shortcut = Gtk.ShortcutsShortcut()
@@ -1115,3 +1121,24 @@ class Main(Gtk.Application):
         notification.set_priority(_PRIORITIES[priority])
         if sys.platform != 'win32' or GLib.glib_version >= (2, 57, 0):
             self.send_notification(None, notification)
+
+    def logout(self, *args):
+        from tryton.gui.window.dblogin import DBLogin
+
+        try:
+            if not self.close_pages():
+                return True
+        except TrytonServerUnavailable:
+            pass
+        self.menu_screen = None
+        self.window.hide()
+        rpc.logout()
+
+        if DBLogin().run():
+            try:
+                common.get_credentials()
+            except Exception:
+                return self.quit()
+            self.get_preferences()
+        else:
+            self.quit()
