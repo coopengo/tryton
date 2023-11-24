@@ -1039,7 +1039,7 @@ def process_exception(exception, *args, **kwargs):
         elif exception.faultCode in map(str, HTTPStatus):
             err_msg = '[%s] %s' % (exception.faultCode, exception.faultString)
             message(
-                _('Error system "%s". Try again later.') % err_msg,
+                _('Error "%s". Try again later.') % err_msg,
                 msg_type=Gtk.MessageType.ERROR)
         else:
             error(exception, exception.faultString)
