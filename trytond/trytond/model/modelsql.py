@@ -486,7 +486,7 @@ class ModelSQL(ModelStorage):
         if not callable(cls.table_query):
             table_h = cls.__table_handler__()
             # TODO: remove overlapping indexes
-            table_h.set_indexes(cls._sql_indexes, concurrently=concurrently)
+            table_h.set_indexes(cls._sql_indexes, concurrently)
 
     @classmethod
     def _dump_sql_indexes(cls, file, concurrently):
