@@ -154,6 +154,10 @@ def logout():
         CONNECTION = None
     _CLIENT_DATE = None
     _USER = None
+    _VIEW_CACHE.clear()
+    _TOOLBAR_CACHE.clear()
+    _KEYWORD_CACHE.clear()
+    CONTEXT.clear()
 
 
 def execute(*args):

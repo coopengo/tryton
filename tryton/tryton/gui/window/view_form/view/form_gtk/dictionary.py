@@ -588,7 +588,8 @@ class DictWidget(Widget):
         # Look for the previous key according to the "sequence" attribute
         previous_key, previous_widget = None, None
         value = self.field.get_client(self.record) if self.field else {}
-        value |= {key: None}
+        if key not in value:
+            value[key] = None
         position = Gtk.PositionType.TOP
         for other_key in sorted(
                 [x for x in value.keys() if x in self.field.keys],

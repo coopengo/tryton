@@ -91,7 +91,7 @@ class Request(_Request):
     @cached_property
     def authorization(self):
         authorization = super(Request, self).authorization
-        if authorization is None:
+        if authorization is None or authorization.type in ('token', 'bearer'):
             header = self.headers.get('Authorization')
             return parse_authorization_header(header)
         elif authorization.type == 'session':
