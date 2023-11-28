@@ -434,6 +434,8 @@ class MemoryCache(BaseCache):
                 selector.select(timeout=_select_timeout)
                 conn.poll()
                 while conn.notifies:
+                    pool = Pool(dbname)
+                    callbacks = pool._notification_callbacks.get(dbname, {})
                     notification = conn.notifies.pop()
                     payload = notification.payload
                     if payload and payload.startswith(REFRESH_POOL_MSG):
@@ -441,6 +443,8 @@ class MemoryCache(BaseCache):
                         process_id = cls._local.portable_id
                         if remote_id != process_id:
                             Pool.refresh(dbname, _get_modules(cursor))
+                    elif notification.payload in callbacks:
+                        callbacks[notification.payload](pool)
                     elif payload:
                         for name in json.loads(payload):
                             try:
