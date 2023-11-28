@@ -62,6 +62,8 @@ class Pool(object):
     test = False
     _init_hooks = {}
     _post_init_calls = {}
+    _registered_notifications = {}
+    _notification_callbacks = {}
     pool_types = {'model', 'report', 'wizard'}
 
     def __new__(cls, database_name=None):
@@ -128,6 +130,12 @@ class Pool(object):
             Pool._init_hooks[kwargs['module']] = []
         Pool._init_hooks[kwargs['module']] += hooks
 
+    @staticmethod
+    def register_notification_callbacks(keyword, callback, *, module=None):
+        if module not in Pool._registered_notifications:
+            Pool._registered_notifications[module] = {}
+        Pool._registered_notifications[module][keyword] = callback
+
     @classmethod
     def start(cls):
         '''
@@ -137,6 +145,7 @@ class Pool(object):
             for classes in Pool.classes.values():
                 classes.clear()
             cls._init_hooks = {}
+            cls._registered_notifications = {}
             register_classes(with_test=cls.test)
             cls._started = True
 
@@ -171,6 +180,7 @@ class Pool(object):
             self._pool = defaultdict(dict)
             self._modules = []
             self._post_init_calls[self.database_name] = []
+            self._notification_callbacks[self.database_name] = {}
             try:
                 with ServerContext().set_context(disable_auto_cache=True):
                     restart = not load_modules(
@@ -256,6 +266,8 @@ class Pool(object):
                 classes[type_].append(cls)
         self._post_init_calls[self.database_name] += self._init_hooks.get(
             module, [])
+        self._notification_callbacks[self.database_name].update(
+            self._registered_notifications.get(module, {}))
         self._modules.append(module)
         return classes
 
