@@ -5,6 +5,8 @@ import os
 from collections import defaultdict
 from difflib import SequenceMatcher
 from io import BytesIO
+import importlib
+from pathlib import PurePath
 
 import polib
 from defusedxml.minidom import parseString
@@ -1677,8 +1679,10 @@ class TranslationExportResult(ModelView):
 
     language = fields.Many2One('ir.lang', 'Language', readonly=True)
     module = fields.Many2One('ir.module', 'Module', readonly=True)
-    file = fields.Binary('File', readonly=True, filename='filename')
+    file = fields.Binary('File', readonly=True, filename='filename',
+        filedir='filedir')
     filename = fields.Char('Filename')
+    filedir = fields.Char('Filedir')
 
 
 class TranslationExport(Wizard):
@@ -1707,11 +1711,21 @@ class TranslationExport(Wizard):
         file_ = self.result.file
         cast = self.result.__class__.file.cast
         self.result.file = False  # No need to store it in session
+
+        filedir = ''
+        module_path = PurePath(importlib.util.find_spec(
+            'trytond.modules.' + self.start.module.name).origin)
+        if module_path:
+            module_path = module_path.parents[0]
+            module_path = module_path.joinpath('locale')
+            filedir = str(module_path)
+
         return {
             'module': self.start.module.id,
             'language': self.start.language.id,
             'file': cast(file_) if file_ else None,
             'filename': '%s.po' % self.start.language.code,
+            'filedir': filedir,
             }
 
 

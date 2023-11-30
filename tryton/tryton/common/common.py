@@ -442,10 +442,12 @@ def selection(title, values, alwaysask=False):
 
 def file_selection(title, filename='',
         action=Gtk.FileChooserAction.OPEN, preview=True, multi=False,
-        filters=None):
+        filters=None, filedir=''):
     parent = get_toplevel_window()
     win = Gtk.FileChooserNative(
         title=title, transient_for=parent, action=action)
+    if filedir:
+        win.set_current_folder(filedir)
     if filename:
         if action in (Gtk.FileChooserAction.SAVE,
                 Gtk.FileChooserAction.CREATE_FOLDER):
