@@ -264,6 +264,10 @@ def sign(value):
 
 
 def prepare_comparison(items):
+    # convert bytes to float
+    # to allow for comparison
+    # in a case where, for example,
+    # items are (b'120.00', 0)
     res = []
     for item in items:
         if item is None:
