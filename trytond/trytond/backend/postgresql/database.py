@@ -338,13 +338,15 @@ class Database(DatabaseInterface):
         return conn
 
     def put_connection(self, connection, close=False):
+        if not connection:
+            return
         try:
             connection.reset()
         except InterfaceError:
             pass
         try:
             self._connpool.putconn(connection, close=close)
-        except PoolError:
+        except InterfaceError:
             # When cleaning up, the pool may already be closed
             pass
 
