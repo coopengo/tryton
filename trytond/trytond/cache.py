@@ -399,9 +399,13 @@ class MemoryCache(BaseCache):
                 selector.select(timeout=60)
                 conn.poll()
                 while conn.notifies:
+                    pool = Pool(dbname)
+                    callbacks = pool._notification_callbacks.get(dbname, {})
                     notification = conn.notifies.pop()
                     if notification.payload == 'refresh pool':
-                        Pool(dbname).refresh(_get_modules(cursor))
+                        pool.refresh(_get_modules(cursor))
+                    elif notification.payload in callbacks:
+                        callbacks[notification.payload](pool)
                     elif notification.payload:
                         reset = json.loads(notification.payload)
                         for name in reset:
