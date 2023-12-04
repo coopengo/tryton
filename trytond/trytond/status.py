@@ -14,7 +14,7 @@ from trytond.config import config
 
 
 start_stat_thread = config.getboolean(
-    'custom', 'allow_stat_thread', default=False)
+    'custom', 'enable_stat_thread', default=False)
 
 status = dict()
 logger = logging.getLogger(__name__)

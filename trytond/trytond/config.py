@@ -110,7 +110,7 @@ class TrytonConfigParser(configparser.ConfigParser):
         self.set('bus', 'select_timeout', '5')
         self.add_section('html')
         self.add_section('custom')
-        self.set('custom', 'allow_stat_thread', 'False')
+        self.set('custom', 'enable_stat_thread', 'False')
         if overrides:
             self.update_etc(configfile=overrides)
         self.update_environ()
