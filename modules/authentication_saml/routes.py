@@ -144,6 +144,7 @@ def acs(request, pool, identity):
     authn_response = client.parse_authn_request_response(
         request.form['SAMLResponse'],
         saml2.entity.BINDING_HTTP_POST)
+    authn_response.parse_assertion()
     if authn_response is None:
         abort(HTTPStatus.FORBIDDEN, "Unknown SAML error")
     attributes = authn_response.get_identity()
