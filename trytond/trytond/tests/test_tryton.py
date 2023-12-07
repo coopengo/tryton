@@ -41,7 +41,7 @@ from trytond.pyson import PYSONDecoder, PYSONEncoder
 from trytond.tools import file_open, find_dir, is_instance_method
 from trytond.transaction import Transaction, TransactionError
 from trytond.wizard import StateAction, StateView
-from trytond.server_context import ServerContext
+from trytond.server_context import ServerContext, TEST_CONTEXT
 
 __all__ = [
     'CONTEXT',
@@ -115,7 +115,7 @@ def activate_module(modules, lang='en', cache_name=None):
                 type='wizard')
             instance_id, _, _ = ActivateUpgrade.create()
             transaction.commit()
-            with ServerContext().set_context(test_module=True):
+            with ServerContext().set_context(**TEST_CONTEXT):
                 ActivateUpgrade(instance_id).transition_upgrade()
             ActivateUpgrade.delete(instance_id)
             transaction.commit()
