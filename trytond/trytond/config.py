@@ -6,6 +6,8 @@ import os
 import urllib.parse
 from getpass import getuser
 
+import __main__ as main
+
 __all__ = ['config', 'get_hostname', 'get_port', 'split_netloc',
     'parse_listen', 'parse_uri']
 logger = logging.getLogger(__name__)
@@ -108,6 +110,8 @@ class TrytonConfigParser(configparser.ConfigParser):
         self.set('bus', 'cache_timeout', '5')
         self.set('bus', 'select_timeout', '5')
         self.add_section('html')
+        self.add_section('custom')
+        self.set('custom', 'enable_stat_thread', 'False')
         if overrides:
             self.update_etc(configfile=overrides)
         self.update_environ()
@@ -185,3 +189,7 @@ class TrytonConfigParser(configparser.ConfigParser):
         return TrytonConfigParser(overrides=overrides)
 
 config = TrytonConfigParser().apply_overriden_defaults()
+
+if os.path.basename(getattr(main, '__file__', '')) != 'trytond-stat':
+    from . import status
+    status.start(config.get('database', 'path'))
