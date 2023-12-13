@@ -164,6 +164,27 @@ class JSONRequest(Request):
             pass
 
 
+def _get_appropriated_content_type(file_type) -> str:
+    match file_type:
+        case 'pdf':
+            return 'application/pdf'
+        case 'doc':
+            return 'application/msword'
+        case 'docx':
+            return ('application/vnd.openxmlformats-officedocument'
+                '.wordprocessingml.document')
+        case 'odt':
+            return 'application/vnd.oasis.opendocument.text'
+        case 'rtf':
+            return 'application/rtf'
+        case 'png':
+            return 'image/png'
+        case 'jpg' | 'jpeg':
+            return 'image/jpeg'
+        case _:
+            return 'application/octet-stream'
+
+
 class JSONProtocol:
     content_type = 'json'
 
@@ -210,6 +231,20 @@ class JSONProtocol:
             elif isinstance(data, Exception):
                 return InternalServerError(data)
             response = data
-        return Response(json.dumps(
-                response, cls=JSONEncoder, separators=(',', ':')),
-            content_type='application/json')
+        if (request.headers.get('Accept', '') == 'application/octet-stream'
+        and response['result'].get('error_code') is None):
+            name = response['result'].get('file_name', 'coog_file')
+            content_type = _get_appropriated_content_type(
+                response['result'].get('file_type', ''))
+
+            headers = {'Content-Disposition':
+                f'attachment; file_name="{name}"'}
+            stream_response = Response(headers=headers,
+                content_type=content_type).stream
+            stream_response.write(response['result'].get('file_data'))
+            stream_response.close()
+            return stream_response.response
+        else:
+            return Response(json.dumps(
+                    response, cls=JSONEncoder, separators=(',', ':')),
+                content_type='application/json')
