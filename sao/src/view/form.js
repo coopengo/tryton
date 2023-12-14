@@ -4552,8 +4552,13 @@ function eval_pyson(value){
             const callback = result => {
                 if (result) {
                     screen.current_record.save().done(() => {
+                        var mf = this.screen.current_record.modified_fields;
+                        var added = 'id' in mf;
                         // Force a reload on next display
                         this.screen.current_record.cancel();
+                        if (added) {
+                            mf.id = true;
+                        }
                     });
                 }
             };
