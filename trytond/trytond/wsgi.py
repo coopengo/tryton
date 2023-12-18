@@ -26,6 +26,7 @@ try:
 except ImportError:
     from werkzeug.wsgi import SharedDataMiddleware
 
+from trytond import backend
 from trytond.config import config
 from . import opentelemetry
 from trytond.protocols.jsonrpc import JSONProtocol
@@ -112,6 +113,10 @@ class TrytondWSGI(object):
             logger.debug(
                 "Exception when processing %s", request, exc_info=True)
             return e
+        except backend.DatabaseOperationalError as db_error:
+            logger.debug(
+                "Exception when processing %s", request, exc_info=True)
+            return exceptions.ServiceUnavailable(description=str(db_error))
         except Exception as e:
             logger.debug(
                 "Exception when processing %s", request, exc_info=True)
@@ -171,6 +176,7 @@ class TrytondWSGI(object):
                         or origin.startswith('chrome-extension://')):
                     origin = 'null'
                 else:
+                    logger.info('bad cors: %s unauthorized' % str(origin))
                     abort(HTTPStatus.FORBIDDEN)
         if origin == 'null':
             adapter = self.url_map.bind_to_environ(request.environ)
