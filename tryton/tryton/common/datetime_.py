@@ -7,7 +7,7 @@ import re
 from dateutil.relativedelta import relativedelta
 from gi.repository import Gdk, GObject, Gtk
 
-# from .common import IconFactory
+from .common import IconFactory
 
 __all__ = [
     'Date', 'CellRendererDate', 'Time', 'CellRendererTime', 'DateTime',
@@ -114,12 +114,12 @@ class Date(Gtk.Entry):
         self.connect('activate', self.activate)
 
         # Calendar Popup
-        # self.set_icon_from_pixbuf(
-        #     Gtk.EntryIconPosition.PRIMARY,
-        #     IconFactory.get_pixbuf('tryton-date', Gtk.IconSize.MENU))
-        # self.set_icon_tooltip_text(
-        #     Gtk.EntryIconPosition.PRIMARY,
-        #     _('Open the calendar'))
+        self.set_icon_from_pixbuf(
+            Gtk.EntryIconPosition.PRIMARY,
+            IconFactory.get_pixbuf('tryton-date', Gtk.IconSize.MENU))
+        self.set_icon_tooltip_text(
+            Gtk.EntryIconPosition.PRIMARY,
+            _('Open the calendar'))
         self.connect('icon-press', self.icon_press)
 
         self.__cal_popup = Gtk.Window(type=Gtk.WindowType.POPUP)
