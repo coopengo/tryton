@@ -9,6 +9,7 @@ import gettext
 import json
 import logging
 import urllib.parse
+import time
 import xml.dom.minidom
 from operator import itemgetter
 
@@ -1015,6 +1016,7 @@ class Screen:
             self.set_cursor()
 
     def display(self, res_id=None, set_cursor=False, force=False):
+        start = time.time()
         if res_id:
             self.current_record = self.group.get(res_id)
         else:
@@ -1046,6 +1048,7 @@ class Screen:
         self.set_tree_state()
         # Force record_message
         self.current_record = self.current_record
+        print(f"Screen.display({self.model_name}): {time.time() - start}")
 
     def _get_next_record(self, test=False):
         view = self.current_view

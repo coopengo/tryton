@@ -228,7 +228,7 @@ class ModelStorage(Model):
             trigger.queue_trigger_action(records)
 
     @classmethod
-    def read(cls, ids, fields_names):
+    def read(cls, ids, fields_names, related_limit=None):
         '''
         Read fields_names of record ids.
         The order is not guaranteed.

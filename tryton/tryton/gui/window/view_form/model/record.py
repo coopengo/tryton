@@ -1,6 +1,8 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import functools
 import logging
+import operator
 
 import tryton.common as common
 from tryton.common import RPCException, RPCExecute
@@ -10,6 +12,30 @@ from tryton.pyson import PYSONDecoder
 from . import field as fields
 
 logger = logging.getLogger(__name__)
+
+
+def get_x2m_sub_fields(f_attrs, prefix):
+    if f_attrs['loading'] == 'eager' and f_attrs.get('views'):
+        sub_fields = functools.reduce(
+            operator.or_,
+            (v.get('fields', {}) for v in f_attrs['views'].values()),
+            {})
+        x2m_sub_fields = []
+        for s_field, f_def in sub_fields.items():
+            x2m_sub_fields.append(f"{prefix}.{s_field}")
+            if f_def['type'] in {'many2one', 'one2one', 'reference'}:
+                x2m_sub_fields.append(f"{prefix}.{s_field}.rec_name")
+            elif f_def['type'] in {'selection', 'multiselection'}:
+                x2m_sub_fields.append(f"{prefix}.{s_field}:string")
+            elif f_def['type'] in {'one2many', 'many2many'}:
+                x2m_sub_fields.extend(
+                    get_x2m_sub_fields(f_def, f"{prefix}.{s_field}"))
+        x2m_sub_fields.extend(
+            f"{prefix}.{f}"
+            for f in ['_timestamp', '_write', '_delete'])
+        return x2m_sub_fields
+    else:
+        return []
 
 
 class Record:
@@ -79,6 +105,7 @@ class Record:
             fnames = [fname for fname, field in fields
                 if fname not in self._loaded
                 and (not views or (views & field.views))]
+            related_limit = None
             for fname in list(fnames):
                 f_attrs = self.group.fields[fname].attrs
                 if f_attrs['type'] in {'many2one', 'one2one', 'reference'}:
@@ -86,6 +113,11 @@ class Record:
                 elif (f_attrs['type'] == 'selection'
                         and f_attrs.get('loading', 'lazy') == 'eager'):
                     fnames.append('%s:string' % fname)
+                elif f_attrs['type'] in {'many2many', 'one2many'}:
+                    sub_fields = get_x2m_sub_fields(f_attrs, fname)
+                    fnames.extend(sub_fields)
+                    if sub_fields:
+                        related_limit = 80
             if 'rec_name' not in fnames:
                 fnames.append('rec_name')
             fnames.extend(['_timestamp', '_write', '_delete'])
@@ -140,8 +172,11 @@ class Record:
             ctx.update(dict(('%s.%s' % (self.model_name, fname), 'size')
                     for fname, field in self.group.fields.items()
                     if field.attrs['type'] == 'binary' and fname in fnames))
+            if related_limit is not None:
+                ctx['related_limit'] = related_limit
             exception = False
             try:
+                print(f"{self.model_name}.read({fnames})")
                 values = RPCExecute('model', self.model_name, 'read',
                     list(id2record.keys()), fnames, context=ctx,
                     process_exception=process_exception)
@@ -510,7 +545,9 @@ class Record:
                 continue
             field = self.group.fields[fieldname]
             if isinstance(field, fields.O2MField):
-                later[fieldname] = value
+                later[fieldname] = val.get(f"{fieldname}.", value)
+                if f"{fieldname}." in value:
+                    self._loaded.add(fieldname)
                 continue
             if isinstance(field, (fields.M2OField, fields.ReferenceField)):
                 related = fieldname + '.'

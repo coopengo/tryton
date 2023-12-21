@@ -946,7 +946,7 @@ class ModelSQL(ModelStorage):
         return records
 
     @classmethod
-    def read(cls, ids, fields_names):
+    def read(cls, ids, fields_names, related_limit=None):
         pool = Pool()
         Rule = pool.get('ir.rule')
         Translation = pool.get('ir.translation')
@@ -1051,17 +1051,32 @@ class ModelSQL(ModelStorage):
                 tables, dom_exp = cls.search_domain(
                     domain, active_test=False, tables=tables)
             from_ = convert_from(None, tables)
+            limit = related_limit
             for sub_ids in grouped_slice(ids, in_max):
                 sub_ids = list(sub_ids)
-                red_sql = reduce_ids(table.id, sub_ids)
+                read_ids = sub_ids[:]
+                read_limit_records = []
+                if history_limit:
+                    read_limit = history_limit
+                elif limit and limit > len(sub_ids):
+                    limit -= len(sub_ids)
+                    read_limit = None
+                elif limit:
+                    read_limit = limit
+                    read_limit_records = [{'id': x}
+                        for x in sub_ids[read_limit:]]
+                    read_ids = sub_ids[:read_limit]
+                else:
+                    read_limit = None
+                red_sql = reduce_ids(table.id, read_ids)
                 where = red_sql
                 if history_clause:
                     where &= history_clause
                 if domain:
                     where &= dom_exp
                 cursor.execute(*from_.select(*columns.values(), where=where,
-                        order_by=history_order, limit=history_limit))
-                fetchall = list(cursor_dict(cursor))
+                        order_by=history_order, limit=read_limit))
+                fetchall = list(cursor_dict(cursor)) + read_limit_records
                 if not len(fetchall) == len({}.fromkeys(sub_ids)):
                     cls.__check_domain_rule(
                         ids, 'read', nodomain='ir.msg_read_error')
@@ -1182,7 +1197,8 @@ class ModelSQL(ModelStorage):
                 value = row[name]
                 if value is not None:
                     add(value)
-            return Target.read(target_ids, fields)
+            r_limit = Transaction().context.get('related_limit')
+            return Target.read(target_ids, fields, related_limit=r_limit)
 
         def add_related(field, rows, targets):
             name = field.name
@@ -1265,7 +1281,7 @@ class ModelSQL(ModelStorage):
                     add_related(field, rows, targets)
 
         for row, field in product(result, to_del):
-            del row[field]
+            row.pop(field, None)
 
         return result
 
