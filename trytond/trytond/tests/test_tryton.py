@@ -5,6 +5,7 @@ import doctest
 import glob
 import hashlib
 import inspect
+import multiprocessing
 import operator
 import os
 import subprocess
@@ -40,6 +41,7 @@ from trytond.pyson import PYSONDecoder, PYSONEncoder
 from trytond.tools import file_open, find_dir, is_instance_method
 from trytond.transaction import Transaction, TransactionError
 from trytond.wizard import StateAction, StateView
+from trytond.server_context import ServerContext, TEST_CONTEXT
 
 __all__ = [
     'CONTEXT',
@@ -67,6 +69,16 @@ else:
     DB_NAME = 'test_' + str(uuid.uuid4().int)
 os.environ['DB_NAME'] = DB_NAME
 DB_CACHE = os.environ.get('DB_CACHE')
+
+
+def _cpu_count():
+    try:
+        return multiprocessing.cpu_count()
+    except NotImplementedError:
+        return 1
+
+
+DB_CACHE_JOBS = os.environ.get('DB_CACHE_JOBS', str(_cpu_count()))
 
 
 def activate_module(modules, lang='en', cache_name=None):
@@ -103,7 +115,8 @@ def activate_module(modules, lang='en', cache_name=None):
                 type='wizard')
             instance_id, _, _ = ActivateUpgrade.create()
             transaction.commit()
-            ActivateUpgrade(instance_id).transition_upgrade()
+            with ServerContext().set_context(**TEST_CONTEXT):
+                ActivateUpgrade(instance_id).transition_upgrade()
             ActivateUpgrade.delete(instance_id)
             transaction.commit()
     backup_db_cache(name)
@@ -136,9 +149,14 @@ def backup_db_cache(name):
 
 def _db_cache_file(path, name):
     if DB_CACHE.startswith('postgresql://'):
+        uri = parse_uri(DB_CACHE)
+        prefix_len = len('test-') + len(uri.netloc) + 1
         hash_name = hashlib.shake_128(name.encode('utf8')).hexdigest(
-            (63 - len('test-')) // 2)
-        return f"{DB_CACHE}/test-{hash_name}"
+            (63 - prefix_len) // 2)
+        if not uri.netloc:
+            return f"{DB_CACHE}/test-{hash_name}"
+        else:
+            return f"{DB_CACHE}/{uri.netloc}-test-{hash_name}"
     else:
         return os.path.join(path, '%s-%s.dump' % (name, backend.name))
 
@@ -200,7 +218,7 @@ def _pg_restore(cache_file):
         with Transaction().start(
                 None, 0, close=True, autocommit=True) as transaction:
             transaction.database.create(transaction.connection, DB_NAME)
-        cmd = ['pg_restore', '-d', DB_NAME]
+        cmd = ['pg_restore', '-d', DB_NAME, '-j', DB_CACHE_JOBS]
         options, env = _pg_options()
         cmd.extend(options)
         cmd.append(cache_file)
@@ -231,7 +249,8 @@ def _pg_dump(cache_file):
     def dump_on_file():
         if os.path.exists(cache_file):
             return False
-        cmd = ['pg_dump', '-f', cache_file, '-F', 'c']
+        # Use directory format to support multiple processes
+        cmd = ['pg_dump', '-f', cache_file, '-F', 'd', '-j', DB_CACHE_JOBS]
         options, env = _pg_options()
         cmd.extend(options)
         cmd.append(DB_NAME)

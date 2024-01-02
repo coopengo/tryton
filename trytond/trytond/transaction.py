@@ -395,7 +395,8 @@ class Transaction(object):
             datamanager.tpc_abort(self)
         Cache.rollback(self)
         self._clear_log_records()
-        self.connection.rollback()
+        if self.connection:
+            self.connection.rollback()
 
     def join(self, datamanager):
         try:

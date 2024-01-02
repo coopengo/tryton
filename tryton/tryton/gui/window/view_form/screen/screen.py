@@ -25,7 +25,7 @@ from tryton.gui.window.view_form.model.group import Group
 from tryton.gui.window.view_form.view import View
 from tryton.gui.window.view_form.view.screen_container import ScreenContainer
 from tryton.jsonrpc import JSONEncoder
-from tryton.pyson import PYSONDecoder
+from tryton.pyson import PYSONEncoder, PYSONDecoder
 from tryton.rpc import clear_cache
 
 _ = gettext.gettext
@@ -1395,9 +1395,15 @@ class Screen:
             query_string.append(
                 ('name', json.dumps(name, separators=(',', ':'))))
         if self.screen_container.tab_domain:
+            tab_domains = []
+            encoder = PYSONEncoder()
+            for n, (ctx, domain), c in self.screen_container.tab_domain:
+                decoder = PYSONDecoder(ctx)
+                tab_domains.append(
+                    (n, ({}, encoder.encode(decoder.decode(domain))), c)
+                    )
             query_string.append(('tab_domain', json.dumps(
-                        self.screen_container.tab_domain,
-                        cls=JSONEncoder, separators=(',', ':'))))
+                        tab_domains, cls=JSONEncoder, separators=(',', ':'))))
         path = [CONFIG['login.db'], 'model', self.model_name]
         view_ids = [v.view_id for v in self.views] + self.view_ids
         if self.current_view.view_type != 'form':

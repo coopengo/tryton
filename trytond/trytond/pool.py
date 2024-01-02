@@ -50,6 +50,7 @@ class Pool(object):
         'report': defaultdict(OrderedDict),
     }
     classes_mixin = defaultdict(list)
+    _application_initializing = False
     _started = False
     _lock = RLock()
     _locks = {}
@@ -58,6 +59,8 @@ class Pool(object):
     _instances = {}
     _init_hooks = {}
     _post_init_calls = {}
+    _registered_notifications = {}
+    _notification_callbacks = {}
     _modules = None
     pool_types = {'model', 'report', 'wizard'}
 
@@ -98,6 +101,18 @@ class Pool(object):
             mpool[cls] = depends
 
     @classmethod
+    def start_app_initialization(cls):
+        cls._application_initializing = True
+
+    @classmethod
+    def app_initialization_completed(cls):
+        cls._application_initializing = False
+
+    @classmethod
+    def app_initializing(cls):
+        return cls._application_initializing
+
+    @classmethod
     def add_pool_type(cls, type):
         cls.pool_types.add(type)
         if type not in cls.classes:
@@ -113,6 +128,12 @@ class Pool(object):
             Pool._init_hooks[kwargs['module']] = []
         Pool._init_hooks[kwargs['module']] += hooks
 
+    @staticmethod
+    def register_notification_callbacks(keyword, callback, *, module=None):
+        if module not in Pool._registered_notifications:
+            Pool._registered_notifications[module] = {}
+        Pool._registered_notifications[module][keyword] = callback
+
     @classmethod
     def start(cls):
         '''
@@ -122,6 +143,7 @@ class Pool(object):
             for classes in Pool.classes.values():
                 classes.clear()
             cls._init_hooks = {}
+            cls._registered_notifications = {}
             register_classes(with_test=cls.test)
             cls._started = True
 
@@ -181,6 +203,7 @@ class Pool(object):
             for type in self.classes.keys():
                 self._pool[self.database_name][type] = {}
             self._post_init_calls[self.database_name] = []
+            self._notification_callbacks[self.database_name] = {}
             try:
                 with ServerContext().set_context(disable_auto_cache=True):
                     restart = not load_modules(
@@ -264,6 +287,8 @@ class Pool(object):
                 classes[type_].append(cls)
         self._post_init_calls[self.database_name] += self._init_hooks.get(
             module, [])
+        self._notification_callbacks[self.database_name].update(
+            self._registered_notifications.get(module, {}))
         self._modules.append(module)
         return classes
 
