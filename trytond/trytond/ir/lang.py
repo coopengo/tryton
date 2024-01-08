@@ -113,7 +113,7 @@ class Lang(DeactivableMixin, ModelSQL, ModelView):
         return [('name',) + tuple(clause[1:])]
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         pool = Pool()
         Translation = pool.get('ir.translation')
         Config = pool.get('ir.configuration')

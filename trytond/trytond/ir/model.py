@@ -402,7 +402,7 @@ class ModelField(ModelSQL, ModelView):
         return name
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         pool = Pool()
         Translation = pool.get('ir.translation')
         Model = pool.get('ir.model')

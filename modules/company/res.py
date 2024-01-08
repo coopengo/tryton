@@ -141,7 +141,7 @@ class User(metaclass=PoolMeta):
         return res
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         user_id = Transaction().user
         if user_id == 0 and 'user' in Transaction().context:
             user_id = Transaction().context['user']

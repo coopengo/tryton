@@ -753,7 +753,9 @@ class O2MField(Field):
                         skip={self.attrs.get('relation_field', '')}))
         return result
 
-    def _set_value(self, record, value, default=False, modified=False):
+    def _set_value(
+            self, record, value, data=None, default=False,
+            modified=False):
         self._set_default_value(record)
         group = record.value[self.name]
         if value is None:
@@ -763,11 +765,16 @@ class O2MField(Field):
         else:
             mode = 'list values'
 
-        if mode == 'list values':
+        if mode == 'list values' or data:
             context = self.get_context(record)
-            field_names = set(f for v in value for f in v
+            if mode == 'list values':
+                fields = set(f for v in value for f in v)
+            else:
+                fields = functools.reduce(
+                    operator.or_, (d.keys() for d in data), set())
+            field_names = {f for f in fields
                 if (f not in group.fields and '.' not in f
-                    and not f.startswith('_')))
+                    and not f.startswith('_'))}
             attr_fields = functools.reduce(
                 operator.or_,
                 (v['fields'] for v in self.attrs.get('views', {}).values()),
@@ -790,7 +797,8 @@ class O2MField(Field):
             records_to_remove = [r for r in group if r.id not in value]
             for record_to_remove in records_to_remove:
                 group.remove(record_to_remove, remove=True, modified=False)
-            group.load(value, modified=modified or default)
+            group.load(value, modified=modified or default,
+                records_data={v['id']: v for v in (data or [])})
         else:
             for vals in value:
                 if (vals.get('id', -1) or -1) > 0:
@@ -811,7 +819,7 @@ class O2MField(Field):
             # Trigger modified only once
             group.record_modified()
 
-    def set(self, record, value, _default=False):
+    def set(self, record, value, data=None, _default=False):
         group = record.value.get(self.name)
         fields = {}
         if group is not None:
@@ -831,7 +839,7 @@ class O2MField(Field):
 
         # Prevent to trigger group-cleared
         group.parent = None
-        self._set_value(record, value, default=_default)
+        self._set_value(record, value, data=data, default=_default)
         group.parent = record
 
     def set_client(self, record, value, force_change=False):

@@ -946,7 +946,7 @@ class ModelSQL(ModelStorage):
         return records
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         pool = Pool()
         Rule = pool.get('ir.rule')
         Translation = pool.get('ir.translation')
@@ -1051,7 +1051,7 @@ class ModelSQL(ModelStorage):
                 tables, dom_exp = cls.search_domain(
                     domain, active_test=False, tables=tables)
             from_ = convert_from(None, tables)
-            limit = related_limit
+            limit = Transaction().context.get('related_limit')
             for sub_ids in grouped_slice(ids, in_max):
                 sub_ids = list(sub_ids)
                 read_ids = sub_ids[:]
@@ -1197,8 +1197,7 @@ class ModelSQL(ModelStorage):
                 value = row[name]
                 if value is not None:
                     add(value)
-            r_limit = Transaction().context.get('related_limit')
-            return Target.read(target_ids, fields, related_limit=r_limit)
+            return Target.read(target_ids, fields)
 
         def add_related(field, rows, targets):
             name = field.name

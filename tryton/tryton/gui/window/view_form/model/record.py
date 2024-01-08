@@ -545,9 +545,7 @@ class Record:
                 continue
             field = self.group.fields[fieldname]
             if isinstance(field, fields.O2MField):
-                later[fieldname] = val.get(f"{fieldname}.", value)
-                if f"{fieldname}." in value:
-                    self._loaded.add(fieldname)
+                later[fieldname] = value
                 continue
             if isinstance(field, (fields.M2OField, fields.ReferenceField)):
                 related = fieldname + '.'
@@ -560,7 +558,8 @@ class Record:
             self._loaded.add(fieldname)
             fieldnames.append(fieldname)
         for fieldname, value in later.items():
-            self.group.fields[fieldname].set(self, value)
+            self.group.fields[fieldname].set(
+                self, value, val.get(f"{fieldname}."))
             self._loaded.add(fieldname)
         if validate:
             self.validate(fieldnames, softvalidation=True)

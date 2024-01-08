@@ -363,7 +363,7 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
         return vals
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         result = super(User, cls).read(ids, fields_names)
         cache = Transaction().get_cache().get(cls.__name__)
         for values in result:

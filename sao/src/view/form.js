@@ -325,7 +325,7 @@ function eval_pyson(value){
                     field = record.model.fields[fname];
                     fields.push([
                         fname,
-                        field.description.loading || 'eager' == 'eager',
+                        (field.description.loading || 'eager') == 'eager',
                         field.views.size,
                     ]);
                 }
@@ -3977,7 +3977,7 @@ function eval_pyson(value){
                     for (i = 0, len = result.length; i < len; i++) {
                         ids.push(result[i][0]);
                     }
-                    this.screen.group.load(ids, true);
+                    this.screen.group.load(ids, null, true);
                     prm = this.screen.display();
                     if (sequence) {
                         this.screen.group.set_sequence(

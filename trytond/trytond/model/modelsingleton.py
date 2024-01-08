@@ -47,7 +47,7 @@ class ModelSingleton(ModelStorage):
         return [singleton]
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         singleton = cls.get_singleton()
         if not singleton:
             fname_no_rec_name = [

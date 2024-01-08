@@ -36,7 +36,7 @@ class User(metaclass=PoolMeta):
         return status
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         context = Transaction().context
         user_id = Transaction().user
         if user_id == 0 and 'user' in Transaction().context:

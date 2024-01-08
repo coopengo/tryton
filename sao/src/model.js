@@ -78,7 +78,7 @@
                 this.__readonly = value;
             }
         });
-        array.load = function(ids, modified=false, position=-1) {
+        array.load = function(ids, records_data=null, modified=false, position=-1) {
             if (position == -1) {
                 position = this.length;
             }
@@ -90,6 +90,9 @@
                     new_record.group = this;
                     this.splice(position, 0, new_record);
                     position += 1;
+                }
+                if (records_data && (id in records_data)) {
+                    new_record.set(records_data[id], false, false);
                 }
                 new_records.push(new_record);
             }
@@ -843,6 +846,7 @@
                 }
                 if (this.model.fields[name] instanceof Sao.field.One2Many) {
                     later[name] = value;
+                    continue;
                 }
                 const field = this.model.fields[name];
                 var related;
@@ -861,7 +865,7 @@
             }
             for (name in later) {
                 value = later[name];
-                this.model.fields[name].set(this, value);
+                this.model.fields[name].set(this, value, values[`${name}.`]);
                 this._loaded[name] = true;
             }
             if (validate) {
@@ -2230,7 +2234,7 @@
             Sao.field.One2Many._super.init.call(this, description);
         },
         _default: null,
-        _set_value: function(record, value, default_, modified) {
+        _set_value: function(record, value, data, default_, modified) {
             this._set_default_value(record);
             var group = record._values[this.name];
             var prm = jQuery.when();
@@ -2244,15 +2248,28 @@
             } else {
                 mode = 'list values';
             }
-            if (mode == 'list values') {
+            if ((mode == 'list values') || data) {
                 var context = this.get_context(record);
-                let field_names = new Set();
-                for (const val of value) {
-                    for (const fieldname in val) {
-                        if (!(fieldname in group.model.fields) &&
-                                (!~fieldname.indexOf('.'))) {
-                            field_names.add(fieldname);
+                var value_fields = new Set();
+                if (mode == 'list values') {
+                    for (const v of value) {
+                        for (const f of Object.keys(v)) {
+                            value_fields.add(f);
                         }
+                    }
+                } else {
+                    for (const d of data) {
+                        for (const f in d) {
+                            value_fields.add(f);
+                        }
+                    }
+                }
+                let field_names = new Set();
+                for (const fieldname of value_fields) {
+                    if (!(fieldname in group.model.fields) &&
+                            (!~fieldname.indexOf('.')) &&
+                            (!fieldname.startsWith('_'))) {
+                        field_names.add(fieldname);
                     }
                 }
                 if (field_names.size) {
@@ -2280,7 +2297,11 @@
                 for (const record_to_remove of records_to_remove) {
                     group.remove(record_to_remove, true, false, false);
                 }
-                group.load(value, modified || default_);
+                var records_data = {};
+                for (const d of (data || [])) {
+                    records_data[d.id] = d;
+                }
+                group.load(value, records_data, modified || default_);
             } else {
                 for (const vals of value) {
                     var new_record;
@@ -2305,7 +2326,7 @@
                 group.record_modified();
             }
         },
-        set: function(record, value, _default=false) {
+        set: function(record, value, data=null, _default=false) {
             var group = record._values[this.name];
             var model;
             if (group !== undefined) {
@@ -2318,7 +2339,7 @@
             }
             record._values[this.name] = undefined;
             this._set_default_value(record, model);
-            this._set_value(record, value, _default);
+            this._set_value(record, value, data, _default);
         },
         get: function(record) {
             var group = record._values[this.name];

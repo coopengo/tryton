@@ -62,7 +62,7 @@ class ResourceAccessMixin(ModelStorage):
             (model, {'create': 'write', 'delete': 'write'}.get(mode, mode))]
 
     @classmethod
-    def read(cls, ids, fields_names, related_limit=None):
+    def read(cls, ids, fields_names):
         cls.check_access(ids, mode='read')
         return super().read(ids, fields_names)
 
