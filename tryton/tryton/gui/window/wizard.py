@@ -325,6 +325,7 @@ class WizardDialog(Wizard, NoModal):
         self.dia.add_accel_group(self.accel_group)
 
         self._buttons = set()
+        self._shown_screens = set()
 
         self.dia.vbox.pack_start(
             self.widget, expand=True, fill=True, padding=0)
@@ -407,6 +408,9 @@ class WizardDialog(Wizard, NoModal):
         return True
 
     def show(self):
+        if id(self.screen) in self._shown_screens:
+            self.dia.show()
+            return
         view = self.screen.current_view
         if view.view_type == 'form':
             expand = False
@@ -432,6 +436,7 @@ class WizardDialog(Wizard, NoModal):
         screen = self.dia.get_screen()
         self.dia.resize(
             min(width, screen.width()), min(height, screen.height()))
+        self._shown_screens.add(id(self.screen))
 
     def hide(self):
         self.dia.hide()
