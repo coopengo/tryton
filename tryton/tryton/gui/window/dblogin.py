@@ -519,13 +519,6 @@ class DBLogin(object):
                 f"Failed to parse {self.profiles_cfg}. "
                 f"A backup can be found at {temp_name}",
                 exc_info=True)
-        if not self.profiles.sections():
-            short_version = '.'.join(__version__.split('.', 2)[:2])
-            name = 'demo%s.tryton.org' % short_version
-            self.profiles.add_section(name)
-            self.profiles.set(name, 'host', name)
-            self.profiles.set(name, 'database', 'demo%s' % short_version)
-            self.profiles.set(name, 'username', 'demo')
         for section in self.profiles.sections():
             active = all(self.profiles.has_option(section, option)
                 for option in ('host', 'database'))
