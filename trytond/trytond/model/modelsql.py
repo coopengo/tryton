@@ -507,6 +507,10 @@ class ModelSQL(ModelStorage):
         if not callable(cls.table_query):
             table_h = cls.__table_handler__()
             table_h.dump_indexes(cls._sql_indexes, file, concurrently)
+            if cls._history:
+                history_th = cls.__table_handler__(history=True)
+                history_th.dump_indexes(
+                    cls._history_sql_indexes, file, concurrently)
 
     @classmethod
     def _update_history_table(cls):
