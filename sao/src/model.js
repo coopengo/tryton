@@ -3,6 +3,41 @@
 (function() {
     'use strict';
 
+    function get_x2m_sub_fields(f_attrs, prefix) {
+        if (f_attrs.loading == 'eager' && f_attrs.views) {
+            var sub_fields = {};
+            for (const v of Object.values(f_attrs.views || {})) {
+                for (const [key, val] of Object.entries(v.fields || {})) {
+                    sub_fields[key] = val;
+                }
+            }
+            const x2m_sub_fields = [];
+
+            for (const [s_field, f_def] of Object.entries(sub_fields)) {
+                x2m_sub_fields.push(`${prefix}.${s_field}`);
+
+                var type_ = f_def.type;
+                if (['many2one', 'one2one', 'reference'].includes(type_)) {
+                    x2m_sub_fields.push(`${prefix}.${s_field}.rec_name`);
+                } else if (['selection', 'multiselection'].includes(type_)) {
+                    x2m_sub_fields.push(`${prefix}.${s_field}:string`);
+                } else if (['one2many', 'many2many'].includes(type_)) {
+                    x2m_sub_fields.push(
+                        ...get_x2m_sub_fields(f_def, `${prefix}.${s_field}`)
+                    );
+                }
+            }
+
+            x2m_sub_fields.push(
+                `${prefix}._timestamp`,
+                `${prefix}._write`,
+                `${prefix}._delete`);
+            return x2m_sub_fields;
+        } else {
+            return [];
+        }
+    }
+
     Sao.Model = Sao.class_(Object, {
         init: function(name, attributes) {
             attributes = attributes || {};
@@ -678,6 +713,7 @@
                     fnames.push(fname);
                 }
             }
+            var related_limit = null;
             var fnames_to_fetch = fnames.slice();
             var rec_named_fields = ['many2one', 'one2one', 'reference'];
             for (const fname of fnames) {
@@ -687,6 +723,13 @@
                 else if ((fdescription.type == 'selection') &&
                         ((fdescription.loading || 'lazy') == 'eager')) {
                     fnames_to_fetch.push(fname + ':string');
+                } else if (
+                    ['many2many', 'one2many'].includes(fdescription.type)) {
+                    var sub_fields = get_x2m_sub_fields(fdescription, fname);
+                    fnames_to_fetch = [ ...fnames_to_fetch, ...sub_fields];
+                    if (sub_fields.length > 0) {
+                        related_limit = 80;
+                    }
                 }
             }
             if (!~fnames.indexOf('rec_name')) {
@@ -697,6 +740,9 @@
             fnames_to_fetch.push('_delete');
 
             var context = jQuery.extend({}, this.get_context());
+            if (related_limit) {
+                context.related_limit = related_limit;
+            }
             if (loading == 'eager') {
                 var limit = Math.trunc(Sao.config.limit /
                     Math.min(fnames_to_fetch.length, 10));
@@ -2272,18 +2318,39 @@
                         field_names.add(fieldname);
                     }
                 }
-                if (field_names.size) {
+                var attr_fields = Object.values(this.description.views || {})
+                    .map(v => v.fields)
+                    .reduce((acc, elem) => {
+                        for (const field in elem) {
+                            if (elem.hasOwnProperty(field)) {
+                                acc[field] = elem[field];
+                            }
+                        }
+                        return acc;
+                    }, {});
+                var fields = {};
+                for (const n of field_names) {
+                    if (n in attr_fields) {
+                        fields[n] = attr_fields[n];
+                    }
+                }
+                var to_fetch = Array.from(field_names).filter(k => !(k in attr_fields));
+                if (to_fetch.size) {               
                     var args = {
                         'method': 'model.' + this.description.relation +
                             '.fields_get',
-                        'params': [Array.from(field_names), context]
+                        'params': [to_fetch, context]
                     };
-                    var fields;
                     try {
-                        fields = Sao.rpc(args, record.model.session, false);
+                        var rpc_fields = Sao.rpc(args, record.model.session, false);
+                        for (const [key, value] of rpc_fields.entries()) {
+                            fields[key] = value;
+                        }
                     } catch (e) {
                         return;
                     }
+                }
+                if (!jQuery.isEmptyObject(fields)) {
                     group.add_fields(fields);
                 }
             }
