@@ -377,7 +377,8 @@ class WizardDialog(Wizard, NoModal):
             current_form = main.get_page()
             if current_form:
                 for dialog in current_form.dialogs:
-                    dialog.show()
+                    if getattr(dialog, 'screen', None):
+                        dialog.show()
         if self.page.dialogs:
             dialog = self.page.dialogs[-1]
         else:
