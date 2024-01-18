@@ -377,8 +377,7 @@ class WizardDialog(Wizard, NoModal):
             current_form = main.get_page()
             if current_form:
                 for dialog in current_form.dialogs:
-                    if getattr(dialog, 'screen', None):
-                        dialog.show()
+                    dialog.show()
         if self.page.dialogs:
             dialog = self.page.dialogs[-1]
         else:
@@ -408,6 +407,8 @@ class WizardDialog(Wizard, NoModal):
         return True
 
     def show(self):
+        if not self.screen:
+            return
         view = self.screen.current_view
         if view.view_type == 'form':
             expand = False
