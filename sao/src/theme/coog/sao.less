@@ -9,4 +9,54 @@
 @color-lightest-blue:   #E7F4FC; //coogcolor
 @color-lightest-red:    #ffd0cd;
 
+@tree-line-border-top:  0px;
+
 @brand-primary:         @color-blue;
+
+// // Use variable for border width
+.treeview > table.tree > tbody > tr > td {
+    border-top-width:   @tree-line-border-top;
+}
+//
+// Smaller lines in tree views
+.treeview > table.tree > tbody > tr > td {
+    padding-top:        2px;
+    padding-bottom:     2px;
+}
+
+
+.treeview > table.tree,table.tree-condensed > thead,tbody > tr > td.selection-state > input {
+    & input[type="checkbox"] {
+        margin-top:     @tree-line-border-top;
+        margin-bottom:  0px;
+    }
+
+    & :before {
+        border-color:   @color-lightest-blue !important;
+    }
+
+    & tr:hover :before {
+        border-color:   @color-grey !important;
+    }
+
+    & tr.selected,thead :before {
+        border-color:   @color-grey !important;
+    }
+}
+
+.treeview > table.tree > thead > tr:first-child th {
+    background-color:       @color-light-blue;
+    color:                  @color-white;
+    text-align:             left;
+}
+
+.form-one2many-menu.panel-heading {
+    color:                  black;
+    background-color:       @color-white;
+    border-radius:          2px;
+    border-width:           0px;
+    border-left:            unset;
+    border-top:             unset;
+    border-right:           unset;
+    box-shadow:             0 1px 4px rgba(0, 0, 0, 0.3);
+}
