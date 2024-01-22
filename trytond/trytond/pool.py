@@ -280,7 +280,8 @@ class Pool(object):
                     cls = type(
                         cls.__name__, (cls, previous_cls), {'__slots__': ()})
                 except KeyError:
-                    pass
+                    cls = type(
+                        cls.__name__, (cls,), {'__slots__': ()})
                 assert issubclass(cls, PoolBase), (
                     f"{cls} is not a subclass of {PoolBase}")
                 self.add(cls, type=type_)
