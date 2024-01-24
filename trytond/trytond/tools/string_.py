@@ -114,6 +114,9 @@ class StringPartitioned(str):
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def __bool__(self):
+        return bool(self._parts)
+
     def __str__(self):
         return ''.join(str(p) for p in self._parts)
 
