@@ -6,6 +6,7 @@ import datetime as dt
 import doctest
 import sys
 import unittest
+from unittest.mock import Mock
 from io import BytesIO
 
 import sql
@@ -468,6 +469,25 @@ class LazyStringTestCase(unittest.TestCase):
         zi = timezone._get_zoneinfo('foo')
         now = dt.datetime(2022, 5, 17, tzinfo=zi)
         self.assertEqual(str(now), "2022-05-17 00:00:00+00:00")
+
+    def test_lazy_evaluation(self):
+        "Test that StringPartitioned doesn't evaluate its argument on __init__"
+        getter = Mock()
+        getter.side_effect = lambda s: s
+        ls = LazyString(getter, 'foo')
+
+        s = StringPartitioned(ls)
+        getter.assert_not_called()
+
+        str(s)
+        getter.assert_called_once()
+
+        getter.reset_mock()
+        s = StringPartitioned(s)
+        getter.assert_not_called()
+
+        str(s)
+        getter.assert_called_once()
 
 
 class ImmutableDictTestCase(unittest.TestCase):

@@ -549,7 +549,7 @@ msgid "No action defined."
 msgstr "Pas d'action définie."
 
 msgid "Attachments (%1)"
-msgstr "Attachements (%1)"
+msgstr "Pièces jointes (%1)"
 
 msgid "Notes (%1)"
 msgstr "Notes (%1)"
