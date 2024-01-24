@@ -1,5 +1,6 @@
 @color-white:           white;
 @color-lightest-grey:   #f9f9f9; //coogcolor
+@color-lighter-grey:    #c0c0c0; //coogcolor
 @color-grey:            #8c8c8c; //coogcolor
 @color-median-grey:     #777;
 @color-black:           #46423d; //coogcolor
@@ -25,6 +26,7 @@
 }
 
 
+// More discrete checkboxes for selection in trees
 .treeview > table.tree,table.tree-condensed > thead,tbody > tr > td.selection-state > input {
     & input[type="checkbox"] {
         margin-top:     @tree-line-border-top;
@@ -44,19 +46,55 @@
     }
 }
 
+// Make tree view headers a little more visible
 .treeview > table.tree > thead > tr:first-child th {
-    background-color:       @color-light-blue;
-    color:                  @color-white;
-    text-align:             left;
+    background-color:       @color-lightest-blue;
+    text-align:             left; // by default alignment seems to depend on the column type, which looks wrong
 }
 
-.form-one2many-menu.panel-heading {
-    color:                  black;
-    background-color:       @color-white;
-    border-radius:          2px;
-    border-width:           0px;
-    border-left:            unset;
-    border-top:             unset;
-    border-right:           unset;
-    box-shadow:             0 1px 4px rgba(0, 0, 0, 0.3);
-}
+// Top menu:
+//      - lighter color
+//      - less vertical padding
+// nav.toolbar.panel-heading {
+//     background-color:       @color-lightest-blue;
+//     padding:                0px 10px 0px 0px;
+//
+//     div.container-fluid.navbar-inverse {
+//         background-color:       @color-lightest-blue;
+//         padding-left:           0px;
+//
+//         > * > .navbar-brand.dropdown-toggle {
+//             color:              @color-black;
+//         }
+//     }
+// }
+//
+// td.form-dict {
+//     border:                 0px;
+//     box-shadow:             none;
+//
+//     > div.form-dict.panel.panel-default {
+//         border:                 0px;
+//         box-shadow:             unset;
+//
+//         > div.form-dict-heading.panel-heading {
+//             color:                  @color-black;
+//             background-color:       @color-white;
+//             border-width:           0px;
+//             border-bottom:          1px solid #e5e5e5;  // Color of the <separator> tag
+//             // box-shadow:             0 1px 4px rgba(0, 0, 0, 0.3);
+//         }
+//     }
+// }
+
+// .form-one2many-menu.panel-heading {
+//     color:                  black;
+//     background-color:       @color-white;
+//     border-radius:          2px;
+//     border-width:           0px;
+//     border-left:            unset;
+//     border-top:             unset;
+//     border-right:           unset;
+//     box-shadow:             0 1px 4px rgba(0, 0, 0, 0.3);
+// }
+//
