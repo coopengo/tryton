@@ -15,7 +15,6 @@ from tryton.common import (
     EvalEnvironment, RPCException, RPCExecute, concat, domain_inversion,
     eval_domain, extract_reference_models, filter_leaf, inverse_leaf,
     localize_domain, merge, prepare_reference_domain, simplify, unique_value)
-from tryton.common.datetime_ import INVALID_DT_VALUE
 from tryton.common.htmltextbuffer import guess_decode
 from tryton.config import CONFIG
 from tryton.pyson import PYSONDecoder
@@ -287,12 +286,6 @@ class DateTimeField(Field):
 
     _default = None
 
-    def get_eval(self, record):
-        value = super().get_eval(record)
-        if value is INVALID_DT_VALUE:
-            value = None
-        return value
-
     def set_client(self, record, value, force_change=False):
         if isinstance(value, datetime.time):
             current_value = self.get_client(record)
@@ -301,8 +294,6 @@ class DateTimeField(Field):
                     current_value.date(), value)
             else:
                 value = None
-        elif value is INVALID_DT_VALUE:
-            pass
         elif value and not isinstance(value, datetime.datetime):
             current_value = self.get_client(record)
             if current_value:
@@ -310,15 +301,13 @@ class DateTimeField(Field):
             else:
                 time = datetime.time()
             value = datetime.datetime.combine(value, time)
-        if value and value is not INVALID_DT_VALUE:
+        if value:
             value = common.untimezoned_date(value)
         super(DateTimeField, self).set_client(record, value,
             force_change=force_change)
 
     def get_client(self, record):
         value = super(DateTimeField, self).get_client(record)
-        if value is INVALID_DT_VALUE:
-            return value
         if value:
             return common.timezoned_date(value)
 
@@ -342,12 +331,6 @@ class DateTimeField(Field):
 class DateField(Field):
 
     _default = None
-
-    def get_eval(self, record):
-        value = super().get_eval(record)
-        if value is INVALID_DT_VALUE:
-            value = None
-        return value
 
     def validate(self, record, softvalidation=False, pre_validate=None):
         valid = super().validate(record, softvalidation, pre_validate)
@@ -385,12 +368,6 @@ class TimeField(Field):
 
     def time_format(self, record):
         return record.expr_eval(self.attrs['format'])
-
-    def get_eval(self, record):
-        value = super().get_eval(record)
-        if value is INVALID_DT_VALUE:
-            value = None
-        return value
 
     def validate(self, record, softvalidation=False, pre_validate=None):
         valid = super().validate(record, softvalidation, pre_validate)
