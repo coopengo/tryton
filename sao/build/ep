@@ -3,6 +3,7 @@
 move_res() {
     local base
     base=$(basename "$1")
+    echo "$1" -> "$base"
     cp -r "$1" dist/ && sed -i "s;$1;$base;g" dist/index.html
 }
 
@@ -10,10 +11,12 @@ move_res() {
 # in dev mode, these files are referenced from their original path
 pack() {
     cp index.html dist/ \
+        && cp custom.js dist/ \
+        && cp custom.css dist/ \
         && cp -r locale dist/ \
         && cp -r images dist/ \
         && cp -r bower_components/bootstrap/dist/fonts dist/ \
-        && move_res bower_components/Sortable/Sortable.js \
+        && move_res bower_components/Sortable/Sortable.min.js \
         && move_res bower_components/bootstrap/dist/css/bootstrap.min.css \
         && move_res bower_components/bootstrap/dist/css/bootstrap-theme.min.css \
         && move_res bower_components/bootstrap/dist/js/bootstrap.min.js \
