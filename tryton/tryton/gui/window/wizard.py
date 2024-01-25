@@ -408,6 +408,8 @@ class WizardDialog(Wizard, NoModal):
         return True
 
     def show(self):
+        if not self.screen:
+            return
         if id(self.screen) in self._shown_screens:
             self.dia.show()
             return
