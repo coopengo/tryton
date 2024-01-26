@@ -36,7 +36,7 @@ def run(options):
         for db_name in options.database_names:
             thread = threads.get(db_name)
             if thread and thread.is_alive():
-                logger.info(
+                logger.warning(
                     'skip "%s" as previous cron still running', db_name)
                 continue
             database_list = Pool.database_list()

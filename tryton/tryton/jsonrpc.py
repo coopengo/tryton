@@ -279,8 +279,7 @@ class Transport(xmlrpc.client.SafeTransport):
                         enumerate(value), '')
                 return format_hash(hashlib.sha1(peercert).hexdigest())
             except (socket.error, ssl.SSLError, ssl.CertificateError) as e:
-                import tryton.common as common
-                common.warning(str(e), "Can not connect in SSL")
+                logger.info("Can not connect in SSL", exc_info=e)
                 if allow_http:
                     http_connection()
                 else:

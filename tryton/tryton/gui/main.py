@@ -112,6 +112,10 @@ class Main(Gtk.Application):
         action.connect('activate', self.logout)
         self.add_action(action)
 
+        open_log_dir = Gio.SimpleAction.new('open_log_dir', None)
+        open_log_dir.connect('activate', self.open_log_dir)
+        self.add_action(open_log_dir)
+
         action = Gio.SimpleAction.new('about', None)
         action.connect('activate', lambda *a: self.about())
         self.add_action(action)
@@ -293,6 +297,7 @@ class Main(Gtk.Application):
         menu = Gio.Menu.new()
         menu.append(_("Preferences..."), 'app.preferences')
         menu.append(_("Log out"), 'app.logout')
+        menu.append(_("Open logs directory"), 'app.open_log_dir')
 
         section = Gio.Menu.new()
         toolbar = Gio.Menu.new()
@@ -1131,3 +1136,7 @@ class Main(Gtk.Application):
             self.get_preferences()
         else:
             self.quit()
+
+    def open_log_dir(self, *args):
+        config_dir = get_config_dir()
+        webbrowser.open(config_dir)
