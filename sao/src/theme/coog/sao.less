@@ -13,6 +13,7 @@
 @tree-line-border-top:  0px;
 
 @brand-primary:         @color-blue;
+@coog-box-shadow:       0 1px 4px rgba(0, 0, 0, 0.3);
 
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
@@ -28,7 +29,7 @@
     border-left:            unset;
     border-top:             unset;
     border-right:           unset;
-    box-shadow:             0 1px 4px rgba(0, 0, 0, 0.3);
+    box-shadow:             @coog-box-shadow;
     padding:                0px;
 }
 
@@ -195,6 +196,28 @@ div.form-dict {
         }
     }
 }
+///////////////////////////////////////////////////////////////////////////////
+// Groups
+///////////////////////////////////////////////////////////////////////////////
+
+div.form-item.form-group_:has(> fieldset.form-group_ > div.form-group_-legend) {
+    padding-bottom:             15px;
+
+    > fieldset.form-group_ {
+        box-shadow:                 @coog-box-shadow;
+        margin-bottom:              10px;
+
+        > div.form-group_-legend {
+            border-top-left-radius:    3px;
+            border-top-right-radius:   3px;
+            border-bottom-width:       0px;
+            background-color:          @color-lightest-blue;
+            margin-bottom:             5px;
+            padding:                   2px 7px 2px 7px;
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Misc fields
 ///////////////////////////////////////////////////////////////////////////////

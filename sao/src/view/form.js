@@ -888,7 +888,14 @@ function eval_pyson(value){
                 'class': this.class_
             });
             if (attributes.string) {
-                this.el.append(jQuery('<legend/>').text(attributes.string));
+                var header = jQuery('<div/>', {
+                    'class': this.class_ + '-legend panel-heading'
+                });
+                header.append(jQuery('<label/>', {
+                    'class': this.class_ + '-label'
+                }).text(attributes.string));
+                this.el.append(header);
+                // this.el.append(jQuery('<legend/>').text(attributes.string));
             }
         },
         add: function(widget) {
