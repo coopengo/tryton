@@ -125,7 +125,7 @@ class ConfigManager(object):
                 config_dir / x
                 for x in glob.glob('tryton-*.log', root_dir=config_dir)
                 if os.path.isfile(config_dir / x)]
-            files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+            files.sort(key=lambda x: str(x), reverse=True)
             for file in files[9:]:
                 os.remove(file)
             now = datetime.datetime.now().strftime('%Y%m%d-%Hh%Mm%Ss')
