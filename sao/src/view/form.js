@@ -46,6 +46,9 @@ function eval_pyson(value){
                 this.parse(child);
             }
             if (container) {
+                if (container instanceof Sao.View.Form.Container) {
+                    container.setup_grid_template();
+                }
                 this._containers.pop();
             }
         },
@@ -359,18 +362,24 @@ function eval_pyson(value){
                             widget.display();
                         }
                     }
-                })
-                .done(() => {
-                    var record = this.record;
-                    var j;
-                    for (j in this.state_widgets) {
+                    var promesses = [];
+                    for (const j in this.state_widgets) {
                         var state_widget = this.state_widgets[j];
-                        state_widget.set_state(record);
+                        var prm = state_widget.set_state(record);
+                        if (prm) {
+                            promesses.push(prm);
+                        }
                     }
-                    for (j in this.containers) {
-                        var container = this.containers[j];
-                        container.resize();
+                    for (const container of this.containers) {
+                        container.set_grid_template();
                     }
+                    // re-set the grid templates for the StateWidget that are
+                    // asynchronous
+                    jQuery.when.apply(jQuery, promesses).done(() => {
+                        for (const container of this.containers) {
+                            container.set_grid_template();
+                        }
+                    });
                 });
         },
         set_value: function() {
@@ -492,25 +501,25 @@ function eval_pyson(value){
         init: function(col=4) {
             if (col < 0) col = 0;
             this.col = col;
-            this.el = jQuery('<table/>', {
-                'class': 'form-container responsive responsive-noheader'
+            this.el = jQuery('<div/>', {
+                'class': 'form-container'
             });
-            this.body = jQuery('<tbody/>').appendTo(this.el);
             if (this.col <= 0) {
                 this.el.addClass('form-hcontainer');
             } else if (this.col == 1) {
                 this.el.addClass('form-vcontainer');
             }
-            this.add_row();
+            this._col = 1;
+            this._row = 1;
+            this._xexpand = new Set();
+            this._colspans = [];
+            this._yexpand = new Set();
+            this._grid_cols = [];
+            this._grid_rows = [];
         },
         add_row: function() {
-            this.body.append(jQuery('<tr/>'));
-        },
-        rows: function() {
-            return this.body.children('tr');
-        },
-        row: function() {
-            return this.rows().last();
+            this._col = 1;
+            this._row += 1;
         },
         add: function(widget, attributes) {
             var colspan = attributes.colspan;
@@ -519,198 +528,192 @@ function eval_pyson(value){
             if (xfill === undefined) xfill = 1;
             var xexpand = attributes.xexpand;
             if (xexpand === undefined) xexpand = 1;
-            var row = this.row();
+
+            // CSS grid elements are 1-indexed
             if (this.col > 0) {
-                var len = 0;
-                row.children().map(function(i, e) {
-                    len += Number(jQuery(e).attr('colspan') || 1);
-                });
-                if (len + colspan > this.col) {
-                    this.add_row();
-                    row = this.row();
+                if (colspan > this.col) {
+                    colspan = this.col;
+                }
+                if ((this._col + colspan) > (this.col + 1)) {
+                    this._col = 1;
+                    this._row += 1;
                 }
             }
+
             var el;
             if (widget) {
                 el = widget.el;
             }
-            var cell = jQuery('<td/>', {
-                'colspan': colspan,
-                'class': widget ? widget.class_ || '' : ''
+            var cell = jQuery('<div/>', {
+                'class': 'form-item ' + (widget ? widget.class_ || '' : ''),
             }).append(el);
-            row.append(cell);
+            cell.css('grid-column', `${this._col} / ${this._col + colspan}`);
+            cell.css('grid-row', `${this._row} / ${this._row + 1}`);
+            this.el.append(cell);
 
             if (!widget) {
+                this._col += colspan;
                 return;
-            }
-
-            if (attributes.yexpand) {
-                cell.css('height', '100%');
+            } else {
+                if (xexpand && (colspan == 1)) {
+                    this._xexpand.add(this._col);
+                } else if (xexpand) {
+                    var newspan = [];
+                    for (var i=this._col; i < this._col + colspan; i++) {
+                        newspan.push(i);
+                    }
+                    this._colspans.push(newspan);
+                }
+                if (attributes.yexpand) {
+                    this._yexpand.add(this._row);
+                }
+                this._col += colspan;
             }
 
             if (attributes.xalign !== undefined) {
                 var xalign;
                 if (attributes.xalign == 0.5) {
-                    if (xexpand) {
-                        xalign = 'start';
-                    } else {
-                        xalign = 'center';
-                    }
+                    xalign = 'center';
                 } else {
                     xalign = attributes.xalign <= 0.5? 'start': 'end';
                 }
-                cell.css('text-align', xalign);
+                cell.addClass(`xalign-${xalign}`);
+            } else {
+                cell.addClass('xalign-start');
             }
             if (xexpand) {
                 cell.addClass('xexpand');
-                cell.css('width', '100%');
             }
             if (xfill) {
                 cell.addClass('xfill');
                 if (xexpand) {
-                    el.css('width', '100%');
+                    el.addClass('xexpand');
                 }
             }
 
             if (attributes.yalign !== undefined) {
                 var yalign;
                 if (attributes.yalign == 0.5) {
-                    yalign = 'middle';
+                    yalign = 'center';
                 } else {
-                    yalign = attributes.yalign <= 0.5? 'top': 'bottom';
+                    yalign = attributes.yalign <= 0.5? 'start': 'end';
                 }
-                cell.css('vertical-align', yalign);
+                cell.addClass(`yalign-${yalign}`);
+            }
+
+            if (attributes.yfill) {
+                cell.addClass('yfill');
+                if (attributes.yexpand) {
+                    el.addClass('yexpand');
+                }
             }
 
             if (attributes.help) {
                 widget.el.attr('title', attributes.help);
             }
         },
-        resize: function() {
-            var rows = this.rows().toArray();
-            var widths = [];
-            var col = this.col;
-            var has_expand = false;
-
-            var parent_max_width = 0.75;
-            this.el.parents('td').each(function() {
-                var width = this.style.width;
-                if (width.endsWith('%')) {
-                    parent_max_width *= parseFloat(width.slice(0, -1), 10) / 100;
-                }
-            });
-
-            var get_xexpands = function(row) {
-                row = jQuery(row);
-                var xexpands = [];
-                let i = 0;
-                row.children().map(function() {
-                    var cell = jQuery(this);
-                    var colspan = Math.min(Number(cell.attr('colspan')), col || 1);
-                    if (cell.hasClass('xexpand') &&
-                        (!jQuery.isEmptyObject(cell.children())) &&
-                        (cell.children(':not(.tooltip)').css('display') != 'none')) {
-                        xexpands.push([cell, i]);
-                    }
-                    i += colspan;
-                });
-                return xexpands;
-            };
-            // Sort rows to compute first the most constraining row
-            // which are the one with the more xexpand cells
-            // and with the less colspan
-            rows.sort(function(a, b) {
-                a = get_xexpands(a);
-                b = get_xexpands(b);
-                if (a.length == b.length) {
-                    var reduce = function(previous, current) {
-                        var cell = current[0];
-                        var colspan = Math.min(
-                            Number(cell.attr('colspan')), col || 1);
-                        return previous + colspan;
-                    };
-                    return a.reduce(reduce, 0) - b.reduce(reduce, 0);
-                } else {
-                    return b.length - a.length;
-                }
-            });
-            for (let row of rows) {
-                row = jQuery(row);
-                var xexpands = get_xexpands(row);
-                const width = 100 / xexpands.length;
-                for (const e of xexpands) {
-                    var cell = e[0];
-                    let i = e[1];
-                    const colspan = Math.min(
-                        Number(cell.attr('colspan')), col || 1);
-                    var current_width = 0;
-                    for (let j = 0; j < colspan; j++) {
-                        current_width += widths[i + j] || 0;
-                    }
-                    for (let j = 0; j < colspan; j++) {
-                        if (!current_width) {
-                            widths[i + j] = width / colspan;
-                        } else if (current_width > width) {
-                            // Split proprotionally the difference over all cells
-                            // following their current width
-                            var diff = current_width - width;
-                            if (widths[i + j]) {
-                                widths[i + j] -= (diff /
-                                    (current_width / widths[i + j]));
-                            }
-                        }
+        setup_grid_template: function() {
+            for (const span of this._colspans) {
+                var found = false;
+                for (const col of span) {
+                    if (this._xexpand.has(col)) {
+                        found = true;
+                        break;
                     }
                 }
-                if (!jQuery.isEmptyObject(xexpands)) {
-                    has_expand = true;
+                if (!found) {
+                    this._xexpand.add(
+                        Math.round((span[0] + span[span.length - 1]) / 2));
                 }
             }
-            for (let row of rows) {
-                row = jQuery(row);
-                let i = 0;
-                for (let cell of row.children()) {
-                    cell = jQuery(cell);
-                    const colspan = Math.min(
-                        Number(cell.attr('colspan')), col || 1);
-                    if (cell.hasClass('xexpand') &&
-                        (cell.children(':not(.tooltip)').css('display') !=
-                         'none')) {
-                        let width = 0;
-                        for (let j = 0; j < colspan; j++) {
-                            width += widths[i + j] || 0;
-                        }
-                        cell.css('width', width + '%');
-                        if (0 < width) {
-                            cell.css(
-                                'max-width',
-                                (width * parent_max_width) + 'vw');
-                        }
+
+            var i;
+            var col = this.col <= 0 ? this._col : this.col;
+            if (this._xexpand.size) {
+                for (i = 1; i <= col; i++) {
+                    if (this._xexpand.has(i)) {
+                        this._grid_cols.push(`minmax(min-content, ${col}fr)`);
                     } else {
-                        cell.css('width', '');
+                        this._grid_cols.push('min-content');
                     }
-                    // show/hide when container is horizontal or vertical
-                    // to not show padding
-                    if (cell.children().css('display') == 'none') {
-                        cell.css('visibility', 'collapse');
-                        if (col <= 1) {
-                            cell.hide();
-                        }
-                    } else {
-                        cell.css('visibility', 'visible');
-                        if (col <= 1) {
-                            cell.show();
-                        }
-                    }
-                    i += colspan;
                 }
-            }
-            if (has_expand &&
-                (!this.el.closest('td').length ||
-                    this.el.closest('td').hasClass('xexpand'))) {
-                this.el.css('width', '100%');
             } else {
-                this.el.css('width', '');
+                for (i = 1; i <= col; i++) {
+                    this._grid_cols.push("min-content");
+                }
             }
+
+            if (this._yexpand.size) {
+                for (i = 1; i <= this._row; i++) {
+                    if (this._yexpand.has(i)) {
+                        this._grid_rows.push(
+                            `minmax(min-content, ${this._row}fr)`);
+                    } else {
+                        this._grid_rows.push('min-content');
+                    }
+                }
+            } else {
+                for (i = 1; i <= this._row; i++) {
+                    this._grid_rows.push("min-content");
+                }
+            }
+        },
+        set_grid_template: function() {
+            var i;
+            var grid_cols = this._grid_cols.slice();
+            var grid_rows = this._grid_rows.slice();
+            var cols = [];
+            var rows = [];
+            for (i = 0; i < grid_cols.length; i++) {
+                cols.push([]);
+            }
+            for (i = 0; i < grid_rows.length; i++) {
+                rows.push([]);
+            }
+            var col_start, col_end, row_start, row_end;
+            for (var child of this.el.children()) {
+                child = jQuery(child);
+                col_start = parseInt(
+                    child.css('grid-column-start'), 10);
+                col_end = parseInt(child.css('grid-column-end'), 10);
+                row_start = parseInt(child.css('grid-row-start'), 10);
+                row_end = parseInt(child.css('grid-row-end'), 10);
+
+                for (i = col_start; i < col_end; i++) {
+                    cols[i - 1].push(child);
+                }
+                for (i = row_start; i < row_end; i++) {
+                    rows[i - 1].push(child);
+                }
+            }
+            var row, col;
+            var is_empty = function(e) {
+                var empty = true;
+                for (const child of e.children(':not(.tooltip)')) {
+                    if (jQuery(child).css('display') != 'none') {
+                        empty = false;
+                        break;
+                    }
+                }
+                e.toggleClass('form-empty', empty);
+                return empty;
+            };
+            for (i = 0; i < grid_cols.length; i++) {
+                col = cols[i];
+                if (col.every(is_empty)) {
+                    grid_cols[i] = "0px";
+                }
+            }
+            for (i = 0; i < grid_rows.length; i++) {
+                row = rows[i];
+                if (row.every(is_empty)) {
+                    grid_rows[i] = "0px";
+                }
+            }
+            this.el.css(
+                'grid-template-columns', grid_cols.join(" "));
+            this.el.css(
+                'grid-template-rows', grid_rows.join(" "));
         }
     });
 
@@ -1019,6 +1022,7 @@ function eval_pyson(value){
                         domain = d[1];
                     return [name, decoder.decode(domain)];
                 });
+            const promesses = [];
             var counter;
             if (record && record.links_counts[this.action_id]) {
                 counter = record.links_counts[this.action_id];
@@ -1038,7 +1042,7 @@ function eval_pyson(value){
                 if (tab_domains.length) {
                     tab_domains.map(function(d, i) {
                         var tab_domain = d[1];
-                        Sao.rpc({
+                        const prm = Sao.rpc({
                             'method': (
                                 'model.' + action.res_model + '.search_count'),
                             'params': [
@@ -1049,9 +1053,10 @@ function eval_pyson(value){
                                 value, i, current, counter,
                                 action.name, tab_domains);
                         });
+                        promesses.push(prm);
                     }, this);
                 } else {
-                    Sao.rpc({
+                    const prm = Sao.rpc({
                         'method': (
                             'model.' + action.res_model + '.search_count'),
                         'params': [domain, 0, 100, context],
@@ -1061,8 +1066,10 @@ function eval_pyson(value){
                             value, 0, current, counter,
                             action.name, tab_domains);
                     });
+                    promesses.push(prm);
                 }
             }
+            return jQuery.when.apply(jQuery, promesses);
         },
         _set_count: function(value, idx, current, counter, name, domains) {
             if (current != this._current) {
@@ -3765,7 +3772,7 @@ function eval_pyson(value){
                 to_display_prm.done(function() {
                     for (var j in to_display.view.containers) {
                         var container = widget.view.containers[j];
-                        container.resize();
+                        container.set_grid_template();
                     }
                     to_display.display(to_display.record, to_display.field);
                 });
@@ -4552,8 +4559,13 @@ function eval_pyson(value){
             const callback = result => {
                 if (result) {
                     screen.current_record.save().done(() => {
+                        var mf = this.screen.current_record.modified_fields;
+                        var added = 'id' in mf;
                         // Force a reload on next display
                         this.screen.current_record.cancel();
+                        if (added) {
+                            mf.id = true;
+                        }
                     });
                 }
             };
@@ -5312,16 +5324,13 @@ function eval_pyson(value){
             field.add_new_keys(ids, this.record)
                 .then(new_names => {
                     this.send_modified();
-                    var focus = false;
-                    for (const name of new_names) {
-                        if (!(name in this.fields)) {
-                            this.add_line(name);
-                            if (!focus) {
-                                this.fields[name].input.focus();
-                                focus = true;
-                            }
-                        }
+                    var value = this.field.get_client(this.record);
+                    for (const key of new_names) {
+                        value[key] = null;
                     }
+                    this._display().then(() => {
+                        this.fields[new_names[0]].input.focus();
+                    });
                 });
         },
         remove: function(key, modified=true) {
@@ -5390,7 +5399,7 @@ function eval_pyson(value){
                 button.prop('disabled', this._readonly || !delete_);
             }
         },
-        add_line: function(key) {
+        add_line: function(key, position) {
             var field, row;
             var key_schema = this.field.keys[key];
             this.fields[key] = field = new (
@@ -5420,9 +5429,20 @@ function eval_pyson(value){
                 field.button.remove();
             }
 
-            row.appendTo(this.container);
+            var previous = null;
+            if (position > 0) {
+                previous = this.container.children().eq(position - 1);
+            }
+            if (previous) {
+                previous.after(row);
+            } else {
+                this.container.prepend(row);
+            }
         },
         display: function() {
+            this._display();
+        },
+        _display: function() {
             Sao.View.Form.Dict._super.display.call(this);
 
             var record = this.record;
@@ -5468,13 +5488,23 @@ function eval_pyson(value){
                             return 0;
                         }
                     });
+                // We remove first the old keys in order to keep the order
+                // inserting the new ones
+                var removed_key_names = Object.keys(this.fields).filter(
+                        function(e) {
+                            return !(e in value);
+                        });
+                for (i = 0, len = removed_key_names.length; i < len; i++) {
+                    key = removed_key_names[i];
+                    this.remove(key, false);
+                }
                 var decoder = new Sao.PYSON.Decoder();
                 var inversion = new Sao.common.DomainInversion();
                 for (i = 0, len = keys.length; i < len; i++) {
                     key = keys[i];
                     var val = value[key];
                     if (!this.fields[key]) {
-                        this.add_line(key);
+                        this.add_line(key, i);
                     }
                     var widget = this.fields[key];
                     widget.set_value(val);
@@ -5489,16 +5519,9 @@ function eval_pyson(value){
                         }
                     }
                 }
-                var removed_key_names = Object.keys(this.fields).filter(
-                        function(e) {
-                            return !(e in value);
-                        });
-                for (i = 0, len = removed_key_names.length; i < len; i++) {
-                    key = removed_key_names[i];
-                    this.remove(key, false);
-                }
             });
             this._set_button_sensitive();
+            return prm;
         },
         _update_completion: function(text) {
             if (this.wid_text.prop('disabled')) {

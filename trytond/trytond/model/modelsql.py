@@ -7,11 +7,11 @@ from itertools import chain, groupby, islice, product, repeat
 
 from sql import (
     Asc, Column, Desc, Expression, For, Literal, Null, NullsFirst, NullsLast,
-    Table, Union, With)
+    Table, Union, Window, With)
 from sql.aggregate import Count, Max
 from sql.conditionals import Coalesce
-from sql.functions import CurrentTimestamp, Extract, Substring
-from sql.operators import And, Concat, Equal, Operator, Or
+from sql.functions import CurrentTimestamp, Extract, RowNumber, Substring
+from sql.operators import And, Concat, Equal, Exists, Operator, Or
 
 from trytond import backend
 from trytond.cache import freeze
@@ -265,6 +265,7 @@ class ModelSQL(ModelStorage):
 
         cls._sql_constraints = []
         cls._sql_indexes = set()
+        cls._history_sql_indexes = set()
         if not callable(cls.table_query):
             table = cls.__table__()
             cls._sql_constraints.append(
@@ -285,10 +286,20 @@ class ModelSQL(ModelStorage):
                     })
         if cls._history:
             history_table = cls.__table_history__()
-            cls._sql_indexes.add(
-                Index(
-                    history_table,
-                    (history_table.id, Index.Equality())))
+            cls._history_sql_indexes.update({
+                    Index(
+                        history_table,
+                        (history_table.id, Index.Equality())),
+                    Index(
+                        history_table,
+                        (Coalesce(
+                                history_table.write_date,
+                                history_table.create_date).desc,
+                            Index.Range()),
+                        include=[
+                            Column(history_table, '__id'),
+                            history_table.id]),
+                    })
 
     @classmethod
     def __post_setup__(cls):
@@ -487,12 +498,19 @@ class ModelSQL(ModelStorage):
             table_h = cls.__table_handler__()
             # TODO: remove overlapping indexes
             table_h.set_indexes(cls._sql_indexes, concurrently)
+            if cls._history:
+                history_th = cls.__table_handler__(history=True)
+                history_th.set_indexes(cls._history_sql_indexes, concurrently)
 
     @classmethod
     def _dump_sql_indexes(cls, file, concurrently):
         if not callable(cls.table_query):
             table_h = cls.__table_handler__()
             table_h.dump_indexes(cls._sql_indexes, file, concurrently)
+            if cls._history:
+                history_th = cls.__table_handler__(history=True)
+                history_th.dump_indexes(
+                    cls._history_sql_indexes, file, concurrently)
 
     @classmethod
     def _update_history_table(cls):
@@ -1769,55 +1787,10 @@ class ModelSQL(ModelStorage):
         cache = transaction.get_cache()
         delete_records = transaction.delete_records[cls.__name__]
 
-        def filter_history(rows):
-            if not (cls._history and transaction.context.get('_datetime')):
-                return rows
-
-            def history_key(row):
-                return row['_datetime'], row['__id']
-
-            ids_history = {}
-            for row in rows:
-                key = history_key(row)
-                if row['id'] in ids_history:
-                    if key < ids_history[row['id']]:
-                        continue
-                ids_history[row['id']] = key
-
-            to_delete = set()
-            history = cls.__table_history__()
-            if transaction.context.get('_datetime_exclude', False):
-                history_clause = (
-                    history.write_date < transaction.context['_datetime'])
-            else:
-                history_clause = (
-                    history.write_date <= transaction.context['_datetime'])
-            for sub_ids in grouped_slice([r['id'] for r in rows]):
-                where = reduce_ids(history.id, sub_ids)
-                cursor.execute(*history.select(
-                        history.id.as_('id'),
-                        history.write_date.as_('write_date'),
-                        where=where
-                        & (history.write_date != Null)
-                        & (history.create_date == Null)
-                        & history_clause))
-                for deleted_id, delete_date in cursor:
-                    history_date, _ = ids_history[deleted_id]
-                    if isinstance(history_date, str):
-                        strptime = datetime.datetime.strptime
-                        format_ = '%Y-%m-%d %H:%M:%S.%f'
-                        history_date = strptime(history_date, format_)
-                    if history_date <= delete_date:
-                        to_delete.add(deleted_id)
-
-            return filter(lambda r: history_key(r) == ids_history[r['id']]
-                and r['id'] not in to_delete, rows)
-
         # Can not cache the history value if we are not sure to have fetch all
         # the rows for each records
         if (not (cls._history and transaction.context.get('_datetime'))
                 or len(rows) < transaction.database.IN_MAX):
-            rows = list(filter_history(rows))
             keys = None
             for data in islice(rows, 0, cache.size_limit):
                 if data['id'] in delete_records:
@@ -1834,13 +1807,6 @@ class ModelSQL(ModelStorage):
                 for k in keys:
                     del data[k]
                 cache[cls.__name__][data['id']]._update(data)
-
-        if len(rows) >= transaction.database.IN_MAX:
-            columns = cls.__searched_columns(main_table, history=True)
-            cursor.execute(*table.select(*columns,
-                    where=expression, order_by=order_by,
-                    limit=limit, offset=offset))
-            rows = filter_history(list(cursor_dict(cursor)))
 
         return cls.browse([x['id'] for x in rows])
 
@@ -1881,12 +1847,56 @@ class ModelSQL(ModelStorage):
             expression = convert(domain)
 
         if cls._history and transaction.context.get('_datetime'):
-            table, _ = tables[None]
-            hcolumn = Coalesce(table.write_date, table.create_date)
-            if transaction.context.get('_datetime_exclude', False):
-                expression &= (hcolumn < transaction.context['_datetime'])
+            database = Transaction().database
+            if database.has_window_functions():
+                table, _ = tables[None]
+                history = cls.__table_history__()
+                last_change = Coalesce(history.write_date, history.create_date)
+                # prefilter the history records for a bit of a speedup
+                selected_h_ids = convert_from(None, tables).select(
+                    table.id, where=expression)
+                most_recent = history.select(
+                    history.create_date, Column(history, '__id'),
+                    RowNumber(
+                        window=Window([history.id],
+                            order_by=[
+                                last_change.desc,
+                                Column(history, '__id').desc])).as_('rank'),
+                    where=((last_change <= transaction.context['_datetime'])
+                        & history.id.in_(selected_h_ids)))
+                # Filter again as the latest records from most_recent might not
+                # match the expression
+                expression &= Exists(most_recent.select(
+                        Literal(1),
+                        where=(
+                            (Column(table, '__id')
+                                == Column(most_recent, '__id'))
+                            & (most_recent.create_date != Null)
+                            & (most_recent.rank == 1))))
             else:
-                expression &= (hcolumn <= transaction.context['_datetime'])
+                table, _ = tables[None]
+                history_1 = cls.__table_history__()
+                history_2 = cls.__table_history__()
+                last_change = Coalesce(
+                    history_1.write_date, history_1.create_date)
+                latest_change = history_1.select(
+                    history_1.id, Max(last_change).as_('date'),
+                    where=(last_change <= transaction.context['_datetime']),
+                    group_by=[history_1.id])
+                most_recent = history_2.join(
+                    latest_change,
+                    condition=(
+                        (history_2.id == latest_change.id)
+                        & (Coalesce(
+                                history_2.write_date, history_2.create_date)
+                            == latest_change.date))
+                    ).select(
+                        Max(Column(history_2, '__id')).as_('h_id'),
+                        where=(history_2.create_date != Null),
+                        group_by=[history_2.id])
+                expression &= Exists(most_recent.select(
+                        Literal(1),
+                        where=(Column(table, '__id') == most_recent.h_id)))
         return tables, expression
 
     @classmethod

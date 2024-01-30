@@ -2680,7 +2680,7 @@ msgstr "%(field)s (nom du modèle)"
 
 msgctxt "model:ir.message,text:msg_field_string"
 msgid "%(field)s (string)"
-msgstr "%(champ)s (chaîne)"
+msgstr "%(field)s (chaîne)"
 
 msgctxt "model:ir.message,text:msg_forbidden_char_validation_record"
 msgid ""

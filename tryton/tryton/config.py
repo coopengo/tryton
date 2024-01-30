@@ -6,6 +6,7 @@ import locale
 import logging
 import optparse
 import os
+import pathlib
 import shutil
 import sys
 import tempfile
@@ -38,8 +39,8 @@ class ConfigManager(object):
     "Config manager"
 
     def __init__(self):
-        demo_server = 'coog'
-        demo_database = 'demo'
+        demo_server = ''
+        demo_database = ''
         self.defaults = {
             'login.profile': demo_server,
             'login.login': 'demo',
@@ -115,6 +116,13 @@ class ConfigManager(object):
             }
         if opt.log_output:
             logging_config['filename'] = opt.log_output
+        else:
+            config_dir = pathlib.Path(get_config_dir())
+            logging_file = config_dir / 'tryton.log'
+            if logging_file.exists():
+                shutil.copy(logging_file, config_dir / 'tryton.log.old')
+                logging_file.unlink()
+            logging_config['filename'] = str(logging_file)
 
         loglevels = {
             'DEBUG': logging.DEBUG,
