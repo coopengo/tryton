@@ -655,7 +655,6 @@ class DebugModelInstance(ModelSQL, ModelView):
     'Model for debug'
 
     __name__ = 'debug.model'
-    _history = True
 
     name = fields.Char('Name', readonly=True)
     string = fields.Char('String', readonly=True)
@@ -682,12 +681,6 @@ class DebugModelInstance(ModelSQL, ModelView):
         cls._buttons.update({'open_initial': {}})
 
     @classmethod
-    def __register__(cls, module):
-        cls._history = False
-        super(DebugModelInstance, cls).__register__(module)
-        cls._history = True
-
-    @classmethod
     def _update_history_table(cls):
         update = config.get('debug', 'auto_refresh_debug_data')
         if update:
@@ -709,7 +702,6 @@ class DebugModelInstance(ModelSQL, ModelView):
 
     @classmethod
     def refresh(cls, name=None, models=None):
-        cls._history = False
         Model = Pool().get('debug.model')
 
         # Fetch current data
