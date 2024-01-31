@@ -680,15 +680,6 @@ class DebugModelInstance(ModelSQL, ModelView):
         cls.__rpc__.update({'refresh': RPC(readonly=False)})
         cls._buttons.update({'open_initial': {}})
 
-    @classmethod
-    def _update_history_table(cls):
-        update = config.get('debug', 'auto_refresh_debug_data')
-        if update:
-            logging.getLogger().warning('Auto refreshing debug data, '
-                'this may take some time. Clear "auto_refresh_debug_data" '
-                'in configuration file to avoid')
-            cls.refresh()
-
     def get_initial_frame(self, name):
         return ([x.id for x in self.mro if x.kind == 'initial'] or [None])[0]
 
