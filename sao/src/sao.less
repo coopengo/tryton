@@ -183,8 +183,34 @@ html[theme="default"] {
     }
 }
 
-#tabcontent > .tab-pane > .panel {
-    margin-bottom: 0;
+#tabcontent {
+    display: flex;
+    flex: 1;
+
+    > .tab-pane > .panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        margin-bottom: 4px; /* from the default theme box-shadow */
+
+        > .panel-body {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+    }
+
+    > .active {
+        /* override bootstrap which sets display to block */
+        display: flex;
+        flex: 1;
+    }
+}
+
+.screen-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 @media screen and (min-width: @screen-sm-min) {
