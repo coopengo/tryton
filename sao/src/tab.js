@@ -125,7 +125,7 @@
             }).appendTo(this.el);
             this.content = jQuery('<div/>', {
                 'class': 'col-xs-12',
-            }).css('display', 'flex').appendTo(this.main);
+            }).css('display', 'flex').css('flex', '1').appendTo(this.main);
 
             if (this.info_bar) {
                 this.el.append(this.info_bar.el);
