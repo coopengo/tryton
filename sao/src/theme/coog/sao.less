@@ -200,20 +200,29 @@ div.form-dict {
 // Groups
 ///////////////////////////////////////////////////////////////////////////////
 
-div.form-item.form-group_:has(> fieldset.form-group_ > div.form-group_-legend) {
+div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
     padding-bottom:             15px;
 
     > fieldset.form-group_ {
-        box-shadow:                 @coog-box-shadow;
-        margin-bottom:              10px;
+        box-shadow:                     @coog-box-shadow;
+        margin-bottom:                  10px;
 
-        > div.form-group_-legend {
-            border-top-left-radius:    3px;
-            border-top-right-radius:   3px;
-            border-bottom-width:       0px;
-            background-color:          @color-lightest-blue;
-            margin-bottom:             5px;
-            padding:                   2px 7px 2px 7px;
+        > div.form-container {
+            clear:                      both;
+            display:                    grid;
+            grid-template-columns:      1fr 1fr;
+        }
+
+        > legend {
+            float:                      left;
+            box-sizing:                 border-box;
+            width:                      100%;
+            border-top-left-radius:     3px;
+            border-top-right-radius:    3px;
+            border-bottom-width:        0px;
+            background-color:           @color-lightest-blue;
+            margin-bottom:              5px;
+            padding:                    2px 7px 2px 7px;
         }
     }
 }
