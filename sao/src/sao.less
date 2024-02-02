@@ -191,7 +191,7 @@ html[theme="default"] {
         display: flex;
         flex-direction: column;
         flex: 1;
-        margin-bottom: 4px; /* from the default theme box-shadow */
+        margin-bottom: 0;
 
         > .panel-body {
             display: flex;
@@ -328,6 +328,7 @@ html.accesskey {
 
     .tab-domain {
         overflow-x: auto;
+        flex: 0 0 content;
 
         > .nav-tabs {
             display: inline-flex;
