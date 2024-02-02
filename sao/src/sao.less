@@ -446,8 +446,10 @@ img.icon {
 }
 
 .content-box {
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     flex: 1;
+    overflow-y: auto;
 }
 
 @media screen and (max-width: @screen-sm-max) {
@@ -1134,6 +1136,7 @@ input.column-boolean {
 }
 
 .scrollbar {
+    flex: 0 0 content;
     overflow: auto;
 
     > div {
