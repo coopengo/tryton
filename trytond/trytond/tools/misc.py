@@ -228,7 +228,9 @@ def unescape_wildcard(string, wildcards='%_', escape='\\'):
 
 
 def is_full_text(value, escape='\\'):
-    escaped = value.strip('%')
+    if not value:
+        return False
+    escaped = strip_wildcard(value, escape=escape)
     escaped = escaped.replace(escape + '%', '').replace(escape + '_', '')
     if '%' in escaped or '_' in escaped:
         return False
