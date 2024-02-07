@@ -1424,6 +1424,9 @@
                     record.load(field_name, true, false).done(redraw);
                     return;
                 } else {
+                    if (row.tree.always_expand) {
+                        row.expand_row();
+                    }
                     row.redraw(selected, expanded);
                 }
             }
@@ -1830,9 +1833,6 @@
                 if (this.rows.length === 0) {
                     var children = this.record.field_get_client(
                         this.children_field);
-                    // [Coog Specific]  needed for multi_mixed_view
-                    if (children.model.name != this.record.model.name)
-                        children.model.add_fields(this.children_definitions[children.model.name]);
                     children.forEach((record, pos, group) => {
                         // The rows are added to the tbody after being rendered
                         // to minimize browser reflow
