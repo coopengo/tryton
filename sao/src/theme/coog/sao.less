@@ -43,7 +43,13 @@
     }
 
     .panel {
-        margin:             0px 15px 0px 15px
+        margin:             0px 15px 0px 15px;
+    }
+
+    // Remove left / right margin for xxx2many without a toolbar
+    // 3px so the box-shadow looks ok
+    :has(> div.panel-body.coog-hidden-toolbar) {
+        margin:             0px 3px 0px 3px;
     }
 }
 
@@ -140,11 +146,12 @@ div.form-item.form-one2many {
         margin-bottom:          10px;
 
         > div.form-one2many-menu.panel-heading {
-            .coog-xxx2many-header-mixin()
+            .coog-xxx2many-header-mixin();
         }
 
         > div.form-one2many-content.panel-body {
-            .coog-xxx2many-body-mixin()
+            .coog-xxx2many-body-mixin();
+
         }
     }
 }
@@ -221,11 +228,18 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             border-top-left-radius:     3px;
             border-top-right-radius:    3px;
             border-bottom-width:        0px;
+            color:                      @color-black;
             background-color:           @color-lightest-blue;
             margin-bottom:              5px;
             padding:                    2px 7px 2px 7px;
         }
     }
+}
+
+// Style expandable groups as dicts
+div.form-group-expandable > div.panel-heading {
+    background-color:           @color-lightest-blue;
+    color:                      @color-black;
 }
 
 // Remove all padding from groups without a legend
