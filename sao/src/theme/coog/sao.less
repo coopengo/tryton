@@ -289,12 +289,43 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 // Rule engine
 ///////////////////////////////////////////////////////////////////////////////
 
+@coog-rule-engine-height:         500px;
+
+div.form-item.form-source > div.form-source {
+    > div > div.treeview {
+        height:                   calc(@coog-rule-engine-height + 42px);
+        padding:                  10px 3px 10px 3px !important;
+        box-shadow:               @coog-box-shadow;
+        border-radius:            2px;
+
+        > table.tree > tbody > tr > td > td > table > tbody > tr > td {
+            span {
+                font-size:        10px;
+                padding-bottom:   3px;
+            }
+
+            > p {
+                margin:           1px 1px 2px 0px;
+            }
+        }
+    }
+    > div.panel {
+        > div.panel-heading {
+            background-color:     @color-lighter-blue;
+            padding:              5px;
+        }
+        > div.panel-body {
+            padding:              0px 15px 0px 0px;
+        }
+    }
+}
+
 div.readonly div.CodeMirror-sizer {
     background-color: lightgrey;
 }
 
 div.CodeMirror {
-    height: 460px;
+    height: @coog-rule-engine-height;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -310,4 +341,3 @@ div.CodeMirror {
 #tabs {
     padding-bottom: 0px;
 }
-///////////////////////////////////////////////////////////////////////////////
