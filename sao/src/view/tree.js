@@ -990,7 +990,7 @@
                             expand();
                         }
                     });
-                }, 250);
+                }, 100);
                 if (this.always_expand) {
                     expand();
                 }
