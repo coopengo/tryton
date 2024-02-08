@@ -966,8 +966,35 @@
                         moreObserver.observe(more_button[0]);
                     }
                 }
-            }).done(
-                Sao.common.debounce(this.update_sum.bind(this), 250));
+            }).done(() => {
+                Sao.common.debounce(this.update_sum.bind(this), 250)();
+                const flatten = rows => {
+                    var all_rows = rows.slice();
+                    for (const row of rows) {
+                        if (row.is_expanded()) {
+                            all_rows = all_rows.concat(flatten(row.rows));
+                        }
+                    }
+                    return all_rows;
+                };
+                const expand = () => setTimeout(() => {
+                    var all_rows = flatten(this.rows);
+                    var rows_length = all_rows.length;
+                    var promises = [];
+                    for (const row of all_rows) {
+                        promises.push(row.expand_row());
+                    }
+                    jQuery.when.apply(jQuery, promises).then(() => {
+                        var all_rows_expanded = flatten(this.rows);
+                        if (all_rows_expanded.length > rows_length) {
+                            expand();
+                        }
+                    });
+                }, 250);
+                if (this.always_expand) {
+                    expand();
+                }
+            });
         },
         construct: function(extend) {
             if (!extend) {
@@ -1424,9 +1451,6 @@
                     record.load(field_name, true, false).done(redraw);
                     return;
                 } else {
-                    if (row.tree.always_expand) {
-                        row.expand_row();
-                    }
                     row.redraw(selected, expanded);
                 }
             }
@@ -1789,10 +1813,11 @@
             if (this.tree.n_children(this) > Sao.config.limit) {
                 this.tree.record = this.record;
                 this.tree.screen.switch_view('form');
+                return jQuery.when();
             } else {
                 this.update_expander(true);
                 this.tree.expanded.add(this);
-                this.expand_children();
+                return this.expand_children();
             }
         },
         collapse_row: function() {
