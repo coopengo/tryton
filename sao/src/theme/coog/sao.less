@@ -15,6 +15,11 @@
 @brand-primary:         @color-blue;
 @coog-box-shadow:       0 1px 4px rgba(0, 0, 0, 0.3);
 
+.coog-group-header-colors {
+    color:                  @color-black;
+    background-color:       @color-lightest-blue;
+}
+
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
     border-top-left-radius:   10px;
@@ -90,7 +95,7 @@
 
 // Make tree view headers a little more visible
 .treeview > table.tree > thead > tr:first-child th {
-    background-color:       @color-lightest-blue;
+    .coog-group-header-colors();
 }
 
 // Remove small scrollbar div above list header
@@ -104,11 +109,11 @@ div.scrollbar:has(+ div.treeview) {
 //      - lighter color
 //      - less vertical padding
 nav.toolbar.panel-heading {
-    background-color:       @color-lightest-blue;
+    .coog-group-header-colors();
     padding:                0px 10px 0px 0px;
 
     div.container-fluid.navbar-inverse {
-        background-color:       @color-lightest-blue;
+        .coog-group-header-colors();
         padding-left:           0px;
 
         > * > .navbar-brand.dropdown-toggle {
@@ -189,8 +194,7 @@ div.form-dict {
     }
 
     > div.form-dict-heading {
-        background-color:        @color-lightest-blue;
-        color:                   @color-black;
+        .coog-group-header-colors();
     }
 
     > div.form-dict-body {
@@ -228,8 +232,7 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             border-top-left-radius:     3px;
             border-top-right-radius:    3px;
             border-bottom-width:        0px;
-            color:                      @color-black;
-            background-color:           @color-lightest-blue;
+            .coog-group-header-colors();
             margin-bottom:              5px;
             padding:                    2px 7px 2px 7px;
         }
@@ -238,8 +241,7 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
 
 // Style expandable groups as dicts
 div.form-group-expandable > div.panel-heading {
-    background-color:           @color-lightest-blue;
-    color:                      @color-black;
+    .coog-group-header-colors();
 }
 
 // Remove all padding from groups without a legend
