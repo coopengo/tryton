@@ -1846,6 +1846,12 @@ class ModelSQL(ModelStorage):
         with without_check_access():
             expression = convert(domain)
 
+        def apply_date_clause(column):
+            if transaction.context.get('_datetime_exclude', False):
+                return column < transaction.context['_datetime']
+            else:
+                return column <= transaction.context['_datetime']
+
         if cls._history and transaction.context.get('_datetime'):
             database = Transaction().database
             if database.has_window_functions():
@@ -1862,7 +1868,7 @@ class ModelSQL(ModelStorage):
                             order_by=[
                                 last_change.desc,
                                 Column(history, '__id').desc])).as_('rank'),
-                    where=((last_change <= transaction.context['_datetime'])
+                    where=(apply_date_clause(last_change)
                         & history.id.in_(selected_h_ids)))
                 # Filter again as the latest records from most_recent might not
                 # match the expression
@@ -1881,7 +1887,7 @@ class ModelSQL(ModelStorage):
                     history_1.write_date, history_1.create_date)
                 latest_change = history_1.select(
                     history_1.id, Max(last_change).as_('date'),
-                    where=(last_change <= transaction.context['_datetime']),
+                    where=apply_date_clause(last_change),
                     group_by=[history_1.id])
                 most_recent = history_2.join(
                     latest_change,
