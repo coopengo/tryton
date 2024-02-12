@@ -230,6 +230,7 @@ def load_module_graph(graph, pool, update=None, lang=None):
             logger.info(logging_prefix)
             classes = pool.fill(module, modules)
             if update:
+                transaction.cache.clear()
                 pool.setup(classes)
                 pool.post_init(module)
             package_state = module2state.get(module, 'not activated')
@@ -282,16 +283,11 @@ def load_module_graph(graph, pool, update=None, lang=None):
                                 ]))
                 module2state[module] = 'activated'
 
-            # Delay clearing cache to prevent dead lock on ir.cache table
-            caches_to_clear += list(Cache._reset.get(transaction, []))
-            Cache.rollback(transaction)
-            transaction.commit()
-            # Clear transaction cache to update default_factory
-            transaction.cache.clear()
-
         if not update:
             pool.setup()
         else:
+            Cache._reset.clear()
+            transaction.commit()
             # Remove unknown models and fields
             Model = pool.get('ir.model')
             Model.clean()
@@ -299,7 +295,6 @@ def load_module_graph(graph, pool, update=None, lang=None):
             ModelField.clean()
             Cache._reset[transaction] = set(
                 caches_to_clear + list(Cache._reset.get(transaction, [])))
-            transaction.commit()
 
         # JCA: Add update parameter to post init hooks
         pool.post_init(None)

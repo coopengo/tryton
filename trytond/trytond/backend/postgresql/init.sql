@@ -1,7 +1,8 @@
 CREATE SEQUENCE ir_configuration_id_seq;
 
 CREATE TABLE ir_configuration (
-    id INTEGER DEFAULT NEXTVAL('ir_configuration_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_configuration_id_seq') NOT NULL
+        CONSTRAINT ir_configuration_id_positive CHECK(id >= 0),
     language VARCHAR,
     hostname VARCHAR,
     PRIMARY KEY(id)
@@ -10,7 +11,8 @@ CREATE TABLE ir_configuration (
 CREATE SEQUENCE ir_model_id_seq;
 
 CREATE TABLE ir_model (
-    id INTEGER DEFAULT NEXTVAL('ir_model_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_model_id_seq') NOT NULL
+        CONSTRAINT ir_model_id_positive CHECK(id >= 0),
     model VARCHAR NOT NULL,
     name VARCHAR,
     info TEXT,
@@ -21,7 +23,8 @@ CREATE TABLE ir_model (
 CREATE SEQUENCE ir_model_field_id_seq;
 
 CREATE TABLE ir_model_field (
-    id INTEGER DEFAULT NEXTVAL('ir_model_field_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_model_field_id_seq') NOT NULL
+        CONSTRAINT ir_model_field_id_positive CHECK(id >= 0),
     model INTEGER,
     name VARCHAR NOT NULL,
     relation VARCHAR,
@@ -37,7 +40,8 @@ CREATE TABLE ir_model_field (
 CREATE SEQUENCE ir_ui_view_id_seq;
 
 CREATE TABLE ir_ui_view (
-    id INTEGER DEFAULT NEXTVAL('ir_ui_view_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_ui_view_id_seq') NOT NULL
+        CONSTRAINT ir_ui_view_id_positive CHECK(id >= 0),
     model VARCHAR NOT NULL,
     "type" VARCHAR,
     data TEXT NOT NULL,
@@ -49,7 +53,8 @@ CREATE TABLE ir_ui_view (
 CREATE SEQUENCE ir_ui_menu_id_seq;
 
 CREATE TABLE ir_ui_menu (
-    id INTEGER DEFAULT NEXTVAL('ir_ui_menu_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_ui_menu_id_seq') NOT NULL
+        CONSTRAINT ir_ui_menu_id_positive CHECK(id >= 0),
     parent INTEGER,
     name VARCHAR NOT NULL,
     icon VARCHAR,
@@ -60,7 +65,8 @@ CREATE TABLE ir_ui_menu (
 CREATE SEQUENCE ir_translation_id_seq;
 
 CREATE TABLE ir_translation (
-    id INTEGER DEFAULT NEXTVAL('ir_translation_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_translation_id_seq') NOT NULL
+        CONSTRAINT ir_translation_id_positive CHECK(id >= 0),
     lang VARCHAR,
     src TEXT,
     name VARCHAR NOT NULL,
@@ -75,7 +81,8 @@ CREATE TABLE ir_translation (
 CREATE SEQUENCE ir_lang_id_seq;
 
 CREATE TABLE ir_lang (
-    id INTEGER DEFAULT NEXTVAL('ir_lang_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_lang_id_seq') NOT NULL
+        CONSTRAINT ir_lang_id_positive CHECK(id >= 0),
     name VARCHAR NOT NULL,
     code VARCHAR NOT NULL,
     translatable BOOLEAN NOT NULL,
@@ -88,7 +95,8 @@ CREATE TABLE ir_lang (
 CREATE SEQUENCE res_user_id_seq;
 
 CREATE TABLE res_user (
-    id INTEGER DEFAULT NEXTVAL('res_user_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('res_user_id_seq') NOT NULL
+        CONSTRAINT res_user_id_positive CHECK(id >= 0),
     name VARCHAR NOT NULL,
     active BOOLEAN NOT NULL,
     login VARCHAR NOT NULL,
@@ -103,7 +111,8 @@ INSERT INTO res_user (id, login, password, name, active) VALUES (0, 'root', NULL
 CREATE SEQUENCE res_group_id_seq;
 
 CREATE TABLE res_group (
-    id INTEGER DEFAULT NEXTVAL('res_group_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('res_group_id_seq') NOT NULL
+        CONSTRAINT res_group_id_positive CHECK(id >= 0),
     name VARCHAR NOT NULL,
     PRIMARY KEY(id)
 );
@@ -111,7 +120,8 @@ CREATE TABLE res_group (
 CREATE SEQUENCE "res_user-res_group_id_seq";
 
 CREATE TABLE "res_user-res_group" (
-    id INTEGER DEFAULT NEXTVAL('res_user-res_group_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('res_user-res_group_id_seq') NOT NULL
+        CONSTRAINT "res_user-res_group_id_positive" CHECK(id >= 0),
     "user" INTEGER NOT NULL,
     "group" INTEGER NOT NULL,
     FOREIGN KEY ("user") REFERENCES res_user (id) ON DELETE CASCADE,
@@ -122,7 +132,8 @@ CREATE TABLE "res_user-res_group" (
 CREATE SEQUENCE ir_module_id_seq;
 
 CREATE TABLE ir_module (
-    id INTEGER DEFAULT NEXTVAL('ir_module_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_module_id_seq') NOT NULL
+        CONSTRAINT ir_module_id_positive CHECK(id >= 0),
     create_uid INTEGER NOT NULL,
     create_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     write_date TIMESTAMP WITHOUT TIME ZONE,
@@ -139,7 +150,8 @@ ALTER TABLE ir_module ADD CONSTRAINT ir_module_name_uniq UNIQUE (name);
 CREATE SEQUENCE ir_module_dependency_id_seq;
 
 CREATE TABLE ir_module_dependency (
-    id INTEGER DEFAULT NEXTVAL('ir_module_dependency_id_seq') NOT NULL,
+    id INTEGER DEFAULT NEXTVAL('ir_module_dependency_id_seq') NOT NULL
+        CONSTRAINT ir_module_dependency_id_positive CHECK(id >= 0),
     create_uid INTEGER NOT NULL,
     create_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     write_date TIMESTAMP WITHOUT TIME ZONE,
@@ -156,6 +168,11 @@ CREATE SEQUENCE ir_cache_id_seq;
 
 CREATE TABLE ir_cache (
     id INTEGER DEFAULT NEXTVAL('ir_cache_id_seq') NOT NULL,
+        CONSTRAINT ir_cache_id_positive CHECK(id >= 0),
     name VARCHAR NOT NULL,
-    "timestamp" TIMESTAMP WITHOUT TIME ZONE
+    "timestamp" TIMESTAMP WITHOUT TIME ZONE,
+    create_date TIMESTAMP WITHOUT TIME ZONE,
+    create_uid INTEGER,
+    write_date TIMESTAMP WITHOUT TIME ZONE,
+    write_uid INTEGER
 );
