@@ -268,6 +268,10 @@ def prepare_comparison(items):
     # to allow for comparison
     # in a case where, for example,
     # items are (b'120.00', 0)
+    # This is an workaround
+    # to execute test without error
+    # on requests using for example:
+    # 'Greatest(line.debit, 0)'
     res = []
     for item in items:
         if item is None:
