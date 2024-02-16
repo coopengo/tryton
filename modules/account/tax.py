@@ -1302,7 +1302,11 @@ class TaxableMixin(object):
                         taxes[taxline] = taxline
                     else:
                         taxes[taxline]['base'] += taxline['base']
-                        taxes[taxline]['amount'] += taxline['amount']
+                        taxline_amount = taxline['amount']
+                        if tax_rounding == 'line':
+                            taxline_amount = (line.unit_price + taxline_amount
+                                - taxline['base'])
+                        taxes[taxline]['amount'] += taxline_amount
                     current_taxes[taxline] = taxes[taxline]
                 if tax_rounding == 'line':
                     self._round_taxes(current_taxes)
