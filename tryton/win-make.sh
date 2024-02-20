@@ -9,8 +9,24 @@ GITHUB_TOKEN=$2
 
 version() {
     local t
+    # Old "t" variable before "automatic build" feature
     # t=$(git describe --tags --exact-match 2> /dev/null | grep "^coog-" | head -1)
+
+    # Explaination of the "t" variable
+    # Retrieve all tags attached to the current branch with a specific format:
+    # git log --first-parent --pretty=%d
+    # Retrieve all occurrences of "tag: <something> (ignoring commas and closed parentheses):
+    # grep -o 'tag: [^,)]*'
+    # We remove “tag:” from the result:
+    # awk '{print $2}'
+    # We ignore results containing “-rc”:
+    # grep -v '-rc'
+    # We limit the results to the format coog-2.14.2404 or coog-22.14.2404 or coog-2.14.2404.1 or coog-22.14.2404.1:
+    # grep -Eo 'coog-[0-9]{1,2}.[0-9]{1,2}.[0-9]{4}(.[0-9]+)?$'
+    # We select only the first result:
+    # head -n 1
     t=$(git log --first-parent --pretty=%d | grep -o 'tag: [^,)]*' | awk '{print $2}' | grep -v '\-rc' | grep -Eo 'coog-[0-9]{1,2}.[0-9]{1,2}.[0-9]{4}(.[0-9]+)?$' | head -n 1)
+    
     if [ ! -z "$t" ]
     then
         echo "${t//coog-/}"
