@@ -14,6 +14,7 @@
 
 @brand-primary:         @color-blue;
 @coog-box-shadow:       0 1px 4px rgba(0, 0, 0, 0.3);
+@coog-min-menu-width:   31em;
 
 .coog-group-header-colors {
     color:                  @color-black;
@@ -337,8 +338,15 @@ div.CodeMirror {
 #menu {
     padding-bottom: 5px;
     height: calc(100% - 2px) !important;
-    width:  35em;
 }
+
+@media (min-width: @screen-lg-min) {
+    .make-offcanvas(min(calc(25%), @coog-min-menu-width));
+    .main-offcanvas {
+        width: calc(100% - min(calc(25%), @coog-min-menu-width));
+    }
+}
+
 #tabs {
     padding-bottom: 0px;
 }
