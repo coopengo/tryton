@@ -123,6 +123,85 @@ nav.toolbar.panel-heading {
     }
 }
 
+#tablist {
+    > li {
+        max-width:                20em;
+        padding-top:              4px;
+        > a {
+            padding-bottom:       14px;
+            padding-top:          13px;
+            border-top-left-radius:   3px;
+            border-top-right-radius:  3px;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius:0px;
+            .coog-group-header-colors();
+
+            > button {
+                .coog-group-header-colors();
+                color: black;
+                border-radius: 3px;
+                margin-top: -3px;
+
+                > span {
+                    font-size: 33px;
+                }
+            }
+        }
+    }
+
+    > li:not(.active) {
+        > a {
+            color:                  @color-median-grey;
+            background-color:       @color-lighter-blue;
+
+            > button {
+                background-color: @color-lighter-blue;
+                color:                  @color-median-grey;
+            }
+        }
+        :hover {
+            .coog-group-header-colors();
+            > button {
+                background-color: @color-lightest-blue;
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Act Window list
+///////////////////////////////////////////////////////////////////////////////
+
+div.tab-form > div.panel-body > div > div.screen-container {
+    > form.filter-box > div.row > div > div.input-group > span > button.btn-link {
+        box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+        border-radius: 3px;
+        // border: solid 1px @color-lighter-grey;
+        margin-right: 5px
+    }
+    > div.content-box > div > div.treeview {
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+    }
+}
+
+#global-search-entry {
+    box-shadow: none;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Dropdowns
+///////////////////////////////////////////////////////////////////////////////
+ul.dropdown-menu > li > a {
+    padding:    2px 8px;
+    > div > img {
+        margin-right: 2px;
+        width: 1.5em;
+        height: 1.5em;
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // One2Many
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,6 +327,16 @@ div.form-group-expandable > div.panel-heading {
 // Remove all padding from groups without a legend
 div.form-item.form-group_:not(:has(> fieldset.form-group_ > legend)) {
     padding:                            0px;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Wizards
+///////////////////////////////////////////////////////////////////////////////
+
+div.modal-header {
+    border-top-left-radius:     3px;
+    border-top-right-radius:    3px;
+    .coog-group-header-colors();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
