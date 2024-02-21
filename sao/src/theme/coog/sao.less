@@ -128,6 +128,9 @@ nav.toolbar.panel-heading {
         // Color of top-right menu
         > * > .navbar-brand.dropdown-toggle {
             color:              @color-black;
+            :hover {
+                color:              @color-median-grey;
+            }
         }
     }
 }
@@ -159,6 +162,9 @@ nav.toolbar.panel-heading {
             border-bottom-left-radius: 0px;
             border-bottom-right-radius:0px;
             .coog-group-header-colors();
+            :hover {
+                color:              @color-median-grey;
+            }
 
             // "Close" buttons on tabs
             > button {
@@ -408,11 +414,21 @@ div.wizard-dialog {
 // Misc fields
 ///////////////////////////////////////////////////////////////////////////////
 
-div.form-many2one, div.form-selection, div.form-date, div.form-char, div.form-float {
-    padding:                0px 15px 0px 0px;
+div.form-many2one, div.form-selection, div.form-date, div.form-char {
+    padding:                0px 10px 0px 0px;
 
     .readonly {
         .input-group, select.form-control:disabled {
+            .coog-readonly-field-mixin();
+        }
+    }
+}
+
+div.form-float {
+    padding:                0px 10px 0px 0px;
+
+    .readonly {
+        .input-group > input {
             .coog-readonly-field-mixin();
         }
     }
@@ -423,7 +439,14 @@ div.form-date > div.input-group > input.form-control.input-date,
 div.form-item.form-selection > div.form-selection > select.form-control,
 div.form-item.form-char > div.form-char > div.input-group > input.form-control
 {
-            padding-left:           6px;
+    padding-left:           6px;
+}
+
+// Remove padding of numerics if there is a symbol after
+div.form-item.form-float:has(+ div.form-item.form-label) {
+    div.form-float {
+        padding-right:      0px;
+    }
 }
 
 div.form-selection select.form-control {
