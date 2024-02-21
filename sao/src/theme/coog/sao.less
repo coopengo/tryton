@@ -16,17 +16,20 @@
 @coog-box-shadow:       0 1px 4px rgba(0, 0, 0, 0.3);
 @coog-min-menu-width:   31em;
 
+// header colors for groups
 .coog-group-header-colors {
     color:                  @color-black;
     background-color:       @color-lightest-blue;
 }
 
+// Simple fields readonly styles
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
-    border-top-left-radius:   10px;
-    border-top-right-radius:   10px;
+    border-top-left-radius:   5px;
+    border-top-right-radius:   5px;
 }
 
+// header for xxx2many fields
 .coog-xxx2many-header-mixin {
     color:                  @color-black;
     background-color:       @color-lighter-blue;
@@ -37,6 +40,11 @@
     border-right:           unset;
     box-shadow:             @coog-box-shadow;
     padding:                0px;
+}
+
+// For some cases we want to slightly highlight link buttons
+.coog-highlight-link-button {
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .coog-xxx2many-body-mixin {
@@ -117,12 +125,20 @@ nav.toolbar.panel-heading {
         .coog-group-header-colors();
         padding-left:           0px;
 
+        // Color of top-right menu
         > * > .navbar-brand.dropdown-toggle {
             color:              @color-black;
         }
     }
 }
 
+// Global search
+#global-search-entry {
+    box-shadow: none;
+}
+
+
+// top left menu
 .navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav > li > a {
     color: @color-lightest-blue;
     :hover {
@@ -132,6 +148,7 @@ nav.toolbar.panel-heading {
 
 #tablist {
     > li {
+        // limit tab sizes
         max-width:                20em;
         padding-top:              4px;
         > a {
@@ -143,6 +160,7 @@ nav.toolbar.panel-heading {
             border-bottom-right-radius:0px;
             .coog-group-header-colors();
 
+            // "Close" buttons on tabs
             > button {
                 .coog-group-header-colors();
                 color: black;
@@ -156,22 +174,44 @@ nav.toolbar.panel-heading {
         }
     }
 
+    // other colors for non-focused tabs
     > li:not(.active) {
         > a {
             color:                  @color-median-grey;
             background-color:       @color-lighter-blue;
 
             > button {
-                background-color: @color-lighter-blue;
-                color:                  @color-median-grey;
+                background-color:   @color-lighter-blue;
+                color:              @color-median-grey;
             }
         }
         :hover {
             .coog-group-header-colors();
             > button {
-                background-color: @color-lightest-blue;
+                background-color:   @color-lightest-blue;
             }
         }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Buttons
+///////////////////////////////////////////////////////////////////////////////
+
+// Lighter colors
+html[theme="default"] .btn-primary {
+    color:                      @color-black;
+    background-color:           @color-lightest-blue;
+
+    // Do not invert button icons since we use a lighter style
+    .icon {
+        filter:                 none;
+    }
+
+    &:focus,
+    &:hover,
+    &:active:hover {
+        background-color:       @color-lighter-blue;
     }
 }
 
@@ -180,26 +220,24 @@ nav.toolbar.panel-heading {
 ///////////////////////////////////////////////////////////////////////////////
 
 div.tab-form > div.panel-body > div > div.screen-container {
+    // highlight filter button
     > form.filter-box > div.row > div > div.input-group > span > button.btn-link {
-        box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+        .coog-highlight-link-button();
         border-radius: 3px;
-        // border: solid 1px @color-lighter-grey;
         margin-right: 5px
     }
+    // Slightly round corner on main list view
     > div.content-box > div > div.treeview {
         border-top-left-radius: 3px;
         border-top-right-radius: 3px;
     }
 }
 
-#global-search-entry {
-    box-shadow: none;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Dropdowns
 ///////////////////////////////////////////////////////////////////////////////
+//
+// more compact items
 ul.dropdown-menu > li > a {
     padding:    2px 8px;
     > div > img {
@@ -237,10 +275,12 @@ div.form-item.form-one2many {
     > div.form-one2many.panel {
         margin-bottom:          10px;
 
+        // use unified style for xxx2many widgets
         > div.form-one2many-menu.panel-heading {
             .coog-xxx2many-header-mixin();
         }
 
+        // use unified style for xxx2many widgets
         > div.form-one2many-content.panel-body {
             .coog-xxx2many-body-mixin();
 
@@ -257,10 +297,12 @@ div.form-item.form-many2many {
     > div.form-many2many.panel {
         margin-bottom:          10px;
 
+        // use unified style for xxx2many widgets
         > div.form-many2many-menu.panel-heading {
             .coog-xxx2many-header-mixin()
         }
 
+        // use unified style for xxx2many widgets
         > div.form-many2many-content.panel-body {
             .coog-xxx2many-body-mixin()
         }
@@ -274,16 +316,19 @@ div.form-item.form-many2many {
 div.form-dict {
     margin-bottom:              5px;
 
+    // Apply readonly value of dict field to values
     .readonly {
         input.form-control, select.form-control {
             .coog-readonly-field-mixin();
         }
     }
 
+    // use same style than groups
     > div.form-dict-heading {
         .coog-group-header-colors();
     }
 
+    // more compact design
     > div.form-dict-body {
         padding:                 5px 15px 0px 15px;
 
@@ -302,6 +347,8 @@ div.form-dict {
 div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
     padding-bottom:             15px;
 
+    // "legends" are special and default style is weird, transform the style to
+    // look like dicts
     > fieldset.form-group_ {
         box-shadow:                     @coog-box-shadow;
         margin-bottom:                  10px;
@@ -340,10 +387,18 @@ div.form-item.form-group_:not(:has(> fieldset.form-group_ > legend)) {
 // Wizards
 ///////////////////////////////////////////////////////////////////////////////
 
+// Use lighter headers for wizards
 div.modal-header {
     border-top-left-radius:     3px;
     border-top-right-radius:    3px;
     .coog-group-header-colors();
+}
+
+// And slightly highlight non-default buttons
+div.wizard-dialog {
+    > div.modal-dialog > div.modal-footer > button.btn-link {
+        .coog-highlight-link-button();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -360,6 +415,14 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char, div.form-fl
     }
 }
 
+// Add a little space on the left of simple inputs
+div.form-date > div.input-group > input.form-control.input-date,
+div.form-item.form-selection > div.form-selection > select.form-control,
+div.form-item.form-char > div.form-char > div.input-group > input.form-control
+{
+            padding-left:           6px;
+}
+
 div.form-selection select.form-control {
     padding:              0px 5px 0px 5px;
 }
@@ -367,6 +430,7 @@ div.form-selection select.form-control {
 div.form-text {
     padding:                0px 15px 0px 15px;
 
+    // highlight readonly text contents
     .readonly {
         textarea.form-control {
             .coog-readonly-field-mixin();
@@ -374,10 +438,12 @@ div.form-text {
     }
 }
 
+// flatter checkboxes
 div.form-boolean > input[type=checkbox].input-checkbox {
     box-shadow:            none;
 }
 
+// remove underline from checkboxes
 div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
     border-bottom:     none;
 }
@@ -389,7 +455,8 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 @coog-rule-engine-height:         500px;
 
 div.form-item.form-source > div.form-source {
-    // This is the tree view with all the rule engine functions
+    // This is the tree view with all the rule engine functions, we want it
+    // a little more compact
     > div > div.treeview {
         height:                   calc(@coog-rule-engine-height + 42px);
         padding:                  10px 3px 10px 3px !important;
@@ -436,6 +503,7 @@ div.CodeMirror {
     height: calc(100% - 2px) !important;
 }
 
+// Do not use too much space for the menu
 @media (min-width: @screen-lg-min) {
     .make-offcanvas(min(calc(25%), @coog-min-menu-width));
     .main-offcanvas {
