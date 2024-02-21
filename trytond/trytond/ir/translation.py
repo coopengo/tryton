@@ -751,6 +751,10 @@ class Translation(ModelSQL, ModelView):
         return translation, res_id
 
     @classmethod
+    def get_translatable_models(cls):
+        return []
+
+    @classmethod
     def translation_import(cls, lang, module, po_path):
         pool = Pool()
         ModelData = pool.get('ir.model.data')
@@ -889,7 +893,8 @@ class Translation(ModelSQL, ModelView):
                     else:
                         for translation_id in ids:
                             old_translation = id2translation[translation_id]
-                            if not noupdate:
+                            if (not noupdate or model in
+                                    cls.get_translatable_models()):
                                 old_translation.value = translation.value
                                 old_translation.fuzzy = translation.fuzzy
                                 to_save.append(old_translation)
