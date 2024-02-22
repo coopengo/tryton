@@ -16,10 +16,6 @@ ul.contextual li a.contextual-submenu::after {
     float: right;
 }
 
-ul.contextual li:hover > a.contextual-submenu::after {
-    content: "";
-}
-
 ul.contextual > li:hover > ul.contextual-submenu {
     display: block;
     left: 100%;
