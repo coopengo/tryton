@@ -981,6 +981,7 @@
                 // after the rows have been rendered
                 // to minimize browser reflow
                 this.tbody = jQuery('<tbody/>');
+                this.tbody.on('contextmenu', this.contextmenu.bind(this));
                 if (this.draggable) {
                     this._add_drag_n_drop();
                 }
