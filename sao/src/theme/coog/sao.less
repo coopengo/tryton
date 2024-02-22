@@ -201,6 +201,27 @@ nav.toolbar.panel-heading {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Left menu
+///////////////////////////////////////////////////////////////////////////////
+
+#menu {
+    padding-right: 0px;
+    padding-left: 0px;
+
+    * > .table-hover > tbody > tr:hover {
+        background-color:   @color-lighter-blue;
+    }
+}
+
+// Do not use too much space for the menu
+@media (min-width: @screen-lg-min) {
+    .make-offcanvas(min(calc(25%), @coog-max-menu-width));
+    .main-offcanvas {
+        width: calc(100% - min(calc(25%), @coog-max-menu-width));
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Buttons
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -542,22 +563,7 @@ div.CodeMirror {
 #menu {
     padding-bottom: 5px;
     height: calc(100% - 2px) !important;
-    padding-right: 0px;
-    padding-left: 0px;
-
-    * > .table-hover > tbody > tr:hover {
-        background-color:   @color-lighter-blue;
-    }
 }
-
-// Do not use too much space for the menu
-@media (min-width: @screen-lg-min) {
-    .make-offcanvas(min(calc(25%), @coog-max-menu-width));
-    .main-offcanvas {
-        width: calc(100% - min(calc(25%), @coog-max-menu-width));
-    }
-}
-
 #tabs {
     padding-bottom: 0px;
 }
