@@ -823,8 +823,7 @@ var Sao = {
             'view_ids': view_ids,
             'domain': domain,
             'context': action_ctx,
-            // [Coog Specific] dbclick on menu entries
-            'selection_mode': Sao.common.SELECTION_SINGLE,
+            'selection_mode': Sao.common.SELECTION_NONE,
             'limit': null,
             'row_activate': Sao.main_menu_row_activate,
         });
