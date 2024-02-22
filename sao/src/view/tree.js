@@ -1421,6 +1421,9 @@
             if (this.selected_records.some((r) =>  r.id < 0)) {
                 return;
             }
+            // Gruiiik
+            var is_m2m = this.tbody.parents('.screen-container')
+                .parent().hasClass('form-many2many-content');
 
             const populate = (menu, model_name, field_name) => {
                 var model = new Sao.Model(model_name);
@@ -1485,7 +1488,7 @@
                     };
                 };
 
-                if (field_name) {
+                if (field_name || is_m2m) {
                     jQuery('<li/>', {
                         'role': 'presentation',
                     }).append(jQuery('<a/>', {
