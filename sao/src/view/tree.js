@@ -1435,12 +1435,20 @@
                 };
                 const open_records = (records) => {
                     return (evt) => {
-                        for (const record of records) {
-                            record.load(field_name, false);
+                        if (field_name) {
+                            for (const record of records) {
+                                record.load(field_name, false);
+                            }
                         }
 
                         var ids = records.map(
-                            (r) => r.get_eval()[field_name]);
+                            (r) => {
+                                if (field_name) {
+                                    return r.get_eval()[field_name];
+                                } else {
+                                    return r.id;
+                                }
+                            });
 
                         Sao.Tab.create({
                             'model': model_name,
@@ -1452,12 +1460,20 @@
                 };
                 const execute_action = (action, records) => {
                     return (evt) => {
-                        for (const record of records) {
-                            record.load(field_name, false);
+                        if (field_name) {
+                            for (const record of records) {
+                                record.load(field_name, false);
+                            }
                         }
 
                         var ids = records.map(
-                            (r) => r.get_eval()[field_name]);
+                            (r) => {
+                                if (field_name) {
+                                    return r.get_eval()[field_name];
+                                } else {
+                                    return r.id;
+                                }
+                            });
                         var data = {
                             model: model_name,
                             id: ids[0],
