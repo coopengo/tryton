@@ -988,6 +988,7 @@
                         if (this.switch_callback) {
                             this.switch_callback();
                         }
+                        Sao.Tab.set_view_type(Sao.Tab.tabs.get_current());
                     });
                 };
                 const set_current_view = () => {

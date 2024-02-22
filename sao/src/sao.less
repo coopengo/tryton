@@ -151,7 +151,6 @@ html[theme="default"] {
 
 #menu, #tabs {
     margin-top: 5px;
-    padding-bottom: 5px;
 }
 
 #menu {
@@ -182,8 +181,35 @@ html[theme="default"] {
     }
 }
 
-#tabcontent > .tab-pane > .panel {
-    margin-bottom: 0;
+#tabcontent {
+    display: flex;
+    flex: 1;
+
+    > .tab-pane > .panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        margin-bottom: 5px;
+
+        > .panel-body {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            min-height: 0;
+        }
+    }
+
+    > .active {
+        /* override bootstrap which sets display to block */
+        display: flex;
+        flex: 1;
+    }
+}
+
+.screen-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 @media screen and (min-width: @screen-sm-min) {
@@ -296,6 +322,7 @@ html.accesskey {
 
     .tab-domain {
         overflow-x: auto;
+        flex: 0 0 content;
 
         > .nav-tabs {
             display: inline-flex;
@@ -413,6 +440,9 @@ img.icon {
 }
 
 .content-box {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     overflow-y: auto;
 }
 
@@ -623,8 +653,10 @@ img.icon {
 
 .form {
     width: 100%;
+    height: 100%;
     .form-container, .form-hcontainer, .form-vcontainer {
         display: grid;
+        height: 100%;
     }
     .form-item {
         display: flex;
@@ -1097,6 +1129,7 @@ input.column-boolean {
 }
 
 .scrollbar {
+    flex: 0 0 content;
     overflow: auto;
 
     > div {
