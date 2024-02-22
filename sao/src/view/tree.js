@@ -1410,7 +1410,17 @@
             evt.preventDefault();
             evt.stopPropagation();
 
-            var tr = document.elementFromPoint(evt.pageX, evt.pageY).parentElement;
+            var tr = document.elementFromPoint(evt.pageX, evt.pageY);
+            // Gruiik Gruiik
+            while (true) {
+                if (tr.parentElement === undefined) {
+                    return;
+                }
+                if (tr.parentElement.nodeName === 'TBODY') {
+                    break;
+                }
+                tr = tr.parentElement;
+            }
             var idx = Array.from(tr.parentElement.children).findIndex((e) => e === tr);
             if (idx != -1) {
                 var record = this.rows[idx].record;
