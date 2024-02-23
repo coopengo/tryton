@@ -484,8 +484,9 @@ class TrytondXmlHandler(sax.handler.ContentHandler):
                 depends = {m.strip() for m in depends if m}
                 if not depends.issubset(self.modules):
                     self.skip_data = True
-                if (attributes.get('language')
-                        and attributes.get('language') not in self.languages):
+                if ((attributes.get('language')
+                        and attributes.get('language') not in self.languages)
+                            or attributes.get('language') == 'en'):
                     self.skip_data = True
 
             elif name == "tryton":
