@@ -12,6 +12,12 @@ from trytond.exceptions import (UserError, UserWarning,
 error_handler_configuration = config.get('admin', 'error_handling_class')
 
 
+class WrappedError(Exception):
+    def __init__(self, inner):
+        super().__init__(inner)
+        self.inner = inner
+
+
 class HandledError(UserError):
     '''
     A UserError that wraps a technical error, so that:
@@ -100,5 +106,7 @@ def error_wrap(func):
             # Those errors are supposed to make their way to the end user
             raise
         except Exception as e:
+            if isinstance(e, WrappedError):
+                e = e.inner
             ErrorHandler.handle_exception(e)
     return wrap
