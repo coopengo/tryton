@@ -1006,13 +1006,8 @@ class Screen:
     def load(self, ids, set_cursor=True, modified=False, position=-1):
         self.group.load(ids, modified=modified, position=position)
         self.current_view.reset()
-        if ids and self.current_view.view_type != 'calendar':
-            self.display(ids[0])
-        else:
-            self.current_record = None
-            self.display()
-        if set_cursor:
-            self.set_cursor()
+        self.current_record = None
+        self.display(set_cursor=set_cursor)
 
     def display(self, res_id=None, set_cursor=False, force=False):
         if res_id:
