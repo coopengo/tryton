@@ -125,7 +125,7 @@
             }).appendTo(this.el);
             this.content = jQuery('<div/>', {
                 'class': 'col-xs-12',
-            }).appendTo(this.main);
+            }).css('display', 'flex').css('flex', '1').appendTo(this.main);
 
             if (this.info_bar) {
                 this.el.append(this.info_bar.el);
@@ -332,6 +332,13 @@
         },
         get_url: function() {
         },
+        get view_type() {
+            if (this.class_ == 'tab-form') {
+                return this.screen.current_view.view_type;
+            } else if (this.class_ == 'tab-wizard') {
+                return 'form';
+            }
+        },
         compare: function(attributes) {
             return false;
         },
@@ -410,6 +417,7 @@
             'href': '#' + tab.id
         }).on('show.bs.tab', function() {
             Sao.set_url(tab.get_url(), tab.name.split(' / ').pop());
+            Sao.Tab.set_view_type(tab);
         })
         .append(jQuery('<button/>', {
             'class': 'close',
@@ -469,6 +477,15 @@
         if (next) {
             next.find('a').tab('show');
             tabs.trigger('ready');
+        }
+    };
+
+    Sao.Tab.set_view_type = function(tab) {
+        var tabcontent = jQuery('#tabcontent');
+        if (tab.view_type == 'tree') {
+            tabcontent.css('display', 'flex');
+        } else if (tab.view_type == 'form') {
+            tabcontent.css('display', 'block');
         }
     };
 

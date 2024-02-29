@@ -788,7 +788,7 @@ msgstr "Modèle"
 
 msgctxt "field:ir.model.access,perm_create:"
 msgid "Create Access"
-msgstr "Accès en creation"
+msgstr "Accès en création"
 
 msgctxt "field:ir.model.access,perm_delete:"
 msgid "Delete Access"
@@ -948,7 +948,7 @@ msgstr "Groupe"
 
 msgctxt "field:ir.model.field.access,perm_create:"
 msgid "Create Access"
-msgstr "Accès en creation"
+msgstr "Accès en création"
 
 msgctxt "field:ir.model.field.access,perm_delete:"
 msgid "Delete Access"
@@ -1144,7 +1144,7 @@ msgstr "Nom"
 
 msgctxt "field:ir.rule.group,perm_create:"
 msgid "Create Access"
-msgstr "Accès en creation"
+msgstr "Accès en création"
 
 msgctxt "field:ir.rule.group,perm_delete:"
 msgid "Delete Access"
@@ -1883,7 +1883,7 @@ msgstr "Données"
 
 msgctxt "model:ir.action,name:act_model_field_access_form"
 msgid "Fields Access"
-msgstr "Droits d'accès au champs"
+msgstr "Droits d'accès aux champs"
 
 msgctxt "model:ir.action,name:act_model_field_access_form_relate_field"
 msgid "Access"
@@ -3345,7 +3345,7 @@ msgstr "Données"
 
 msgctxt "model:ir.ui.menu,name:menu_model_field_access_form"
 msgid "Fields Access"
-msgstr "Droits d'accès au champs"
+msgstr "Droits d'accès aux champs"
 
 msgctxt "model:ir.ui.menu,name:menu_model_form"
 msgid "Models"
