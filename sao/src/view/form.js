@@ -5433,7 +5433,7 @@ function eval_pyson(value){
                     this.remove(key, true);
                 });
             } else {
-                field.button.remove();
+                field.button.parent().css('visibility', 'hidden');
             }
 
             var previous = null;
