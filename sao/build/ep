@@ -11,6 +11,7 @@ move_res() {
 pack() {
     cp index.html dist/ \
         && cp custom.js dist/ \
+        && cp custom.css dist/ \
         && cp -r locale dist/ \
         && cp -r images dist/ \
         && cp -r bower_components/bootstrap/dist/fonts dist/ \
