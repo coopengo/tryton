@@ -587,3 +587,30 @@ div.CodeMirror {
 #tabs {
     padding-bottom: 0px;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Scrollbars
+///////////////////////////////////////////////////////////////////////////////
+
+// Does not work on firefox for now
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: var(--lightestgrey); 
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: @color-lighter-grey; 
+    border-radius: 3px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: @color-grey; 
+  }
+
