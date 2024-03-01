@@ -14,7 +14,7 @@ error_handler_configuration = config.get('admin', 'error_handling_class')
 
 class WrappedError(Exception):
     def __init__(self, inner):
-        super().__init__(inner)
+        super().__init__()
         self.inner = inner
 
 
