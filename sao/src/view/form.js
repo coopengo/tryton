@@ -364,8 +364,9 @@ function eval_pyson(value){
                         }
                     }
                     var promesses = [];
-                    for (const j in this.state_widgets) {
-                        var state_widget = this.state_widgets[j];
+                    // We iterate in the reverse order so that the most nested
+                    // widgets are computed first
+                    for (const state_widget of this.state_widgets.toReversed()) {
                         var prm = state_widget.set_state(record);
                         if (prm) {
                             promesses.push(prm);
@@ -865,6 +866,24 @@ function eval_pyson(value){
         },
         get_nth_page: function(page_index) {
             return jQuery(this.panes.find("div[role='tabpanel']")[page_index]);
+        },
+        set_state: function(record) {
+            if (this.get_n_pages() > 0) {
+                var to_collapse = true;
+                for (const page of this.panes.find("div[role='tabpanel']")) {
+                    if (jQuery(page).css('display') != 'none') {
+                        to_collapse = false;
+                        break;
+                    }
+                }
+                if (to_collapse) {
+                    this.hide();
+                } else {
+                    Sao.View.Form.Notebook._super.set_state.call(this, record);
+                }
+            } else {
+                this.hide();
+            }
         }
     });
 
@@ -894,6 +913,28 @@ function eval_pyson(value){
         },
         add: function(widget) {
             this.el.append(widget.el);
+        },
+        set_state: function(record) {
+            var to_collapse = false;
+            if (!this.attributes.string) {
+                to_collapse = true;
+                for (const form_item of this.el.children().first().children()) {
+                    for (const child of jQuery(form_item).children(':not(.tooltip)')) {
+                        if (jQuery(child).css('display') != 'none') {
+                            to_collapse = false;
+                            break;
+                        }
+                    }
+                    if (!to_collapse) {
+                        break;
+                    }
+                }
+            }
+            if (to_collapse) {
+                this.hide();
+            } else {
+                Sao.View.Form.Group._super.set_state.call(this, record);
+            }
         }
     });
 
