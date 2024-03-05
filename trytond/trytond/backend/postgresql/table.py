@@ -578,6 +578,14 @@ class TableHandler(TableHandlerInterface):
             query = query + ' CASCADE'
         cursor.execute(SQL(query).format(Identifier(table)))
 
+    def estimated_count(self):
+        cursor = Transaction().connection.cursor()
+        query = SQL(
+            "SELECT reltuples FROM pg_class "
+            f"WHERE relname = {Identifier(self.table_name)}")
+        cursor.execute(query)
+        count, = cursor.fetchone()
+        return count
 
 class IndexMixin:
 

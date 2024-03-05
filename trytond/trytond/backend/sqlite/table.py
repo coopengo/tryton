@@ -368,6 +368,9 @@ class TableHandler(TableHandlerInterface):
             query = query + ' CASCADE'
         cursor.execute(query)
 
+    def estimated_count(self):
+        return None
+
 
 class IndexMixin:
 

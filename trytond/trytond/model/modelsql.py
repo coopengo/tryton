@@ -2154,6 +2154,17 @@ class ModelSQL(ModelStorage):
         else:
             transaction.lock_table(cls._table)
 
+    @classmethod
+    def estimated_count(cls):
+        "Returns the estimation of the number of records."
+        count = cls._count_cache.get(cls.__name__)
+        if count is None:
+            table_h = cls.__table_handler__()
+            count = table_h.estimated_count()
+            if count is not None:
+                cls._count_cache.set(cls.__name__, count)
+        return super().estimated_count()
+
 
 def convert_from(table, tables, type_='LEFT'):
     # Don't nested joins as SQLite doesn't support

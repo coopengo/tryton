@@ -122,6 +122,9 @@ class TableHandlerInterface(object):
                     reverse=True)),
             None)
 
+    def estimated_count(self):
+        raise NotImplementedError
+
 
 class IndexTranslatorInterface:
 
