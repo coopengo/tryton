@@ -116,7 +116,7 @@
                     params.name = name;
                     Sao.Tab.create(params);
                 });
-                return;
+                return name_prm;
             case 'ir.action.wizard':
                 params.action = action.wiz_name;
                 params.data = data;
@@ -128,21 +128,21 @@
                 if ((action.keyword || 'form_action') === 'form_action') {
                     name_prm = add_name_suffix(action.name, context);
                 }
-                name_prm.done(function(name) {
+                name_prm.then(function(name) {
                     params.name = name;
                     Sao.Wizard.create(params);
                 });
-                return;
+                return name_prm;
             case 'ir.action.report':
                 params.name = action.report_name;
                 params.data = data;
                 params.direct_print = action.direct_print;
                 params.context = context;
                 Sao.Action.exec_report(params);
-                return;
+                return jQuery.when();
             case 'ir.action.url':
                 window.open(action.url, '_blank', 'noreferrer,noopener');
-                return;
+                return jQuery.when();
         }
     };
 
