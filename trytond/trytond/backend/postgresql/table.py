@@ -565,6 +565,7 @@ class TableHandler(TableHandlerInterface):
             else:
                 return str(o)
 
+        connection = Transaction().connection
         for index in indexes:
             translator = self.index_translator_for(index)
             if translator:
@@ -576,8 +577,8 @@ class TableHandler(TableHandlerInterface):
                     ('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {};\n'
                     .format(
                         'CONCURRENTLY' if concurrently else '',
-                        Identifier(name),
-                        Identifier(self.table_name),
+                        Identifier(name).as_string(connection),
+                        Identifier(self.table_name).as_string(connection),
                         query.as_string({})) % tuple(map(sql_quote, params))
                     ).encode('utf8'))
 
