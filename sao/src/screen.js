@@ -1347,6 +1347,29 @@
                 widget.screen.current_record = this.current_record;
                 widget.display();
             }
+
+            // Recompute states and grid templates of the containing view
+            var form = this._multiview_form;
+            var promesses = [];
+            // We iterate in the reverse order so that the most nested
+            // widgets are computed first
+            for (const state_widget of form.state_widgets.toReversed()) {
+                var prm = state_widget.set_state(form.screen.current_record);
+                if (prm) {
+                    promesses.push(prm);
+                }
+            }
+            for (const container of form.containers) {
+                container.set_grid_template();
+            }
+            // re-set the grid templates for the StateWidget that are
+            // asynchronous
+            jQuery.when.apply(jQuery, promesses).done(() => {
+                for (const container of form.containers) {
+                    container.set_grid_template();
+                }
+            });
+
         },
         display: function(set_cursor) {
             var deferreds = [];
