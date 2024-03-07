@@ -1,5 +1,6 @@
 @color-white:           white;
 @color-lightest-grey:   #f9f9f9; //coogcolor
+@color-button-hover:    #f0f0f0;
 @color-lighter-grey:    #c0c0c0; //coogcolor
 @color-grey:            #8c8c8c; //coogcolor
 @color-median-grey:     #777;
@@ -125,11 +126,30 @@ nav.toolbar.panel-heading {
         .coog-group-header-colors();
         padding-left:           0px;
 
-        // Color of top-right menu
-        > * > .navbar-brand.dropdown-toggle {
-            color:              @color-black;
-            :hover {
-                color:              @color-median-grey;
+        // Main tab menu: highlight tab title to show that it is clicable
+        > div.navbar-header {
+            background-color:           @color-white;
+            :hover, :focus-within {
+                background-color:       @color-button-hover;
+            }
+            margin:                     5px;
+            > .navbar-brand.dropdown-toggle {
+                height:                 40px;
+                padding:                10px;
+                border-radius:          5px;
+                color:                  @color-black;
+                box-shadow:             @coog-box-shadow;
+                :hover {
+                    color:              @color-black;
+                }
+                > span.caret {
+                    margin-left:        10px;
+                    font-size:          50px;
+                    padding:            2px 1px;
+                }
+            }
+            > ul:hover {
+                background-color:       @color-white;
             }
         }
     }
@@ -567,3 +587,30 @@ div.CodeMirror {
 #tabs {
     padding-bottom: 0px;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Scrollbars
+///////////////////////////////////////////////////////////////////////////////
+
+// Does not work on firefox for now
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: var(--lightestgrey); 
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: @color-lighter-grey; 
+    border-radius: 3px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: @color-grey; 
+  }
+
