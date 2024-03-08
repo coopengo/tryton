@@ -1389,7 +1389,9 @@
             var idx = Array.from(tr.parentElement.children).findIndex((e) => e === tr);
             if (idx != -1) {
                 var record = this.rows[idx].record;
-                this.select_records(record, record);
+                if (! this.selected_records.some((r) => r.id === record.id)) {
+                    this.select_records(record, record);
+                }
             } else {
                 return;
             }
@@ -1524,26 +1526,28 @@
 
             populate(ul, this.screen.model_name);
 
-            var m2os = this.screen.get_many2ones();
-            if (m2os.length) {
-                jQuery('<li/>', {
-                    'role': 'presentation',
-                    'class': 'divider',
-                }).appendTo(ul);
-            }
-            for (const m2o of m2os) {
-                var item = jQuery('<li/>', {
-                    'role': 'presentation',
-                }).append(jQuery('<a/>', {
-                    'class': 'contextual-submenu',
-                    'role': 'menuitem',
-                    'href': '#',
-                    'tabindex': -1,
-                }).text(m2o.description.string)).appendTo(ul);
-                var submenu = jQuery('<ul/>', {
-                    'class': 'dropdown-menu contextual contextual-submenu',
-                }).appendTo(item);
-                populate(submenu, m2o.description.relation, m2o.description.name);
+            if (this.selected_records.length === 1) {
+                var m2os = this.screen.get_many2ones();
+                if (m2os.length) {
+                    jQuery('<li/>', {
+                        'role': 'presentation',
+                        'class': 'divider',
+                    }).appendTo(ul);
+                }
+                for (const m2o of m2os) {
+                    var item = jQuery('<li/>', {
+                        'role': 'presentation',
+                    }).append(jQuery('<a/>', {
+                        'class': 'contextual-submenu',
+                        'role': 'menuitem',
+                        'href': '#',
+                        'tabindex': -1,
+                    }).text(m2o.description.string)).appendTo(ul);
+                    var submenu = jQuery('<ul/>', {
+                        'class': 'dropdown-menu contextual contextual-submenu',
+                    }).appendTo(item);
+                    populate(submenu, m2o.description.relation, m2o.description.name);
+                }
             }
 
             $(document).one('click', () => {
