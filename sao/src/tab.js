@@ -485,7 +485,9 @@
             return;
         }
         var tabcontent = jQuery('#tabcontent');
-        tabcontent.css('display', tab.view_type == 'form' ? 'block' : 'flex');
+        tabcontent.css(
+            'display',
+            tab.current_view_type == 'form' ? 'block' : 'flex');
     };
 
     Sao.Tab.Form = Sao.class_(Sao.Tab, {
