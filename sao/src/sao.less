@@ -486,8 +486,16 @@ img.icon {
             }
         }
         > thead > tr > th {
-            > label.sortable {
-                cursor: pointer;
+            div {
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                > label {
+                    white-space: nowrap;
+                }
+                > label.sortable {
+                    cursor: pointer;
+                }
             }
             &.optional {
                 cursor: pointer;
@@ -499,8 +507,6 @@ img.icon {
                     }
                 }
             }
-            overflow: hidden;
-            text-overflow: ellipsis;
             text-align: center;
             &.char, &.text, &.many2one, &.one2one, &.date, &.time, &.selection,
             &.reference, &.url, &.email, &.callto, &.sip {
