@@ -306,8 +306,6 @@ class Pool(object):
             module, [])
         self._final_migrations[self.database_name] += \
             self._registered_migration_hooks.get(module, [])
-        self._post_init_calls[self.database_name] += self._init_hooks.get(
-            module, [])
         self._notification_callbacks[self.database_name].update(
             self._registered_notifications.get(module, {}))
         self._modules.append(module)
