@@ -619,3 +619,38 @@ div.CodeMirror {
     background: @color-grey; 
   }
 
+///////////////////////////////////////////////////////////////////////////////
+// Spinner for processing
+///////////////////////////////////////////////////////////////////////////////
+// from https://loading.io/css/
+#processing {
+    padding-top:   300px;
+    padding-bottom: 100%;
+    background-color: rgba(@color-black, 0.6);
+    cursor: wait;
+    .label-info {
+        display: inline-block;
+        width: 80px;
+        height: 80px;
+        background: transparent;
+    }
+    .label-info:after {
+        content: " ";
+        display: block;
+        width: 60px;
+        height: 60px;
+        // margin: 8px;
+        border-radius: 50%;
+        border: 6px solid #fff;
+        border-color: #fff transparent #fff transparent;
+        animation: label-info 1.2s linear infinite;
+    }
+    @keyframes label-info {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+}
