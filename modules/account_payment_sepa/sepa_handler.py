@@ -75,7 +75,7 @@ class CAMT054(SEPAHandler):
             self.Payment.fail(failed)
         if succeeded:
             with Transaction().set_context(date_value=date_value):
-                self.Payment.succeed(payments)
+                self.Payment.succeed(succeeded)
 
     def get_payment_kind(self, element):
         tag = etree.QName(element)
