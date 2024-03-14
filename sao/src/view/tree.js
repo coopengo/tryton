@@ -352,17 +352,20 @@
             var col_idx = parent_children.indexOf(mutation.target.parentNode);
             var width = mutation.target.style.width;
             this.colgroup.find('col').eq(col_idx).css('width', width);
-            Sao.common.debounce(this.save_width.bind(this), 1000)();
+            Sao.common.debounce(this.save_width, 1000)(this);
         },
-        save_width: function() {
+        save_width: function(tree) {
             var widths = {};
-            for (const column of this.columns) {
+            for (const column of tree.columns) {
+                if (!column.get_visible()) {
+                    continue;
+                }
                 var width = column.col.css('width');
                 widths[column.attributes.name] = Number(
                     width.substr(0, width.length - 2));
             }
 
-            var model_name = this.screen.model_name;
+            var model_name = tree.screen.model_name;
             var TreeWidth = new Sao.Model('ir.ui.view_tree_width');
             TreeWidth.execute(
                 'set_width',
