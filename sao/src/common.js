@@ -4010,9 +4010,11 @@
     Sao.common.debounce = function(func, wait) {
         return (...args) => {
             clearTimeout(func._debounceTimeout);
+            console.log(`clear: ${func._debounceTimeout}`);
             func._debounceTimeout = setTimeout(() => {
                 func.apply(this, args);
             }, wait);
+            console.log(`new: ${func._debounceTimeout}`);
         };
     };
 

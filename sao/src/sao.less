@@ -487,6 +487,7 @@ img.icon {
         }
         > thead > tr > th {
             div {
+                resize: horizontal;
                 overflow: hidden;
                 text-overflow: ellipsis;
 
@@ -516,6 +517,11 @@ img.icon {
             &.timedelta, &.float, &.numeric, &.integer, &.biginteger {
                 text-align: right;
                 text-align: end;
+            }
+        }
+        > thead > tr > th:first-child {
+            div {
+                resize: none;
             }
         }
         > thead > tr:first-child th {
