@@ -230,9 +230,9 @@ class Pool(object):
         for hook in self._post_init_calls[self.database_name]:
             hook(self, update)
 
-    def final_migrations(self):
+    def final_migrations(self, options):
         for migration in self._final_migrations[self.database_name]:
-            migration(self)
+            migration(self, options)
 
     def get(self, name, type='model'):
         '''
