@@ -76,6 +76,10 @@
         > div.panel-body {
             background-color:       transparent;
 
+            .panel {
+                margin:         0px 15px 0px 15px;
+            }
+
             // Remove padding from panel-body so trees are more compact
             padding:                0px;
 
@@ -443,11 +447,14 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
 }
 
 // Style expandable groups as dicts
-div.form-group-expandable > div.panel-heading {
-    .coog-group-header-colors();
+div.form-group-expandable {
+    height:                             min-content;
+    > div.panel-heading {
+        .coog-group-header-colors();
 
-    > label.panel-title {
-        font-size:                      14px;
+        > label.panel-title {
+            font-size:                  14px;
+        }
     }
 }
 
@@ -545,20 +552,20 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
     .form-multiselection, .form-url, .form-email, .form-callto, .form-sip,
     .form-pyson {
         input, select {
-            min-width: 20ch;
+            min-width: 17ch;
         }
     }
     .form-many2one, .form-one2one, .form-reference, form-binary {
         select {
-            min-width: 17ch;
+            min-width: 15ch;
         }
         input {
-            min-width: 20ch;
+            min-width: 17ch;
         }
     }
     .form-date {
         input {
-            min-width: 20ch;
+            min-width: 17ch;
         }
         div.icon-input > input {
             min-width: unset;
