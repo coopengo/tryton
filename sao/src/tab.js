@@ -821,6 +821,7 @@
                             };
                             Sao.Action.execute(exec_action, data,
                                 jQuery.extend({}, screen.local_context));
+                            button.data('disabled', false);
                         });
                     });
                 });
