@@ -3080,7 +3080,7 @@ function eval_pyson(value){
             if (this.has_target(value)) {
                 var m2o_id =
                     this.id_from_value(record.field_get(this.field_name));
-                if (evt && (evt.ctrlKey || evt.metaKey)) {
+                if (evt && !(evt.ctrlKey || evt.metaKey)) {
                     var params = {};
                     params.model = this.get_model();
                     params.res_id = m2o_id;
@@ -3643,13 +3643,16 @@ function eval_pyson(value){
             ).appendTo(buttons);
             this.but_undel.click(disable_during(this.undelete.bind(this)));
 
+            var content_class = this.class_ + '-content panel-body';
             // [Coog specific]
             //      > attribute expand_toolbar (hide toolbar)
-            if (attributes.expand_toolbar)
+            if (attributes.expand_toolbar) {
                 this.menu.hide();
+                content_class += ' coog-hidden-toolbar';
+            }
 
             this.content = jQuery('<div/>', {
-                'class': this.class_ + '-content panel-body'
+                'class': content_class
             });
             this.el.append(this.content);
 
@@ -4360,12 +4363,16 @@ function eval_pyson(value){
             })).appendTo(buttons);
             this.but_remove.click(this.remove.bind(this));
 
+            var content_class = this.class_ + '-content panel-body';
             // [Coog specific]
-            if (attributes.expand_toolbar)
+            //      > attribute expand_toolbar (hide toolbar)
+            if (attributes.expand_toolbar) {
                 this.menu.hide();
+                content_class += ' coog-hidden-toolbar';
+            }
 
             this.content = jQuery('<div/>', {
-                'class': this.class_ + '-content panel-body'
+                'class': content_class
             });
             this.el.append(this.content);
             var model = attributes.relation;
@@ -5443,7 +5450,7 @@ function eval_pyson(value){
                     this.remove(key, true);
                 });
             } else {
-                field.button.remove();
+                field.button.parent().css('visibility', 'hidden');
             }
 
             var previous = null;

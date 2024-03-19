@@ -813,7 +813,7 @@
                         selection.push([x.id, x.rec_name]);
                     }
                     if (this.nullable_widget) {
-                        selection.push([null, '']);
+                        selection.push([null, this.attributes.empty_string || '']);
                     }
                     var help = {};
                     if (help_field){
@@ -3616,7 +3616,7 @@
         el.closest('.modal-body').css('overflow', overflow);
         el.closest('.navbar-collapse.in').css('overflow-y', overflow);
         el.closest('.content-box').css('overflow-y', overflow);
-        el.closest('fieldset.form-group_').css('overflow', overflow);
+        el.parents('fieldset.form-group_').css('overflow', overflow);
         Sao.common.scrollIntoViewIfNeeded(el);
     };
 
