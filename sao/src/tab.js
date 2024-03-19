@@ -482,7 +482,9 @@
 
     Sao.Tab.set_view_type = function(tab) {
         var tabcontent = jQuery('#tabcontent');
-        if (tab.view_type == 'tree') {
+        if (tab === undefined) {
+            return;
+        } else if (tab.view_type == 'tree') {
             tabcontent.css('display', 'flex');
         } else if (tab.view_type == 'form') {
             tabcontent.css('display', 'block');

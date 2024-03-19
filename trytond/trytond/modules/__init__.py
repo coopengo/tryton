@@ -291,6 +291,7 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
         if not update:
             pool.setup()
         else:
+            pool.final_migrations(options)
             # As the caches will be clearer at the end of the process there's
             # no need to do it here.
             # It would deadlock the ir_cache SELECT in the cache when altering
