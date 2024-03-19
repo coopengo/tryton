@@ -5412,16 +5412,16 @@ function eval_pyson(value){
             this.fields[key] = field = new (
                 this.get_entries(key_schema.type))(key, this);
             this.rows[key] = row = jQuery('<div/>', {
-                'class': 'form-group'
+                'class': 'dict-row'
             });
             var text = key_schema.string + Sao.i18n.gettext(':');
             var label = jQuery('<label/>', {
                 'text': text
             }).appendTo(jQuery('<div/>', {
-                'class': 'dict-label col-sm-2 control-label'
+                'class': 'dict-label control-label'
             }).appendTo(row));
 
-            field.el.addClass('col-sm-10').appendTo(row);
+            field.el.appendTo(row);
 
             label.uniqueId();
             field.labelled.uniqueId();
