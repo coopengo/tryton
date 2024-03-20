@@ -30,7 +30,9 @@ import trytond.cron as cron
 from trytond.pool import Pool
 
 # AKE: handle term signals
-handler = commandline.generate_signal_handler(options.pidfile)
+handler = commandline.generate_signal_handler(
+    options.pidfile,
+    options.lockfile)
 commandline.handle_signals(handler)
 
 with commandline.pidfile(options):
