@@ -474,8 +474,12 @@ div.modal-header {
     .coog-group-header-colors();
 }
 
-// And slightly highlight non-default buttons
 div.wizard-dialog {
+    // For "small" state views, bump the window width from 600px
+    > div.modal-dialog.modal-md {
+        width:                  1200px;
+    }
+    // Slightly highlight non-default buttons
     > div.modal-dialog > div.modal-footer > button.btn-link {
         .coog-highlight-link-button();
     }
