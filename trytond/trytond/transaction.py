@@ -231,6 +231,7 @@ class Transaction(object):
         self.stop(type is None)
 
     def stop(self, commit=False):
+        from trytond import backend
         transactions = self._local.transactions
         try:
             if transactions.count(self) == 1:
@@ -247,7 +248,8 @@ class Transaction(object):
                             self.connection, self.close)
                         to_put = {x.connection for x in
                             self._sub_transactions_to_close
-                            if not x.connection.closed}
+                            if backend.name == 'sqlite'
+                            or not x.connection.closed}
                         for conn in to_put:
                             self.database.put_connection(
                                 conn, self.close)
