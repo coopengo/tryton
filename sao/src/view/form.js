@@ -20,7 +20,6 @@ function eval_pyson(value){
                 this, view, exclude_field, field_attrs);
             this._containers = [];
             this._mnemonics = {};
-            this._visibility = true;
         },
         get container() {
             if (this._containers.length > 0) {
@@ -43,16 +42,8 @@ function eval_pyson(value){
             if (container) {
                 this._containers.push(container);
             }
-            const is_notebook = node.tagName == 'notebook';
-            const previous_visibility = this._visibility;
-            for (const [idx, child] of Array.from(node.childNodes).entries()) {
-                if ((idx > 0) && is_notebook) {
-                    this._visibility = false;
-                }
+            for (const child of node.childNodes) {
                 this.parse(child);
-            }
-            if (is_notebook) {
-                this._visibility = previous_visibility;
             }
             if (container) {
                 if (container instanceof Sao.View.Form.Container) {
@@ -67,14 +58,6 @@ function eval_pyson(value){
                 this.container.add(null, attributes);
                 return;
             }
-
-            if (['one2many', 'many2many'].includes(attributes.widget)) {
-                if ((this.field_attrs[name].loading == 'lazy') &&
-                    this._visibility) {
-                    this.field_attrs[name].loading = 'eager';
-                }
-            }
-
             var WidgetFactory = Sao.View.FormXMLViewParser.WIDGETS[
                 attributes.widget];
             var widget = new WidgetFactory(this.view, attributes);
@@ -346,7 +329,7 @@ function eval_pyson(value){
                     field = record.model.fields[fname];
                     fields.push([
                         fname,
-                        (field.description.loading || 'eager') == 'eager',
+                        field.description.loading || 'eager' == 'eager',
                         field.views.size,
                     ]);
                 }
@@ -3956,7 +3939,7 @@ function eval_pyson(value){
                     for (i = 0, len = result.length; i < len; i++) {
                         ids.push(result[i][0]);
                     }
-                    this.screen.group.load(ids, null, true);
+                    this.screen.group.load(ids, true);
                     prm = this.screen.display();
                     if (sequence) {
                         this.screen.group.set_sequence(

@@ -202,7 +202,6 @@ class FormXMLViewParser(XMLViewParser):
         super().__init__(view, exclude_field, field_attrs)
         self._containers = []
         self._mnemonics = {}
-        self._visibility = True
 
     @property
     def container(self):
@@ -222,14 +221,8 @@ class FormXMLViewParser(XMLViewParser):
     def parse_child(self, node, container=None):
         if container:
             self._containers.append(container)
-        is_notebook = node.tagName == 'notebook'
-        previous_visibility = self._visibility
-        for idx, child in enumerate(node.childNodes):
-            if idx > 0 and is_notebook:
-                self._visibility = False
+        for child in node.childNodes:
             self.parse(child)
-        if is_notebook:
-            self._visibility = previous_visibility
         if container:
             self._containers.pop()
 
@@ -238,11 +231,6 @@ class FormXMLViewParser(XMLViewParser):
         if name and name == self.exclude_field:
             self.container.add(None, attributes)
             return
-
-        if attributes['widget'] in {'one2many', 'many2many'}:
-            if (self.field_attrs[name]['loading'] == 'lazy'
-                    and self._visibility):
-                self.field_attrs[name]['loading'] = 'eager'
 
         # RSE Display more useful info when trying to display unexisting field
         if 'widget' not in attributes:
@@ -360,7 +348,18 @@ class FormXMLViewParser(XMLViewParser):
                 int(attributes.get('width', -1)),
                 int(attributes.get('height', -1)))
 
+        # Force to display the first time it switches on a page
+        # This avoids glitch in position of widgets
+        def switch(notebook, page, page_num):
+            if not self.view.widget:
+                # Not yet finish to parse
+                return
+            notebook.grab_focus()
+            self.view.display()
+            notebook.disconnect(handler_id)
+        handler_id = notebook.connect('switch-page', switch)
         self.view.state_widgets.append(notebook)
+
         self.view.notebooks.append(notebook)
         self.container.add(notebook, attributes)
         self.parse_child(node, notebook)

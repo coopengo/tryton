@@ -299,29 +299,6 @@ class ModelSQLTestCase(unittest.TestCase):
                             }],
                     }])
 
-    @with_transaction()
-    def test_read_related_limit(self):
-        pool = Pool()
-        Model = pool.get('test.modelsql.read')
-
-        model, = Model.create([{
-                    'name': 'Record',
-                    'targets': [
-                        ('create', [{'name': str(i)} for i in range(10)]),
-                        ]
-                    }])
-
-        values, = Model.read([model.id], ['targets.name'])
-        self.assertTrue(all('id' in t and 'name' in t
-                for t in values['targets.']))
-
-        with Transaction().set_context(related_limit=4):
-            values, = Model.read([model.id], ['targets.name'])
-            self.assertTrue(all('id' in t and 'name' in t
-                    for t in values['targets.'][:4]))
-            self.assertTrue(all('id' in t and len(t) == 1
-                    for t in values['targets.'][4:]))
-
     @unittest.skipIf(backend.name == 'sqlite',
         'SQLite not concerned because tryton don\'t set "NOT NULL"'
         'constraint: "ALTER TABLE" don\'t support NOT NULL constraint'

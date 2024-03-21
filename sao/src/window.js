@@ -454,7 +454,7 @@
                     for (const record of result) {
                         ids.push(record[0]);
                     }
-                    this.screen.group.load(ids, null, true);
+                    this.screen.group.load(ids, true);
                     prm = this.screen.display();
                 }
                 prm.done(() => {
