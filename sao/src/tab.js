@@ -481,14 +481,13 @@
     };
 
     Sao.Tab.set_view_type = function(tab) {
-        var tabcontent = jQuery('#tabcontent');
-        if (tab === undefined) {
+        if (!tab) {
             return;
-        } else if (tab.view_type == 'tree') {
-            tabcontent.css('display', 'flex');
-        } else if (tab.view_type == 'form') {
-            tabcontent.css('display', 'block');
         }
+        var tabcontent = jQuery('#tabcontent');
+        tabcontent.css(
+            'display',
+            tab.current_view_type == 'form' ? 'block' : 'flex');
     };
 
     Sao.Tab.Form = Sao.class_(Sao.Tab, {
