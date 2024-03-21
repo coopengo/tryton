@@ -1320,7 +1320,7 @@
             }
         },
         load: function(ids, set_cursor=true, modified=false, position=-1) {
-            this.group.load(ids, modified, position);
+            this.group.load(ids, null, modified, position);
             this.current_view.reset();
             this.current_record = null;
             return this.display().then(() => {
@@ -1746,7 +1746,7 @@
             var records = this.current_view.selected_records;
             this.model.copy(records, this.context)
                 .then(new_ids => {
-                    this.group.load(new_ids, false, this.new_position);
+                    this.group.load(new_ids, null, false, this.new_position);
                     if (!jQuery.isEmptyObject(new_ids)) {
                         this.current_record = this.group.get(new_ids[0]);
                     }
