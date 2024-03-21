@@ -1309,6 +1309,7 @@
             if (this.switch_callback) {
                 this.switch_callback();
             }
+            this._sync_group();
             if (this.has_update_resources()) {
                 if (record) {
                     record.get_resources().always(
@@ -1316,10 +1317,6 @@
                 } else {
                     this.update_resources();
                 }
-            }
-            // [Coog specific] multi_mixed_view
-            if (this.parent) {
-                this.parent.group_sync(this, this.current_record);
             }
         },
         load: function(ids, set_cursor=true, modified=false, position=-1) {
@@ -1331,6 +1328,48 @@
                     this.set_cursor();
                 }
             });
+        },
+        _sync_group: function() {
+            if (!this._multiview_form || (this.current_view.view_type != 'tree')) {
+                return;
+            }
+            if (!this.current_record) {
+                return;
+            }
+
+            var [tree, ...forms] = this._multiview_form.widget_groups[
+                this._multiview_group];
+            // Get unknown fields
+            for (const widget of forms) {
+                if (widget.screen.current_view.view_type != 'form') {
+                    continue;
+                }
+                widget.screen.current_record = this.current_record;
+                widget.display();
+            }
+
+            // Recompute states and grid templates of the containing view
+            var form = this._multiview_form;
+            var promesses = [];
+            // We iterate in the reverse order so that the most nested
+            // widgets are computed first
+            for (const state_widget of form.state_widgets.toReversed()) {
+                var prm = state_widget.set_state(form.screen.current_record);
+                if (prm) {
+                    promesses.push(prm);
+                }
+            }
+            for (const container of form.containers) {
+                container.set_grid_template();
+            }
+            // re-set the grid templates for the StateWidget that are
+            // asynchronous
+            jQuery.when.apply(jQuery, promesses).done(() => {
+                for (const container of form.containers) {
+                    container.set_grid_template();
+                }
+            });
+
         },
         display: function(set_cursor) {
             var deferreds = [];
