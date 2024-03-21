@@ -59,6 +59,8 @@ class Pool(object):
     _instances = {}
     _init_hooks = {}
     _post_init_calls = {}
+    _registered_migration_hooks = {}
+    _final_migrations = {}
     _registered_notifications = {}
     _notification_callbacks = {}
     _modules = None
@@ -127,6 +129,13 @@ class Pool(object):
         if kwargs['module'] not in Pool._init_hooks:
             Pool._init_hooks[kwargs['module']] = []
         Pool._init_hooks[kwargs['module']] += hooks
+
+    @staticmethod
+    def register_final_migration(*hooks, module=None):
+        assert module is not None
+        if module not in Pool._registered_migration_hooks:
+            Pool._registered_migration_hooks[module] = []
+        Pool._registered_migration_hooks[module] += hooks
 
     @staticmethod
     def register_notification_callbacks(keyword, callback, *, module=None):
@@ -203,6 +212,7 @@ class Pool(object):
             for type in self.classes.keys():
                 self._pool[self.database_name][type] = {}
             self._post_init_calls[self.database_name] = []
+            self._final_migrations[self.database_name] = []
             self._notification_callbacks[self.database_name] = {}
             try:
                 with ServerContext().set_context(disable_auto_cache=True):
@@ -219,6 +229,10 @@ class Pool(object):
     def post_init(self, update):
         for hook in self._post_init_calls[self.database_name]:
             hook(self, update)
+
+    def final_migrations(self, options):
+        for migration in self._final_migrations[self.database_name]:
+            migration(self, options)
 
     def get(self, name, type='model'):
         '''
@@ -280,13 +294,18 @@ class Pool(object):
                     cls = type(
                         cls.__name__, (cls, previous_cls), {'__slots__': ()})
                 except KeyError:
-                    pass
+                    doc = cls.__doc__
+                    cls = type(
+                        cls.__name__, (cls,), {'__slots__': ()})
+                    cls.__doc__ = doc
                 assert issubclass(cls, PoolBase), (
                     f"{cls} is not a subclass of {PoolBase}")
                 self.add(cls, type=type_)
                 classes[type_].append(cls)
         self._post_init_calls[self.database_name] += self._init_hooks.get(
             module, [])
+        self._final_migrations[self.database_name] += \
+            self._registered_migration_hooks.get(module, [])
         self._notification_callbacks[self.database_name].update(
             self._registered_notifications.get(module, {}))
         self._modules.append(module)

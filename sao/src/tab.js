@@ -125,7 +125,7 @@
             }).appendTo(this.el);
             this.content = jQuery('<div/>', {
                 'class': 'col-xs-12',
-            }).appendTo(this.main);
+            }).css('display', 'flex').css('flex', '1').appendTo(this.main);
 
             if (this.info_bar) {
                 this.el.append(this.info_bar.el);
@@ -332,6 +332,13 @@
         },
         get_url: function() {
         },
+        get view_type() {
+            if (this.class_ == 'tab-form') {
+                return this.screen.current_view.view_type;
+            } else if (this.class_ == 'tab-wizard') {
+                return 'form';
+            }
+        },
         compare: function(attributes) {
             return false;
         },
@@ -410,6 +417,7 @@
             'href': '#' + tab.id
         }).on('show.bs.tab', function() {
             Sao.set_url(tab.get_url(), tab.name.split(' / ').pop());
+            Sao.Tab.set_view_type(tab);
         })
         .append(jQuery('<button/>', {
             'class': 'close',
@@ -469,6 +477,17 @@
         if (next) {
             next.find('a').tab('show');
             tabs.trigger('ready');
+        }
+    };
+
+    Sao.Tab.set_view_type = function(tab) {
+        var tabcontent = jQuery('#tabcontent');
+        if (tab === undefined) {
+            return;
+        } else if (tab.view_type == 'tree') {
+            tabcontent.css('display', 'flex');
+        } else if (tab.view_type == 'form') {
+            tabcontent.css('display', 'block');
         }
     };
 
@@ -738,6 +757,74 @@
                     });
                 }
             });
+            if (toolbars.quick_actions) {
+                var group = jQuery('<div/>', {
+                    'class': 'btn-group',
+                    'role': 'group'
+                }).appendTo(toolbar.find('.btn-toolbar'));
+                toolbars.quick_actions.forEach(qaction => {
+                    var qaction_id = qaction.id;
+                    var attributes = {
+                        'type': 'button',
+                        'class': 'btn btn-default navbar-btn',
+                        'title': qaction.name,
+                        'id': qaction_id
+                    };
+                    var icon = qaction["icon."];
+                    if (icon === undefined) {
+                        icon = 'tryton-executable';
+                    } else {
+                        icon = icon.rec_name;
+                    }
+                    var button = jQuery('<button/>', attributes)
+                        .append(Sao.common.ICONFACTORY.get_icon_img(
+                            icon, {
+                            'aria-hidden': 'true',
+                        }));
+                    this.buttons[qaction_id] = button;
+                    button.appendTo(group);
+                    this.buttons[qaction_id].click(qaction, event => {
+                        var item = event.data;
+                        var button = this.buttons[item.id];
+                        // Use data instead of disabled prop because the action may
+                        // actually disable the button.
+                        if (button.data('disabled')) {
+                            event.preventDefault();
+                            return;
+                        }
+                        button.data('disabled', true);
+                        this.modified_save().then(function() {
+                            var exec_action = jQuery.extend({}, qaction);
+                            var record_id = null;
+                            if (screen.current_record) {
+                                record_id = screen.current_record.id;
+                            }
+                            var records, paths;
+                            if (action.records == 'listed') {
+                                records = screen.listed_records;
+                                paths = screen.listed_paths;
+                            } else {
+                                records = screen.selected_records;
+                                paths = screen.selected_paths;
+                            }
+                            var record_ids = records.map(function(record) {
+                                return record.id;
+                            });
+                            var model_context = screen.context_screen ?
+                                screen.context_screen.model_name : null;
+                            var data = {
+                                'model': screen.model_name,
+                                'model_context': model_context,
+                                'id': record_id,
+                                'ids': record_ids,
+                                'paths': paths,
+                            };
+                            Sao.Action.execute(exec_action, data,
+                                jQuery.extend({}, screen.local_context));
+                        });
+                    });
+                });
+            }
             this.buttons.attach
                 .on('dragover', false)
                 .on('drop', this.attach_drop.bind(this));
