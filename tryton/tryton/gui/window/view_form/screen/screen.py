@@ -9,6 +9,7 @@ import gettext
 import json
 import logging
 import urllib.parse
+import time
 import xml.dom.minidom
 from operator import itemgetter
 
@@ -1010,6 +1011,7 @@ class Screen:
         self.display(set_cursor=set_cursor)
 
     def display(self, res_id=None, set_cursor=False, force=False):
+        start = time.time()
         if res_id:
             self.current_record = self.group.get(res_id)
         else:
