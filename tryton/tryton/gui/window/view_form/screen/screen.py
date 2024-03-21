@@ -1048,7 +1048,6 @@ class Screen:
         self.set_tree_state()
         # Force record_message
         self.current_record = self.current_record
-        print(f"Screen.display({self.model_name}): {time.time() - start}")
 
     def _get_next_record(self, test=False):
         view = self.current_view
