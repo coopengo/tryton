@@ -292,6 +292,7 @@ function eval_pyson(value){
             });
             this.notebooks = [];
             this.expandables = [];
+            this.widget_groups = {};
             this.containers = [];
             this.widget_id = 0;
             Sao.View.Form._super.init.call(this, view_id, screen, xml);
@@ -3766,15 +3767,30 @@ function eval_pyson(value){
                 pre_validate: attributes.pre_validate,
                 breadcrumb: breadcrumb,
             });
-            // [Coog specific]
-            // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-            if (attributes.group)
-                this.screen.parent = this;
             this.screen.pre_validate = attributes.pre_validate == 1;
 
             this.screen.windows.push(this);
             this.prm = this.screen.switch_view().done(() => {
                 this.content.append(this.screen.screen_container.el);
+                // [Coog specific]
+                // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
+                if (attributes.group) {
+                    this.screen._multiview_form = view;
+                    this.screen._multiview_group = attributes.group;
+                    if (!Object.hasOwn(view.widget_groups, attributes.group)) {
+                        view.widget_groups[attributes.group] = [];
+                    }
+                    var wgroup = view.widget_groups[attributes.group];
+                    if (this.screen.current_view.view_type == 'tree') {
+                        if ((wgroup.length > 0) &&
+                            (wgroup[0].screen.current_view.view_type == 'tree')) {
+                            throw new Error("Wrong definition");
+                        }
+                        wgroup.unshift(this);
+                    } else {
+                        wgroup.push(this);
+                    }
+                }
             });
 
             if (attributes.add_remove) {
@@ -4033,10 +4049,12 @@ function eval_pyson(value){
 
                 // [Coog specific]
                 // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-                if (this.attributes.group && this.attributes.mode == 'form'){
-                    if (!this.screen.current_record)
-                        this.set_invisible(true);
-                }else if (new_group && new_group != this.screen.group) {
+                if (this.attributes.group && this.attributes.mode == 'form') {
+                    if (!this.screen.current_record) {
+                        this.set_invisible(this.visible);
+                    }
+                }
+                if (new_group && new_group != this.screen.group) {
                     this.screen.set_group(new_group);
                     if ((this.screen.current_view.view_type == 'form') &&
                         this.screen.group.length) {
