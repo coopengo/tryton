@@ -826,10 +826,14 @@ var Sao = {
 
     Sao.main_menu_row_activate = function() {
         var screen = Sao.main_menu_screen;
+        if (Date.now() - Sao.last_menu_open < 150) {
+            return;
+        }
+        Sao.last_menu_open = Date.now();
+        // ids is not defined to prevent to add suffix
         const id = screen.get_id();
         if (id) {
-            // ids is not defined to prevent to add suffix
-            Sao.Action.exec_keyword('tree_open', {
+            return Sao.Action.exec_keyword('tree_open', {
                 'model': screen.model_name,
                 'id': screen.get_id(),
             }, null, false);
@@ -869,6 +873,7 @@ var Sao = {
         });
         Sao.main_menu_screen = form.screen;
         Sao.main_menu_screen.switch_callback = null;
+        Sao.last_menu_open = Date.now();
         Sao.Tab.tabs.splice(Sao.Tab.tabs.indexOf(form), 1);
         form.view_prm.done(function() {
             var view = form.screen.current_view;
