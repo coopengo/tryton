@@ -477,7 +477,8 @@ div.modal-header {
 div.wizard-dialog {
     // For "small" state views, bump the window width from 600px
     > div.modal-dialog.modal-md {
-        width:                  1200px;
+        width:                  calc(min(100%, 1200px) - 60px);
+        margin:                 30px max(30px, calc((100% - min(100%, 1140px)) / 2));
     }
     // Slightly highlight non-default buttons
     > div.modal-dialog > div.modal-footer > button.btn-link {
