@@ -423,6 +423,8 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
     // "legends" are special and default style is weird, transform the style to
     // look like dicts
     > fieldset.form-group_ {
+        display: flex;
+        flex-direction: column;
         box-shadow:                     @coog-box-shadow;
         margin-bottom:                  10px;
 
