@@ -52,6 +52,8 @@ class SQLiteExtract(Function):
     def extract(lookup_type, date):
         if date is None:
             return None
+        if date == 0:
+            return 0
         if len(date) == 10:
             year, month, day = map(int, date.split('-'))
             date = datetime.date(year, month, day)
@@ -261,8 +263,27 @@ def sign(value):
         return value
 
 
+def prepare_comparison(items):
+    # convert bytes to float
+    # to allow for comparison
+    # in a case where, for example,
+    # items are (b'120.00', 0)
+    # This is an workaround
+    # to execute test without error
+    # on requests using for example:
+    # 'Greatest(line.debit, 0)'
+    res = []
+    for item in items:
+        if item is None:
+            continue
+        if type(item) is bytes:
+            item = float(item)
+        res.append(item)
+    return res
+
+
 def greatest(*args):
-    args = [a for a in args if a is not None]
+    args = prepare_comparison(args)
     if args:
         return max(args)
     else:
@@ -270,7 +291,7 @@ def greatest(*args):
 
 
 def least(*args):
-    args = [a for a in args if a is not None]
+    args = prepare_comparison(args)
     if args:
         return min(args)
     else:
