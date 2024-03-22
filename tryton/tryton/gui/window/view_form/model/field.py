@@ -794,7 +794,8 @@ class O2MField(Field):
                     new_record.set(vals, modified=False)
                     group.append(new_record)
             # Trigger modified only once
-            group.record_modified()
+            if modified:
+                group.record_modified()
 
     def set(self, record, value, data=None, _default=False):
         group = record.value.get(self.name)
