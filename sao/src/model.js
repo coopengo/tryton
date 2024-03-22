@@ -2390,7 +2390,7 @@
                     }
                 }
                 // Trigger modified only once
-                if (modified) {
+                if (modified || default_) {
                     group.record_modified();
                 }
             }
