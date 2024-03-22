@@ -1069,7 +1069,10 @@ class ModelSQL(ModelStorage):
                 tables, dom_exp = cls.search_domain(
                     domain, active_test=False, tables=tables)
             from_ = convert_from(None, tables)
-            limit = Transaction().context.get('related_limit')
+            # JCA: Deactivate related limit for now, it leads to cache
+            # corrution
+            # limit = Transaction().context.get('related_limit')
+            limit = None
             for sub_ids in grouped_slice(ids, in_max):
                 sub_ids = list(sub_ids)
                 read_ids = sub_ids[:]
