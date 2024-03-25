@@ -194,7 +194,7 @@ msgid "View Logs..."
 msgstr "Voir les journaux..."
 
 msgid "Attachments..."
-msgstr "Attachements..."
+msgstr "Pièces jointes..."
 
 msgid "Notes..."
 msgstr "Notes..."
@@ -492,7 +492,7 @@ msgstr ""
 
 #, python-format
 msgid "Attachments (%s)"
-msgstr "Attachements (%s)"
+msgstr "Pièces jointes (%s)"
 
 msgid "Profile Editor"
 msgstr "Éditeur de profil"
@@ -608,7 +608,7 @@ msgstr "Suivant"
 
 #, python-format
 msgid "Attachment (%s)"
-msgstr "Attachement (%s)"
+msgstr "Pièce jointe (%s)"
 
 #, python-format
 msgid "Note (%d/%d)"
@@ -774,10 +774,10 @@ msgid "Show revisions..."
 msgstr "Afficher les révisions..."
 
 msgid "A_ttachments..."
-msgstr "_Pièce jointes..."
+msgstr "_Pièces jointes..."
 
 msgid "Add an attachment to the record"
-msgstr "Ajouter un attachement à l'enregistrement"
+msgstr "Ajouter une pièce jointe à l'enregistrement"
 
 msgid "_Notes..."
 msgstr "_Notes..."
@@ -1154,6 +1154,12 @@ msgstr "Supprimer l'enregistrement sélectionné"
 msgid "%s%%"
 msgstr "%s%%"
 
+msgid "Replace"
+msgstr "Remplacer"
+
+msgid "Replace All"
+msgstr "Remplacer tout"
+
 msgid "L"
 msgstr "L"
 
@@ -1192,3 +1198,4 @@ msgstr "#ERREUR"
 
 msgid "Translate view"
 msgstr "Traduire la vue"
+

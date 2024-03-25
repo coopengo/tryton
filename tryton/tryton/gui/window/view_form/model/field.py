@@ -2,9 +2,11 @@
 # this repository contains the full copyright notices and license terms.
 import datetime
 import decimal
+import functools
 import locale
 import logging
 import math
+import operator
 import os
 import tempfile
 from decimal import Decimal
@@ -15,7 +17,6 @@ from tryton.common import (
     EvalEnvironment, RPCException, RPCExecute, concat, domain_inversion,
     eval_domain, extract_reference_models, filter_leaf, inverse_leaf,
     localize_domain, merge, prepare_reference_domain, simplify, unique_value)
-from tryton.common.datetime_ import INVALID_DT_VALUE
 from tryton.common.htmltextbuffer import guess_decode
 from tryton.config import CONFIG
 from tryton.pyson import PYSONDecoder
@@ -287,12 +288,6 @@ class DateTimeField(Field):
 
     _default = None
 
-    def get_eval(self, record):
-        value = super().get_eval(record)
-        if value is INVALID_DT_VALUE:
-            value = None
-        return value
-
     def set_client(self, record, value, force_change=False):
         if isinstance(value, datetime.time):
             current_value = self.get_client(record)
@@ -301,8 +296,6 @@ class DateTimeField(Field):
                     current_value.date(), value)
             else:
                 value = None
-        elif value is INVALID_DT_VALUE:
-            pass
         elif value and not isinstance(value, datetime.datetime):
             current_value = self.get_client(record)
             if current_value:
@@ -310,15 +303,13 @@ class DateTimeField(Field):
             else:
                 time = datetime.time()
             value = datetime.datetime.combine(value, time)
-        if value and value is not INVALID_DT_VALUE:
+        if value:
             value = common.untimezoned_date(value)
         super(DateTimeField, self).set_client(record, value,
             force_change=force_change)
 
     def get_client(self, record):
         value = super(DateTimeField, self).get_client(record)
-        if value is INVALID_DT_VALUE:
-            return value
         if value:
             return common.timezoned_date(value)
 
@@ -342,12 +333,6 @@ class DateTimeField(Field):
 class DateField(Field):
 
     _default = None
-
-    def get_eval(self, record):
-        value = super().get_eval(record)
-        if value is INVALID_DT_VALUE:
-            value = None
-        return value
 
     def validate(self, record, softvalidation=False, pre_validate=None):
         valid = super().validate(record, softvalidation, pre_validate)
@@ -385,12 +370,6 @@ class TimeField(Field):
 
     def time_format(self, record):
         return record.expr_eval(self.attrs['format'])
-
-    def get_eval(self, record):
-        value = super().get_eval(record)
-        if value is INVALID_DT_VALUE:
-            value = None
-        return value
 
     def validate(self, record, softvalidation=False, pre_validate=None):
         valid = super().validate(record, softvalidation, pre_validate)
@@ -615,8 +594,8 @@ class M2OField(Field):
             force_change=force_change)
 
     def set(self, record, value):
-        rec_name = record.value.get(self.name + '.', {}).get('rec_name') or ''
-        if not rec_name and value is not None and value >= 0:
+        rec_name = record.value.get(self.name + '.', {}).get('rec_name')
+        if rec_name is None and value is not None and value >= 0:
             try:
                 result, = RPCExecute('model', self.attrs['relation'], 'read',
                     [value], ['rec_name'])
@@ -751,7 +730,9 @@ class O2MField(Field):
                         skip={self.attrs.get('relation_field', '')}))
         return result
 
-    def _set_value(self, record, value, default=False, modified=False):
+    def _set_value(
+            self, record, value, data=None, default=False,
+            modified=False):
         self._set_default_value(record)
         group = record.value[self.name]
         if value is None:
@@ -761,23 +742,40 @@ class O2MField(Field):
         else:
             mode = 'list values'
 
-        if mode == 'list values':
+        if mode == 'list values' or data:
             context = self.get_context(record)
-            field_names = set(f for v in value for f in v
-                if f not in group.fields and '.' not in f)
-            if field_names:
+            if mode == 'list values':
+                fields = set(f for v in value for f in v)
+            else:
+                fields = functools.reduce(
+                    operator.or_, (d.keys() for d in data), set())
+            field_names = {f for f in fields
+                if (f not in group.fields and '.' not in f
+                    and not f.startswith('_'))}
+            attr_fields = functools.reduce(
+                operator.or_,
+                (v['fields'] for v in self.attrs.get('views', {}).values()),
+                {})
+            fields = {n: attr_fields[n]
+                for n in field_names
+                if n in attr_fields}
+            to_fetch = field_names - attr_fields.keys()
+            if to_fetch:
                 try:
-                    fields = RPCExecute('model', self.attrs['relation'],
-                        'fields_get', list(field_names), context=context)
+                    fields |= RPCExecute('model', self.attrs['relation'],
+                        'fields_get', list(to_fetch), context=context)
                 except RPCException:
                     return
+
+            if fields:
                 group.load_fields(fields)
 
         if mode == 'list ids':
             records_to_remove = [r for r in group if r.id not in value]
             for record_to_remove in records_to_remove:
                 group.remove(record_to_remove, remove=True, modified=False)
-            group.load(value, modified=modified or default)
+            group.load(value, modified=modified or default,
+                records_data={v['id']: v for v in (data or [])})
         else:
             for vals in value:
                 if (vals.get('id', -1) or -1) > 0:
@@ -796,9 +794,10 @@ class O2MField(Field):
                     new_record.set(vals, modified=False)
                     group.append(new_record)
             # Trigger modified only once
-            group.record_modified()
+            if modified or default:
+                group.record_modified()
 
-    def set(self, record, value, _default=False):
+    def set(self, record, value, data=None, _default=False):
         group = record.value.get(self.name)
         fields = {}
         if group is not None:
@@ -818,7 +817,7 @@ class O2MField(Field):
 
         # Prevent to trigger group-cleared
         group.parent = None
-        self._set_value(record, value, default=_default)
+        self._set_value(record, value, data=data, default=_default)
         group.parent = record
 
     def set_client(self, record, value, force_change=False):

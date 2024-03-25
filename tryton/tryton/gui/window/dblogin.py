@@ -10,6 +10,7 @@ import re
 import shutil
 import tempfile
 import threading
+import webbrowser
 
 from gi.repository import GLib, GObject, Gtk
 
@@ -423,6 +424,9 @@ class DBLogin(object):
             column_spacing=3, row_spacing=3, valign=Gtk.Align.START)
         self.dialog.vbox.pack_start(grid, expand=True, fill=True, padding=0)
 
+        click_catcher = Gtk.EventBox.new()
+        click_catcher.set_above_child(True)
+        click_catcher.connect('button-press-event', self.open_log_dir)
         image = Gtk.Image()
         image.set_from_file(os.path.join(PIXMAPS_DIR, 'coog_text.svg'))
         image.set_valign(Gtk.Align.START)
@@ -436,7 +440,8 @@ class DBLogin(object):
         label.props.margin_right = 10
         label.props.margin_top = 5
         overlay.add_overlay(label)
-        grid.attach(overlay, 0, 0, 3, 1)
+        click_catcher.add(overlay)
+        grid.attach(click_catcher, 0, 0, 3, 1)
 
         self.profile_store = Gtk.ListStore(
             GObject.TYPE_STRING, GObject.TYPE_BOOLEAN)
@@ -523,11 +528,6 @@ class DBLogin(object):
                 f"Failed to parse {self.profiles_cfg}. "
                 f"A backup can be found at {temp_name}",
                 exc_info=True)
-        if not self.profiles.sections():
-            self.profiles.add_section(current_demo)
-            self.profiles.set(current_demo, 'host', current_demo)
-            self.profiles.set(current_demo, 'database', f'demo{series}')
-            self.profiles.set(current_demo, 'username', 'demo')
         to_remove = []
         for section in self.profiles.sections():
             host = self.profiles.get(section, 'host', fallback='')
@@ -732,3 +732,7 @@ class DBLogin(object):
         self.dialog.destroy()
         self._window.destroy()
         return response == Gtk.ResponseType.OK or response > 0
+
+    def open_log_dir(self, eventbox, event):
+        if event.button == 3:
+            webbrowser.open(get_config_dir())

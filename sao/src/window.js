@@ -86,6 +86,7 @@
                         null, key, this.__response.bind(this));
                 this.el.append(infobar);
                 infobar.data('kind', kind);
+                setTimeout(() => this.refresh(kind), 3000);
             }
         },
         __response: function(evt) {
@@ -453,7 +454,7 @@
                     for (const record of result) {
                         ids.push(record[0]);
                     }
-                    this.screen.group.load(ids, true);
+                    this.screen.group.load(ids, null, true);
                     prm = this.screen.display();
                 }
                 prm.done(() => {

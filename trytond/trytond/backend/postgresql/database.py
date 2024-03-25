@@ -32,7 +32,7 @@ except ImportError:
 from psycopg2 import DataError as DatabaseDataError
 from psycopg2 import IntegrityError as DatabaseIntegrityError
 from psycopg2 import OperationalError as DatabaseOperationalError
-from psycopg2 import ProgrammingError
+from psycopg2 import InterfaceError, ProgrammingError
 try:
     from psycopg2.errors import QueryCanceled as DatabaseTimeoutError
 except ModuleNotFoundError:
@@ -60,6 +60,7 @@ _timeout = config.getint('database', 'timeout')
 _minconn = config.getint('database', 'minconn', default=1)
 _maxconn = config.getint('database', 'maxconn', default=64)
 _default_name = config.get('database', 'default_name', default='template1')
+_all_logging_enabled = logger.isEnabledFor(logging.DEBUG)
 _slow_threshold = config.getfloat('database', 'log_time_threshold', default=-1)
 _slow_logging_enabled = _slow_threshold > 0 and logger.isEnabledFor(
     logging.WARNING)
@@ -79,9 +80,16 @@ def replace_special_values(s, **mapping):
 
 class LoggingCursor(cursor):
     def execute(self, sql, args=None):
-        if logger.isEnabledFor(logging.DEBUG):
+        if _all_logging_enabled:
             logger.debug(self.mogrify(sql, args))
+        if _slow_logging_enabled:
+            start = time.time()
         cursor.execute(self, sql, args)
+        if _slow_logging_enabled:
+            end = time.time()
+            if end - start > _slow_threshold:
+                logger.warning('slow:(%s s):%s' % (
+                        end - start, self.mogrify(sql, args)))
 
 
 class ForSkipLocked(For):
@@ -324,9 +332,11 @@ class Database(DatabaseInterface):
         return conn
 
     def put_connection(self, connection, close=False):
+        if not connection:
+            return
         try:
             self._connpool.putconn(connection, close=close)
-        except PoolError:
+        except InterfaceError:
             # When cleaning up, the pool may already be closed
             pass
 

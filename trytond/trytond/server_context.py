@@ -1,3 +1,5 @@
+import string
+import random
 import logging
 from threading import local
 
@@ -5,6 +7,21 @@ from threading import local
 __all__ = [
     'ServerContext',
     ]
+
+
+def generate_context(key=None, value=None, length=20):
+    def generate_random_string():
+        return ''.join(random.SystemRandom().choice(
+            string.ascii_uppercase + string.digits) for _ in range(length))
+    if not key:
+        key = generate_random_string()
+    if not value:
+        value = generate_random_string()
+    return {key: value}
+
+
+TEST_CONTEXT = generate_context(value=True)
+TEST_CONTEXT_KEY = list(TEST_CONTEXT.keys())[0]
 
 
 class _AttributeManager(object):

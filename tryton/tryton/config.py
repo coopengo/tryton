@@ -1,11 +1,14 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import configparser
+import datetime
 import gettext
 import locale
 import logging
 import optparse
 import os
+import glob
+import pathlib
 import shutil
 import sys
 import tempfile
@@ -70,8 +73,8 @@ class ConfigManager(object):
     "Config manager"
 
     def __init__(self):
-        demo_server = 'coog'
-        demo_database = 'demo'
+        demo_server = ''
+        demo_database = ''
         self.defaults = {
             'login.profile': demo_server,
             'login.login': 'demo',
@@ -147,6 +150,19 @@ class ConfigManager(object):
             }
         if opt.log_output:
             logging_config['filename'] = opt.log_output
+        else:
+            config_dir = pathlib.Path(get_config_dir())
+            # Remove old log files, keeping only 10
+            files = [
+                str(x.absolute())
+                for x in config_dir.glob('tryton-*.log')
+                if x.is_file()]
+            files.sort(reverse=True)
+            for file in files[9:]:
+                os.remove(file)
+            now = datetime.datetime.now().strftime('%Y%m%d-%Hh%Mm%Ss')
+            logging_file = config_dir / f'tryton-{now}.log'
+            logging_config['filename'] = str(logging_file)
 
         loglevels = {
             'DEBUG': logging.DEBUG,

@@ -14,7 +14,7 @@ class TableHandlerInterface(object):
     index_translators = None
     __handlers = WeakKeyDictionary()
 
-    def __new__(cls, model, history=False):
+    def __new__(cls, model, *, history=False):
         transaction = Transaction()
         handlers = cls.__handlers.setdefault(transaction, {})
         key = (model.__name__, history)
@@ -106,6 +106,12 @@ class TableHandlerInterface(object):
                     name = name.encode('utf-8')
                 name = hashlib.sha256(name).hexdigest()[:length - 1]
         return name
+
+    def set_indexes(self, indexes, concurrently=False):
+        raise NotImplementedError
+
+    def dump_indexes(self, indexes, file, concurrently=False):
+        raise NotImplementedError
 
     def index_translator_for(self, index):
         return next(

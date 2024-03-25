@@ -355,12 +355,13 @@ var Sao = {
     Sao.config.limit = 1000;
     Sao.config.display_size = 20;
     Sao.config.bug_url = 'https://support.coopengo.com/';
-    Sao.config.title = 'Coog';
+    Sao.config.title = 'coog';
     Sao.config.icon_colors = '#0094d2,#3e4950,#e78e42'.split(',');
     Sao.config.calendar_colors = '#fff,#267f82'.split(',');
     Sao.config.graph_color = '#267f82';
     Sao.config.bus_timeout = 10 * 60 * 1000;
     Sao.config.image_max_size = Math.pow(10, 6);
+    Sao.config.mount_point = '';
 
     Sao.i18n = i18n();
     Sao.i18n.setlang = function(lang) {
@@ -425,22 +426,25 @@ var Sao = {
                 deferreds.push(Sao.common.MODELNOTIFICATION.load_names());
                 deferreds.push(Sao.common.VIEW_SEARCH.load_searches());
                 return jQuery.when.apply(jQuery, deferreds).then(function() {
+                    var prms = [];
                     for (const action_id of (preferences.actions || [])) {
-                        Sao.Action.execute(action_id, {}, null, {});
+                        prms.push(Sao.Action.execute(action_id, {}, null, {}));
                     }
-                    Sao.set_title();
-                    var new_lang = preferences.language != Sao.i18n.getLocale();
-                    var prm = jQuery.Deferred();
-                    Sao.i18n.setlang(preferences.language).always(function() {
-                        if (new_lang) {
-                            Sao.user_menu(preferences);
-                        }
-                        prm.resolve(preferences);
+                    return jQuery.when.apply(jQuery, prms).then(() => {
+                        Sao.set_title();
+                        var new_lang = preferences.language != Sao.i18n.getLocale();
+                        var prm = jQuery.Deferred();
+                        Sao.i18n.setlang(preferences.language).always(function() {
+                            if (new_lang) {
+                                Sao.user_menu(preferences);
+                            }
+                            prm.resolve(preferences);
+                        });
+                        Sao.i18n.set_direction(preferences.language_direction);
+                        Sao.i18n.locale = preferences.locale;
+                        Sao.common.MODELNAME.clear();
+                        return prm;
                     });
-                    Sao.i18n.set_direction(preferences.language_direction);
-                    Sao.i18n.locale = preferences.locale;
-                    Sao.common.MODELNAME.clear();
-                    return prm;
                 });
             });
         });
@@ -789,6 +793,10 @@ var Sao = {
 
     Sao.main_menu_row_activate = function() {
         var screen = Sao.main_menu_screen;
+        if (Date.now() - Sao.last_menu_open < 150) {
+            return;
+        }
+        Sao.last_menu_open = Date.now();
         // ids is not defined to prevent to add suffix
         return Sao.Action.exec_keyword('tree_open', {
             'model': screen.model_name,
@@ -823,13 +831,13 @@ var Sao = {
             'view_ids': view_ids,
             'domain': domain,
             'context': action_ctx,
-            // [Coog Specific] dbclick on menu entries
-            'selection_mode': Sao.common.SELECTION_SINGLE,
+            'selection_mode': Sao.common.SELECTION_NONE,
             'limit': null,
             'row_activate': Sao.main_menu_row_activate,
         });
         Sao.main_menu_screen = form.screen;
         Sao.main_menu_screen.switch_callback = null;
+        Sao.last_menu_open = Date.now();
         Sao.Tab.tabs.splice(Sao.Tab.tabs.indexOf(form), 1);
         form.view_prm.done(function() {
             var view = form.screen.current_view;

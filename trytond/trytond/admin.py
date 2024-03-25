@@ -90,7 +90,7 @@ def _init_pool(db_name, options, lang):
 
             pool.init(
                 update=updated_needed, lang=list(lang),
-                activatedeps=options.activatedeps)
+                options=options)
 
             if updated_needed:
                 # If upgrade finishes correctly->update version in database

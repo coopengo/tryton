@@ -68,6 +68,7 @@ class BaseCache(object):
     context_ignored_keys = {
         'client', '_request', '_check_access', '_skip_warnings',
         'session', 'token',
+        'rec_name_key',
         }
 
     def __init__(
@@ -369,6 +370,9 @@ class MemoryCache(BaseCache):
 
     @classmethod
     def _listen(cls, dbname):
+        if Pool.app_initializing():
+            return
+
         current_thread = threading.current_thread()
         pid = os.getpid()
 
@@ -395,9 +399,13 @@ class MemoryCache(BaseCache):
                 selector.select(timeout=60)
                 conn.poll()
                 while conn.notifies:
+                    pool = Pool(dbname)
+                    callbacks = pool._notification_callbacks.get(dbname, {})
                     notification = conn.notifies.pop()
                     if notification.payload == 'refresh pool':
-                        Pool(dbname).refresh(_get_modules(cursor))
+                        pool.refresh(_get_modules(cursor))
+                    elif notification.payload in callbacks:
+                        callbacks[notification.payload](pool)
                     elif notification.payload:
                         reset = json.loads(notification.payload)
                         for name in reset:

@@ -41,7 +41,7 @@ class TableHandler(TableHandlerInterface):
             (self.table_name, self.table_schema))
         self.is_owner, = cursor.fetchone()
 
-        if model.__doc__ and self.is_owner:
+        if not transaction.readonly and model.__doc__ and self.is_owner:
             cursor.execute(SQL('COMMENT ON TABLE {} IS %s').format(
                         Identifier(self.table_name)),
                 (model.__doc__,))
@@ -498,7 +498,7 @@ class TableHandler(TableHandlerInterface):
                 Identifier(self.table_name), Identifier(ident)))
         self._update_definitions(constraints=True)
 
-    def set_indexes(self, indexes):
+    def set_indexes(self, indexes, concurrently=False):
         cursor = Transaction().connection.cursor()
         old = set(self._indexes)
         for index in indexes:
@@ -507,8 +507,25 @@ class TableHandler(TableHandlerInterface):
                 name, query, params = translator.definition(index)
                 name = '_'.join([self.table_name, name])
                 name = 'idx_' + self.convert_name(name, reserved=len('idx_'))
+                if concurrently:
+                    cursor.execute(
+                        """SELECT idx.indexrelid
+                        FROM pg_index idx
+                        JOIN pg_class cls ON cls.oid = idx.indexrelid
+                        WHERE cls.relname = %s""",
+                        (name,))
+                    if (idx_oid := cursor.fetchone()):
+                        cursor.execute(
+                            "SELECT 1 FROM pg_stat_progress_create_index "
+                            "WHERE index_relid = %s",
+                            (idx_oid[0],))
+                        if cursor.fetchone():
+                            cursor.execute(
+                                SQL("DROP INDEX {}").format(Identifier(name)))
                 cursor.execute(
-                    SQL('CREATE INDEX IF NOT EXISTS {} ON {} USING {}').format(
+                    SQL('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {}')
+                    .format(
+                        SQL('CONCURRENTLY' if concurrently else ''),
                         Identifier(name),
                         Identifier(self.table_name),
                         query),
@@ -518,6 +535,30 @@ class TableHandler(TableHandlerInterface):
             if name.startswith('idx_') or name.endswith('_index'):
                 cursor.execute(SQL('DROP INDEX {}').format(Identifier(name)))
         self.__indexes = None
+
+    def dump_indexes(self, indexes, file, concurrently=False):
+        def sql_quote(o):
+            if isinstance(o, str):
+                return f"'{o}'"
+            else:
+                return str(o)
+
+        connection = Transaction().connection
+        for index in indexes:
+            translator = self.index_translator_for(index)
+            if translator:
+                name, query, params = translator.definition(index)
+                name = '_'.join([self.table_name, name])
+                name = ('idx_'
+                    + self.convert_name(name, reserved=len('idx_')))
+                file.write(
+                    ('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {};\n'
+                    .format(
+                        'CONCURRENTLY' if concurrently else '',
+                        Identifier(name).as_string(connection),
+                        Identifier(self.table_name).as_string(connection),
+                        query.as_string({})) % tuple(map(sql_quote, params))
+                    ).encode('utf8'))
 
     def drop_column(self, column_name):
         if not self.column_exist(column_name):
