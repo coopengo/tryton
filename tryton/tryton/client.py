@@ -62,9 +62,6 @@ def main():
         common.error(value, ''.join(traceback.format_tb(traceback_)))
     sys.excepthook = excepthook
 
-    copy_previous_configuration('tryton.cfg')
-    copy_previous_configuration('profiles.cfg')
-    copy_previous_configuration('plugins')
     CONFIG.parse()
     if CONFIG.arguments:
         url = CONFIG.arguments[0]
