@@ -2335,7 +2335,7 @@
                     }
                 }
                 var to_fetch = Array.from(field_names).filter(k => !(k in attr_fields));
-                if (to_fetch.size) {               
+                if (to_fetch.length) {
                     var args = {
                         'method': 'model.' + this.description.relation +
                             '.fields_get',
