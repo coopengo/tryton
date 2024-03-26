@@ -2314,6 +2314,7 @@
                 for (const fieldname of value_fields) {
                     if (!(fieldname in group.model.fields) &&
                             (!~fieldname.indexOf('.')) &&
+                            (!~fieldname.indexOf(':')) &&
                             (!fieldname.startsWith('_'))) {
                         field_names.add(fieldname);
                     }
