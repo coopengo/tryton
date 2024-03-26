@@ -2344,7 +2344,7 @@
                     };
                     try {
                         var rpc_fields = Sao.rpc(args, record.model.session, false);
-                        for (const [key, value] of Object.entries(rpc_fields)) {
+                        for (const [key, value] of rpc_fields.entries()) {
                             fields[key] = value;
                         }
                     } catch (e) {
@@ -2409,11 +2409,7 @@
             }
             record._values[this.name] = undefined;
             this._set_default_value(record, model);
-
-            group = record._values[this.name];
-            group.parent = null;
             this._set_value(record, value, data, _default);
-            group.parent = record;
         },
         get: function(record) {
             var group = record._values[this.name];
