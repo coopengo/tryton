@@ -542,6 +542,12 @@ div.form-text {
     }
 }
 
+// Make selections without any options look readonly
+select:empty, select:has(> option[value="null"]):not(:has(> option:not([value="null"]))) {
+    .coog-readonly-field-mixin();
+    pointer-events:         none;
+}
+
 // flatter checkboxes
 div.form-boolean > input[type=checkbox].input-checkbox {
     box-shadow:            none;
