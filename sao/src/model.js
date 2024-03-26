@@ -2344,7 +2344,7 @@
                     };
                     try {
                         var rpc_fields = Sao.rpc(args, record.model.session, false);
-                        for (const [key, value] of rpc_fields.entries()) {
+                        for (const [key, value] of Object.entries(rpc_fields)) {
                             fields[key] = value;
                         }
                     } catch (e) {
