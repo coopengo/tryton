@@ -1213,7 +1213,6 @@ class BinaryField(Field):
 
 class DictField(Field):
 
-    _default = {}
     _single_value = False
 
     def __init__(self, attrs):
@@ -1221,10 +1220,10 @@ class DictField(Field):
         self.keys = {}
 
     def get(self, record):
-        return super(DictField, self).get(record) or self._default
+        return super(DictField, self).get(record) or {}
 
     def get_client(self, record):
-        return super(DictField, self).get_client(record) or self._default
+        return super(DictField, self).get_client(record) or {}
 
     def validation_domains(self, record, pre_validate=None):
         screen_domain, attr_domain = self.domains_get(record, pre_validate)
