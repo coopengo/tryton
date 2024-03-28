@@ -167,6 +167,12 @@
             tr.append(th);
             this.thead.append(tr);
 
+            const observer = new MutationObserver(this.column_resize.bind(this));
+            observer.observe(this.thead[0], {
+                attributeFilter: ["style"],
+                subtree: true,
+            });
+
             this.tfoot = null;
             var sum_row;
             if (this.sum_widgets.size) {
@@ -202,9 +208,11 @@
                 th = jQuery('<th/>', {
                     'class': column.attributes.widget,
                 });
+                var resize_div = jQuery('<div/>');
                 var label = jQuery('<label/>')
                     .text(column.attributes.string)
-                    .attr('title', column.attributes.string);
+                    .attr('title', column.attributes.string)
+                    .appendTo(resize_div);
                 if (this.editable) {
                     if (column.attributes.required) {
                         label.addClass('required');
@@ -222,10 +230,10 @@
                     });
                     label.append(arrow);
                     column.arrow = arrow;
-                    th.click(column, this.sort_model.bind(this));
+                    label.click(column, this.sort_model.bind(this));
                     label.addClass('sortable');
                 }
-                tr.append(th.append(label));
+                tr.append(th.append(resize_div));
                 column.header = th;
                 column.col = col;
 
@@ -330,6 +338,47 @@
                     this.view_id, fields], {});
             }
             Sao.Screen.tree_column_optional[this.view_id] = fields;
+        },
+        column_resize: function(mutationList) {
+            var width_mutations = mutationList.filter((m) => {
+                return m.target.style.width != '';
+            });
+            if (width_mutations.length == 0) {
+                return;
+            }
+            var mutation = width_mutations.at(-1);
+            var parent_children = Array.from(
+                mutation.target.parentNode.parentNode.children);
+            var col_idx = parent_children.indexOf(mutation.target.parentNode);
+            var width = mutation.target.style.width;
+            this.colgroup.find('col').eq(col_idx).css('width', width);
+            Sao.common.debounce(this.save_width, 1000)(this);
+        },
+        save_width: function(tree) {
+            var widths = {};
+            for (const column of tree.columns) {
+                if (!column.get_visible()) {
+                    continue;
+                }
+                var width = column.col.css('width');
+                widths[column.attributes.name] = Number(
+                    width.substr(0, width.length - 2));
+            }
+
+            var model_name = tree.screen.model_name;
+            var TreeWidth = new Sao.Model('ir.ui.view_tree_width');
+            TreeWidth.execute(
+                'set_width',
+                [model_name, widths, 'sao', window.screen.width],
+                {});
+            if (Object.hasOwn(
+                Sao.Screen.tree_column_width, model_name)) {
+                jQuery.extend(
+                    Sao.Screen.tree_column_width[model_name],
+                    widths);
+            } else {
+                Sao.Screen.tree_column_width[model_name] = widths;
+            }
         },
         reset: function() {
             this.display_size = Sao.config.display_size;
@@ -790,6 +839,8 @@
             domain = inversion.simplify(domain);
             var decoder = new Sao.PYSON.Decoder(this.screen.context);
             var min_width = [];
+            var tree_column_width = (
+                Sao.Screen.tree_column_width[this.screen.model_name] || {});
             var tree_column_optional = (
                 Sao.Screen.tree_column_optional[this.view_id] || {});
             for (const column of this.columns) {
@@ -835,7 +886,10 @@
                     !column.col.hasClass('selection-state') &&
                     !column.col.hasClass('favorite')) {
                     var width, c_width;
-                    if (column.attributes.width) {
+                    if (Object.hasOwn(tree_column_width, column.attributes.name)) {
+                        width = c_width = tree_column_width[column.attributes.name];
+                        min_width.push(width);
+                    } else if (column.attributes.width) {
                         width = c_width = column.attributes.width;
                         min_width.push(width + 'px');
                     } else {

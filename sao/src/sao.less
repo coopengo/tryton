@@ -486,8 +486,19 @@ img.icon {
             }
         }
         > thead > tr > th {
-            > label.sortable {
-                cursor: pointer;
+            &:not(:last-child) div {
+                resize: horizontal;
+            }
+            div {
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                > label {
+                    white-space: nowrap;
+                }
+                > label.sortable {
+                    cursor: pointer;
+                }
             }
             &.optional {
                 cursor: pointer;
@@ -499,8 +510,6 @@ img.icon {
                     }
                 }
             }
-            overflow: hidden;
-            text-overflow: ellipsis;
             text-align: center;
             &.char, &.text, &.many2one, &.one2one, &.date, &.time, &.selection,
             &.reference, &.url, &.email, &.callto, &.sip {
@@ -510,6 +519,11 @@ img.icon {
             &.timedelta, &.float, &.numeric, &.integer, &.biginteger {
                 text-align: right;
                 text-align: end;
+            }
+        }
+        > thead > tr > th:first-child {
+            div {
+                resize: none;
             }
         }
         > thead > tr:first-child th {
