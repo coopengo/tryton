@@ -4218,7 +4218,7 @@ function eval_pyson(value){
                 this.wid_text, this.record, this.field, model, domain);
         },
         _completion_match_selected: function(value) {
-            this.screen.group.load([value.id], true);
+            this.screen.group.load([value.id], null, true);
             this.wid_text.val('');
         },
         _completion_action_activated: function(action) {
@@ -4464,7 +4464,7 @@ function eval_pyson(value){
                     for (i = 0, len = result.length; i < len; i++) {
                         ids.push(result[i][0]);
                     }
-                    this.screen.group.load(ids, true);
+                    this.screen.group.load(ids, null, true);
                     this.screen.display();
                 }
                 this.entry.val('');
@@ -4558,7 +4558,7 @@ function eval_pyson(value){
             const callback = result => {
                 if (result) {
                     var record = screen.current_record;
-                    this.screen.group.load([record.id], true);
+                    this.screen.group.load([record.id], null, true);
                 }
                 this.entry.val('');
             };
@@ -4586,7 +4586,7 @@ function eval_pyson(value){
                 this.entry, this.record, this.field, model, domain);
         },
         _completion_match_selected: function(value) {
-            this.screen.group.load([value.id], true);
+            this.screen.group.load([value.id], null, true);
             this.entry.val('');
         },
         _completion_action_activated: function(action) {
