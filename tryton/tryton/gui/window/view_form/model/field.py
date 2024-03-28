@@ -751,7 +751,7 @@ class O2MField(Field):
                     operator.or_, (d.keys() for d in data), set())
             field_names = {f for f in fields
                 if (f not in group.fields and '.' not in f
-                    and not f.startswith('_'))}
+                    and ':' not in f and not f.startswith('_'))}
             attr_fields = functools.reduce(
                 lambda a, b: a.update(b) or a,
                 (v['fields'] for v in self.attrs.get('views', {}).values()),
