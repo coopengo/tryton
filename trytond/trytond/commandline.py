@@ -73,7 +73,8 @@ def get_parser():
 def get_parser_daemon():
     parser = get_parser()
     parser.add_argument("--pidfile", dest="pidfile", metavar='FILE',
-        help="file where the server pid will be stored")
+    parser.add_argument("--lockfile", dest="lockfile", metavar='FILE',
+        help="Lock file to ensure only one cron running")
     parser.add_argument("--coroutine", action="store_true", dest="coroutine",
         help="use coroutine for concurrency")
     return parser
@@ -214,12 +215,15 @@ def pidfile(options):
 
 
 # AKE: generates a callback to clean process before stop
-def generate_signal_handler(pidfile):
+def generate_signal_handler(pidfile, lockfile):
     def shutdown(signum, frame):
         logger.info('shutdown')
         logging.shutdown()
         if pidfile:
             os.unlink(pidfile)
+        if lockfile:
+            os.unlink(lockfile)
+            os.unlink('%s.%s' % (lockfile, 'lck')
         if signum != 0:
             traceback.print_stack(frame)
         sys.exit(signum)
