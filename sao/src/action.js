@@ -217,7 +217,7 @@
                 action.keyword = keywords[action.type];
             }
         }
-        Sao.Action.exec_action(action, data, context);
+        return Sao.Action.exec_action(action, data, context);
     };
 
     Sao.Action.evaluate = function(action, atype, record) {
