@@ -665,8 +665,11 @@ function eval_pyson(value){
             if (this._yexpand.size) {
                 for (i = 1; i <= this._row; i++) {
                     if (this._yexpand.has(i)) {
-                        this._grid_rows.push(
-                            `minmax(min-content, ${this._row}fr)`);
+                        // JCA: algorith is broken atm, min-content will
+                        // usually give a better (though non-perfect) UI
+                        // this._grid_rows.push(
+                        //      `minmax(min-content, ${this._row}fr)`);
+                        this._grid_rows.push('min-content');
                     } else {
                         this._grid_rows.push('min-content');
                     }
