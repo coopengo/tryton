@@ -546,7 +546,12 @@ function eval_pyson(value){
             var xfill = attributes.xfill;
             if (xfill === undefined) xfill = 1;
             var xexpand = attributes.xexpand;
-            if (xexpand === undefined) xexpand = 1;
+            if ((attributes.invisible === "1") ||
+                    (attributes.states === '{"invisible": true}')) {
+                xexpand = 0;
+            } else if (xexpand === undefined) {
+                xexpand = 1;
+            }
 
             // CSS grid elements are 1-indexed
             if (this.col > 0) {
