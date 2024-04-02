@@ -547,7 +547,8 @@ function eval_pyson(value){
             if (xfill === undefined) xfill = 1;
             var xexpand = attributes.xexpand;
             if ((attributes.invisible === "1") ||
-                    (attributes.states === '{"invisible": true}')) {
+                    ((attributes.states !== undefined) &&
+                        (JSON.parse(attributes.states).invisible === true))) {
                 xexpand = 0;
             } else if (xexpand === undefined) {
                 xexpand = 1;
