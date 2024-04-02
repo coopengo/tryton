@@ -203,9 +203,11 @@
                     'class': column.attributes.widget,
                 });
                 th.uniqueId();
+                var resize_div = jQuery('<div/>');
                 var label = jQuery('<label/>')
                     .text(column.attributes.string)
-                    .attr('title', column.attributes.string);
+                    .attr('title', column.attributes.string)
+                    .appendTo(resize_div);
                 if (this.editable) {
                     if (column.attributes.required) {
                         label.addClass('required');
@@ -226,7 +228,7 @@
                     th.click(column, this.sort_model.bind(this));
                     label.addClass('sortable');
                 }
-                tr.append(th.append(label));
+                tr.append(th.append(resize_div));
                 column.header = th;
                 column.col = col;
 
