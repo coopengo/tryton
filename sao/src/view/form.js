@@ -546,7 +546,13 @@ function eval_pyson(value){
             var xfill = attributes.xfill;
             if (xfill === undefined) xfill = 1;
             var xexpand = attributes.xexpand;
-            if (xexpand === undefined) xexpand = 1;
+            if ((attributes.invisible === "1") ||
+                    ((attributes.states !== undefined) &&
+                        (JSON.parse(attributes.states).invisible === true))) {
+                xexpand = 0;
+            } else if (xexpand === undefined) {
+                xexpand = 1;
+            }
 
             // CSS grid elements are 1-indexed
             if (this.col > 0) {
@@ -665,8 +671,11 @@ function eval_pyson(value){
             if (this._yexpand.size) {
                 for (i = 1; i <= this._row; i++) {
                     if (this._yexpand.has(i)) {
-                        this._grid_rows.push(
-                            `minmax(min-content, ${this._row}fr)`);
+                        // JCA: algorith is broken atm, min-content will
+                        // usually give a better (though non-perfect) UI
+                        // this._grid_rows.push(
+                        //      `minmax(min-content, ${this._row}fr)`);
+                        this._grid_rows.push('min-content');
                     } else {
                         this._grid_rows.push('min-content');
                     }
@@ -4215,7 +4224,7 @@ function eval_pyson(value){
                 this.wid_text, this.record, this.field, model, domain);
         },
         _completion_match_selected: function(value) {
-            this.screen.group.load([value.id], true);
+            this.screen.group.load([value.id], null, true);
             this.wid_text.val('');
         },
         _completion_action_activated: function(action) {
@@ -4461,7 +4470,7 @@ function eval_pyson(value){
                     for (i = 0, len = result.length; i < len; i++) {
                         ids.push(result[i][0]);
                     }
-                    this.screen.group.load(ids, true);
+                    this.screen.group.load(ids, null, true);
                     this.screen.display();
                 }
                 this.entry.val('');
@@ -4555,7 +4564,7 @@ function eval_pyson(value){
             const callback = result => {
                 if (result) {
                     var record = screen.current_record;
-                    this.screen.group.load([record.id], true);
+                    this.screen.group.load([record.id], null, true);
                 }
                 this.entry.val('');
             };
@@ -4583,7 +4592,7 @@ function eval_pyson(value){
                 this.entry, this.record, this.field, model, domain);
         },
         _completion_match_selected: function(value) {
-            this.screen.group.load([value.id], true);
+            this.screen.group.load([value.id], null, true);
             this.entry.val('');
         },
         _completion_action_activated: function(action) {

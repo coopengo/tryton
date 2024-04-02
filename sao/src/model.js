@@ -2314,6 +2314,7 @@
                 for (const fieldname of value_fields) {
                     if (!(fieldname in group.model.fields) &&
                             (!~fieldname.indexOf('.')) &&
+                            (!~fieldname.indexOf(':')) &&
                             (!fieldname.startsWith('_'))) {
                         field_names.add(fieldname);
                     }
@@ -2335,7 +2336,7 @@
                     }
                 }
                 var to_fetch = Array.from(field_names).filter(k => !(k in attr_fields));
-                if (to_fetch.size) {               
+                if (to_fetch.length > 0) {
                     var args = {
                         'method': 'model.' + this.description.relation +
                             '.fields_get',
@@ -2343,7 +2344,7 @@
                     };
                     try {
                         var rpc_fields = Sao.rpc(args, record.model.session, false);
-                        for (const [key, value] of rpc_fields.entries()) {
+                        for (const [key, value] of Object.entries(rpc_fields)) {
                             fields[key] = value;
                         }
                     } catch (e) {
@@ -2408,7 +2409,11 @@
             }
             record._values[this.name] = undefined;
             this._set_default_value(record, model);
+
+            group = record._values[this.name];
+            group.parent = null;
             this._set_value(record, value, data, _default);
+            group.parent = record;
         },
         get: function(record) {
             var group = record._values[this.name];
