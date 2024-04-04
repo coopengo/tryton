@@ -300,9 +300,7 @@
                 column.set_visible(jQuery(evt.delegateTarget).prop('checked'));
                 this.save_optional();
                 this.display();
-                for (const row of this.rows) {
-                    row.update_visible();
-                }
+                this.update_visible();
             };
             var menu = evt.data;
             menu.empty();
@@ -905,6 +903,7 @@
                 }).map(function(row) {
                     return row.el;
                 }));
+                this.update_visible();
                 if ((this.display_size < this.group.length) &&
                     (!this.tbody.children().last().hasClass('more-row'))) {
                     var more_row = jQuery('<tr/>', {
@@ -984,6 +983,38 @@
             }
             this.record = record;
             // TODO update_children
+        },
+        update_visible: function() {
+            var to_hide = [];
+            var to_show = [];
+            for (var i = 0; i < this.columns.length; i++) {
+                var column = this.columns[i];
+                if (column.visible && column.header.css('display') == 'none') {
+                    to_hide.push(i);
+                } else {
+                    to_show.push(i);
+                }
+            }
+            const make_selector = (col_idx) => {
+                // Take into account the selection or optional column
+                var offset = 1;
+                if (this.draggable) {
+                    offset += 1;
+                } else if (this.optionals.length) {
+                    offset += 1;
+                }
+                // CSS is 1-indexed
+                return `tr td:nth-child(${col_idx + offset + 1})`;
+            };
+
+            if (to_hide.length) {
+                this.tbody.find(to_hide.map(make_selector).join(','))
+                    .addClass('invisible').hide();
+            }
+            if (to_show.length) {
+                this.tbody.find(to_show.map(make_selector).join(','))
+                    .removeClass('invisible').show();
+            }
         },
         update_sum: function() {
             for (const [column, sum_widget] of this.sum_widgets) {
@@ -1858,7 +1889,6 @@
                     }
                     apply_visual(td, visual);
                 }
-                this.update_visible();
             }
             if (this.children_field) {
                 this.tree.columns.every((column, i) => {
@@ -2009,6 +2039,7 @@
                         return row.el;
                     }));
                     this.tree.update_selection();
+                    this.tree.update_visible();
                 });
             });
         },
@@ -2612,12 +2643,17 @@
             this.suffixes = [];
             this.header = null;
             this.footers = [];
+            this._visible_header = true;
         },
         get field_name() {
             return this.attributes.name;
         },
         get model_name() {
             return model.name;
+        },
+        get visible() {
+            // 480px is bootstrap's screen-xs-max
+            return (window.visualViewport.width > 480) && this._visible_header;
         },
         get_cell: function() {
             var cell = jQuery('<div/>', {
@@ -2639,8 +2675,10 @@
                 this.field.set_state(record);
                 var state_attrs = this.field.get_state_attrs(record);
                 if (state_attrs.invisible) {
+                    this._visible_header = false;
                     cell.hide();
                 } else {
+                    this._visible_header = true;
                     cell.show();
                 }
             };
@@ -2668,9 +2706,11 @@
             for (const cell of cells) {
                 if (visible) {
                     cell.show();
+                    this._visible_header = true;
                     cell.removeClass('invisible');
                 } else {
                     cell.hide();
+                    this._visible_header = false;
                     cell.addClass('invisible');
                 }
             }
