@@ -1117,7 +1117,7 @@ msgid "All files"
 msgstr "Tous les fichiers"
 
 msgid "Show plain text"
-msgstr "Montrer en text clair"
+msgstr "Afficher la clé en clair"
 
 msgid "Add value"
 msgstr "Ajouter une valeur"
