@@ -103,13 +103,6 @@ msgstr ""
 msgid "Report Bug"
 msgstr ""
 
-#, python-format
-msgid "Check URL: %s"
-msgstr ""
-
-msgid "Unable to check for new version."
-msgstr ""
-
 msgid ""
 "The server took too much time to answer.\n"
 "You may try again later."
@@ -118,10 +111,11 @@ msgstr ""
 msgid "Could not get a session."
 msgstr ""
 
-msgid "Too many requests. Try again later."
+#, python-format
+msgid "Error \"%s\". Try again later."
 msgstr ""
 
-msgid "Not found."
+msgid "Too many requests. Try again later."
 msgstr ""
 
 msgid "Not Found."
@@ -134,6 +128,12 @@ msgid "<i>Search...</i>"
 msgstr ""
 
 msgid "<i>Create...</i>"
+msgstr ""
+
+msgid "Validity"
+msgstr ""
+
+msgid "Date Validity"
 msgstr ""
 
 msgid "Value"
@@ -149,6 +149,12 @@ msgid "Display format"
 msgstr ""
 
 msgid "Open the calendar"
+msgstr ""
+
+msgid "Time Validity"
+msgstr ""
+
+msgid "DateTime Validity"
 msgstr ""
 
 msgid "Date Format"
@@ -256,6 +262,12 @@ msgstr ""
 msgid "Preferences..."
 msgstr ""
 
+msgid "Log out"
+msgstr ""
+
+msgid "Open logs directory"
+msgstr ""
+
 msgid "Toolbar"
 msgstr ""
 
@@ -287,9 +299,6 @@ msgid "PDA Mode"
 msgstr ""
 
 msgid "Search Limit..."
-msgstr ""
-
-msgid "Check Version"
 msgstr ""
 
 msgid "Options"
@@ -1137,6 +1146,12 @@ msgstr ""
 
 #, python-format
 msgid "%s%%"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Replace All"
 msgstr ""
 
 msgid "L"
