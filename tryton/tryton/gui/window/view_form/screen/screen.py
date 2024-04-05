@@ -429,10 +429,7 @@ class Screen:
             self.filter_widget = None
             self.order = None
         self.__group.add_fields(fields)
-        if group:
-            self.current_record = group[0]
-        else:
-            self.current_record = None
+        self.current_record = None
         for name, views in fields_views.items():
             self.__group.fields[name].views.update(views)
         self.__group.exclude_field = self.exclude_field
@@ -1010,10 +1007,7 @@ class Screen:
     def load(self, ids, set_cursor=True, modified=False, position=-1):
         self.group.load(ids, modified=modified, position=position)
         self.current_view.reset()
-        if ids and self.current_view.view_type == 'tree':
-            self.current_record = self.group.get(ids[0])
-        else:
-            self.current_record = None
+        self.current_record = None
         self.display(set_cursor=set_cursor)
 
     def display(self, res_id=None, set_cursor=False, force=False):
@@ -1023,8 +1017,7 @@ class Screen:
             if (self.current_record
                     and self.current_record in self.current_record.group):
                 pass
-            elif (self.group
-                    and self.current_view.view_type in {'form', 'tree'}):
+            elif self.group and self.current_view.view_type == 'form':
                 self.current_record = self.group[0]
             else:
                 self.current_record = None
