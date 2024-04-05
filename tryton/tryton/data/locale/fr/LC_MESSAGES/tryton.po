@@ -1,3 +1,6 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
 msgid "specify alternate config file"
 msgstr "spécifier un fichier de configuration alternatif"
 
