@@ -1,11 +1,3 @@
-# German (Germany) translations for tryton.
-# Copyright (C) 2008-2014 MBSolutions
-# This file is distributed under the same license as the tryton project.
-# Udo Spallek <udono@gmx.net>, 2008.
-# Mathias Behrle <mbehrle@m9s.biz>, 2008-2014.
-msgid ""
-msgstr "Content-Type: text/plain; charset=utf-8\n"
-
 msgid "specify alternate config file"
 msgstr "Alternative Konfigurationsdatei angeben"
 
@@ -71,9 +63,6 @@ msgstr "Speichern unter..."
 msgid "Do you want to proceed?"
 msgstr "Fortfahren?"
 
-msgid "Always ignore this warning."
-msgstr "Diese Warnung künftig nicht mehr anzeigen."
-
 msgid "No"
 msgstr "Nein"
 
@@ -116,27 +105,20 @@ msgstr "Anwendungsfehler"
 msgid "Report Bug"
 msgstr "Fehler melden"
 
-#, python-format
-msgid "Check URL: %s"
-msgstr "Überprüfung der URL: %s"
-
-msgid "Unable to check for new version."
-msgstr "Es war nicht möglich nach einer neuen Version zu suchen."
-
-msgid "A new version is available!"
-msgstr "Eine neue Version ist verfügbar!"
-
-msgid "Download"
-msgstr "Herunterladen"
+msgid ""
+"The server took too much time to answer.\n"
+"You may try again later."
+msgstr ""
 
 msgid "Could not get a session."
 msgstr "Die Session-Anforderung ist fehlgeschlagen."
 
-msgid "Too many requests. Try again later."
+#, fuzzy, python-format
+msgid "Error \"%s\". Try again later."
 msgstr "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
 
-msgid "Not found."
-msgstr "Nicht gefunden."
+msgid "Too many requests. Try again later."
+msgstr "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
 
 msgid "Not Found."
 msgstr "Nicht gefunden."
@@ -149,6 +131,13 @@ msgstr "<i>Suche...</i>"
 
 msgid "<i>Create...</i>"
 msgstr "<i>Erstelle...</i>"
+
+#, fuzzy
+msgid "Validity"
+msgstr "Limit"
+
+msgid "Date Validity"
+msgstr ""
 
 msgid "Value"
 msgstr "Wert"
@@ -164,6 +153,12 @@ msgstr "Angezeigtes Format"
 
 msgid "Open the calendar"
 msgstr "Kalender öffnen"
+
+msgid "Time Validity"
+msgstr ""
+
+msgid "DateTime Validity"
+msgstr ""
 
 msgid "Date Format"
 msgstr "Datumsformat"
@@ -270,6 +265,13 @@ msgstr "s"
 msgid "Preferences..."
 msgstr "Einstellungen..."
 
+msgid "Log out"
+msgstr ""
+
+#, fuzzy
+msgid "Open logs directory"
+msgstr "Datensätze einer Beziehung öffnen"
+
 msgid "Toolbar"
 msgstr "Werkzeugleiste"
 
@@ -302,9 +304,6 @@ msgstr "Einspaltiger Modus"
 
 msgid "Search Limit..."
 msgstr "Suchlimitierung..."
-
-msgid "Check Version"
-msgstr "Nach neuer Version suchen"
 
 msgid "Options"
 msgstr "Einstellungen"
@@ -555,9 +554,12 @@ msgstr "Host-/Datenbankdetails"
 msgid "User name:"
 msgstr "Anmeldename:"
 
+#, fuzzy
+msgid "Date:"
+msgstr "Datenbank:"
+
 msgid "Unable to complete email entry"
-msgstr ""
-"Die automatische Vervollständigung des E-Mail Eintrags ist fehlgeschlagen"
+msgstr "Die automatische Vervollständigung des E-Mail Eintrags ist fehlgeschlagen"
 
 #, python-format
 msgid "E-mail %s"
@@ -640,6 +642,9 @@ msgstr "Sie arbeiten nun an dem/den duplizierten Datensatz/Datensätzen."
 msgid "Record saved."
 msgstr "Der Datensatz wurde gespeichert."
 
+msgid " of "
+msgstr ""
+
 msgid ""
 "This record has been modified\n"
 "do you want to save it?"
@@ -662,17 +667,15 @@ msgstr "Bericht"
 msgid "Open report"
 msgstr "Bericht öffnen"
 
-msgid "Print"
-msgstr "Drucken"
-
-msgid "Print report"
-msgstr "Bericht drucken"
-
 msgid "_Copy URL"
 msgstr "URL kopieren"
 
 msgid "Copy URL into clipboard"
 msgstr "URL in Zwischenablage kopieren"
+
+#, fuzzy
+msgid "name"
+msgstr "Name"
 
 msgid "Unknown"
 msgstr "Unbekannt"
@@ -1027,6 +1030,10 @@ msgstr "In Feld \"%s\" ist ein Eintrag erforderlich."
 msgid "The values of \"%s\" are not valid."
 msgstr "Die Werte von \"%s\" sind ungültig."
 
+#, fuzzy, python-format
+msgid "The value of \"%s\" is not valid."
+msgstr "Die Werte von \"%s\" sind ungültig."
+
 msgid "Pre-validation"
 msgstr "Vorvalidierung"
 
@@ -1155,6 +1162,29 @@ msgstr "Ausgewählten Datensatz löschen"
 msgid "%s%%"
 msgstr "%s%%"
 
+#, fuzzy
+msgid "Replace"
+msgstr "Beziehung"
+
+#, fuzzy
+msgid "Replace All"
+msgstr "Alle auswählen"
+
+msgid "L"
+msgstr ""
+
+#, fuzzy
+msgid "Message"
+msgstr "Bilder"
+
+#, fuzzy
+msgid "Parameters: {}"
+msgstr "CSV-Parameter"
+
+#, fuzzy
+msgid "No parameters"
+msgstr "CSV-Parameter"
+
 msgid "Choose a language"
 msgstr "Sprache auswählen"
 
@@ -1169,14 +1199,19 @@ msgstr "Fuzzy"
 
 msgid "You need to save the record before adding translations."
 msgstr ""
-"Der Datensatz muss gespeichert werden, bevor eine Übersetzung hinzugefügt "
-"werden kann."
+"Der Datensatz muss gespeichert werden, bevor eine Übersetzung hinzugefügt"
+" werden kann."
 
 msgid "No other language available."
 msgstr "Keine weitere Sprache verfügbar."
+
+#, fuzzy
+msgid ": "
+msgstr ":"
 
 msgid "#ERROR"
 msgstr "#FEHLER"
 
 msgid "Translate view"
 msgstr "Aktuelle Sicht übersetzen"
+
