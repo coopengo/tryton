@@ -1231,11 +1231,7 @@
             if (this.group.parent) {
                 this.order = null;
             }
-            if (group && (group.length > 0)) {
-                this.current_record = group[0];
-            } else {
-                this.current_record = null;
-            }
+            this.current_record = null;
             this.group.add_fields(fields);
             for (name in fields_views) {
                 var views = fields_views[name];
@@ -1341,11 +1337,7 @@
             if (this.current_view) {
                 this.current_view.reset();
             }
-            if ((ids.length > 0) && (this.current_view.view_type == 'tree')) {
-                this.current_record = this.group.get(ids[0]);
-            } else {
-                this.current_record = null;
-            }
+            this.current_record = null;
             return this.display(set_cursor);
         },
         _sync_group: function() {
@@ -1395,7 +1387,7 @@
             if (this.current_record &&
                     ~this.current_record.group.indexOf(this.current_record)) {
             } else if (this.group && this.group.length &&
-                (['form', 'tree'].includes(this.current_view.view_type))) {
+                (this.current_view.view_type == 'form')) {
                 this.current_record = this.group[0];
             } else {
                 this.current_record = null;
