@@ -426,11 +426,16 @@ var Sao = {
                 deferreds.push(Sao.common.MODELNOTIFICATION.load_names());
                 deferreds.push(Sao.common.VIEW_SEARCH.load_searches());
                 return jQuery.when.apply(jQuery, deferreds).then(function() {
-                    var prms = [];
+                    var prm = jQuery.when();
+                    var call_action = (action_id) => {
+                        return () => {
+                            return Sao.Action.execute(action_id, {}, null);
+                        };
+                    };
                     for (const action_id of (preferences.actions || [])) {
-                        prms.push(Sao.Action.execute(action_id, {}, null, {}));
+                        prm = prm.then(call_action(action_id));
                     }
-                    return jQuery.when.apply(jQuery, prms).then(() => {
+                    return prm.then(() => {
                         Sao.set_title();
                         var new_lang = preferences.language != Sao.i18n.getLocale();
                         var prm = jQuery.Deferred();

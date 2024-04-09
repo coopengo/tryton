@@ -22,6 +22,7 @@
             this.screen_state = null;
             this.state = null;
             this.session = Sao.Session.current_session;
+            this.__prm = jQuery.Deferred();
             this.__processing = false;
             this.__waiting_response = false;
             this.info_bar = new Sao.Window.InfoBar();
@@ -48,6 +49,7 @@
             }, () => {
                 this.destroy();
             });
+            return this.__prm.promise();
         },
         process: function() {
             if (this.__processing || this.__waiting_response) {
@@ -126,11 +128,13 @@
                 'params': [this.session_id, this.session.context]
             }, this.session).then(action => {
                 this.destroy(action);
+                this.__prm.resolve();
             })
             .fail(() => {
                 Sao.Logger.warn(
                     "Unable to delete session %s of wizard %s",
                     this.session_id, this.action);
+                this.__prm.reject();
             });
         },
         clean: function() {
@@ -203,7 +207,7 @@
         } else {
             win = new Sao.Wizard.Dialog(attributes.name);
         }
-        win.run(attributes);
+        return win.run(attributes);
     };
 
     Sao.Wizard.Form = Sao.class_(Sao.Wizard, {

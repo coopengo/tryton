@@ -404,6 +404,7 @@
         tab.view_prm.done(function() {
             Sao.Tab.add(tab);
         });
+        return tab.view_prm;
     };
 
     Sao.Tab.add = function(tab) {
