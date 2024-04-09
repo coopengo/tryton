@@ -7,6 +7,7 @@ import unittest
 from sql import Literal, Select, functions
 from sql.functions import CurrentTimestamp, DateTrunc, ToChar
 
+from trytond.pool import Pool
 from trytond.tests.test_tryton import activate_module, with_transaction
 from trytond.transaction import Transaction
 
@@ -171,3 +172,14 @@ class BackendTestCase(unittest.TestCase):
                     cursor.execute(*Select([DateTrunc(type_, date)]))
                     value, = cursor.fetchone()
                     self.assertEqual(str(value), str(result))
+
+    @with_transaction()
+    def test_estimated_count(self):
+        "Test estimated count queries"
+        pool = Pool()
+        database = Transaction().database
+        connection = Transaction().connection
+
+        ModelSQLRead = pool.get('test.modelsql.read')
+        count = database.estimated_count(connection, ModelSQLRead.__table__())
+        self.assertGreaterEqual(count, 0)

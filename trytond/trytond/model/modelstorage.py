@@ -633,9 +633,12 @@ class ModelStorage(Model):
         "Returns the estimation of the number of records."
         count = cls._count_cache.get(cls.__name__)
         if count is None:
-            count = cls.search([], count=True)
-            cls._count_cache.set(cls.__name__, count)
+            count = cls._get_estimated_count()
         return count
+
+    @classmethod
+    def _get_estimated_count(cls):
+        return cls.search([], count=True)
 
     def resources(self):
         pool = Pool()
