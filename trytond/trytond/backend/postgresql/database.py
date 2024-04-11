@@ -507,7 +507,7 @@ class Database(DatabaseInterface):
                 'WHERE relname = %s',
                 (table._name,))
         else:
-            cursor.execute(*table.select(Count()))
+            cursor.execute(*table.select(Count(table.id)))
         return cursor.fetchone()[0]
 
     def lock(self, connection, table):
