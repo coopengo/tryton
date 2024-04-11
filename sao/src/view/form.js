@@ -657,7 +657,7 @@ function eval_pyson(value){
             if (this._xexpand.size) {
                 for (i = 1; i <= col; i++) {
                     if (this._xexpand.has(i)) {
-                        this._grid_cols.push(`minmax(min-content, ${col}fr)`);
+                        this._grid_cols.push('minmax(auto, 1fr)');
                     } else {
                         this._grid_cols.push('min-content');
                     }
