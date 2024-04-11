@@ -193,6 +193,7 @@
             var file_name = name + '.' + report_type;
             Sao.common.download_file(data, file_name);
         });
+        return prm;
     };
 
     Sao.Action.execute = function(action, data, context, keyword) {

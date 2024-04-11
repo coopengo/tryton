@@ -429,6 +429,7 @@
         return tab.view_prm.then(function() {
             Sao.Tab.add(tab);
         });
+        return tab.view_prm;
     };
 
     Sao.Tab.add = function(tab) {
