@@ -1110,9 +1110,12 @@ class ModelSQLTestCase(unittest.TestCase):
 
         Model.create([{'name': str(i)} for i in range(10)])
 
-        self.assertEqual(Model.search([], limit=5, count=True), 5)
-        self.assertEqual(Model.search([], limit=20, count=True), 10)
-        self.assertEqual(Model.search([], limit=None, count=True), 10)
+        # The stats of postgres might not be updated yet
+        with patch.object(Model, 'estimated_count') as ec:
+            ec.return_value = 10
+            self.assertEqual(Model.search([], limit=5, count=True), 5)
+            self.assertEqual(Model.search([], limit=20, count=True), 10)
+            self.assertEqual(Model.search([], limit=None, count=True), 10)
 
     @with_transaction()
     def test_search_offset(self):
