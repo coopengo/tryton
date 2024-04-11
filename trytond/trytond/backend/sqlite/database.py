@@ -608,7 +608,7 @@ class Database(DatabaseInterface):
 
     def estimated_count(self, connection, table):
         cursor = connection.cursor()
-        cursor.execute(*table.select(Count()))
+        cursor.execute(*table.select(Count(Literal('*'))))
         return cursor.fetchone()[0]
 
     def lock(self, connection, table):
