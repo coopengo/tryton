@@ -634,6 +634,7 @@ class ModelStorage(Model):
         count = cls._count_cache.get(cls.__name__)
         if count is None:
             count = cls._get_estimated_count()
+            cls._count_cache.set(cls.__name__, count)
         return count
 
     @classmethod
