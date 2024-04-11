@@ -595,6 +595,12 @@ class ModelSQL(ModelStorage):
                         gettext('ir.msg_size_validation', **error_args))
 
     @classmethod
+    def _get_estimated_count(cls):
+        transaction = Transaction()
+        return transaction.database.estimated_count(
+            transaction.connection, cls.__table__())
+
+    @classmethod
     def history_revisions(cls, ids):
         pool = Pool()
         ModelAccess = pool.get('ir.model.access')
