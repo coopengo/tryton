@@ -194,8 +194,18 @@ html[theme="default"] {
         > .panel-body {
             display: flex;
             flex: 1;
-            flex-direction: column;
+            flex-direction: row;
             min-height: 0;
+
+            > div {
+                display: inline-flex;
+                padding-left: 15px;
+                padding-right: 15px;
+
+                &:first-child {
+                    flex: 2;
+                }
+            }
         }
     }
 
@@ -446,10 +456,28 @@ img.icon {
     overflow-y: auto;
 }
 
+.tree-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.attachment-preview {
+    border-color: @panel-default-border;
+    border-style: solid;
+    border-width: 0 0 0 1px;
+    flex: 1;
+    margin-left: 5px;
+    min-width: 20%;
+    overflow: auto;
+
+    > div {
+        flex: 1;
+    }
+}
+
 @media screen and (max-width: @screen-sm-max) {
     .attachment-preview:not(:empty) {
-        border-color: @panel-default-border;
-        border-style: solid;
         border-width: 0 0 1px 0;
         margin-bottom: 5px;
     }
