@@ -107,7 +107,7 @@
             this.selection_mode = (screen.attributes.selection_mode ||
                 Sao.common.SELECTION_MULTIPLE);
             this.el = jQuery('<div/>')
-                .css('display', 'flex')
+                .css('display', 'grid')
                 .css('flex-direction', 'column')
                 .css('min-height', '0');
             this.scrollbar = jQuery('<div/>')
