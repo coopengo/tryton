@@ -1997,6 +1997,8 @@ function eval_pyson(value){
 
             if (!attributes.size) {
                 this.group.css('width', '100%');
+            } else {
+                this.input.css('box-sizing', 'content-box');
             }
             if (this.attributes.translate) {
                 Sao.common.ICONFACTORY.get_icon_img('tryton-translate')
@@ -2047,6 +2049,10 @@ function eval_pyson(value){
                 length = record.expr_eval(this.attributes.size);
                 if (length > 0) {
                     width = null;
+                    this.input.css({
+                        'width': `${length}ch`,
+                        'min-width': `${length}ch`,
+                    });
                 }
             }
             this.input.val(this.get_client_value());
