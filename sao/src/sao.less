@@ -486,6 +486,9 @@ img.icon {
             }
         }
         > thead > tr > th {
+            &:not(:last-child) div {
+                resize: horizontal;
+            }
             &:not(:first-child) div {
                 overflow: hidden;
                 text-overflow: ellipsis;
