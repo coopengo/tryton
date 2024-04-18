@@ -446,7 +446,7 @@ class ViewTreeWidth(ModelSQL, ModelView):
         ModelView._fields_view_get_cache.clear()
 
     @classmethod
-    def get_width(cls, model, client, width):
+    def get_width(cls, model, width):
         for screen_size in WIDTH_BREAKPOINTS:
             if width >= screen_size:
                 break
@@ -457,7 +457,6 @@ class ViewTreeWidth(ModelSQL, ModelView):
         records = cls.search([
             ('user', '=', user),
             ('model', '=', model),
-            ('client', '=', client),
             ('screen_size', '=', screen_size),
             ])
 
@@ -465,7 +464,6 @@ class ViewTreeWidth(ModelSQL, ModelView):
             records = cls.search([
                 ('user', '=', user),
                 ('model', '=', model),
-                ['OR', ('client', '=', client), ('client', '=', None)],
                 ['OR',
                     ('screen_size', '<=', screen_size),
                     ('screen_size', '=', None),

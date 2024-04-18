@@ -181,7 +181,6 @@ class Screen:
         if view_id not in self.fields_view_tree:
             context = self.context
             context['view_tree_width'] = CONFIG['client.save_tree_width']
-            context['user_agent'] = 'tryton'
             context['screen_size'] = get_monitor_size()
             try:
                 self.fields_view_tree[view_id] = view_tree = RPCExecute(

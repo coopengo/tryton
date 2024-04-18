@@ -62,7 +62,10 @@ class ModelView(Model):
     Define a model with views in Tryton.
     """
     __slots__ = ()
-    _fields_view_get_cache = Cache('modelview.fields_view_get')
+    _fields_view_get_cache = Cache('modelview.fields_view_get',
+        context_ignored_keys=Cache.context_ignored_keys.copy() - {
+            'screen_size', 'view_tree_width',
+            })
     _view_toolbar_get_cache = Cache('modelview.view_toolbar_get')
 
     @classmethod
@@ -461,12 +464,11 @@ class ModelView(Model):
 
         if type == 'tree':
             user = Transaction().user
-            client = Transaction().context.get('user_agent')
             width, _ = Transaction().context.get('screen_size', (None, None))
             if Transaction().context.get('view_tree_width'):
                 ViewTreeWidth = pool.get('ir.ui.view_tree_width')
                 col_widths = ViewTreeWidth.get_width(
-                    cls.__name__, client, width)
+                    cls.__name__, width)
                 fields_width.update((fname, w)
                     for fname, w in col_widths.items()
                     if w > 0)

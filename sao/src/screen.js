@@ -889,7 +889,6 @@
                 view = this.views_preload[view_type];
             } else {
                 var context = {
-                    user_agent: 'sao',
                     screen_size: [window.screen.width, window.screen.height],
                     view_tree_width: true,
                 };
@@ -1781,7 +1780,6 @@
             }
             if (!(view_id in this.fields_view_tree)) {
                 var context = {
-                    user_agent: 'sao',
                     screen_size: [window.screen.width, window.screen.height],
                     view_tree_width: true,
                 };

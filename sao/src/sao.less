@@ -486,7 +486,7 @@ img.icon {
             }
         }
         > thead > tr > th {
-            &:not(:last-child) div {
+            &:not(:last-child:first-child) div {
                 resize: horizontal;
             }
             div {
@@ -519,11 +519,6 @@ img.icon {
             &.timedelta, &.float, &.numeric, &.integer, &.biginteger {
                 text-align: right;
                 text-align: end;
-            }
-        }
-        > thead > tr > th:first-child {
-            div {
-                resize: none;
             }
         }
         > thead > tr:first-child th {
