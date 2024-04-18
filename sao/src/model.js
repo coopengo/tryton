@@ -2208,8 +2208,8 @@
         set: function(record, value) {
             var promise;
             var rec_name = (
-                record._values[this.name + '.'] || {}).rec_name || '';
-            if (!rec_name && (value >= 0) && (value !== null)) {
+                record._values[this.name + '.'] || {}).rec_name;
+            if (!rec_name && rec_name !== '' && (value >= 0) && (value !== null)) {
                 var model_name = record.model.fields[this.name].description
                     .relation;
                 rec_name = Sao.rpc({
@@ -2390,7 +2390,9 @@
                     }
                 }
                 // Trigger modified only once
-                group.record_modified();
+                if (modified || default_) {
+                    group.record_modified();
+                }
             }
         },
         set: function(record, value, data=null, _default=false) {
@@ -2493,7 +2495,7 @@
         },
         set_default: function(record, value) {
             record.modified_fields[this.name] = true;
-            return this.set(record, value, true);
+            return this.set(record, value, null, true);
         },
         set_on_change: function(record, value) {
             var fields, new_fields;

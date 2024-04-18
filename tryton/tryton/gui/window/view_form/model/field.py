@@ -594,8 +594,8 @@ class M2OField(Field):
             force_change=force_change)
 
     def set(self, record, value):
-        rec_name = record.value.get(self.name + '.', {}).get('rec_name') or ''
-        if not rec_name and value is not None and value >= 0:
+        rec_name = record.value.get(self.name + '.', {}).get('rec_name')
+        if rec_name is None and value is not None and value >= 0:
             try:
                 result, = RPCExecute('model', self.attrs['relation'], 'read',
                     [value], ['rec_name'])
@@ -794,7 +794,8 @@ class O2MField(Field):
                     new_record.set(vals, modified=False)
                     group.append(new_record)
             # Trigger modified only once
-            group.record_modified()
+            if modified or default:
+                group.record_modified()
 
     def set(self, record, value, data=None, _default=False):
         group = record.value.get(self.name)
