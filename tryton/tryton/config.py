@@ -65,7 +65,13 @@ def get_config_dir():
     return os.path.join(get_config_root(), __version__.rsplit('.', 1)[0])
 
 
-os.makedirs(get_config_dir(), mode=0o700, exist_ok=True)
+if not os.path.isdir(get_config_dir()):
+    os.makedirs(get_config_dir(), mode=0o700)
+    copy_previous_configuration('tryton.conf')
+    copy_previous_configuration('known_hosts')
+    copy_previous_configuration('accel_map')
+    copy_previous_configuration('profiles.cfg')
+    copy_previous_configuration('plugins')
 
 
 class ConfigManager(object):
