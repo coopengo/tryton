@@ -336,7 +336,6 @@ class Fs2bdAccessor:
         self.ModelData = ModelData
         self.browserecord = {}
         self.pool = pool
-        self.config_language = self.pool.get('ir.configuration').get_language()
 
     def get(self, module, fs_id):
         if module not in self.fetched_modules:
@@ -411,9 +410,7 @@ class Fs2bdAccessor:
                     records = Model.search([
                         ('id', 'in', list(sub_record_ids)),
                         ], order=[('id', 'ASC')])
-                with Transaction().set_context(language=self.config_language):
-                    models = Model.browse(list(map(int, records)))
-                for model in models:
+                for model in records:
                     self.browserecord[module][model_name][model.id] = model
         self.fetched_modules.append(module)
 
@@ -438,7 +435,6 @@ class TrytondXmlHandler(sax.handler.ContentHandler):
         self.skip_data = False
         self.modules = modules
         self.languages = languages
-        self.config_language = self.pool.get('ir.configuration').get_language()
 
         # Tag handlders are used to delegate the processing
         self.taghandlerlist = {
@@ -658,8 +654,7 @@ class TrytondXmlHandler(sax.handler.ContentHandler):
             record = self.fs2db.get_browserecord(module, Model.__name__, db_id)
             # Re-create record if it was deleted
             if not record:
-                with Transaction().set_context(
-                        module=module, language=self.config_language):
+                with Transaction().set_context(module=module):
                     record, = Model.create([values])
 
                 # reset_browsercord
@@ -730,8 +725,7 @@ class TrytondXmlHandler(sax.handler.ContentHandler):
     def create_records(self, model, vlist, fs_ids):
         Model = self.pool.get(model)
 
-        with Transaction().set_context(
-                module=self.module, language=self.config_language):
+        with Transaction().set_context(module=self.module):
             records = Model.create(vlist)
 
         mdata_values = []
@@ -775,8 +769,7 @@ class TrytondXmlHandler(sax.handler.ContentHandler):
         # if there is values to update:
         if to_update:
             # write the values in the db:
-            with Transaction().set_context(
-                    module=module, language=self.config_language):
+            with Transaction().set_context(module=module):
                 Model.write(*to_update)
             self.fs2db.reset_browsercord(
                 module, Model.__name__, sum(to_update[::2], []))
