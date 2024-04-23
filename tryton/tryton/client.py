@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from gi.repository import Gdk, Gio, Gtk
 
 from tryton import __version__, common, gui, translate
-from tryton.config import CONFIG, get_config_dir
+from tryton.config import CONFIG, copy_previous_configuration, get_config_dir
 from tryton.gui.window.dblogin import DBLogin
 
 
