@@ -1,3 +1,4 @@
+* Transfer configuration, profiles and plugins from previous version
 * Don't reset date/datetime/time to None when it is invalid
 
 Version 6.8.3 - 2023-09-06
