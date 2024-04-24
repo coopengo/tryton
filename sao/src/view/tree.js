@@ -106,9 +106,9 @@
             this.columns = [];
             this.selection_mode = (screen.attributes.selection_mode ||
                 Sao.common.SELECTION_MULTIPLE);
-            this.el = jQuery('<div/>')
-                .css('display', 'grid')
-                .css('min-height', '0');
+            this.el = jQuery('<div/>', {
+                'class': 'tree-container',
+            });
             this.scrollbar = jQuery('<div/>')
                 .appendTo(jQuery('<div/>', {
                     'class': 'scrollbar responsive',
