@@ -143,6 +143,7 @@ class One2Many(Field):
         '''
         Target = self.get_target()
         field = Target._fields[self.field]
+        reference_o2m = field._type == 'reference'
         res = {}
         for i in ids:
             res[i] = []
@@ -158,7 +159,7 @@ class One2Many(Field):
             order += Target._order
         targets = []
         for sub_ids in grouped_slice(ids):
-            if field._type == 'reference':
+            if reference_o2m:
                 references = ['%s,%s' % (model.__name__, x) for x in sub_ids]
                 clause = [(self.field, 'in', references)]
             else:
@@ -166,11 +167,15 @@ class One2Many(Field):
             if self.filter:
                 clause.append(self.filter)
             targets.append(Target.search(clause, order=order))
-        targets = Target.browse(list(chain(*targets)))
+        targets = Target.read(list(chain(*targets)), ['id', self.field])
 
         for target in targets:
-            origin_id = getattr(target, self.field).id
-            res[origin_id].append(target.id)
+            if reference_o2m:
+                _, origin_id = target[self.field].split(',')
+                origin_id = int(origin_id)
+            else:
+                origin_id = target[self.field]
+            res[origin_id].append(target['id'])
         return dict((key, tuple(value)) for key, value in res.items())
 
     def set(self, Model, name, ids, values, *args):
