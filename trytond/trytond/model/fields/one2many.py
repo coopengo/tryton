@@ -171,7 +171,7 @@ class One2Many(Field):
 
         for target in targets:
             if reference_o2m:
-                _, origin_id = target[self.field].split(',')
+                _, origin_id = target[self.field].split(',', 1)
                 origin_id = int(origin_id)
             else:
                 origin_id = target[self.field]
