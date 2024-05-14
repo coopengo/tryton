@@ -477,6 +477,10 @@ div.modal-header {
     .coog-group-header-colors();
 }
 
+div.modal-header .close {
+    font-size: 21px;
+}
+
 div.wizard-dialog {
     // For "small" state views, bump the window width from 600px
     > div.modal-dialog.modal-md {
@@ -561,12 +565,20 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 
 // increase minimum width of fields
 .form {
-    .form-char, .form-password, .form-integer, .form-float,
+    .form-password, .form-float,
     .form-datetime, .form-time, .form-timedelta, .form-selection,
     .form-multiselection, .form-url, .form-email, .form-callto, .form-sip,
     .form-pyson {
         input, select {
             min-width: 17ch;
+        }
+    }
+    .form-char, .form-integer {
+        input:not([size]) {
+            min-width: 17ch;
+        }
+        input[size] {
+            min-width: unset;
         }
     }
     .form-many2one, .form-one2one, .form-reference, form-binary {
@@ -667,6 +679,11 @@ div.CodeMirror {
 // Hide line of notebooks with all tabs hidden
 ul.nav.nav-tabs:empty {
     border-bottom:    none;
+}
+
+// In-tab wizard are not displayed in the right direction
+div.wizard-form {
+    flex-direction:  column;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

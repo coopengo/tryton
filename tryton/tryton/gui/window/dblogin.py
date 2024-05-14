@@ -521,7 +521,7 @@ class DBLogin(object):
                 temp_name = temp_file.name
             shutil.copy(self.profile_cfg, temp_name)
             logger.error(
-                f"Failed to parse {self.profiles_cfg}. "
+                f"Failed to parse {self.profile_cfg}. "
                 f"A backup can be found at {temp_name}",
                 exc_info=True)
         for section in self.profiles.sections():

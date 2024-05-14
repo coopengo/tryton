@@ -123,9 +123,7 @@
             this.main = jQuery('<div/>', {
                 'class': 'panel-body row',
             }).appendTo(this.el);
-            this.content = jQuery('<div/>', {
-                'class': 'col-xs-12',
-            }).css('display', 'flex').css('flex', '1').appendTo(this.main);
+            this.content = jQuery('<div/>').appendTo(this.main);
 
             if (this.info_bar) {
                 this.el.append(this.info_bar.el);
@@ -841,8 +839,8 @@
         create_tabcontent: function() {
             Sao.Tab.Form._super.create_tabcontent.call(this);
             this.attachment_preview = jQuery('<div/>', {
-                'class': 'col-xs-12 attachment-preview',
-            }).prependTo(this.main);
+                'class': 'attachment-preview',
+            }).hide().appendTo(this.main);
         },
         compare: function(attributes) {
             if (!attributes) {
@@ -1161,15 +1159,13 @@
             const preview = () => {
                 if (this.attachment_preview.children().length) {
                     this.attachment_preview.empty();
+                    this.attachment_preview.hide();
                     this.attachment_screen = null;
-                    this.attachment_preview.removeClass('col-md-4 col-md-push-8');
-                    this.content.removeClass('col-md-8 col-md-pull-4');
                 } else {
                     this.attachment_preview.append(
                         this._attachment_preview_el());
+                    this.attachment_preview.show();
                     this.refresh_attachment_preview();
-                    this.attachment_preview.addClass('col-md-4 col-md-push-8');
-                    this.content.addClass('col-md-8 col-md-pull-4');
                 }
             };
             var dropdown = this.buttons.attach.parents('.dropdown');

@@ -117,6 +117,7 @@ msgstr ""
 msgid "Could not get a session."
 msgstr "Impossible d'obtenir une session."
 
+#, python-format
 msgid "Error \"%s\". Try again later."
 msgstr "Trop de demandes. Réessayez plus tard."
 
@@ -1122,7 +1123,7 @@ msgid "All files"
 msgstr "Tous les fichiers"
 
 msgid "Show plain text"
-msgstr "Montrer en text clair"
+msgstr "Afficher le texte en clair"
 
 msgid "Add value"
 msgstr "Ajouter une valeur"
