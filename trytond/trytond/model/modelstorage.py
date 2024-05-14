@@ -1803,8 +1803,8 @@ class ModelStorage(Model):
             except KeyError:
                 return value
             transaction = Transaction()
-            if (field.context
-                    or (dt_field := getattr(field, 'datetime_field', None))):
+            if ((dt_field := getattr(field, 'datetime_field', None))
+                    or field.context):
                 ctx = {}
                 if field.context:
                     pyson_context = PYSONEncoder().encode(field.context)
