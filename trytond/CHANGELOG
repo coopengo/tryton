@@ -1,3 +1,4 @@
+* Add option to skip tests that require network
 * Use JSONB to store MultiSelection field on PostgreSQL
 * Use multiple jobs to dump and restore a test database
 * Support database cache as template for tests
