@@ -507,21 +507,15 @@ class TableHandler(TableHandlerInterface):
                 name, query, params = translator.definition(index)
                 name = '_'.join([self.table_name, name])
                 name = 'idx_' + self.convert_name(name, reserved=len('idx_'))
-                if concurrently:
+                cursor.execute(
+                    'SELECT idx.indisvalid '
+                    'FROM pg_index idx '
+                    'JOIN pg_class cls ON cls.oid = idx.indexrelid '
+                    'WHERE cls.relname = %s',
+                    (name,))
+                if (idx_valid := cursor.fetchone()) and not idx_valid[0]:
                     cursor.execute(
-                        """SELECT idx.indexrelid
-                        FROM pg_index idx
-                        JOIN pg_class cls ON cls.oid = idx.indexrelid
-                        WHERE cls.relname = %s""",
-                        (name,))
-                    if (idx_oid := cursor.fetchone()):
-                        cursor.execute(
-                            "SELECT 1 FROM pg_stat_progress_create_index "
-                            "WHERE index_relid = %s",
-                            (idx_oid[0],))
-                        if cursor.fetchone():
-                            cursor.execute(
-                                SQL("DROP INDEX {}").format(Identifier(name)))
+                        SQL("DROP INDEX {}").format(Identifier(name)))
                 cursor.execute(
                     SQL('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {}')
                     .format(
