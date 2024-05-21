@@ -22,6 +22,7 @@
             this.screen_state = null;
             this.state = null;
             this.session = Sao.Session.current_session;
+            this.__prm = jQuery.Deferred();
             this.__processing = false;
             this.__waiting_response = false;
             this.info_bar = new Sao.Window.InfoBar();
@@ -48,6 +49,7 @@
             }, () => {
                 this.destroy();
             });
+            return this.__prm.promise();
         },
         process: function() {
             if (this.__processing || this.__waiting_response) {
@@ -126,11 +128,13 @@
                 'params': [this.session_id, this.session.context]
             }, this.session).then(action => {
                 this.destroy(action);
+                this.__prm.resolve();
             })
             .fail(() => {
                 Sao.Logger.warn(
                     "Unable to delete session %s of wizard %s",
                     this.session_id, this.action);
+                this.__prm.reject();
             });
         },
         clean: function() {
@@ -186,6 +190,20 @@
             this.screen.add_view(view);
             this.screen.switch_view();
             this.screen.windows.push(this);
+            var close_button = jQuery('<button/>', {
+                'type': 'button',
+                'class': 'close',
+                'aria-label': Sao.i18n.gettext("Close"),
+            }).append(jQuery('<span>', {
+                'aria-hidden': true,
+            }).append('&times;'));
+            close_button.click((e) => {
+                e.preventDefault();
+                if (this.end_state in this.states) {
+                    this.response(this.states[this.end_state].attributes);
+                }
+            });
+            this.header.append(close_button);
             this.header.append(jQuery('<h4/>', {
                 'class': 'model-title',
                 'title': this.name,
@@ -203,7 +221,7 @@
         } else {
             win = new Sao.Wizard.Dialog(attributes.name);
         }
-        win.run(attributes);
+        return win.run(attributes);
     };
 
     Sao.Wizard.Form = Sao.class_(Sao.Wizard, {

@@ -426,11 +426,16 @@ var Sao = {
                 deferreds.push(Sao.common.MODELNOTIFICATION.load_names());
                 deferreds.push(Sao.common.VIEW_SEARCH.load_searches());
                 return jQuery.when.apply(jQuery, deferreds).then(function() {
-                    var prms = [];
+                    var prm = jQuery.when();
+                    var call_action = (action_id) => {
+                        return () => {
+                            return Sao.Action.execute(action_id, {}, null);
+                        };
+                    };
                     for (const action_id of (preferences.actions || [])) {
-                        prms.push(Sao.Action.execute(action_id, {}, null, {}));
+                        prm = prm.then(call_action(action_id));
                     }
-                    return jQuery.when.apply(jQuery, prms).then(() => {
+                    return prm.then(() => {
                         Sao.set_title();
                         var new_lang = preferences.language != Sao.i18n.getLocale();
                         var prm = jQuery.Deferred();
@@ -934,7 +939,8 @@ var Sao = {
 
     Sao.Dialog = Sao.class_(Object, {
         init: function(
-            title, class_, size='sm', keyboard=true, small=null) {
+            title, class_, size='sm', keyboard=true, small=null,
+            closeable=false) {
             this.modal = jQuery('<div/>', {
                 'class': class_ + ' modal fade',
                 'role': 'dialog',
@@ -949,6 +955,17 @@ var Sao = {
             this.header = jQuery('<div/>', {
                 'class': 'modal-header'
             }).appendTo(this.content);
+            if (closeable) {
+                var close_button = jQuery('<button/>', {
+                    'type': 'button',
+                    'class': 'close',
+                    'data-dismiss': 'modal',
+                    'aria-label': Sao.i18n.gettext("Close"),
+                }).append(jQuery('<span>', {
+                    'aria-hidden': true,
+                }).append('&times;'));
+                this.header.append(close_button);
+            }
             if (title) {
                 this.add_title(title, small);
             }

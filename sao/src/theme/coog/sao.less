@@ -366,7 +366,8 @@ ul.list-group.list-form {
 
     > li.list-group-item.list-group-item-selected {
         color:                  @color-black;
-        background-color:       rgba(@coog-background-color, @coog-main-opacity);
+        // background-color:       rgba(@coog-background-color, @coog-main-opacity);
+        background-color:       rgba(@color-lightest-blue, 0.6);
     }
 }
 
@@ -476,6 +477,10 @@ div.modal-header {
     .coog-group-header-colors();
 }
 
+div.modal-header .close {
+    font-size: 21px;
+}
+
 div.wizard-dialog {
     // For "small" state views, bump the window width from 600px
     > div.modal-dialog.modal-md {
@@ -542,6 +547,12 @@ div.form-text {
     }
 }
 
+// Make selections without any options look readonly
+select:empty, select:has(> option[value="null"]):not(:has(> option:not([value="null"]))) {
+    .coog-readonly-field-mixin();
+    pointer-events:         none;
+}
+
 // flatter checkboxes
 div.form-boolean > input[type=checkbox].input-checkbox {
     box-shadow:            none;
@@ -554,12 +565,20 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 
 // increase minimum width of fields
 .form {
-    .form-char, .form-password, .form-integer, .form-float,
+    .form-password, .form-float,
     .form-datetime, .form-time, .form-timedelta, .form-selection,
     .form-multiselection, .form-url, .form-email, .form-callto, .form-sip,
     .form-pyson {
         input, select {
             min-width: 17ch;
+        }
+    }
+    .form-char, .form-integer {
+        input:not([size]) {
+            min-width: 17ch;
+        }
+        input[size] {
+            min-width: unset;
         }
     }
     .form-many2one, .form-one2one, .form-reference, form-binary {
@@ -660,6 +679,11 @@ div.CodeMirror {
 // Hide line of notebooks with all tabs hidden
 ul.nav.nav-tabs:empty {
     border-bottom:    none;
+}
+
+// In-tab wizard are not displayed in the right direction
+div.wizard-form {
+    flex-direction:  column;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,3 @@
-msgid ""
-msgstr "Content-Type: text/plain; charset=utf-8\n"
-
 msgid "specify alternate config file"
 msgstr "spécifier un fichier de configuration alternatif"
 
@@ -110,13 +107,6 @@ msgstr "Erreur applicative"
 msgid "Report Bug"
 msgstr "Rapporter un bogue"
 
-#, python-format
-msgid "Check URL: %s"
-msgstr "Vérification de l'URL : %s"
-
-msgid "Unable to check for new version."
-msgstr "Impossible de vérifier les nouvelles versions."
-
 msgid ""
 "The server took too much time to answer.\n"
 "You may try again later."
@@ -127,11 +117,12 @@ msgstr ""
 msgid "Could not get a session."
 msgstr "Impossible d'obtenir une session."
 
-msgid "Too many requests. Try again later."
+#, python-format
+msgid "Error \"%s\". Try again later."
 msgstr "Trop de demandes. Réessayez plus tard."
 
-msgid "Not found."
-msgstr "Pas trouvé."
+msgid "Too many requests. Try again later."
+msgstr "Trop de demandes. Réessayez plus tard."
 
 msgid "Not Found."
 msgstr "Pas trouvé."
@@ -144,6 +135,12 @@ msgstr "<i>Recherche...</i>"
 
 msgid "<i>Create...</i>"
 msgstr "<i>Créer...</i>"
+
+msgid "Validity"
+msgstr "Validité"
+
+msgid "Date Validity"
+msgstr "Date de validité"
 
 msgid "Value"
 msgstr "Valeur"
@@ -159,6 +156,12 @@ msgstr "Format d'affichage"
 
 msgid "Open the calendar"
 msgstr "Ouvrir le calendrier"
+
+msgid "Time Validity"
+msgstr ""
+
+msgid "DateTime Validity"
+msgstr ""
 
 msgid "Date Format"
 msgstr "Format de date"
@@ -265,6 +268,12 @@ msgstr "s"
 msgid "Preferences..."
 msgstr "Préférences..."
 
+msgid "Log out"
+msgstr ""
+
+msgid "Open logs directory"
+msgstr "Ouvrir les enregistrements liés"
+
 msgid "Toolbar"
 msgstr "Barre d'outils"
 
@@ -297,9 +306,6 @@ msgstr "Mode PDA"
 
 msgid "Search Limit..."
 msgstr "Limite la recherche à..."
-
-msgid "Check Version"
-msgstr "Vérifier la version"
 
 msgid "Options"
 msgstr "Options"
@@ -1117,7 +1123,7 @@ msgid "All files"
 msgstr "Tous les fichiers"
 
 msgid "Show plain text"
-msgstr "Montrer en text clair"
+msgstr "Afficher le texte en clair"
 
 msgid "Add value"
 msgstr "Ajouter une valeur"

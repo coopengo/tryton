@@ -112,11 +112,10 @@
                 if (action.keyword) {
                     name_prm = add_name_suffix(action.name, params.context);
                 }
-                name_prm.then(function(name) {
+                return name_prm.then(function(name) {
                     params.name = name;
-                    Sao.Tab.create(params);
+                    return Sao.Tab.create(params);
                 });
-                return name_prm;
             case 'ir.action.wizard':
                 params.action = action.wiz_name;
                 params.data = data;
@@ -128,18 +127,16 @@
                 if ((action.keyword || 'form_action') === 'form_action') {
                     name_prm = add_name_suffix(action.name, context);
                 }
-                name_prm.then(function(name) {
+                return name_prm.then(function(name) {
                     params.name = name;
-                    Sao.Wizard.create(params);
+                    return Sao.Wizard.create(params);
                 });
-                return name_prm;
             case 'ir.action.report':
                 params.name = action.report_name;
                 params.data = data;
                 params.direct_print = action.direct_print;
                 params.context = context;
-                Sao.Action.exec_report(params);
-                return jQuery.when();
+                return Sao.Action.exec_report(params);
             case 'ir.action.url':
                 window.open(action.url, '_blank', 'noreferrer,noopener');
                 return jQuery.when();
@@ -198,6 +195,7 @@
             var file_name = name + '.' + report_type;
             Sao.common.download_file(data, file_name);
         });
+        return prm;
     };
 
     Sao.Action.execute = function(action, data, context, keyword) {
@@ -217,7 +215,7 @@
                 action.keyword = keywords[action.type];
             }
         }
-        Sao.Action.exec_action(action, data, context);
+        return Sao.Action.exec_action(action, data, context);
     };
 
     Sao.Action.evaluate = function(action, atype, record) {

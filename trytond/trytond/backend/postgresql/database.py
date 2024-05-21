@@ -40,6 +40,7 @@ except ModuleNotFoundError:
     from psycopg2 import QueryCanceledError as DatabaseTimeoutError
 from psycopg2.extras import register_default_json, register_default_jsonb
 from sql import Cast, Flavor, For, Table
+from sql.aggregate import Count
 from sql.conditionals import Coalesce
 from sql.functions import Function
 from sql.operators import BinaryOperator, Concat
@@ -496,6 +497,17 @@ class Database(DatabaseInterface):
             ('%I', table, 'id'))
         sequence_name, = cursor.fetchone()
         cursor.execute(f"SELECT last_value FROM {sequence_name}")
+        return cursor.fetchone()[0]
+
+    def estimated_count(self, connection, table):
+        cursor = connection.cursor()
+        if isinstance(table, Table):
+            cursor.execute(
+                'SELECT n_live_tup FROM pg_stat_all_tables '
+                'WHERE relname = %s',
+                (table._name,))
+        else:
+            cursor.execute(*table.select(Count(table.id)))
         return cursor.fetchone()[0]
 
     def lock(self, connection, table):
