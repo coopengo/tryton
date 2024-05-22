@@ -358,29 +358,48 @@ class FieldMultiSelectionTestCase(unittest.TestCase):
         self.assertEqual(bar_read['dyn_selects:string'], ["Bar", "Baz"])
         self.assertEqual(null_read['dyn_selects:string'], [])
 
-
-@unittest.skipIf(
-    backend.name != 'postgresql', 'jsonb only supported by postgresql')
-class FieldMultiSelectionJSONBTestCase(FieldMultiSelectionTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.setup_model()
-
-    @classmethod
     @with_transaction()
-    def setup_model(cls):
-        connection = Transaction().connection
-        if backend.Database().get_version(connection) < (9, 2):
-            return
-        pool = Pool()
-        for model in ['test.multi_selection', 'test.multi_selection_required']:
-            Model = pool.get(model)
-            cursor = connection.cursor()
-            for name, field in Model._fields.items():
-                if field._type == 'multiselection':
-                    cursor.execute('ALTER TABLE "%s" '
-                        'ALTER COLUMN %s TYPE json USING %s::json' % (
-                            Model._table, name, name))
-        Transaction().commit()
+    def test_create_text(self):
+        "Test creating multiselection with text"
+        Selection = Pool().get('test.multi_selection_text')
+
+        selection, selection_none = Selection.create([{
+                    'selects': ['foo', 'bar'],
+                    }, {
+                    'selects': None,
+                    }])
+
+        self.assertEqual(selection.selects, ('bar', 'foo'))
+        self.assertEqual(selection_none.selects, ())
+
+    @with_transaction()
+    def test_write_text(self):
+        "Test write selection with text"
+        Selection = Pool().get('test.multi_selection_text')
+        selection, = Selection.create([{
+                    'selects': ['foo'],
+                    }])
+
+        Selection.write([selection], {
+                'selects': ['foo', 'bar'],
+                })
+
+        self.assertEqual(selection.selects, ('bar', 'foo'))
+
+    @with_transaction()
+    def test_search_equals_text(self):
+        "Test search selection equals"
+        Selection = Pool().get('test.multi_selection_text')
+        selection, = Selection.create([{
+                    'selects': ['bar', 'foo'],
+                    }])
+
+        foo_bar = Selection.search([
+                ('selects', '=', ['foo', 'bar']),
+                ])
+        foo = Selection.search([
+                ('selects', '=', ['foo']),
+                ])
+
+        self.assertEqual(foo_bar, [selection])
+        self.assertEqual(foo, [])
