@@ -1663,8 +1663,6 @@ class ModelStorage(Model):
         except KeyError:
             skip_eager = False
 
-        pool = Pool()
-
         # build the list of fields we will fetch
         ffields = {
             name: field,
@@ -1678,7 +1676,7 @@ class ModelStorage(Model):
             multiple_getter = field.getter
 
         if load_eager or multiple_getter:
-            FieldAccess = pool.get('ir.model.field.access')
+            FieldAccess = Pool().get('ir.model.field.access')
             fread_accesses = {}
             fread_accesses.update(FieldAccess.check(self.__name__,
                 list(self._fields.keys()), 'read', access=True))
@@ -1754,30 +1752,6 @@ class ModelStorage(Model):
             islice(self._ids, 0, max(index - 1, 0)))
         ids = islice(unique(filter(filter_, ids)), read_size)
 
-        kwargs_cache = {}
-        transaction = Transaction()
-
-        def create_instances(Model, value, cache_key=None):
-            cache_key = (Model, cache_key)
-            if cache_key in kwargs_cache:
-                kwargs = kwargs_cache[cache_key]
-            else:
-                if cache_key not in model2cache:
-                    model2cache[cache_key] = local_cache(Model, transaction)
-                kwargs_cache[cache_key] = kwargs = {
-                    '_local_cache': model2cache[cache_key],
-                    '_ids': model2ids.setdefault(cache_key, []),
-                    '_transaction_cache': transaction.get_cache(),
-                    '_transaction': transaction,
-                    }
-            ids = kwargs['_ids']
-            if field._type in ('many2one', 'one2one', 'reference'):
-                ids.append(value)
-                return Model(value, **kwargs)
-            elif field._type in ('one2many', 'many2many'):
-                ids.extend(value)
-                return tuple(Model(id, **kwargs) for id in value)
-
         def instantiate(field, value, data):
             if field._type in ('many2one', 'one2one', 'reference'):
                 # ABDC: Fix when data is an empty string, we should return
@@ -1790,7 +1764,7 @@ class ModelStorage(Model):
             try:
                 if field._type == 'reference':
                     model_name, record_id = value.split(',')
-                    Model = pool.get(model_name)
+                    Model = Pool().get(model_name)
                     try:
                         record_id = int(record_id)
                     except ValueError:
@@ -1803,18 +1777,30 @@ class ModelStorage(Model):
             except KeyError:
                 return value
             transaction = Transaction()
-            if ((dt_field := getattr(field, 'datetime_field', None))
-                    or field.context):
-                ctx = {}
-                if field.context:
-                    pyson_context = PYSONEncoder().encode(field.context)
-                    ctx.update(PYSONDecoder(data).decode(pyson_context))
-                if dt_field:
-                    ctx['_datetime'] = data.get(dt_field)
-                with transaction.set_context(**ctx):
-                    return create_instances(Model, value, freeze(ctx))
-            else:
-                return create_instances(Model, value)
+            ctx = {}
+            if field.context:
+                pyson_context = PYSONEncoder().encode(field.context)
+                ctx.update(PYSONDecoder(data).decode(pyson_context))
+            datetime_ = None
+            if getattr(field, 'datetime_field', None):
+                datetime_ = data.get(field.datetime_field)
+                ctx = {'_datetime': datetime_}
+            with transaction.set_context(**ctx):
+                kwargs = {}
+                key = (Model, freeze(ctx))
+                if key not in model2cache:
+                    model2cache[key] = local_cache(Model, transaction)
+                kwargs['_local_cache'] = model2cache[key]
+                kwargs['_ids'] = ids = model2ids.setdefault(key, [])
+                kwargs['_transaction_cache'] = transaction.get_cache()
+                kwargs['_transaction'] = transaction
+                if field._type in ('many2one', 'one2one', 'reference'):
+                    value = int(value)
+                    ids.append(value)
+                    return Model(value, **kwargs)
+                elif field._type in ('one2many', 'many2many'):
+                    ids.extend(int(x) for x in value)
+                    return tuple(Model(id, **kwargs) for id in value)
 
         model2ids = {}
         model2cache = {}
