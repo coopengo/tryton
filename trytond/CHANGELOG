@@ -1,3 +1,4 @@
+* Use JSONB to store MultiSelection field on PostgreSQL
 * Use multiple jobs to dump and restore a test database
 * Support database cache as template for tests
 
