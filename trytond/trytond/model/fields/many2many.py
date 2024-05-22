@@ -140,7 +140,6 @@ class Many2Many(Field):
 
         Relation = self.get_relation()
         origin_field = Relation._fields[self.origin]
-        reference_key = origin_field._type == 'reference'
 
         if (not isinstance(origin_field, Function)
                 or hasattr(Relation, 'order_' + self.field)):
@@ -154,7 +153,7 @@ class Many2Many(Field):
 
         relations = []
         for sub_ids in grouped_slice(ids):
-            if reference_key:
+            if origin_field._type == 'reference':
                 references = ['%s,%s' % (model.__name__, x) for x in sub_ids]
                 clause = [(self.origin, 'in', references)]
             else:
@@ -163,16 +162,11 @@ class Many2Many(Field):
             if self.filter:
                 clause.append((self.target, 'where', self.filter))
             relations.append(Relation.search(clause, order=order))
-        relations = Relation.read(
-            list(chain(*relations)), [self.origin, self.target])
+        relations = Relation.browse(list(chain(*relations)))
 
         for relation in relations:
-            if reference_key:
-                _, origin_id = relation[self.origin].split(',', 1)
-                origin_id = int(origin_id)
-            else:
-                origin_id = relation[self.origin]
-            res[origin_id].append(relation[self.target])
+            origin_id = getattr(relation, self.origin).id
+            res[origin_id].append(getattr(relation, self.target).id)
         return dict((key, tuple(value)) for key, value in res.items())
 
     def set(self, Model, name, ids, values, *args):
