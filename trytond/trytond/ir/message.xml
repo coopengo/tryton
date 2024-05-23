@@ -408,11 +408,5 @@ this repository contains the full copyright notices and license terms. -->
         <record model="ir.message" id="msg_field_model_name">
             <field name="text">%(field)s (model name)</field>
         </record>
-        <record model="ir.message" id="msg_name_lang_type_norecord_unique">
-            <field name="text">The translation name must be unique by language and type when it's not related to a record.</field>
-        </record>
-        <record model="ir.message" id="msg_name_lang_type_src_norecord_unique">
-            <field name="text">The translation name must be unique by language, type and source when it's not related to a record.</field>
-        </record>
     </data>
 </tryton>
