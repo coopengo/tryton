@@ -1036,7 +1036,7 @@
             var to_show = [];
             for (var i = 0; i < this.columns.length; i++) {
                 var column = this.columns[i];
-                if (column.visible && column.header.css('display') == 'none') {
+                if (!column.get_visible() && column.header.css('display') == 'none') {
                     to_hide.push(i);
                 } else {
                     to_show.push(i);
@@ -2690,10 +2690,6 @@
         get model_name() {
             return this.model.name;
         },
-        get visible() {
-            // 480px is bootstrap's screen-xs-max
-            return (window.visualViewport.width > 480) && this._visible_header;
-        },
         get_cell: function() {
             var cell = jQuery('<div/>', {
                 'class': this.class_,
@@ -2758,7 +2754,8 @@
             }
         },
         get_visible: function() {
-            return !this.header.hasClass('invisible');
+            // 480px is bootstrap's screen-xs-max
+            return (window.visualViewport.width > 480) && this._visible_header;
         },
     });
 
@@ -3255,6 +3252,7 @@
             this.type = 'button';
             this.attributes = attributes;
             this.footers = [];
+            this._visible_header = true;
         },
         render: function(record, el) {
             var button = new Sao.common.Button(this.attributes, el, 'btn-sm');
@@ -3280,15 +3278,17 @@
             for (const cell of cells) {
                 if (visible) {
                     cell.show();
+                    this._visible_header = true;
                     cell.removeClass('invisible');
                 } else {
                     cell.hide();
+                    this._visible_header = false;
                     cell.addClass('invisible');
                 }
             }
         },
         get_visible: function() {
-            return !this.header.hasClass('invisible');
+            return this._visible_header && !this.header.hasClass('invisible');
         },
         button_clicked: function(event) {
             var record = event.data[0];
