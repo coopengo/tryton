@@ -1,5 +1,6 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import warnings
 from collections import defaultdict
 from itertools import chain
 
@@ -444,6 +445,9 @@ class Many2Many(Field):
                     return ~expression
                 return expression
             else:
+                if not operator.endswith('where'):
+                    warnings.warn(
+                        f"Using an incomplete relation model domain: {domain}")
                 if isinstance(value, str):
                     target_name = 'rec_name'
                 else:
