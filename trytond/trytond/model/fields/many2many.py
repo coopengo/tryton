@@ -158,8 +158,8 @@ class Many2Many(Field):
                 references = ['%s,%s' % (model.__name__, x) for x in sub_ids]
                 clause = [(self.origin, 'in', references)]
             else:
-                clause = [(self.origin, 'in', list(sub_ids))]
-            clause += [(self.target, '!=', None)]
+                clause = [(f'{self.origin}.id', 'in', list(sub_ids))]
+            clause += [(f'{self.target}', '!=', None)]
             if self.filter:
                 clause.append((self.target, 'where', self.filter))
             relations.append(Relation.search(clause, order=order))
@@ -195,7 +195,7 @@ class Many2Many(Field):
                 references = ['%s,%s' % (Model.__name__, x) for x in ids]
                 return (self.origin, 'in', references)
             else:
-                return (self.origin, 'in', ids)
+                return (f'{self.origin}.id', 'in', ids)
 
         def field_value(record_id):
             if origin_field._type == 'reference':
@@ -227,7 +227,7 @@ class Many2Many(Field):
             for sub_ids in grouped_slice(target_ids):
                 relations = Relation.search([
                         search_clause(ids),
-                        (self.target, 'in', list(sub_ids)),
+                        (f'{self.target}.id', 'in', list(sub_ids)),
                         ])
                 for relation in relations:
                     existing_ids.add((
@@ -249,7 +249,7 @@ class Many2Many(Field):
             for sub_ids in grouped_slice(target_ids):
                 relation_to_delete.extend(Relation.search([
                             search_clause(ids),
-                            (self.target, 'in', list(sub_ids)),
+                            (f'{self.target}.id', 'in', list(sub_ids)),
                             ]))
 
         def copy(ids, copy_ids, default=None):
@@ -329,8 +329,8 @@ class Many2Many(Field):
             if not ids:
                 return set()
             children = Target.search([
-                    (name, 'in', ids),
-                    (name, '!=', None),
+                    (f'{name}.id', 'in', ids),
+                    (f'{name}', '!=', None),
                     ], order=[])
             child_ids = get_child(set(c.id for c in children))
             return ids | child_ids

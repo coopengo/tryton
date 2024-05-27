@@ -35,7 +35,7 @@ class Line(ModelSQL, ModelView):
         help="The company which the employee attended.")
     employee = fields.Many2One('company.employee', "Employee", required=True,
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ['OR',
                 ('start_date', '=', None),
                 ('start_date', '<=', Eval('date', None)),

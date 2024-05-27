@@ -52,8 +52,8 @@ class Account(
     parent = fields.Many2One(
         'analytic_account.account', "Parent",
         domain=['OR',
-            ('root', '=', Eval('root', -1)),
-            ('parent', '=', None),
+            ('root.id', '=', Eval('root', -1)),
+            ('parent.id', '=', None),
             ],
         states={
             'invisible': Eval('type') == 'root',

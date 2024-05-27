@@ -196,7 +196,7 @@ class One2Many(Field):
                 references = ['%s,%s' % (Model.__name__, x) for x in ids]
                 return (self.field, 'in', references)
             else:
-                return (self.field, 'in', ids)
+                return (f'{self.field}.id', 'in', ids)
 
         def field_value(record_id):
             if field._type == 'reference':

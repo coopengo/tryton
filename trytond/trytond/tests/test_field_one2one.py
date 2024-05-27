@@ -140,7 +140,7 @@ class FieldOne2OneTestCase(unittest.TestCase):
                     }])
 
         one2ones = One2One.search([
-                ('one2one', '=', "Target"),
+                ('one2one.rec_name', '=', "Target"),
                 ])
 
         self.assertListEqual(one2ones, [one2one])
@@ -157,7 +157,7 @@ class FieldOne2OneTestCase(unittest.TestCase):
                     }])
 
         one2ones = One2One.search([
-                ('one2one', '!=', "Target"),
+                ('one2one.rec_name', '!=', "Target"),
                 ])
 
         self.assertListEqual(one2ones, [])
@@ -200,7 +200,7 @@ class FieldOne2OneTestCase(unittest.TestCase):
                     }])
 
         one2ones = One2One.search([
-                ('one2one', 'in', [target.id]),
+                ('one2one.id', 'in', [target.id]),
                 ])
 
         self.assertListEqual(one2ones, [one2one])
@@ -217,7 +217,7 @@ class FieldOne2OneTestCase(unittest.TestCase):
                     }])
 
         one2ones = One2One.search([
-                ('one2one', 'not in', [target.id]),
+                ('one2one.id', 'not in', [target.id]),
                 ])
 
         self.assertListEqual(one2ones, [])
@@ -234,7 +234,7 @@ class FieldOne2OneTestCase(unittest.TestCase):
                     }])
 
         one2ones = One2One.search([
-                ('one2one', 'in', [None]),
+                ('one2one.id', 'in', [None]),
                 ])
 
         self.assertListEqual(one2ones, [])
@@ -251,7 +251,7 @@ class FieldOne2OneTestCase(unittest.TestCase):
                     }])
 
         one2ones = One2One.search([
-                ('one2one', 'not in', [None]),
+                ('one2one.id', 'not in', [None]),
                 ])
 
         self.assertListEqual(one2ones, [one2one])
