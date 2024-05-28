@@ -167,7 +167,10 @@ class One2Many(Field):
             if self.filter:
                 clause.append(self.filter)
             targets.append([r.id for r in Target.search(clause, order=order)])
-        targets = Target.read(list(chain(*targets)), ['id', self.field])
+        to_read = list(chain(*targets))
+        targets = {t['id']: t
+            for t in Target.read(to_read, ['id', self.field])}
+        targets = [targets[i] for i in to_read]
 
         for target in targets:
             if reference_key:

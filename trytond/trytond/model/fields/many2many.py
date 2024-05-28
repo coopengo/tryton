@@ -164,8 +164,10 @@ class Many2Many(Field):
                 clause.append((self.target, 'where', self.filter))
             relations.append(
                 [r.id for r in Relation.search(clause, order=order)])
-        relations = Relation.read(
-            list(chain(*relations)), [self.origin, self.target])
+        to_read = list(chain(*relations))
+        relations = {t['id']: t
+            for t in Relation.read(to_read, [self.origin, self.target])}
+        relations = [relations[i] for i in to_read]
 
         for relation in relations:
             if reference_key:
