@@ -888,6 +888,8 @@ class Replace(Wizard):
         source = self.ask.source
         destination = self.ask.destination
 
+        self.hook_before_replace(source)
+
         Address.write(list(source.addresses), {
                 'active': False,
                 })
@@ -941,6 +943,9 @@ class Replace(Wizard):
             ('party.contact_mechanism', 'party'),
             ('party.identifier', 'party'),
             ]
+
+    def hook_before_replace(self, source):
+        return
 
 
 class ReplaceAsk(ModelView):
