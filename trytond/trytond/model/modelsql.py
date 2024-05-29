@@ -1762,11 +1762,18 @@ class ModelSQL(ModelStorage):
         return order_by
 
     @classmethod
+    def construct_search_query(
+            cls, domain, table, columns, expression, limit, offset, order_by):
+        query = table.select(
+            *columns, where=expression, limit=limit, offset=offset,
+            order_by=order_by)
+        return query
+
+    @classmethod
     def search(cls, domain, offset=0, limit=None, order=None, count=False,
             query=False):
         transaction = Transaction()
         cursor = transaction.connection.cursor()
-
         super(ModelSQL, cls).search(
             domain, offset=offset, limit=limit, order=order, count=count)
 
@@ -1793,9 +1800,8 @@ class ModelSQL(ModelStorage):
         # compute it here because __search_order might modify tables
         table = convert_from(None, tables)
         columns = cls.__searched_columns(main_table, eager=not query)
-        select = table.select(
-            *columns, where=expression, limit=limit, offset=offset,
-            order_by=order_by)
+        select = cls.construct_search_query(domain,
+            table, columns, expression, limit, offset, order_by)
 
         if query:
             return select
@@ -1836,7 +1842,6 @@ class ModelSQL(ModelStorage):
         '''
         transaction = Transaction()
         domain = cls._search_domain_active(domain, active_test=active_test)
-
         if tables is None:
             tables = {}
         if None not in tables:
