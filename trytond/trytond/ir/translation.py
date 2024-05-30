@@ -16,13 +16,12 @@ from sql import Column, Literal, Null
 from sql.aggregate import Max
 from sql.conditionals import Case
 from sql.functions import Position, Substring
-from sql.operators import Equal
 
 from trytond.cache import Cache
 from trytond.config import config
 from trytond.exceptions import UserError
 from trytond.i18n import gettext
-from trytond.model import Exclude, Index, ModelSQL, ModelView, fields
+from trytond.model import Index, ModelSQL, ModelView, fields
 from trytond.pool import Pool
 from trytond.pyson import Eval, PYSONEncoder
 from trytond.tools import cursor_dict, file_open, grouped_slice
@@ -84,31 +83,6 @@ class Translation(ModelSQL, ModelView):
         super().__setup__()
         table = cls.__table__()
 
-        cls._sql_constraints = [
-            ('name_lang_type_norecord_unique',
-                Exclude(
-                    table,
-                    (table.name, Equal),
-                    (table.lang, Equal),
-                    (table.type, Equal),
-                    where=((table.res_id == Null)
-                        & (table.type.in_([
-                                    'field', 'help', 'model', 'wizard_button',
-                                    ])))),
-                'ir.msg_name_lang_type_norecord_unique'),
-            ('name_lang_type_src_norecord_unique',
-                Exclude(
-                    table,
-                    (table.name, Equal),
-                    (table.lang, Equal),
-                    (table.type, Equal),
-                    (table.src, Equal),
-                    where=((table.res_id == Null)
-                        & (table.type.in_([
-                                    'report', 'view', 'selection',
-                                    ])))),
-                'ir.msg_name_lang_type_src_norecord_unique'),
-            ]
         cls._sql_indexes.update({
                 Index(
                     table, (Index.Unaccent(table.src), Index.Similarity())),
@@ -147,7 +121,6 @@ class Translation(ModelSQL, ModelView):
             table.drop_column('src_md5')
 
         # Migration from 7.2
-        table.not_null_action('res_id', 'remove')
         cursor.execute(*ir_translation.update(
                 [ir_translation.res_id], [Null],
                 where=(ir_translation.res_id == -1)))
@@ -984,7 +957,7 @@ class Translation(ModelSQL, ModelView):
                 'name': translation.name,
                 }
             res_id = translation.res_id
-            if res_id >= 0:
+            if res_id:
                 model, _ = translation.name.split(',')
                 if model in db_id2fs_id:
                     res_id = db_id2fs_id[model].get(res_id)
@@ -1331,7 +1304,7 @@ class TranslationClean(Wizard):
             Model = pool.get(model_name)
         except KeyError:
             return True
-        if translation.res_id >= 0:
+        if translation.res_id:
             if field_name not in Model._fields:
                 return True
             field = Model._fields[field_name]
@@ -1443,7 +1416,7 @@ class TranslationClean(Wizard):
                     to_delete.append(translation.id)
                 else:
                     keys.add(key)
-                if translation.type == 'model' and translation.res_id >= 0:
+                if translation.type == 'model' and translation.res_id:
                     model_name, _ = translation.name.split(',', 1)
                     records[model_name][translation.res_id].add(translation.id)
 
