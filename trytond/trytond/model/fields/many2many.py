@@ -158,7 +158,7 @@ class Many2Many(Field):
                 references = ['%s,%s' % (model.__name__, x) for x in sub_ids]
                 clause = [(self.origin, 'in', references)]
             else:
-                clause = [(f'{self.origin}.id', 'in', list(sub_ids))]
+                clause = [(f'{self.origin}', 'in', list(sub_ids))]
             clause += [(f'{self.target}', '!=', None)]
             if self.filter:
                 clause.append((self.target, 'where', self.filter))
