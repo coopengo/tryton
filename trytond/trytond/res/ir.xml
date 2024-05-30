@@ -242,7 +242,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.rule" id="rule_menu1">
             <field name="domain"
-                eval="[('groups', 'in', Eval('groups', []))]"
+                eval="[('groups.id', 'in', Eval('groups', []))]"
                 pyson="1"/>
             <field name="rule_group" ref="rule_group_menu"/>
         </record>
@@ -257,7 +257,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.rule" id="rule_action1">
             <field name="domain"
-                eval="[('groups', 'in', Eval('groups', []))]"
+                eval="[('groups.id', 'in', Eval('groups', []))]"
                 pyson="1"/>
             <field name="rule_group" ref="rule_group_action"/>
         </record>
@@ -348,7 +348,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.rule" id="rule_sequence">
             <field name="domain"
-                eval="[('sequence_type.groups', 'in', Eval('groups', []))]"
+                eval="[('sequence_type.groups.id', 'in', Eval('groups', []))]"
                 pyson="1"/>
             <field name="rule_group" ref="rule_group_sequence"/>
         </record>
@@ -361,7 +361,7 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.rule" id="rule_sequence_strict">
             <field name="domain"
-                eval="[('sequence_type.groups', 'in', Eval('groups', []))]"
+                eval="[('sequence_type.groups.id', 'in', Eval('groups', []))]"
                 pyson="1"/>
             <field name="rule_group" ref="rule_group_sequence_strict"/>
         </record>

@@ -91,7 +91,7 @@ class InvoiceSequence(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
             ])
     period = fields.Many2One('account.period', 'Period',
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear')),
+            ('fiscalyear', '=', Eval('fiscalyear', -1)),
             ('type', '=', 'standard'),
             ])
     in_invoice_sequence = fields.Many2One('ir.sequence.strict',
@@ -99,28 +99,28 @@ class InvoiceSequence(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
         domain=[
             ('sequence_type', '=',
                 Id('account_invoice', 'sequence_type_account_invoice')),
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     in_credit_note_sequence = fields.Many2One('ir.sequence.strict',
         'Supplier Credit Note Sequence', required=True,
         domain=[
             ('sequence_type', '=',
                 Id('account_invoice', 'sequence_type_account_invoice')),
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     out_invoice_sequence = fields.Many2One('ir.sequence.strict',
         'Customer Invoice Sequence', required=True,
         domain=[
             ('sequence_type', '=',
                 Id('account_invoice', 'sequence_type_account_invoice')),
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     out_credit_note_sequence = fields.Many2One('ir.sequence.strict',
         'Customer Credit Note Sequence', required=True,
         domain=[
             ('sequence_type', '=',
                 Id('account_invoice', 'sequence_type_account_invoice')),
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
 
     @classmethod
@@ -149,7 +149,7 @@ class MoveLine(metaclass=PoolMeta):
             domain=[
                 ('account', '=', Eval('account', -1)),
                 If(Bool(Eval('party')),
-                    ('party', '=', Eval('party')),
+                    ('party', '=', Eval('party', -1)),
                     (),
                     ),
                 ],
@@ -212,7 +212,11 @@ class MoveLine(metaclass=PoolMeta):
 
     @classmethod
     def search_invoice_payment(cls, name, domain):
-        return [('invoice_payments',) + tuple(domain[1:])]
+        if isinstance(domain[2], int):
+            searched_field = 'id'
+        else:
+            searched_field = 'rec_name'
+        return [(f'invoice_payments.{searched_field}',) + tuple(domain[1:])]
 
     @property
     def product(self):
@@ -240,10 +244,12 @@ def _invoices_to_process(reconciliations):
     invoices = set()
     for sub_ids in grouped_slice(move_ids):
         sub_ids = list(sub_ids)
-        invoices.update(Invoice.search(['OR',
-                    ('move', 'in', sub_ids),
-                    ('additional_moves', 'in', sub_ids),
-                    ]))
+        invoices.update(Invoice.search(
+                ['OR',
+                    ('move.id', 'in', sub_ids),
+                    ('additional_moves.id', 'in', sub_ids),
+                    ],
+                order=[]))
     if others:
         invoices.update(_invoices_to_process(Reconciliation.browse(others)))
 
@@ -356,10 +362,12 @@ class RescheduleLines(metaclass=PoolMeta):
         move, balance_line = super().reschedule_lines(lines, journal, terms)
 
         move_ids = list({l.move.id for l in lines})
-        invoices = Invoice.search(['OR',
-                ('move', 'in', move_ids),
-                ('additional_moves', 'in', move_ids),
-                ])
+        invoices = Invoice.search(
+            ['OR',
+                ('move.id', 'in', move_ids),
+                ('additional_moves.id', 'in', move_ids),
+                ],
+            order=[])
         Invoice.write(invoices, {
                 'additional_moves': [('add', [move.id])],
                 })
@@ -377,10 +385,12 @@ class DelegateLines(metaclass=PoolMeta):
         move = super().delegate_lines(lines, party, journal, date=None)
 
         move_ids = list({l.move.id for l in lines})
-        invoices = Invoice.search(['OR',
-                ('move', 'in', move_ids),
-                ('additional_moves', 'in', move_ids),
-                ])
+        invoices = Invoice.search(
+            ['OR',
+                ('move.id', 'in', move_ids),
+                ('additional_moves.id', 'in', move_ids),
+                ],
+            order=[])
         Invoice.write(invoices, {
                 'alternative_payees': [('add', [party.id])],
                 'additional_moves': [('add', [move.id])],

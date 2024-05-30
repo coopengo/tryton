@@ -15,7 +15,7 @@ class Action(sequence_ordered(), ModelSQL, ModelView):
                 ('usage', '=', 'dashboard'),
                 # XXX copy ir.action rule to prevent access rule error
                 ['OR',
-                    ('groups', 'in', Eval('context', {}).get('groups', [])),
+                    ('groups.id', 'in', Eval('context', {}).get('groups', [])),
                     ('groups', '=', None),
                 ],
             ])

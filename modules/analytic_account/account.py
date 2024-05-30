@@ -52,7 +52,7 @@ class Account(
     parent = fields.Many2One(
         'analytic_account.account', "Parent",
         domain=['OR',
-            ('root', '=', Eval('root', -1)),
+            ('root.id', '=', Eval('root', -1)),
             ('parent', '=', None),
             ],
         states={

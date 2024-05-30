@@ -59,9 +59,9 @@ class Complaint(Workflow, ModelSQL, ModelView):
         domain={
             'sale.sale': [
                 If(Eval('customer'),
-                    ('party', '=', Eval('customer')),
+                    ('party', '=', Eval('customer', -1)),
                     ()),
-                ('company', '=', Eval('company')),
+                ('company', '=', Eval('company', -1)),
                 ('state', 'in', ['confirmed', 'processing', 'done']),
                 ],
             'sale.line': [
@@ -74,9 +74,9 @@ class Complaint(Workflow, ModelSQL, ModelView):
                 ],
             'account.invoice': [
                 If(Eval('customer'),
-                    ('party', '=', Eval('customer')),
+                    ('party', '=', Eval('customer', -1)),
                     ()),
-                ('company', '=', Eval('company')),
+                ('company', '=', Eval('company', -1)),
                 ('type', '=', 'out'),
                 ('state', 'in', ['posted', 'paid']),
                 ],

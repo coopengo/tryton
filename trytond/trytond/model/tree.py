@@ -69,7 +69,7 @@ def tree(parent='parent', name='name', separator=None):
                         else:
                             operator = '='
                         top_parent = '.'.join((parent,) * len(values))
-                        domain.append((top_parent, operator, None))
+                        domain.append((f'{top_parent}.id', operator, None))
                     if (clause[1].endswith('like')
                             and clause[2].replace('%%', '__').endswith('%')):
                         ids = list(map(int, cls.search(domain, order=[])))

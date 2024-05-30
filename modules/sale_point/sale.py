@@ -981,7 +981,7 @@ class POSPayment(ModelSQL, ModelView):
     method = fields.Many2One(
         'sale.point.payment.method', "Method", required=True,
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             If(Eval('amount', 0) < 0,
                 ('cash', '=', True),
                 ()),
@@ -1110,7 +1110,7 @@ class POSPaymentMethod(DeactivableMixin, ModelSQL, ModelView):
         domain=[
             ('type', '!=', None),
             ('closed', '!=', True),
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     cash = fields.Boolean("Cash")
 

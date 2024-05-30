@@ -72,7 +72,7 @@ class StatementRule(sequence_ordered(), ModelSQL, ModelView):
         'account.statement.journal', "Journal",
         domain=[
             If(Eval('company'),
-                ('company', '=', Eval('company')),
+                ('company', '=', Eval('company', -1)),
                 ()),
             ])
     amount_low = Monetary(
@@ -292,7 +292,7 @@ class StatementRuleLine(sequence_ordered(), ModelSQL, ModelView):
     account = fields.Many2One(
         'account.account', "Account",
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ('type', '!=', None),
             ],
         states={
@@ -447,7 +447,7 @@ class StatementRuleLine(sequence_ordered(), ModelSQL, ModelView):
             if party:
                 domain.append(['OR',
                         ('party', '=', party.id),
-                        ('alternative_payees', '=', party.id),
+                        ('alternative_payees.id', '=', party.id),
                         ])
             invoices = Invoice.search(domain)
             if len(invoices) == 1:
