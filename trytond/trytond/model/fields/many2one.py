@@ -197,8 +197,7 @@ class Many2One(Field):
         return expression
 
     @inactive_records
-    @domain_method
-    def convert_domain(self, domain, tables, Model):
+    def _convert_domain(self, domain, tables, Model):
         pool = Pool()
         Rule = pool.get('ir.rule')
         Target = self.get_target()
@@ -257,7 +256,7 @@ class Many2One(Field):
                 return expression
 
             if not isinstance(value, str):
-                return super(Many2One, self).convert_domain(domain, tables,
+                return super(Many2One, self)._convert_domain(domain, tables,
                     Model)
             else:
                 target_name = 'rec_name'
@@ -273,7 +272,7 @@ class Many2One(Field):
                 target_domain = [target_domain, rule_domain]
             elif target_name == 'id':
                 # No need to join with the target table
-                return super().convert_domain(
+                return super()._convert_domain(
                     (self.name, operator, value), tables, Model)
             target_tables = self._get_target_tables(tables)
             target_table, _ = target_tables[None]
