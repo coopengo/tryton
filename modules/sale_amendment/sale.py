@@ -258,9 +258,10 @@ class AmendmentLine(ModelSQL, ModelView):
     shipment_address = fields.Many2One(
         'party.address', "Shipment Address",
         domain=['OR',
-            ('party', '=', If(Eval('shipment_party'),
-                    Eval('shipment_party'), Eval('party'))),
-            ('warehouses', '=', Eval('warehouse')),
+            ('party.id', '=',
+                If(Eval('shipment_party'),
+                    Eval('shipment_party'), Eval('party', -1))),
+            ('warehouses.id', '=', Eval('warehouse', -1)),
             ],
         states={
             'readonly': Eval('state') != 'draft',

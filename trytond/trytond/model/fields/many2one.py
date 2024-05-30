@@ -1,5 +1,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import warnings
+
 from sql import As, Column, Expression, Literal, Query, With
 from sql.aggregate import Max
 from sql.conditionals import Coalesce
@@ -259,6 +261,8 @@ class Many2One(Field):
                 return super(Many2One, self)._convert_domain(domain, tables,
                     Model)
             else:
+                warnings.warn(
+                    f"Using an incomplete relation model domain: {domain}")
                 target_name = 'rec_name'
         else:
             _, target_name = name.split('.', 1)

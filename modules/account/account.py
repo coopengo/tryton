@@ -877,7 +877,7 @@ class Account(
             'readonly': _states['readonly'],
             },
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     debit_type = fields.Many2One(
         'account.account.type', "Debit Type", ondelete='RESTRICT',
@@ -888,7 +888,7 @@ class Account(
                 | (_states['readonly']) & ~Eval('debit_type')),
             },
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ],
         help="The type used if not empty and debit > credit.")
     credit_type = fields.Many2One(
@@ -900,7 +900,7 @@ class Account(
                 | (_states['readonly']) & ~Eval('credit_type')),
             },
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ],
         help="The type used if not empty and debit < credit.")
     parent = fields.Many2One(
@@ -949,7 +949,7 @@ class Account(
     taxes = fields.Many2Many('account.account-account.tax',
         'account', 'tax', 'Default Taxes',
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ('parent', '=', None),
             ],
         help="Default tax for manual encoding of move lines\n"
@@ -2132,12 +2132,12 @@ class GeneralLedgerAccountContext(ModelView):
     fiscalyear = fields.Many2One('account.fiscalyear', 'Fiscal Year',
         required=True,
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ],
         depends=['company'])
     start_period = fields.Many2One('account.period', 'Start Period',
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear')),
+            ('fiscalyear', '=', Eval('fiscalyear', -1)),
             ('start_date', '<=', (Eval('end_period'), 'start_date')),
             ],
         states={
@@ -2145,7 +2145,7 @@ class GeneralLedgerAccountContext(ModelView):
             })
     end_period = fields.Many2One('account.period', 'End Period',
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear')),
+            ('fiscalyear', '=', Eval('fiscalyear', -1)),
             ('start_date', '>=', (Eval('start_period'), 'start_date'))
             ],
         states={
@@ -2635,11 +2635,11 @@ class IncomeStatementContext(ModelView):
     fiscalyear = fields.Many2One('account.fiscalyear', 'Fiscal Year',
         required=True,
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     start_period = fields.Many2One('account.period', 'Start Period',
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear')),
+            ('fiscalyear', '=', Eval('fiscalyear', -1)),
             ('start_date', '<=', (Eval('end_period'), 'start_date'))
             ],
         states={
@@ -2647,7 +2647,7 @@ class IncomeStatementContext(ModelView):
             })
     end_period = fields.Many2One('account.period', 'End Period',
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear')),
+            ('fiscalyear', '=', Eval('fiscalyear', -1)),
             ('start_date', '>=', (Eval('start_period'), 'start_date')),
             ],
         states={
@@ -2682,11 +2682,11 @@ class IncomeStatementContext(ModelView):
             'invisible': ~Eval('comparison', False),
             },
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     start_period_cmp = fields.Many2One('account.period', 'Start Period',
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear_cmp')),
+            ('fiscalyear', '=', Eval('fiscalyear_cmp', -1)),
             ('start_date', '<=', (Eval('end_period_cmp'), 'start_date'))
             ],
         states={
@@ -2694,7 +2694,7 @@ class IncomeStatementContext(ModelView):
             })
     end_period_cmp = fields.Many2One('account.period', 'End Period',
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear_cmp')),
+            ('fiscalyear', '=', Eval('fiscalyear_cmp', -1)),
             ('start_date', '>=', (Eval('start_period_cmp'), 'start_date')),
             ],
         states={
@@ -3069,7 +3069,7 @@ class CreateChartProperties(ModelView):
                 ('closed', '!=', True),
                 ('type.receivable', '=', True),
                 ('party_required', '=', True),
-                ('company', '=', Eval('company')),
+                ('company', '=', Eval('company', -1)),
                 ])
     account_payable = fields.Many2One('account.account',
             'Default Payable Account',
@@ -3077,7 +3077,7 @@ class CreateChartProperties(ModelView):
                 ('closed', '!=', True),
                 ('type.payable', '=', True),
                 ('party_required', '=', True),
-                ('company', '=', Eval('company')),
+                ('company', '=', Eval('company', -1)),
                 ])
 
 

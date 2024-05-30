@@ -126,7 +126,7 @@ class ShipmentDrop(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('state') != 'draft',
             },
-        domain=[('party', '=', Eval('supplier'))])
+        domain=[('party', '=', Eval('supplier', -1))])
     customer = fields.Many2One('party.party', 'Customer', required=True,
         states={
             'readonly': (((Eval('state') != 'draft')
@@ -142,10 +142,10 @@ class ShipmentDrop(Workflow, ModelSQL, ModelView):
         states={
             'readonly': Eval('state') != 'draft',
             },
-        domain=[('party', '=', Eval('customer'))])
+        domain=[('party', '=', Eval('customer', -1))])
     moves = fields.One2Many('stock.move', 'shipment', 'Moves',
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ['OR',
                 [
                     ('from_location.type', '=', 'supplier'),
