@@ -53,7 +53,7 @@ class Account(
         'analytic_account.account', "Parent",
         domain=['OR',
             ('root.id', '=', Eval('root', -1)),
-            ('parent.id', '=', None),
+            ('parent', '=', None),
             ],
         states={
             'invisible': Eval('type') == 'root',
