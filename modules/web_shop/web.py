@@ -320,12 +320,12 @@ class User(metaclass=PoolMeta):
     invoice_address = fields.Many2One(
         'party.address', "Invoice Address",
         domain=['OR',
-            ('party', '=', Eval('party', -1)),
-            ('party', 'in', Eval('secondary_parties', [])),
+            ('party.id', '=', Eval('party', -1)),
+            ('party.id', 'in', Eval('secondary_parties', [])),
             ])
     shipment_address = fields.Many2One(
         'party.address', "Shipment Address",
         domain=['OR',
-            ('party', '=', Eval('party', -1)),
-            ('party', 'in', Eval('secondary_parties', [])),
+            ('party.id', '=', Eval('party', -1)),
+            ('party.id', 'in', Eval('secondary_parties', [])),
             ])

@@ -150,8 +150,8 @@ class Sale(
         depends={'company'})
     shipment_address = fields.Many2One('party.address', 'Shipment Address',
         domain=['OR',
-            ('party', '=', If(Bool(Eval('shipment_party')),
-                    Eval('shipment_party'), Eval('party'))),
+            ('party.id', '=', If(Bool(Eval('shipment_party')),
+                    Eval('shipment_party'), Eval('party', -1))),
             ('warehouses', 'where', [
                     ('id', '=', Eval('warehouse', -1)),
                     If(Eval('state').in_(['draft', 'quotation']),

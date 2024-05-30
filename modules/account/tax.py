@@ -379,7 +379,7 @@ class TaxCodeLine(ModelSQL, ModelView):
     tax = fields.Many2One(
         'account.tax', "Tax", required=True, states=_states,
         domain=[
-            ('company', '=', Eval('_parent_code', {}).get('company')),
+            ('company', '=', Eval('_parent_code', {}).get('company', -1)),
             ],
         depends={'code'})
     amount = fields.Selection([
@@ -819,7 +819,7 @@ class Tax(sequence_ordered(), ModelSQL, ModelView, DeactivableMixin):
     credit_note_account = fields.Many2One('account.account',
         'Credit Note Account',
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ('type.statement', '=', 'balance'),
             ('closed', '!=', True),
             ],
@@ -1580,7 +1580,7 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
         domain=[
             ('parent', '=', None),
             ('account', '=', Eval('_parent_rule', {}).get('account', 0)),
-            ('group', '=', Eval('group')),
+            ('group', '=', Eval('group', -1)),
             ['OR',
                 ('group', '=', None),
                 If(Eval('_parent_rule', {}).get('kind', 'both') == 'sale',
@@ -1601,7 +1601,7 @@ class TaxRuleLineTemplate(sequence_ordered(), ModelSQL, ModelView):
         domain=[
             ('parent', '=', None),
             ('account', '=', Eval('_parent_rule', {}).get('account', 0)),
-            ('group', '=', Eval('group')),
+            ('group', '=', Eval('group', -1)),
             ['OR',
                 ('group', '=', None),
                 If(Eval('_parent_rule', {}).get('kind', 'both') == 'sale',
@@ -1701,7 +1701,7 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
     origin_tax = fields.Many2One('account.tax', 'Original Tax',
         domain=[
             ('parent', '=', None),
-            ('company', '=', Eval('_parent_rule', {}).get('company')),
+            ('company', '=', Eval('_parent_rule', {}).get('company', -1)),
             ('group', '=', Eval('group')),
             ['OR',
                 ('group', '=', None),
@@ -1722,7 +1722,7 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
     tax = fields.Many2One('account.tax', 'Substitution Tax',
         domain=[
             ('parent', '=', None),
-            ('company', '=', Eval('_parent_rule', {}).get('company')),
+            ('company', '=', Eval('_parent_rule', {}).get('company', -1)),
             ('group', '=', Eval('group')),
             ['OR',
                 ('group', '=', None),

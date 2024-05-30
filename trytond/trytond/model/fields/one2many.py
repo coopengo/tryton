@@ -1,5 +1,6 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import warnings
 from collections import defaultdict
 from itertools import chain
 
@@ -143,6 +144,7 @@ class One2Many(Field):
         '''
         Target = self.get_target()
         field = Target._fields[self.field]
+        reference_key = field._type == 'reference'
         res = {}
         for i in ids:
             res[i] = []
@@ -158,19 +160,26 @@ class One2Many(Field):
             order += Target._order
         targets = []
         for sub_ids in grouped_slice(ids):
-            if field._type == 'reference':
+            if reference_key:
                 references = ['%s,%s' % (model.__name__, x) for x in sub_ids]
                 clause = [(self.field, 'in', references)]
             else:
                 clause = [(self.field, 'in', list(sub_ids))]
             if self.filter:
                 clause.append(self.filter)
-            targets.append(Target.search(clause, order=order))
-        targets = Target.browse(list(chain(*targets)))
+            targets.append([r.id for r in Target.search(clause, order=order)])
+        to_read = list(chain(*targets))
+        targets = {t['id']: t
+            for t in Target.read(to_read, ['id', self.field])}
+        targets = [targets[i] for i in to_read]
 
         for target in targets:
-            origin_id = getattr(target, self.field).id
-            res[origin_id].append(target.id)
+            if reference_key:
+                _, origin_id = target[self.field].split(',', 1)
+                origin_id = int(origin_id)
+            else:
+                origin_id = target[self.field]
+            res[origin_id].append(target['id'])
         return dict((key, tuple(value)) for key, value in res.items())
 
     def set(self, Model, name, ids, values, *args):
@@ -195,7 +204,7 @@ class One2Many(Field):
                 references = ['%s,%s' % (Model.__name__, x) for x in ids]
                 return (self.field, 'in', references)
             else:
-                return (self.field, 'in', ids)
+                return (f'{self.field}.id', 'in', ids)
 
         def field_value(record_id):
             if field._type == 'reference':
@@ -375,6 +384,9 @@ class One2Many(Field):
                     expression = ~expression
                 return expression
             else:
+                if not operator.endswith('where'):
+                    warnings.warn(
+                        f"Using an incomplete relation model domain: {domain}")
                 if isinstance(value, str):
                     target_name = 'rec_name'
                 else:

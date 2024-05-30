@@ -31,7 +31,7 @@ class _ModelAccessTestCase(unittest.TestCase):
     def group(self):
         pool = Pool()
         Group = pool.get('res.group')
-        group, = Group.search([('users', '=', Transaction().user)])
+        group, = Group.search([('users.id', '=', Transaction().user)])
         return group
 
     def _assert(self, record):
@@ -447,7 +447,7 @@ class _ModelFieldAccessTestCase(unittest.TestCase):
     def group(self):
         pool = Pool()
         Group = pool.get('res.group')
-        group, = Group.search([('users', '=', Transaction().user)])
+        group, = Group.search([('users.id', '=', Transaction().user)])
         return group
 
     def _assert1(self, record):
