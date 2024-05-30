@@ -685,10 +685,9 @@ class FieldTranslate(Field):
             language = get_parent_language(language)
         return table, join, column
 
-    @domain_method
-    def convert_domain(self, domain, tables, Model):
+    def _convert_domain(self, domain, tables, Model):
         if not self.translate:
-            return super(FieldTranslate, self).convert_domain(
+            return super(FieldTranslate, self)._convert_domain(
                 domain, tables, Model)
         table, _ = tables[None]
         name, operator, value = domain
