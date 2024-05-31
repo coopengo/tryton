@@ -244,6 +244,18 @@ class MemoryCacheChannelTestCase(MemoryCacheTestCase):
 class LRUDictTestCase(unittest.TestCase):
     "Test LRUDict"
 
+    def test_getitem(self):
+        lru_dict = LRUDict(3)
+
+        lru_dict['foo'] = 1
+        lru_dict['bar'] = 2
+        lru_dict['baz'] = 3
+        lru_dict['foo']
+        lru_dict['qux'] = 4
+
+        with self.assertRaises(KeyError):
+            lru_dict['bar']
+
     def test_setitem(self):
         lru_dict = LRUDict(1)
 

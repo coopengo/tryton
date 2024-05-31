@@ -187,11 +187,11 @@ class MemoryCache(BaseCache):
         key = self._key(key)
         cache = self._get_cache()
         try:
-            (expire, result) = cache.pop(key)
+            expire, result = cache[key]
             if expire and expire < dt.datetime.now():
+                cache.pop(key)
                 self.miss += 1
                 return default
-            cache[key] = (expire, result)
             self.hit += 1
             return result
         except KeyError:
@@ -484,6 +484,13 @@ class LRUDict(OrderedDict):
         self.default_factory = default_factory
         self.default_factory_with_key = default_factory_with_key
         self._check_size_limit()
+
+    def __getitem__(self, key):
+        try:
+            self.move_to_end(key)
+        except KeyError:
+            pass
+        return super().__getitem__(key)
 
     def __setitem__(self, key, value):
         super(LRUDict, self).__setitem__(key, value)
