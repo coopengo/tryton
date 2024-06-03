@@ -88,6 +88,18 @@ class _AttributeManager(object):
             setattr(Transaction(), name, value)
 
 
+class _NoopManager(object):
+
+    def __init__(self, transaction):
+        self.transaction = transaction
+
+    def __enter__(self):
+        return self.transaction
+
+    def __exit__(self, type, value, traceback):
+        return
+
+
 class _Local(local):
 
     def __init__(self):
@@ -279,12 +291,16 @@ class Transaction(object):
     def set_context(self, context=None, **kwargs):
         if context is None:
             context = {}
-        manager = _AttributeManager(context=self.context)
+        old_context = self.context
         ctx = self.context.copy()
         ctx.update(context)
         if kwargs:
             ctx.update(kwargs)
         self.context = ImmutableDict(ctx)
+        if old_context == self.context:
+            manager = _NoopManager(self)
+        else:
+            manager = _AttributeManager(context=old_context)
         return manager
 
     def reset_context(self):
