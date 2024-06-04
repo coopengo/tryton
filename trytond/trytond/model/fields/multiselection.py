@@ -18,7 +18,7 @@ dumps = partial(json.dumps, separators=(',', ':'), sort_keys=True)
 class MultiSelection(SelectionMixin, Field):
     "Define a multi-selection field."
     _type = 'multiselection'
-    _sql_type = 'VARCHAR'
+    _sql_type = 'JSON'
     _py_type = tuple
 
     def __init__(self, selection, string='', sort=True, translate=True,
@@ -83,11 +83,10 @@ class MultiSelection(SelectionMixin, Field):
             domain_value = database.json_get(domain_value)
         return domain_value
 
-    @domain_method
-    def convert_domain(self, domain, tables, Model):
+    def _convert_domain(self, domain, tables, Model):
         name, operator, value = domain[:3]
         if operator not in {'in', 'not in'}:
-            return super().convert_domain(domain, tables, Model)
+            return super()._convert_domain(domain, tables, Model)
         database = Transaction().database
         table, _ = tables[None]
         raw_column = self.sql_column(table)

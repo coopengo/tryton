@@ -329,6 +329,7 @@ class TableHandler(TableHandlerInterface):
             if base_type != typname:
                 if (typname, base_type) in [
                         ('varchar', 'text'),
+                        ('varchar', 'jsonb'),
                         ('text', 'varchar'),
                         ('text', 'jsonb'),
                         ('date', 'timestamp'),

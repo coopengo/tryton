@@ -1,5 +1,6 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import warnings
 from collections import defaultdict
 from itertools import chain
 
@@ -158,13 +159,16 @@ class Many2Many(Field):
                 references = ['%s,%s' % (model.__name__, x) for x in sub_ids]
                 clause = [(self.origin, 'in', references)]
             else:
-                clause = [(self.origin, 'in', list(sub_ids))]
-            clause += [(self.target, '!=', None)]
+                clause = [(f'{self.origin}', 'in', list(sub_ids))]
+            clause += [(f'{self.target}', '!=', None)]
             if self.filter:
                 clause.append((self.target, 'where', self.filter))
-            relations.append(Relation.search(clause, order=order))
-        relations = Relation.read(
-            list(chain(*relations)), [self.origin, self.target])
+            relations.append(
+                [r.id for r in Relation.search(clause, order=order)])
+        to_read = list(chain(*relations))
+        relations = {t['id']: t
+            for t in Relation.read(to_read, [self.origin, self.target])}
+        relations = [relations[i] for i in to_read]
 
         for relation in relations:
             if reference_key:
@@ -200,7 +204,7 @@ class Many2Many(Field):
                 references = ['%s,%s' % (Model.__name__, x) for x in ids]
                 return (self.origin, 'in', references)
             else:
-                return (self.origin, 'in', ids)
+                return (f'{self.origin}.id', 'in', ids)
 
         def field_value(record_id):
             if origin_field._type == 'reference':
@@ -232,7 +236,7 @@ class Many2Many(Field):
             for sub_ids in grouped_slice(target_ids):
                 relations = Relation.search([
                         search_clause(ids),
-                        (self.target, 'in', list(sub_ids)),
+                        (f'{self.target}.id', 'in', list(sub_ids)),
                         ])
                 for relation in relations:
                     existing_ids.add((
@@ -254,7 +258,7 @@ class Many2Many(Field):
             for sub_ids in grouped_slice(target_ids):
                 relation_to_delete.extend(Relation.search([
                             search_clause(ids),
-                            (self.target, 'in', list(sub_ids)),
+                            (f'{self.target}.id', 'in', list(sub_ids)),
                             ]))
 
         def copy(ids, copy_ids, default=None):
@@ -334,8 +338,8 @@ class Many2Many(Field):
             if not ids:
                 return set()
             children = Target.search([
-                    (name, 'in', ids),
-                    (name, '!=', None),
+                    (f'{name}.id', 'in', ids),
+                    (f'{name}', '!=', None),
                     ], order=[])
             child_ids = get_child(set(c.id for c in children))
             return ids | child_ids
@@ -360,8 +364,7 @@ class Many2Many(Field):
             return ~expression
         return expression
 
-    @domain_method
-    def convert_domain(self, domain, tables, Model):
+    def _convert_domain(self, domain, tables, Model):
         from ..modelsql import convert_from
         pool = Pool()
         Rule = pool.get('ir.rule')
@@ -450,6 +453,9 @@ class Many2Many(Field):
                     return ~expression
                 return expression
             else:
+                if not operator.endswith('where'):
+                    warnings.warn(
+                        f"Using an incomplete relation model domain: {domain}")
                 if isinstance(value, str):
                     target_name = 'rec_name'
                 else:

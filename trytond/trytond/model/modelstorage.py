@@ -1755,13 +1755,15 @@ class ModelStorage(Model):
         ids = islice(unique(filter(filter_, ids)), read_size)
 
         kwargs_cache = {}
+        pysoned_ctx = {}
         transaction = Transaction()
 
         def create_instances(Model, value, cache_key=None):
+            if value and isinstance(value, list) and not isinstance(value[0], int):
+                # breakpoint()
+                pass
             cache_key = (Model, cache_key)
-            if cache_key in kwargs_cache:
-                kwargs = kwargs_cache[cache_key]
-            else:
+            if not (kwargs := kwargs_cache.get(cache_key)):
                 if cache_key not in model2cache:
                     model2cache[cache_key] = local_cache(Model, transaction)
                 kwargs_cache[cache_key] = kwargs = {
@@ -1771,10 +1773,10 @@ class ModelStorage(Model):
                     '_transaction': transaction,
                     }
             ids = kwargs['_ids']
-            if field._type in ('many2one', 'one2one', 'reference'):
+            if field._type in {'many2one', 'one2one', 'reference'}:
                 ids.append(value)
                 return Model(value, **kwargs)
-            elif field._type in ('one2many', 'many2many'):
+            elif field._type in {'one2many', 'many2many'}:
                 ids.extend(value)
                 return tuple(Model(id, **kwargs) for id in value)
 
@@ -1802,15 +1804,16 @@ class ModelStorage(Model):
                     Model = field.get_target()
             except KeyError:
                 return value
-            transaction = Transaction()
-            if ((dt_field := getattr(field, 'datetime_field', None))
+            if ((datetime_field := getattr(field, 'datetime_field', None))
                     or field.context):
                 ctx = {}
                 if field.context:
-                    pyson_context = PYSONEncoder().encode(field.context)
+                    if not (pyson_context := pysoned_ctx.get(field)):
+                        pyson_context = PYSONEncoder().encode(field.context)
+                        pysoned_ctx[field] = pyson_context
                     ctx.update(PYSONDecoder(data).decode(pyson_context))
-                if dt_field:
-                    ctx['_datetime'] = data.get(dt_field)
+                if datetime_field:
+                    ctx['_datetime'] = data.get(datetime_field)
                 with transaction.set_context(**ctx):
                     return create_instances(Model, value, freeze(ctx))
             else:

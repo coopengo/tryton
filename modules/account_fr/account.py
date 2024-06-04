@@ -379,7 +379,7 @@ class FrFECStart(ModelView):
     deferral_period = fields.Many2One(
         'account.period', "Deferral Period", required=True,
         domain=[
-            ('fiscalyear', '=', Eval('fiscalyear')),
+            ('fiscalyear', '=', Eval('fiscalyear', -1)),
             ('type', '=', 'adjustment'),
             ],
         help="The period to exclude which contains "

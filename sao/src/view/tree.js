@@ -1044,7 +1044,7 @@
             var to_show = [];
             for (var i = 0; i < this.columns.length; i++) {
                 var column = this.columns[i];
-                if (column.visible && column.header.css('display') == 'none') {
+                if (!column.get_visible() && column.header.css('display') == 'none') {
                     to_hide.push(i);
                 } else {
                     to_show.push(i);
@@ -2698,17 +2698,12 @@
             this.suffixes = [];
             this.header = null;
             this.footers = [];
-            this._visible_header = true;
         },
         get field_name() {
             return this.attributes.name;
         },
         get model_name() {
             return model.name;
-        },
-        get visible() {
-            // 480px is bootstrap's screen-xs-max
-            return (window.visualViewport.width > 480) && this._visible_header;
         },
         get_cell: function() {
             var cell = jQuery('<div/>', {
@@ -2730,10 +2725,8 @@
                 this.field.set_state(record);
                 var state_attrs = this.field.get_state_attrs(record);
                 if (state_attrs.invisible) {
-                    this._visible_header = false;
                     cell.hide();
                 } else {
-                    this._visible_header = true;
                     cell.show();
                 }
             };
@@ -2761,18 +2754,18 @@
             for (const cell of cells) {
                 if (visible) {
                     cell.show();
-                    this._visible_header = true;
                     cell.removeClass('invisible');
                 } else {
                     cell.hide();
-                    this._visible_header = false;
                     cell.addClass('invisible');
                 }
             }
         },
         get_visible: function() {
-            return !this.header.hasClass('invisible');
-        },
+            // 480px is bootstrap's screen-xs-max
+            return ((window.visualViewport.width > 480) &&
+                !this.header.hasClass('invisible'));
+        }
     });
 
     Sao.View.Tree.TextColum = Sao.class_(Sao.View.Tree.CharColumn, {
@@ -3275,7 +3268,8 @@
             }
         },
         get_visible: function() {
-            return !this.header.hasClass('invisible');
+            return ((window.visualViewport.width > 480) &&
+                !this.header.hasClass('invisible'));
         },
         button_clicked: function(event) {
             var record = event.data[0];

@@ -103,7 +103,7 @@ class Erase(metaclass=PoolMeta):
         invoices = Invoice.search([
                 ['OR',
                     ('party', '=', party.id),
-                    ('alternative_payees', '=', party.id),
+                    ('alternative_payees.id', '=', party.id),
                     ],
                 ('company', '=', company.id),
                 ('state', 'not in', ['paid', 'cancelled']),
