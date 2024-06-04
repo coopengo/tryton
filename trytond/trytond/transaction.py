@@ -84,8 +84,9 @@ class _AttributeManager(object):
         return Transaction()
 
     def __exit__(self, type, value, traceback):
+        t = Transaction()
         for name, value in self.kwargs.items():
-            setattr(Transaction(), name, value)
+            setattr(t, name, value)
 
 
 class _NoopManager(object):
@@ -291,16 +292,15 @@ class Transaction(object):
     def set_context(self, context=None, **kwargs):
         if context is None:
             context = {}
-        old_context = self.context
-        ctx = self.context.copy()
-        ctx.update(context)
-        if kwargs:
-            ctx.update(kwargs)
-        self.context = ImmutableDict(ctx)
-        if old_context == self.context:
+        if not context and not kwargs:
             manager = _NoopManager(self)
         else:
-            manager = _AttributeManager(context=old_context)
+            manager = _AttributeManager(context=self.context)
+            ctx = self.context.copy()
+            ctx.update(context)
+            if kwargs:
+                ctx.update(kwargs)
+            self.context = ImmutableDict(ctx)
         return manager
 
     def reset_context(self):
