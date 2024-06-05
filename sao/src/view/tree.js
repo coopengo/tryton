@@ -1050,15 +1050,15 @@
                     to_show.push(i);
                 }
             }
+            // Take into account the selection or optional column
+            var offset = 1;
+            if (this.draggable) {
+                offset += 1;
+            } else if (this.optionals.length) {
+                offset += 1;
+            }
+
             const make_selector = (col_idx) => {
-                // Take into account the selection or optional column
-                var offset = 1;
-                if (this.draggable) {
-                    offset += 1;
-                } else if (this.optionals.length) {
-                    offset += 1;
-                }
-                // CSS is 1-indexed
                 return `tr td:nth-child(${col_idx + offset + 1})`;
             };
 
@@ -1069,6 +1069,9 @@
             if (to_show.length) {
                 this.tbody.find(to_show.map(make_selector).join(','))
                     .removeClass('invisible').show();
+                this.thead.find(
+                        `tr th:nth-child(${to_show[to_show.length - 1] + offset + 1}) div`)
+                    .css('resize', 'none');
             }
         },
         update_sum: function() {
