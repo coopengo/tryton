@@ -232,6 +232,59 @@ class Index:
         __slots__ = ()
 
 
+def define_indexes(pool):
+    for name, cls in pool.iterobject(type='model'):
+        if name is None:
+            continue
+
+        # Define Range index to optimise with reduce_ids
+        for field in cls._fields.values():
+            field_names = set()
+            if isinstance(field, fields.One2Many):
+                Target = field.get_target()
+                if field.field:
+                    field_names.add(field.field)
+            elif isinstance(field, fields.Many2Many):
+                Target = field.get_relation()
+                if field.origin:
+                    field_names.add(field.origin)
+                if field.target:
+                    field_names.add(field.target)
+            else:
+                continue
+            field_names.discard('id')
+            for field_name in field_names:
+                target_field = getattr(Target, field_name)
+                if (issubclass(Target, ModelSQL)
+                        and not callable(Target.table_query)
+                        and not hasattr(target_field, 'set')):
+                    target = Target.__table__()
+                    column = Column(target, field_name)
+                    if not target_field.required and Target != cls:
+                        where = column != Null
+                    else:
+                        where = None
+                    if target_field._type == 'reference':
+                        Target._sql_indexes.update({
+                                Index(
+                                    target,
+                                    (column, Index.Equality()),
+                                    where=where),
+                                Index(
+                                    target,
+                                    (column, Index.Similarity(begin=True)),
+                                    (target_field.sql_id(column, Target),
+                                        Index.Range()),
+                                    where=where),
+                                })
+                    else:
+                        Target._sql_indexes.add(
+                            Index(
+                                target,
+                                (column, Index.Range()),
+                                where=where))
+
+
 def no_table_query(func):
     @wraps(func)
     def wrapper(cls, *args, **kwargs):
@@ -302,57 +355,6 @@ class ModelSQL(ModelStorage):
                             Column(history_table, '__id'),
                             history_table.id]),
                     })
-
-    @classmethod
-    def __post_setup__(cls):
-        super().__post_setup__()
-
-        # Define Range index to optimise with reduce_ids
-        for field in cls._fields.values():
-            field_names = set()
-            if isinstance(field, fields.One2Many):
-                Target = field.get_target()
-                if field.field:
-                    field_names.add(field.field)
-            elif isinstance(field, fields.Many2Many):
-                Target = field.get_relation()
-                if field.origin:
-                    field_names.add(field.origin)
-                if field.target:
-                    field_names.add(field.target)
-            else:
-                continue
-            field_names.discard('id')
-            for field_name in field_names:
-                target_field = getattr(Target, field_name)
-                if (issubclass(Target, ModelSQL)
-                        and not callable(Target.table_query)
-                        and not hasattr(target_field, 'set')):
-                    target = Target.__table__()
-                    column = Column(target, field_name)
-                    if not target_field.required and Target != cls:
-                        where = column != Null
-                    else:
-                        where = None
-                    if target_field._type == 'reference':
-                        Target._sql_indexes.update({
-                                Index(
-                                    target,
-                                    (column, Index.Equality()),
-                                    where=where),
-                                Index(
-                                    target,
-                                    (column, Index.Similarity(begin=True)),
-                                    (target_field.sql_id(column, Target),
-                                        Index.Range()),
-                                    where=where),
-                                })
-                    else:
-                        Target._sql_indexes.add(
-                            Index(
-                                target,
-                                (column, Index.Range()),
-                                where=where))
 
     @classmethod
     def __table__(cls):
