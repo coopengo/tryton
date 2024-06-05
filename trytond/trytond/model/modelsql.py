@@ -246,6 +246,7 @@ class ModelSQL(ModelStorage):
     Define a model with storage in database.
     """
     __slots__ = ()
+    _sql_indexes = None
     _table = None  # The name of the table in database
     _order = None
     _order_name = None  # Use to force order field when sorting on Many2One
@@ -264,7 +265,8 @@ class ModelSQL(ModelStorage):
         super(ModelSQL, cls).__setup__()
 
         cls._sql_constraints = []
-        cls._sql_indexes = set()
+        if cls._sql_indexes is None:
+            cls._sql_indexes = set()
         cls._history_sql_indexes = set()
         if not callable(cls.table_query):
             table = cls.__table__()
