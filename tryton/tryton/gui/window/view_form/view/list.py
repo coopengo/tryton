@@ -1082,7 +1082,7 @@ class ViewTree(View):
             model_name = self.screen.model_name
             try:
                 RPCExecute('model', 'ir.ui.view_tree_width', 'set_width',
-                    model_name, fields, 'tryton', screen_width)
+                    model_name, fields, screen_width)
             except RPCException:
                 pass
             self.screen.tree_column_width[model_name].update(fields)

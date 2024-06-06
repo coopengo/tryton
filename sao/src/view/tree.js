@@ -366,7 +366,7 @@
             var TreeWidth = new Sao.Model('ir.ui.view_tree_width');
             TreeWidth.execute(
                 'set_width',
-                [model_name, widths, 'sao', window.screen.width],
+                [model_name, widths, window.screen.width],
                 {});
             if (Object.hasOwn(
                 Sao.Screen.tree_column_width, model_name)) {

@@ -480,7 +480,7 @@ class ViewTreeWidth(ModelSQL, ModelView):
         return widths
 
     @classmethod
-    def set_width(cls, model, fields, client, width):
+    def set_width(cls, model, fields, width):
         '''
         Set width for the current user on the model.
         fields is a dictionary with key: field name and value: width.
@@ -495,26 +495,17 @@ class ViewTreeWidth(ModelSQL, ModelView):
             ('user', '=', Transaction().user),
             ('model', '=', model),
             ('field', 'in', list(fields.keys())),
-            ['OR', ('client', '=', client), ('client', '=', None)],
             ['OR',
                 ('screen_size', '=', screen_size),
                 ('screen_size', '=', None),
                 ],
             ])
-        cls.delete(records)
+        for tree_width in records:
+            if tree_width.screen_size == screen_size:
+                tree_width.width = fields[tree_width.field]
 
-        to_create = []
-        for field in list(fields.keys()):
-            to_create.append({
-                    'model': model,
-                    'field': field,
-                    'user': Transaction().user,
-                    'width': fields[field],
-                    'client': client,
-                    'screen_size': screen_size,
-                    })
-        if to_create:
-            cls.create(to_create)
+        if records:
+            cls.save(records)
 
 
 class ViewTreeOptional(ModelSQL, ModelView):
