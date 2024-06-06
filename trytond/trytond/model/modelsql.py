@@ -236,6 +236,8 @@ def define_indexes(pool):
     for name, cls in pool.iterobject(type='model'):
         if name is None:
             continue
+        if not issubclass(cls, ModelSQL):
+            continue
 
         # Define Range index to optimise with reduce_ids
         for field in cls._fields.values():
