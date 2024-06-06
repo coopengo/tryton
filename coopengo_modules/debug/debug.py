@@ -49,6 +49,7 @@ def open_path(rel_path, patterns):
     editor = os.environ.get('EDITOR', None)
     if editor is None:
         logging.getLogger().warning('No editor found, feature disabled')
+        return
     if editor == 'nvim':
         from neovim import attach
         path = '/tmp/nvim_' + os.path.basename(os.environ.get('VIRTUAL_ENV',
@@ -420,7 +421,7 @@ class ModelInfo(ModelView):
                 new_line['initial'] = 0 if first_occurence else 1
                 new_line['base_name'] = model_name
                 new_line['path'] = '.'.join(
-                    full_name[:-model_name_dots])
+                    full_name[:-1])
                 first_occurence = True
             result['% 3d' % (len(result) + 1)] = new_line
             for mname, mvalues in methods.items():
@@ -454,7 +455,7 @@ class ModelInfo(ModelView):
         return result, methods
 
     @classmethod
-    def extract_views(cls, model_class, model_name, model_data_cache):
+    def extract_views(cls, model_class, model_name, mro, model_data_cache):
         pool = Pool()
         View = pool.get('ir.ui.view')
         views = {x.id: x for x in View.search([('model', '=', model_name)])}
@@ -500,10 +501,12 @@ class ModelInfo(ModelView):
                         'name': child.name or master_views[view_id]['name'],
                         })
 
+        sort_dict = {
+            data['module']: int(rank.strip())
+            for rank, data in mro.items() if data['module']}
+
         def view_sort(x):
-            if x not in model_class._modules_list:
-                return len(model_class._modules_list)
-            return model_class._modules_list.index(x['module'])
+            return sort_dict.get(x['module'], 1000)
 
         master_views = {
             '% 3i' % idx: val for idx, val in enumerate(
@@ -537,7 +540,7 @@ class ModelInfo(ModelView):
                 'string': string,
                 'mro': mro,
                 'methods': methods,
-                'views': cls.extract_views(Model, model_name,
+                'views': cls.extract_views(Model, model_name, mro,
                     model_data_cache),
                 }
         return infos
@@ -698,34 +701,33 @@ class DebugModelInstance(ModelSQL, ModelView):
         # Fetch current data
         base_data = Pool().get('ir.model.debug.model_info').raw_field_infos(
             models)
+        all_names = list(base_data.keys())
 
         # Delete all existing instances
-        cls.delete(cls.search([('name', 'in', base_data.keys())]))
+        if base_data:
+            cursor = Transaction().connection.cursor()
+            table = cls.__table__()
+            cursor.execute(f'TRUNCATE {table._name} CASCADE')
 
-        # Existing models
-        existing_models = {x.name: x for x in cls.search([])}
+        def chunkify(full_data, func):
+            offset = 0
+            while True:
+                names = all_names[offset:offset + 100]
+                if not names:
+                    break
+                offset += 100
+                cur_data = {name: full_data[name] for name in names}
 
-        # Import Models, MRO, Methods
-        for model_name, data in base_data.items():
-            logger.debug('Importing model %s' % model_name)
-            cls.import_model(model_name, data)
-        Model.save([x['__instance'] for x in base_data.values()])
+                # Import Models, MRO, Methods
+                for model_name, data in cur_data.items():
+                    logger.debug('Importing model %s' % model_name)
+                    func(model_name, data, full_data)
+                Model.save([x['__instance'] for x in cur_data.values()])
 
-        # Import Fields
-        for model_name, data in base_data.items():
-            logger.debug('Importing fields for model %s' % model_name)
-            cls.import_fields(model_name, data, base_data, existing_models)
-        Model.save([x['__instance'] for x in base_data.values()])
-
-        # Import Views
-        for model_name, data in base_data.items():
-            logger.debug('Importing views for model %s' % model_name)
-            cls.import_views(model_name, data, base_data)
-        Model.save([x['__instance'] for x in base_data.values()])
-
-        # Finalize fields
-        cls.finalize_fields(base_data)
-        Model.save([x['__instance'] for x in base_data.values()])
+        chunkify(base_data, lambda x, y, z: cls.import_model(x, y))
+        chunkify(base_data, lambda x, y, z: cls.import_fields(x, y, z))
+        chunkify(base_data, lambda x, y, z: cls.import_views(x, y, z))
+        chunkify(base_data, lambda x, y, z: cls.finalize_fields(y))
 
     @classmethod
     def import_model(cls, model_name, data):
@@ -779,7 +781,7 @@ class DebugModelInstance(ModelSQL, ModelView):
         data['__instance'] = new_model
 
     @classmethod
-    def import_fields(cls, model_name, data, full_data, existing_models):
+    def import_fields(cls, model_name, data, full_data):
         model = full_data[model_name]['__instance']
         methods = {x.name: x for x in model.methods}
 
@@ -793,12 +795,8 @@ class DebugModelInstance(ModelSQL, ModelView):
             field.kind = field_data['kind']
             field.function = field_data['is_function']
             if field_data.get('target_model', None):
-                if field_data['target_model'] in existing_models:
-                    field.target_model = existing_models[
-                        field_data['target_model']]
-                else:
-                    field.target_model = full_data[field_data['target_model']][
-                        '__instance']
+                field.target_model = full_data[field_data['target_model']][
+                    '__instance']
             field.default_method = methods.get(
                 'default_%s' % field_name, None)
             field.on_change_method = methods.get(
@@ -857,46 +855,46 @@ class DebugModelInstance(ModelSQL, ModelView):
         full_data[model_name]['__instance'].views = views
 
     @classmethod
-    def finalize_fields(cls, full_data):
+    def finalize_fields(cls, data):
         pool = Pool()
         Field = pool.get('debug.model.field')
 
-        for model_instance in [x['__instance'] for x in full_data.values()]:
-            Model = pool.get(model_instance.name)
-            cur_data = full_data[model_instance.name]
-            fields = {x.name: Field(x.id)
-                for x in cur_data['__instance'].fields_}
-            for field in model_instance.fields_:
-                if field.on_change_method:
-                    on_change_fields = []
-                    for fname in getattr(getattr(Model,
-                                field.on_change_method.name), 'depends', []):
-                        if fname.startswith('_parent_'):
-                            continue
-                        fname = fname.split('.')[0]
-                        if fname not in fields:
-                            logging.getLogger().warning(
-                                'Cannot find field %s on %s for on_change_%s' %
-                                (fname, model_instance.name, field.name))
-                        else:
-                            on_change_fields.append(fields[fname])
-                    field.on_change_fields = on_change_fields
-                if field.on_change_with_method:
-                    on_change_with_fields = []
-                    for fname in getattr(getattr(Model,
-                                field.on_change_with_method.name),
-                            'depends', []):
-                        if fname.startswith('_parent_'):
-                            continue
-                        fname = fname.split('.')[0]
-                        if fname not in fields:
-                            logging.getLogger().warning('Cannot find field %s '
-                                'on %s for on_change_with_%s' % (
-                                    fname, model_instance.name, field.name))
-                        else:
-                            on_change_with_fields.append(fields[fname])
-                    field.on_change_with_fields = on_change_with_fields
-            model_instance.fields_ = list(model_instance.fields_)
+        model_instance = data['__instance']
+        Model = pool.get(model_instance.name)
+        fields = {x.name: x
+            for x in Field.browse(
+                [x.id for x in model_instance.fields_])}
+        for field in model_instance.fields_:
+            if field.on_change_method:
+                on_change_fields = []
+                for fname in getattr(getattr(Model,
+                            field.on_change_method.name), 'depends', []):
+                    if fname.startswith('_parent_'):
+                        continue
+                    fname = fname.split('.')[0]
+                    if fname not in fields:
+                        logging.getLogger().warning(
+                            'Cannot find field %s on %s for on_change_%s' %
+                            (fname, model_instance.name, field.name))
+                    else:
+                        on_change_fields.append(fields[fname])
+                field.on_change_fields = on_change_fields
+            if field.on_change_with_method:
+                on_change_with_fields = []
+                for fname in getattr(getattr(Model,
+                            field.on_change_with_method.name),
+                        'depends', []):
+                    if fname.startswith('_parent_'):
+                        continue
+                    fname = fname.split('.')[0]
+                    if fname not in fields:
+                        logging.getLogger().warning('Cannot find field %s '
+                            'on %s for on_change_with_%s' % (
+                                fname, model_instance.name, field.name))
+                    else:
+                        on_change_with_fields.append(fields[fname])
+                field.on_change_with_fields = on_change_with_fields
+        model_instance.fields_ = list(model_instance.fields_)
 
 
 class DebugMROInstance(ModelSQL, ModelView):
