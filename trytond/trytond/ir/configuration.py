@@ -15,6 +15,8 @@ class Configuration(ModelSingleton, ModelSQL):
 
     @classmethod
     def __register__(cls, module_name):
+        # This migration must be done before any translation creation takes
+        # place
         cursor = Transaction().connection.cursor()
         cursor.execute(
             "ALTER TABLE ir_translation ALTER COLUMN res_id DROP NOT NULL")
