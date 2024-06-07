@@ -411,7 +411,6 @@ class ViewTreeWidth(ModelSQL, ModelView):
     field = fields.Char('Field', required=True)
     user = fields.Many2One('res.user', 'User', required=True,
         ondelete='CASCADE')
-    client = fields.Char("Client")
     screen_size = fields.Integer("Screen Size")
     width = fields.Integer('Width', required=True)
 
