@@ -470,7 +470,6 @@ class ViewTreeWidth(ModelSQL, ModelView):
                 ],
                 order=[
                     ('screen_size', 'DESC NULLS LAST'),
-                    ('client', 'ASC NULLS LAST'),
                     ])
         widths = {}
         for width in records:
