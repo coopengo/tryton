@@ -74,7 +74,7 @@ class Record:
             return self.group.fields[name]
 
     def load(self, name, process_exception=True):
-        if not self.destroyed and self.id >= 0 and name not in self._loaded:
+        if not self.destroyed and self.id >= 0 and not self.get_loaded([name]):
             id2record = {
                 self.id: self,
                 }
@@ -334,6 +334,8 @@ class Record:
         return False
 
     def get_loaded(self, fields=None):
+        if self.exception:
+            return True
         if fields:
             return set(fields) <= (self._loaded | set(self.modified_fields))
         return set(self.group.fields.keys()) == self._loaded
