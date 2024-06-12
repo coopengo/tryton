@@ -232,78 +232,12 @@ class Index:
         __slots__ = ()
 
 
-def no_table_query(func):
-    @wraps(func)
-    def wrapper(cls, *args, **kwargs):
-        if callable(cls.table_query):
-            raise NotImplementedError("On table_query")
-        return func(cls, *args, **kwargs)
-    return wrapper
-
-
-class ModelSQL(ModelStorage):
-    """
-    Define a model with storage in database.
-    """
-    __slots__ = ()
-    _table = None  # The name of the table in database
-    _order = None
-    _order_name = None  # Use to force order field when sorting on Many2One
-    _history = False
-    table_query = None
-
-    @classmethod
-    def __setup__(cls):
-        cls._table = config.get('table', cls.__name__, default=cls._table)
-        if not cls._table:
-            cls._table = cls.__name__.replace('.', '_')
-
-        assert cls._table[-9:] != '__history', \
-            'Model _table %s cannot end with "__history"' % cls._table
-
-        super(ModelSQL, cls).__setup__()
-
-        cls._sql_constraints = []
-        cls._sql_indexes = set()
-        cls._history_sql_indexes = set()
-        if not callable(cls.table_query):
-            table = cls.__table__()
-            cls._sql_constraints.append(
-                ('id_positive', Check(table, table.id >= 0),
-                    'ir.msg_id_positive'))
-            rec_name_field = getattr(cls, cls._rec_name, None)
-            if (isinstance(rec_name_field, fields.Field)
-                    and not hasattr(rec_name_field, 'set')):
-                column = Column(table, cls._rec_name)
-                if getattr(rec_name_field, 'search_unaccented', False):
-                    column = Index.Unaccent(column)
-                cls._sql_indexes.add(
-                    Index(table, (column, Index.Similarity())))
-        cls._order = [('id', None)]
-        if issubclass(cls, ModelView):
-            cls.__rpc__.update({
-                    'history_revisions': RPC(),
-                    })
-        if cls._history:
-            history_table = cls.__table_history__()
-            cls._history_sql_indexes.update({
-                    Index(
-                        history_table,
-                        (history_table.id, Index.Equality())),
-                    Index(
-                        history_table,
-                        (Coalesce(
-                                history_table.write_date,
-                                history_table.create_date).desc,
-                            Index.Range()),
-                        include=[
-                            Column(history_table, '__id'),
-                            history_table.id]),
-                    })
-
-    @classmethod
-    def __post_setup__(cls):
-        super().__post_setup__()
+def define_indexes(pool):
+    for name, cls in pool.iterobject(type='model'):
+        if name is None:
+            continue
+        if not issubclass(cls, ModelSQL):
+            continue
 
         # Define Range index to optimise with reduce_ids
         for field in cls._fields.values():
@@ -351,6 +285,78 @@ class ModelSQL(ModelStorage):
                                 target,
                                 (column, Index.Range()),
                                 where=where))
+
+
+def no_table_query(func):
+    @wraps(func)
+    def wrapper(cls, *args, **kwargs):
+        if callable(cls.table_query):
+            raise NotImplementedError("On table_query")
+        return func(cls, *args, **kwargs)
+    return wrapper
+
+
+class ModelSQL(ModelStorage):
+    """
+    Define a model with storage in database.
+    """
+    __slots__ = ()
+    _sql_indexes = None
+    _table = None  # The name of the table in database
+    _order = None
+    _order_name = None  # Use to force order field when sorting on Many2One
+    _history = False
+    table_query = None
+
+    @classmethod
+    def __setup__(cls):
+        cls._table = config.get('table', cls.__name__, default=cls._table)
+        if not cls._table:
+            cls._table = cls.__name__.replace('.', '_')
+
+        assert cls._table[-9:] != '__history', \
+            'Model _table %s cannot end with "__history"' % cls._table
+
+        super(ModelSQL, cls).__setup__()
+
+        cls._sql_constraints = []
+        if cls._sql_indexes is None:
+            cls._sql_indexes = set()
+        cls._history_sql_indexes = set()
+        if not callable(cls.table_query):
+            table = cls.__table__()
+            cls._sql_constraints.append(
+                ('id_positive', Check(table, table.id >= 0),
+                    'ir.msg_id_positive'))
+            rec_name_field = getattr(cls, cls._rec_name, None)
+            if (isinstance(rec_name_field, fields.Field)
+                    and not hasattr(rec_name_field, 'set')):
+                column = Column(table, cls._rec_name)
+                if getattr(rec_name_field, 'search_unaccented', False):
+                    column = Index.Unaccent(column)
+                cls._sql_indexes.add(
+                    Index(table, (column, Index.Similarity())))
+        cls._order = [('id', None)]
+        if issubclass(cls, ModelView):
+            cls.__rpc__.update({
+                    'history_revisions': RPC(),
+                    })
+        if cls._history:
+            history_table = cls.__table_history__()
+            cls._history_sql_indexes.update({
+                    Index(
+                        history_table,
+                        (history_table.id, Index.Equality())),
+                    Index(
+                        history_table,
+                        (Coalesce(
+                                history_table.write_date,
+                                history_table.create_date).desc,
+                            Index.Range()),
+                        include=[
+                            Column(history_table, '__id'),
+                            history_table.id]),
+                    })
 
     @classmethod
     def __table__(cls):

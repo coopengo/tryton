@@ -117,7 +117,8 @@ class Invoice(Workflow, ModelSQL, ModelView, TaxableMixin):
     party_lang = fields.Function(fields.Char('Party Language'),
         'on_change_with_party_lang')
     invoice_address = fields.Many2One('party.address', 'Invoice Address',
-        required=True, states=_states, domain=[('party', '=', Eval('party'))])
+        required=True, states=_states,
+        domain=[('party', '=', Eval('party', -1))])
     currency = fields.Many2One('currency.currency', 'Currency', required=True,
         states={
             'readonly': (
@@ -912,8 +913,8 @@ class Invoice(Workflow, ModelSQL, ModelView, TaxableMixin):
             sub_invoice_ids = [i.id for i in sub_invoices]
             value = bool(Method.search([
                         ('company', '=', company.id),
-                        ('debit_account', '!=', account.id),
-                        ('credit_account', '!=', account.id),
+                        ('debit_account.id', '!=', account.id),
+                        ('credit_account.id', '!=', account.id),
                         ], limit=1))
             methods.update(dict.fromkeys(sub_invoice_ids, value))
         return methods
@@ -1906,7 +1907,7 @@ class InvoicePaymentLine(ModelSQL):
     line = fields.Many2One(
         'account.move.line', "Payment Line", ondelete='CASCADE', required=True,
         domain=[
-            ('account', '=', Eval('invoice_account')),
+            ('account', '=', Eval('invoice_account', -1)),
             ['OR',
                 ('party', '=', Eval('invoice_party', -1)),
                 ('party', 'in', Eval('invoice_alternative_payees', [])),
@@ -3021,14 +3022,14 @@ class PaymentMethod(DeactivableMixin, ModelSQL, ModelView):
         domain=[
             ('type', '!=', None),
             ('closed', '!=', True),
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
     debit_account = fields.Many2One('account.account', "Debit Account",
         required=True,
         domain=[
             ('type', '!=', None),
             ('closed', '!=', True),
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ])
 
     @classmethod
@@ -3126,9 +3127,9 @@ class PayInvoiceStart(ModelView):
     payment_method = fields.Many2One(
         'account.invoice.payment.method', "Payment Method", required=True,
         domain=[
-            ('company', '=', Eval('company')),
-            ('debit_account', '!=', Eval('invoice_account')),
-            ('credit_account', '!=', Eval('invoice_account')),
+            ('company', '=', Eval('company', -1)),
+            ('debit_account', '!=', Eval('invoice_account', -1)),
+            ('credit_account', '!=', Eval('invoice_account', -1)),
             ],
         depends={'amount'})
     date = fields.Date('Date', required=True)
@@ -3150,7 +3151,7 @@ class PayInvoiceAsk(ModelView):
     writeoff = fields.Many2One(
         'account.move.reconcile.write_off', "Write Off",
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ],
         states={
             'invisible': Eval('type') != 'writeoff',

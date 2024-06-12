@@ -59,7 +59,7 @@ class SaleOpportunity(
         depends=['party', 'company'])
     address = fields.Many2One(
         'party.address', "Address", states=_states_stop,
-        domain=[('party', '=', Eval('party'))])
+        domain=[('party', '=', Eval('party', -1))])
     company = fields.Many2One(
         'company.company', "Company", required=True,
         states={
@@ -86,7 +86,7 @@ class SaleOpportunity(
             'readonly': _states_stop['readonly'],
             'required': ~Eval('state').in_(['lead', 'lost', 'cancelled']),
         },
-        domain=[('company', '=', Eval('company'))])
+        domain=[('company', '=', Eval('company', -1))])
     start_date = fields.Date("Start Date", required=True, states=_states_start)
     end_date = fields.Date("End Date", states=_states_stop)
     description = fields.Char('Description', states=_states_stop)
