@@ -167,10 +167,6 @@
             this.thead.append(tr);
 
             const observer = new MutationObserver(this.column_resize.bind(this));
-            observer.observe(this.thead[0], {
-                attributeFilter: ["style"],
-                subtree: true,
-            });
 
             this.tfoot = null;
             var sum_row;
@@ -200,6 +196,10 @@
                     });
             }
 
+            var col_idx = 1;
+            if (this.optionals.length) {
+                col_idx += 1;
+            }
             for (const column of this.columns) {
                 col = jQuery('<col/>', {
                     'class': column.attributes.widget,
@@ -207,7 +207,9 @@
                 th = jQuery('<th/>', {
                     'class': column.attributes.widget,
                 });
-                var resize_div = jQuery('<div/>');
+                var resize_div = jQuery('<div/>', {
+                    'data-col': col_idx,
+                });
                 var label = jQuery('<label/>')
                     .text(column.attributes.string)
                     .attr('title', column.attributes.string)
@@ -235,6 +237,10 @@
                 tr.append(th.append(resize_div));
                 column.header = th;
                 column.col = col;
+                observer.observe(resize_div[0], {
+                    attributeFilter: ["style"],
+                    subtree: false,
+                });
 
                 column.footers = [];
                 if (this.sum_widgets.size) {
@@ -251,6 +257,8 @@
                     sum_row.append(total_cell);
                     column.footers.push(total_cell);
                 }
+
+                col_idx += 1;
             }
             this.tbody = jQuery('<tbody/>');
             this.table.append(this.tbody);
@@ -337,16 +345,11 @@
             Sao.Screen.tree_column_optional[this.view_id] = fields;
         },
         column_resize: function(mutationList) {
-            var width_mutations = mutationList.filter((m) => {
-                return m.target.style.width != '';
-            });
-            if (width_mutations.length == 0) {
+            if (mutationList.length == 0) {
                 return;
             }
-            var mutation = width_mutations.at(-1);
-            var parent_children = Array.from(
-                mutation.target.parentNode.parentNode.children);
-            var col_idx = parent_children.indexOf(mutation.target.parentNode);
+            var mutation = mutationList.at(-1);
+            var col_idx = mutation.target.dataset.col;
             var width = mutation.target.style.width;
             this.colgroup.find('col').eq(col_idx).css('width', width);
             Sao.common.debounce(this.save_width, 1000)(this);
