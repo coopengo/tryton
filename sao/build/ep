@@ -46,4 +46,4 @@ pack() {
         && sed -i "s;dist/coog-sao.min.css;coog-sao.min.css;g" dist/index.html
 }
 
-yarn && grunt && pack
+yarn && npm exec grunt && pack
