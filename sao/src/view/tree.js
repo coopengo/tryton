@@ -351,6 +351,46 @@
             var mutation = mutationList.at(-1);
             var col_idx = mutation.target.dataset.col;
             var width = mutation.target.style.width;
+            var full_width = this.colgroup[0].parentNode.parentNode.clientWidth;
+            var all_cols = this.colgroup.find('col');
+            var target = this.colgroup.find('col').eq(col_idx)[0];
+
+            // evil
+            // to avoid weird resizing when we reduce the size of column when
+            // there is no overflow on the tree, we add the same number of
+            // pixels to the rightmost visible column.
+            // To provide a way to reduce the size of the rightmost column,
+            // increasing the size of the second to rightmost column will
+            // also reduce the size of the rightmost one
+            var prev_width = target.clientWidth;
+            var new_width = parseInt(width.replace("px", ""));
+            let iteration = 0;
+            let resize_last = false;
+            let to_update;
+            let total = 0;
+            for (let index = all_cols.length - 1; index >= 0; index--) {
+                var col = all_cols[index];
+                if (col.style.width === "0px") {
+                    continue;
+                }
+                if ((to_update === undefined) && (col !== target)) {
+                    to_update = col;
+                }
+                if ((iteration === 1) && (col === target)) {
+                    resize_last = true;
+                }
+                if (col === target) {
+                    total += new_width;
+                } else {
+                    total += col.clientWidth;
+                }
+                iteration += 1;
+            }
+            if ((resize_last === true) && (prev_width < new_width)) {
+                to_update.style.width = (to_update.clientWidth - new_width + prev_width) + "px";
+            } else if (full_width > total) {
+                to_update.style.width = (to_update.clientWidth + full_width - total) + "px";
+            }
             this.colgroup.find('col').eq(col_idx).css('width', width);
             Sao.common.debounce(this.save_width, 1000)(this);
         },
