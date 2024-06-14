@@ -56,4 +56,4 @@ pack() {
         && sed -i "s;dist/tryton-sao.css;tryton-sao.css;g" dist/index.html
 }
 
-yarn && grunt && pack
+yarn && npm exec grunt && pack
