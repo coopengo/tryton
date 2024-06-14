@@ -195,6 +195,7 @@ class MemoryCache(BaseCache):
                     self.miss += 1
                     values.append(default)
                     continue
+                cache.move_to_end(key)
                 self.hit += 1
                 values.append(result)
             except KeyError:
@@ -490,13 +491,6 @@ class LRUDict(OrderedDict):
         self.default_factory = default_factory
         self.default_factory_with_key = default_factory_with_key
         self._check_size_limit()
-
-    def __getitem__(self, key):
-        try:
-            self.move_to_end(key)
-        except KeyError:
-            pass
-        return super().__getitem__(key)
 
     def __setitem__(self, key, value):
         super(LRUDict, self).__setitem__(key, value)
