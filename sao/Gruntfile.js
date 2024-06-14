@@ -161,7 +161,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-qunit-junit');
 
   grunt.registerTask('default', 'Build for production.', function() {
-    grunt.task.run(['concat', 'jshint', 'uglify', 'less', 'po2json']);
+    grunt.task.run(['concat', 'jshint', 'less', 'po2json']);
     });
   grunt.registerTask('dev', 'Build for development.', function() {
     grunt.task.run(['concat', 'jshint', 'less:dev']);
