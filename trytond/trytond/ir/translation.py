@@ -70,7 +70,7 @@ class Translation(
     __name__ = "ir.translation"
 
     name = fields.Char('Field Name', required=True)
-    res_id = fields.Integer('Resource ID', required=True)
+    res_id = fields.Integer('Resource ID', domain=[('res_id', '>=', 0)])
     lang = fields.Selection('get_language', string='Language')
     type = fields.Selection(TRANSLATION_TYPE, string='Type',
        required=True)
@@ -128,6 +128,11 @@ class Translation(
             table.drop_constraint('translation_md5_uniq')
             table.drop_column('src_md5')
 
+        # Migration from 7.2
+        cursor.execute(*ir_translation.update(
+                [ir_translation.res_id], [Null],
+                where=(ir_translation.res_id == -1)))
+
         super(Translation, cls).__register__(module_name)
 
     @classmethod
@@ -164,7 +169,7 @@ class Translation(
                             'value', 'module', 'fuzzy', 'res_id')],
                     [[
                             name, INTERNAL_LANG, 'model', src,
-                            '', module_name, False, -1]]))
+                            '', module_name, False, Null]]))
         else:
             cursor.execute(*ir_translation.update(
                     [ir_translation.src],
@@ -212,7 +217,7 @@ class Translation(
                     *ir_translation.insert(columns,
                         [[
                                 name, INTERNAL_LANG, type, val,
-                                '', module_name, False, -1]]))
+                                '', module_name, False, Null]]))
                 inserted = True
 
         for field_name, field in model._fields.items():
@@ -253,7 +258,7 @@ class Translation(
                                 trans_name, INTERNAL_LANG,
                                 'wizard_button', button.string,
                                 '', module_name,
-                                False, -1]]))
+                                False, Null]]))
             elif trans_buttons[trans_name] != button.string:
                 cursor.execute(*ir_translation.update(
                         [ir_translation.src],
@@ -270,10 +275,6 @@ class Translation(
     @staticmethod
     def default_fuzzy():
         return False
-
-    @staticmethod
-    def default_res_id():
-        return -1
 
     def get_model(self, name):
         return self.name.split(',')[0]
@@ -626,7 +627,7 @@ class Translation(
                     ('value', '!=', ''),
                     ('value', '!=', None),
                     ('fuzzy', '=', False),
-                    ('res_id', '=', -1),
+                    ('res_id', '=', None),
                     ]
                 if source is not None:
                     clause.append(('src', '=', source))
@@ -667,7 +668,7 @@ class Translation(
                         ('value', '!=', ''),
                         ('value', '!=', None),
                         ('fuzzy', '=', False),
-                        ('res_id', '=', -1),
+                        ('res_id', '=', None),
                         ], order=[('module', 'DESC')])
                 for translation in translations:
                     cache.setdefault(translation.src, translation.value)
@@ -808,7 +809,7 @@ class Translation(
                         ])
                 res_id = model_data.db_id
             else:
-                res_id = -1
+                res_id = None
             with Transaction().set_context(module=res_id_module):
                 domain = [
                     ('name', '=', new_translation.name),
@@ -873,14 +874,16 @@ class Translation(
                     if (model in fs_id2prop
                             and res_id in fs_id2prop[model]):
                         res_id, noupdate = fs_id2prop[model][res_id]
+                    elif res_id:
+                        continue
 
                     if res_id:
                         try:
                             res_id = int(res_id)
                         except ValueError:
-                            res_id = None
-                    if not res_id:
-                        res_id = -1
+                            continue
+                    else:
+                        res_id = None
 
                     translation.res_id = res_id
                     key = translation.unique_key
@@ -963,7 +966,7 @@ class Translation(
                 'name': translation.name,
                 }
             res_id = translation.res_id
-            if res_id >= 0:
+            if res_id:
                 model, _ = translation.name.split(',')
                 if model in db_id2fs_id:
                     res_id = db_id2fs_id[model].get(res_id)
@@ -1144,7 +1147,7 @@ class TranslationSet(Wizard):
                                         report.report_name, INTERNAL_LANG,
                                         'report', string,
                                         '', module,
-                                        False, -1]]))
+                                        False, Null]]))
         for (report_name, module), strings in report_strings.items():
             query = translation.delete(
                 where=(translation.name == report_name)
@@ -1243,7 +1246,7 @@ class TranslationSet(Wizard):
                                     view.model, INTERNAL_LANG,
                                     'view', string,
                                     '', view.module,
-                                    False, -1]]))
+                                    False, Null]]))
             if strings:
                 cursor.execute(*translation.delete(
                         where=(translation.name == view.model)
@@ -1310,7 +1313,7 @@ class TranslationClean(Wizard):
             Model = pool.get(model_name)
         except KeyError:
             return True
-        if translation.res_id >= 0:
+        if translation.res_id:
             if field_name not in Model._fields:
                 return True
             field = Model._fields[field_name]
@@ -1422,7 +1425,7 @@ class TranslationClean(Wizard):
                     to_delete.append(translation.id)
                 else:
                     keys.add(key)
-                if translation.type == 'model' and translation.res_id >= 0:
+                if translation.type == 'model' and translation.res_id:
                     model_name, _ = translation.name.split(',', 1)
                     records[model_name][translation.res_id].add(translation.id)
 
@@ -1615,7 +1618,7 @@ class TranslationUpdate(Wizard):
                     where=(translation.name == row['name'])
                     & (translation.type == row['type'])
                     & (translation.lang == lang)
-                    & (translation.res_id == (row['res_id'] or -1))
+                    & (translation.res_id == row['res_id'])
                     & (translation.module == row['module'])))
 
         cursor.execute(*translation.select(

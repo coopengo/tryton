@@ -310,6 +310,12 @@ class ModelField(
                     where=table._temp_model == model.id))
             table_h.drop_column('_temp_model')
 
+        # This migration must be done before any translation creation takes
+        # place
+        cursor = Transaction().connection.cursor()
+        cursor.execute(
+            "ALTER TABLE ir_translation ALTER COLUMN res_id DROP NOT NULL")
+
         super().__register__(module)
 
     @classmethod
