@@ -12,7 +12,8 @@ __all__ = ['register', 'routes']
 
 def register():
     Pool.register(
-        configuration.Configuration,
+        configuration.Configuration,  # Must be registered first, see
+                                      # `__register__` implementation
         translation.Translation,
         translation.TranslationSetStart,
         translation.TranslationSetSucceed,
