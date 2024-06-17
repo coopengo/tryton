@@ -888,7 +888,7 @@ class Replace(Wizard):
         source = self.ask.source
         destination = self.ask.destination
 
-        self.hook_before_replace(source)
+        self.hook_before_replace(source, destination)
 
         Address.write(list(source.addresses), {
                 'active': False,
@@ -934,6 +934,8 @@ class Replace(Wizard):
                 ids = [x[0] for x in cursor]
 
             Model._insert_history(ids)
+
+            self.hook_after_replace(source, destination)
         return 'end'
 
     @classmethod
@@ -944,7 +946,10 @@ class Replace(Wizard):
             ('party.identifier', 'party'),
             ]
 
-    def hook_before_replace(self, source):
+    def hook_before_replace(self, source, destination):
+        return
+
+    def hook_after_replace(self, source, destination):
         return
 
 
