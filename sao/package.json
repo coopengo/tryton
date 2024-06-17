@@ -54,5 +54,8 @@
     "grunt-contrib-jshint": "^2.1",
     "grunt-contrib-less": "^2.0",
     "grunt-contrib-uglify": "^4.0"
+  },
+  "resolutions": {
+    "grunt-contrib-uglify/uglify-js": "~3.17.1"
   }
 }
