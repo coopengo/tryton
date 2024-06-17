@@ -74,7 +74,7 @@ class Record:
             return self.group.fields[name]
 
     def load(self, name, process_exception=True):
-        if not self.destroyed and self.id >= 0 and name not in self._loaded:
+        if not self.destroyed and self.id >= 0 and not self.get_loaded([name]):
             id2record = {
                 self.id: self,
                 }
@@ -173,22 +173,22 @@ class Record:
                     if field.attrs['type'] == 'binary' and fname in fnames))
             if related_limit is not None:
                 ctx['related_limit'] = related_limit
-            exception = False
             try:
-                print(f"{self.model_name}.read({fnames})")
                 values = RPCExecute('model', self.model_name, 'read',
                     list(id2record.keys()), fnames, context=ctx,
                     process_exception=process_exception)
             except RPCException:
-                values = [{'id': x} for x in id2record]
-                default_values = dict((f, None) for f in fnames)
-                for value in values:
-                    value.update(default_values)
-                self.exception = exception = True
+                for record in id2record.values():
+                    record.exception = True
+                if process_exception:
+                    values = [{'id': x} for x in id2record]
+                    default_values = dict((f, None) for f in fnames)
+                    for value in values:
+                        value.update(default_values)
+                else:
+                    raise
             id2value = dict((value['id'], value) for value in values)
             for id, record in id2record.items():
-                if not record.exception:
-                    record.exception = exception
                 value = id2value.get(id)
                 if record and not record.destroyed and value:
                     for key in record.modified_fields:
@@ -334,6 +334,8 @@ class Record:
         return False
 
     def get_loaded(self, fields=None):
+        if self.exception:
+            return True
         if fields:
             return set(fields) <= (self._loaded | set(self.modified_fields))
         return set(self.group.fields.keys()) == self._loaded

@@ -38,7 +38,7 @@ class One2One(Many2Many):
         args = iter((ids, value) + args)
         for ids, value in zip(args, args):
             relations = Relation.search([
-                    (self.origin, 'in', ids),
+                    (f'{self.origin}.id', 'in', ids),
                     ])
             to_delete.extend(relations)
             if value:
