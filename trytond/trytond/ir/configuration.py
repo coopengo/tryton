@@ -3,6 +3,7 @@
 from trytond.cache import Cache
 from trytond.config import config
 from trytond.model import ModelSingleton, ModelSQL, fields
+from trytond.transaction import Transaction
 
 
 class Configuration(ModelSingleton, ModelSQL):
@@ -11,6 +12,15 @@ class Configuration(ModelSingleton, ModelSQL):
     language = fields.Char('language')
     hostname = fields.Char("Hostname", strip=False)
     _get_language_cache = Cache('ir_configuration.get_language')
+
+    @classmethod
+    def __register__(cls, module_name):
+        # This migration must be done before any translation creation takes
+        # place
+        cursor = Transaction().connection.cursor()
+        cursor.execute(
+            "ALTER TABLE ir_translation ALTER COLUMN res_id DROP NOT NULL")
+        super().__register__(module_name)
 
     @staticmethod
     def default_language():
