@@ -1,5 +1,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+from trytond import backend
+
 from trytond.cache import Cache
 from trytond.config import config
 from trytond.model import ModelSingleton, ModelSQL, fields
@@ -17,9 +19,10 @@ class Configuration(ModelSingleton, ModelSQL):
     def __register__(cls, module_name):
         # This migration must be done before any translation creation takes
         # place
-        cursor = Transaction().connection.cursor()
-        cursor.execute(
-            "ALTER TABLE ir_translation ALTER COLUMN res_id DROP NOT NULL")
+        if backend.name != 'sqlite':
+            cursor = Transaction().connection.cursor()
+            cursor.execute(
+                "ALTER TABLE ir_translation ALTER COLUMN res_id DROP NOT NULL")
         super().__register__(module_name)
 
     @staticmethod
