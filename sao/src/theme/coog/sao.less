@@ -14,6 +14,7 @@
 @coog-background:       @color-white;
 
 @coog-base-blur:        0px;
+@coog-box-opacity:      0.3;
 @coog-background-opacity: 1;
 @coog-main-opacity:     1;
 @coog-header-opacity:   1;
@@ -544,8 +545,8 @@ div.form-selection select.form-control {
 div.form-text {
     padding:                0px 15px 0px 15px;
     textarea.form-control {
-        border: 1px solid rgba(150, 150, 150, 0.3);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
+        box-shadow: 0 1px 4px rgba(@color-black, @coog-box-opacity) !important;
     }
     // highlight readonly text contents
     .readonly {
