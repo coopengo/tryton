@@ -543,10 +543,16 @@ div.form-selection select.form-control {
 }
 
 div.form-text {
-    padding:                0px 15px 0px 15px;
+    padding:                3px 10px 3px 10px;
     textarea.form-control {
         border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
-        box-shadow: 0 1px 4px rgba(@color-black, @coog-box-opacity) !important;
+        box-shadow: 0 1px 4px rgba(@color-black,    @coog-box-opacity);
+        padding:            5px;
+        margin-bottom:      2px;
+
+        &:focus {
+            box-shadow: 0 1px 4px rgba(@color-blue, 0.6);
+        }
     }
     // highlight readonly text contents
     .readonly {
