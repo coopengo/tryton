@@ -9,9 +9,12 @@ from sql import (
     Asc, Column, Desc, Expression, For, Literal, Null, NullsFirst, NullsLast,
     Table, Union, Window, With)
 from sql.aggregate import Count, Max
-from sql.conditionals import Coalesce
-from sql.functions import CurrentTimestamp, Extract, RowNumber, Substring
-from sql.operators import And, Concat, Equal, Exists, Operator, Or
+from sql.conditionals import Case, Coalesce
+from sql.functions import (
+    CurrentTimestamp, Extract, Function, RowNumber, Substring)
+from sql.operators import (
+    And, BinaryOperator, Concat, Equal, Exists, NaryOperator, Operator, Or,
+    UnaryOperator)
 
 from trytond import backend
 from trytond.cache import freeze
@@ -22,6 +25,7 @@ from trytond.pool import Pool
 from trytond.pyson import PYSONDecoder, PYSONEncoder
 from trytond.rpc import RPC
 from trytond.tools import cursor_dict, grouped_slice, reduce_ids
+from trytond.tools.domain_inversion import simplify
 from trytond.transaction import (
     Transaction, inactive_records, record_cache_size, without_check_access)
 
@@ -294,6 +298,27 @@ def no_table_query(func):
             raise NotImplementedError("On table_query")
         return func(cls, *args, **kwargs)
     return wrapper
+
+
+def get_columns(sql_expr):
+    if isinstance(sql_expr, Column):
+        yield sql_expr
+    elif isinstance(sql_expr, Coalesce):
+        yield from chain.from_iterable(get_columns(e) for e in sql_expr.values)
+    elif isinstance(sql_expr, Case):
+        for cond, result in sql_expr.whens:
+            yield from get_columns(cond)
+            yield from get_columns(result)
+        yield from get_columns(sql_expr.else_)
+    elif isinstance(sql_expr, UnaryOperator):
+        yield from get_columns(sql_expr.operand)
+    elif isinstance(sql_expr, BinaryOperator):
+        yield from get_columns(sql_expr.left)
+        yield from get_columns(sql_expr.right)
+    elif isinstance(sql_expr, NaryOperator):
+        yield from chain.from_iterable(get_columns(o) for o in sql_expr)
+    elif isinstance(sql_expr, Function):
+        raise NotImplementedError
 
 
 class ModelSQL(ModelStorage):
@@ -1641,6 +1666,22 @@ class ModelSQL(ModelStorage):
         pool = Pool()
         Rule = pool.get('ir.rule')
 
+        def convert(domain):
+            if is_leaf(domain):
+                fname, *_ = domain[0].split('.', 1)
+                field = cls._fields[fname]
+                if isinstance(field, fields.Function) and field.searcher:
+                    new_leaf = getattr(cls, field.searcher)(fname, domain)
+                    assert not isinstance(new_leaf, (Operator, Expression))
+                    return new_leaf
+                else:
+                    return domain
+            elif isinstance(domain, str):
+                return domain
+            else:
+                return [convert(d) for d in domain]
+
+        domain = simplify(convert(domain))
         rule_domain = Rule.domain_get(cls.__name__, mode='read')
         joined_domains = None
         if domain and domain[0] == 'OR':
@@ -1654,12 +1695,12 @@ class ModelSQL(ModelStorage):
         def get_local_columns(order_exprs):
             local_columns = []
             for order_expr in order_exprs:
-                if (isinstance(order_expr, Column)
-                        and isinstance(order_expr._from, Table)
-                        and order_expr._from._name == cls._table):
-                    local_columns.append(order_expr._name)
-                else:
-                    raise NotImplementedError
+                for col in set(get_columns(order_expr)):
+                    if (isinstance(col._from, Table)
+                            and col._from._name == cls._table):
+                        local_columns.append(col._name)
+                    else:
+                        raise NotImplementedError
             return local_columns
 
         # The UNION optimization needs the columns used to order the query

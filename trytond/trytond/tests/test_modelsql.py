@@ -7,11 +7,14 @@ import time
 import unittest
 from unittest.mock import call, patch
 
+from sql import Literal, Table
+from sql.conditionals import Case, Coalesce
+
 from trytond import backend
 from trytond.exceptions import ConcurrencyException
 from trytond.model.exceptions import (
     ForeignKeyError, RequiredValidationError, SQLConstraintError)
-from trytond.model.modelsql import split_subquery_domain
+from trytond.model.modelsql import get_columns, split_subquery_domain
 from trytond.pool import Pool
 from trytond.tests.test_tryton import (
     CONTEXT, DB_NAME, USER, activate_module, with_transaction)
@@ -1103,6 +1106,27 @@ class ModelSQLTestCase(unittest.TestCase):
         self.assertIn('UNION', str(Model.search(domain, query=True)))
 
     @with_transaction()
+    def test_search_or_to_union_function_field(self):
+        pool = Pool()
+        Model = pool.get('test.modelsql.search.or2union')
+
+        model_a, model_b, model_c = Model.create([{
+                    'name': 'A',
+                    }, {
+                    'name': 'B',
+                    }, {
+                    'name': 'C',
+                    'targets': [
+                        ('create', [{'name': 'A'}]),
+                        ],
+                    },
+                ])
+
+        domain = [('rec_name', '=', 'A')]
+        self.assertEqual(Model.search(domain), [model_a, model_c])
+        self.assertIn('UNION', str(Model.search(domain, query=True)))
+
+    @with_transaction()
     def test_search_limit(self):
         "Test searching with limit"
         pool = Pool()
@@ -1187,6 +1211,29 @@ class ModelSQLTestCase(unittest.TestCase):
                     ('b', '=', 2),
                     ['OR', ('c', '=', 3), ('d.e', '=', 4)]]
                 ])
+
+    def test_get_columns(self):
+        "Test the extraction of columns from SQL expressions"
+        a = Table('a')
+        b = Table('b')
+        c = Table('c')
+
+        for expr, columns in [
+                (Literal(1), set()),
+                (a.foo, {'a."foo"'}),
+                (Coalesce(a.foo, a.bar), {'a."foo"', 'a."bar"'}),
+                (Case(
+                        (a.foo == 'a', Literal(1)),
+                        (a.foo == 'b', Literal(-1)),
+                        else_=Literal(0)),
+                    {'a."foo"'}),
+                (~a.foo, {'a."foo"'}),
+                (a.foo + a.bar, {'a."foo"', 'a."bar"'}),
+                (a.foo + b.bar + c.baz, {'a."foo"', 'b."bar"', 'c."baz"'}),
+                ]:
+            with self.subTest(expr=expr):
+                extracted = {f'{c._from._name}.{c}' for c in get_columns(expr)}
+                self.assertEqual(extracted, columns)
 
 
 class TranslationTestCase(unittest.TestCase):
