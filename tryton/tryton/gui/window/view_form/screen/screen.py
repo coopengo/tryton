@@ -1315,20 +1315,18 @@ class Screen:
                 ids, context=context)
         except RPCException:
             action = None
-
+        self.reload(ids, written=True)
         # PJA: handle different returns values from button
         if isinstance(action, list):
-            action_id, action = action
-        elif isinstance(action, int):
-            action_id, action = action, None
-        else:
-            action_id, action = None, action
-
-        self.reload(ids, written=True)
-        if isinstance(action, str):
+            Action.execute(action[0], {
+                    'model': self.model_name,
+                    'id': current_id,
+                    'ids': ids,
+                    }, context=self.context, keyword=True)
+        elif isinstance(action, str):
             self.client_action(action)
-        if action_id:
-            Action.execute(action_id, {
+        else:
+            Action.execute(action, {
                     'model': self.model_name,
                     'id': current_id,
                     'ids': ids,

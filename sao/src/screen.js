@@ -2017,26 +2017,26 @@
                 return this.reload(ids, true).then(() => {
                     // [Coog specific]
                     // JMO: report https://github.com/coopengo/tryton/pull/13
-                    var action_id;
-                    if (action && typeof action != 'string' &&
-                      action.length && action.length === 2) {
-                      action_id = action[0];
-                      action = action[1];
-                    } else if (typeof action == 'number') {
-                      action_id = action;
-                      action = undefined;
-                    }
-                    // end
-                    if (typeof action == 'string') {
-                        this.client_action(action);
-                    }
-                    if (action_id) {
-                        Sao.Action.execute(action_id, {
+                    if (Array.isArray(action)) {
+                        Sao.Action.execute(action[0], {
                             model: this.model_name,
                             id: this.current_record.id,
                             ids: ids
                         }, null, this.context, true);
                     }
+                    else
+                    // end
+                    if (typeof action == 'string') {
+                        this.client_action(action);
+                    }
+                    else if (action) {
+                        Sao.Action.execute(action, {
+                            model: this.model_name,
+                            id: this.current_record.id,
+                            ids: ids
+                        }, null, this.context, true);
+                    }
+                    this.record_saved();
                 });
             };
 
