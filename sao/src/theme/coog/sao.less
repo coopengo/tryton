@@ -127,6 +127,13 @@
     padding-bottom:     2px;
 }
 
+// Force width of technical columns
+.treeview > table.tree,table.tree-condensed > colgroup {
+    col.selection-state, col.draggable-handle, col.optionnal {
+        width:          30px;
+    }
+}
+
 // More discrete checkboxes for selection in trees
 .treeview > table.tree,table.tree-condensed > thead,tbody > tr > td.selection-state > input {
     & input[type="checkbox"] {
