@@ -655,7 +655,7 @@
             }
         },
         is_loaded: function(name) {
-            return ((this.id < 0) || (name in this._loaded) || this.exception);
+            return ((this.id < 0) || (name in this._loaded));
         },
         load: function(name, async=true, process_exception=true) {
             var fname;
