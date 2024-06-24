@@ -2281,6 +2281,15 @@ textview {
     background-color: @base_color;
 }
 
+box.readonly > * > textview,
+box.readonly > * > textview:focus {
+    background-color: none;
+    background-image: -gtk-gradient (linear, left top, left bottom,
+                                     from (shade (@readonly_bg_color, 0.98)),
+                                     to (shade (@readonly_bg_color, 1)));
+    color:@text_color;
+}
+
 textview.monospace {
     font-family: monospace;
 }
