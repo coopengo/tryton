@@ -239,6 +239,7 @@
                 column.col = col;
                 observer.observe(resize_div[0], {
                     attributeFilter: ["style"],
+                    attributeOldValue: true,
                     subtree: false,
                 });
 
@@ -348,11 +349,24 @@
             if (mutationList.length == 0) {
                 return;
             }
+            if (!this.colgroup.data('resized')) {
+                this.colgroup.find('col').each((idx, element) => {
+                    var jqElement = jQuery(element);
+                    if (!jqElement.hasClass('optional') &&
+                        !jqElement.hasClass('selection-state')) {
+                        jqElement.width(jqElement.width());
+                    }
+                });
+                this.colgroup.data('resized', true);
+            }
             var mutation = mutationList.at(-1);
             var col_idx = mutation.target.dataset.col;
             var width = mutation.target.style.width;
-            this.colgroup.find('col').eq(col_idx).css('width', width);
-            Sao.common.debounce(this.save_width, 1000)(this);
+            var old_width = mutation.oldValue ? mutation.oldValue.width : undefined;
+            if (width != old_width) {
+                this.colgroup.find('col').eq(col_idx).css('width', width);
+                Sao.common.debounce(this.save_width, 1000)(this);
+            }
         },
         save_width: function(tree) {
             var widths = {};
