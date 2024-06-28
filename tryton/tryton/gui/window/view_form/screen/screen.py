@@ -1318,11 +1318,15 @@ class Screen:
         self.reload(ids, written=True)
         # PJA: handle different returns values from button
         if isinstance(action, list):
-            Action.execute(action[0], {
-                    'model': self.model_name,
-                    'id': current_id,
-                    'ids': ids,
-                    }, context=self.context, keyword=True)
+            for act in action:
+                if isinstance(act, str):
+                    self.client_action(act)
+                elif act:
+                    Action.execute(act, {
+                            'model': self.model_name,
+                            'id': current_id,
+                            'ids': ids,
+                            }, context=self.context, keyword=True)
         elif isinstance(action, str):
             self.client_action(action)
         else:

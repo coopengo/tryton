@@ -2018,11 +2018,17 @@
                     // [Coog specific]
                     // JMO: report https://github.com/coopengo/tryton/pull/13
                     if (Array.isArray(action)) {
-                        Sao.Action.execute(action[0], {
-                            model: this.model_name,
-                            id: this.current_record.id,
-                            ids: ids
-                        }, null, this.context, true);
+                        for (const act of action) {
+                            if (typeof act == 'string) {
+                                this.client_action(act);
+                            } else if (action) {
+                                Sao.Action.execute(act, {
+                                    model: this.model_name,
+                                    id: this.current_record.id,
+                                    ids: ids
+                                }, null, this.context, true);
+                            }
+                        }
                     }
                     else
                     // end
