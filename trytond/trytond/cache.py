@@ -183,21 +183,28 @@ class MemoryCache(BaseCache):
         else:
             return self._database_cache[dbname]
 
-    def get(self, key, default=None):
-        key = self._key(key)
+    def batch_get(self, keys, default=None):
+        now = dt.datetime.now()
         cache = self._get_cache()
-        try:
-            (expire, result) = cache.pop(key)
-            if expire and expire < dt.datetime.now():
+        values = []
+        for key in map(self._key, keys):
+            try:
+                expire, result = cache[key]
+                if expire and expire < now:
+                    cache.pop(key)
+                    self.miss += 1
+                    values.append(default)
+                    continue
+                cache.move_to_end(key)
+                self.hit += 1
+                values.append(result)
+            except KeyError:
                 self.miss += 1
-                return default
-            cache[key] = (expire, result)
-            self.hit += 1
-            return result
-        except KeyError:
-            # JCA : Properly crash on type error
-            self.miss += 1
-            return default
+                values.append(default)
+        return values
+
+    def get(self, key, default=None):
+        return self.batch_get([key], default)[0]
 
     def set(self, key, value):
         key = self._key(key)
