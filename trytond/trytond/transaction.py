@@ -391,13 +391,8 @@ class Transaction(object):
             self.rollback()
             raise
         else:
-            try:
-                for datamanager in self._datamanagers:
-                    datamanager.tpc_finish(self)
-            except Exception:
-                logger.critical('A datamanager raised an exception in'
-                    ' tpc_finish, the data might be inconsistant',
-                    exc_info=True)
+            for datamanager in self._datamanagers:
+                datamanager.tpc_finish(self)
 
     def rollback(self):
         from trytond.cache import Cache
