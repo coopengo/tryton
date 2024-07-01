@@ -935,7 +935,7 @@ class Replace(Wizard):
 
             Model._insert_history(ids)
 
-            self.hook_after_replace(source, destination)
+        self.hook_after_replace(source, destination)
         return 'end'
 
     @classmethod
