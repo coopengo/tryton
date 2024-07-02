@@ -166,6 +166,8 @@
             tr.append(th);
             this.thead.append(tr);
 
+            const observer = new MutationObserver(this.column_resize.bind(this));
+
             this.tfoot = null;
             var sum_row;
             if (this.sum_widgets.size) {
@@ -194,6 +196,10 @@
                     });
             }
 
+            var col_idx = 1;
+            if (this.optionals.length) {
+                col_idx += 1;
+            }
             for (const column of this.columns) {
                 col = jQuery('<col/>', {
                     'class': column.attributes.widget,
@@ -201,7 +207,9 @@
                 th = jQuery('<th/>', {
                     'class': column.attributes.widget,
                 });
-                var resize_div = jQuery('<div/>');
+                var resize_div = jQuery('<div/>', {
+                    'data-col': col_idx,
+                });
                 var label = jQuery('<label/>')
                     .text(column.attributes.string)
                     .attr('title', column.attributes.string)
@@ -223,12 +231,17 @@
                     });
                     label.append(arrow);
                     column.arrow = arrow;
-                    th.click(column, this.sort_model.bind(this));
+                    label.click(column, this.sort_model.bind(this));
                     label.addClass('sortable');
                 }
                 tr.append(th.append(resize_div));
                 column.header = th;
                 column.col = col;
+                observer.observe(resize_div[0], {
+                    attributeFilter: ["style"],
+                    attributeOldValue: true,
+                    subtree: false,
+                });
 
                 column.footers = [];
                 if (this.sum_widgets.size) {
@@ -245,6 +258,8 @@
                     sum_row.append(total_cell);
                     column.footers.push(total_cell);
                 }
+
+                col_idx += 1;
             }
             this.tbody = jQuery('<tbody/>');
             this.table.append(this.tbody);
@@ -329,6 +344,55 @@
                     this.view_id, fields], {});
             }
             Sao.Screen.tree_column_optional[this.view_id] = fields;
+        },
+        column_resize: function(mutationList) {
+            if (mutationList.length == 0) {
+                return;
+            }
+            if (!this.colgroup.data('resized')) {
+                this.colgroup.find('col').each((idx, element) => {
+                    var jqElement = jQuery(element);
+                    if (!jqElement.hasClass('optional') &&
+                        !jqElement.hasClass('selection-state')) {
+                        jqElement.width(jqElement.width());
+                    }
+                });
+                this.colgroup.data('resized', true);
+            }
+            var mutation = mutationList.at(-1);
+            var col_idx = mutation.target.dataset.col;
+            var width = mutation.target.style.width;
+            var old_width = mutation.oldValue ? mutation.oldValue.width : undefined;
+            if (width != old_width) {
+                this.colgroup.find('col').eq(col_idx).css('width', width);
+                Sao.common.debounce(this.save_width, 1000)(this);
+            }
+        },
+        save_width: function(tree) {
+            var widths = {};
+            for (const column of tree.columns) {
+                if (!column.get_visible()) {
+                    continue;
+                }
+                var width = column.col.css('width');
+                widths[column.attributes.name] = Number(
+                    width.substr(0, width.length - 2));
+            }
+
+            var model_name = tree.screen.model_name;
+            var TreeWidth = new Sao.Model('ir.ui.view_tree_width');
+            TreeWidth.execute(
+                'set_width',
+                [model_name, widths, window.screen.width],
+                {});
+            if (Object.hasOwn(
+                Sao.Screen.tree_column_width, model_name)) {
+                jQuery.extend(
+                    Sao.Screen.tree_column_width[model_name],
+                    widths);
+            } else {
+                Sao.Screen.tree_column_width[model_name] = widths;
+            }
         },
         reset: function() {
             this.display_size = Sao.config.display_size;
@@ -789,6 +853,8 @@
             domain = inversion.simplify(domain);
             var decoder = new Sao.PYSON.Decoder(this.screen.context);
             var min_width = [];
+            var tree_column_width = (
+                Sao.Screen.tree_column_width[this.screen.model_name] || {});
             var tree_column_optional = (
                 Sao.Screen.tree_column_optional[this.view_id] || {});
             for (const column of this.columns) {
@@ -834,7 +900,10 @@
                     !column.col.hasClass('selection-state') &&
                     !column.col.hasClass('favorite')) {
                     var width, c_width;
-                    if (column.attributes.width) {
+                    if (Object.hasOwn(tree_column_width, column.attributes.name)) {
+                        width = c_width = tree_column_width[column.attributes.name];
+                        min_width.push(width);
+                    } else if (column.attributes.width) {
                         width = c_width = column.attributes.width;
                         min_width.push(width + 'px');
                     } else {
@@ -998,15 +1067,15 @@
                     to_show.push(i);
                 }
             }
+            // Take into account the selection or optional column
+            var offset = 1;
+            if (this.draggable) {
+                offset += 1;
+            } else if (this.optionals.length) {
+                offset += 1;
+            }
+
             const make_selector = (col_idx) => {
-                // Take into account the selection or optional column
-                var offset = 1;
-                if (this.draggable) {
-                    offset += 1;
-                } else if (this.optionals.length) {
-                    offset += 1;
-                }
-                // CSS is 1-indexed
                 return `tr td:nth-child(${col_idx + offset + 1})`;
             };
 
@@ -1017,6 +1086,9 @@
             if (to_show.length) {
                 this.tbody.find(to_show.map(make_selector).join(','))
                     .removeClass('invisible').show();
+                this.thead.find(
+                        `tr th:nth-child(${to_show[to_show.length - 1] + offset + 1}) div`)
+                    .css('resize', 'none');
             }
         },
         update_sum: function() {

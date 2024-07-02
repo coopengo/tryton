@@ -524,10 +524,14 @@ img.icon {
             }
         }
         > thead > tr > th {
-            &:not(:last-child) div {
-                resize: horizontal;
+            padding: 0;
+
+            div {
+                padding: 5px;
             }
+
             &:not(:first-child) div {
+                resize: horizontal;
                 overflow: hidden;
                 text-overflow: ellipsis;
 
