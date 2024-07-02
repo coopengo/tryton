@@ -116,6 +116,7 @@
                     ([k, v]) => (k != 'locale') && !k.endsWith('.rec_name')));
                 jQuery.extend(this.context, context);
                 this.store_context();
+                Sao.set_title(context.status_bar || '');
             });
         },
         reset_context: function() {
