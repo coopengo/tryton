@@ -1250,10 +1250,13 @@ def RPCExecute(*args, **kwargs):
 
 
 def RPCContextReload(callback=None):
+    from tryton.gui.main import Main
+
     def update(context):
         rpc.context_reset()
         try:
             rpc.CONTEXT.update(context())
+            Main().set_title(context.get('status_bar', ''))
         except RPCException:
             pass
         if callback:
@@ -1261,9 +1264,11 @@ def RPCContextReload(callback=None):
     context = RPCExecute(
         'model', 'res.user', 'get_preferences', True,
         callback=update if callback else None)
+
     if not callback:
         rpc.context_reset()
         rpc.CONTEXT.update(context)
+        Main().set_title(context.get('status_bar', ''))
 
 
 class Tooltips(object):
