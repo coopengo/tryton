@@ -1250,24 +1250,25 @@ def RPCExecute(*args, **kwargs):
 
 
 def RPCContextReload(callback=None):
+    from tryton.gui.main import Main
+
     def update(context):
         rpc.context_reset()
         try:
             rpc.CONTEXT.update(context())
+            Main().set_title(context.get('status_bar', ''))
         except RPCException:
             pass
-        if rpc._CLIENT_DATE:
-            rpc.CONTEXT['client_defined_date'] = rpc._CLIENT_DATE
         if callback:
             callback()
     context = RPCExecute(
         'model', 'res.user', 'get_preferences', True,
         callback=update if callback else None)
+
     if not callback:
         rpc.context_reset()
         rpc.CONTEXT.update(context)
-        if rpc._CLIENT_DATE:
-            rpc.CONTEXT['client_defined_date'] = rpc._CLIENT_DATE
+        Main().set_title(context.get('status_bar', ''))
 
 
 class Tooltips(object):
