@@ -362,10 +362,35 @@
             var mutation = mutationList.at(-1);
             var col_idx = mutation.target.dataset.col;
             var width = mutation.target.style.width;
-            var old_width = mutation.oldValue ? mutation.oldValue.width : undefined;
-            if (width != old_width) {
+            const css_width_re = /width: ([^;]*)/i;
+            var old_width;
+            if (mutation.oldValue) {
+                old_width = mutation.oldValue.match(css_width_re);
+                old_width = old_width ? old_width[1] : undefined;
+            }
+            if (old_width && (width != old_width)) {
+                const width_re = /^([0-9\.]+)px$/i;
+                var old_value = old_width.match(width_re);
+                var value = width.match(width_re);
+                old_value = old_value ? Number(old_value[1]) : undefined;
+                value = value ? Number(value[1]) : undefined;
+
+                if (old_value && value) {
+                    var offset = old_value - value;
+                    var tr_node = jQuery(mutation.target.parentNode.parentNode);
+                    var last_col = this.colgroup.find('col')
+                        .eq(tr_node.data('last_col'));
+                    var last_col_width = last_col.css('width').match(width_re);
+                    last_col_width = last_col_width ? Number(last_col_width[1]) : undefined;
+                    if (last_col_width || (last_col_width === 0)) {
+                        this.colgroup.find('col').eq(col_idx).css('width', width);
+                        this.colgroup.find('col').eq(tr_node.data('last_col'))
+                            .css('width', `${last_col_width + offset}px`);
+                        Sao.common.debounce(this.save_width, 1000)(this);
+                    }
+                }
+            } else if (!old_width) {
                 this.colgroup.find('col').eq(col_idx).css('width', width);
-                Sao.common.debounce(this.save_width, 1000)(this);
             }
         },
         save_width: function(tree) {
@@ -1079,6 +1104,7 @@
                 return `tr td:nth-child(${col_idx + offset + 1})`;
             };
 
+            this.thead.find('tr').data('last_col', to_show.at(-1) + offset);
             if (to_hide.length) {
                 this.tbody.find(to_hide.map(make_selector).join(','))
                     .addClass('invisible').hide();
