@@ -2021,7 +2021,7 @@
                         for (const act of action) {
                             if (typeof act == 'string') {
                                 this.client_action(act);
-                            } else if (action) {
+                            } else if (act) {
                                 Sao.Action.execute(act, {
                                     model: this.model_name,
                                     id: this.current_record.id,
