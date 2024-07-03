@@ -2019,7 +2019,7 @@
                     // JMO: report https://github.com/coopengo/tryton/pull/13
                     if (Array.isArray(action)) {
                         for (const act of action) {
-                            if (typeof act == 'string) {
+                            if (typeof act == 'string') {
                                 this.client_action(act);
                             } else if (action) {
                                 Sao.Action.execute(act, {
