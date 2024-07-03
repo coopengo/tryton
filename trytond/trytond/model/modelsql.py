@@ -1825,6 +1825,7 @@ class ModelSQL(ModelStorage):
     @classmethod
     def search(cls, domain, offset=0, limit=None, order=None, count=False,
             query=False):
+        domain = domain if domain is not None else []
         transaction = Transaction()
         cursor = transaction.connection.cursor()
 
