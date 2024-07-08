@@ -2,7 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 import datetime
 from collections import OrderedDict, defaultdict
-from functools import wraps
+from functools import cache, wraps
 from itertools import chain, groupby, islice, product, repeat
 
 from sql import (
@@ -22,6 +22,7 @@ from trytond.pool import Pool
 from trytond.pyson import PYSONDecoder, PYSONEncoder
 from trytond.rpc import RPC
 from trytond.tools import cursor_dict, grouped_slice, reduce_ids
+from trytond.tools.domain_inversion import simplify
 from trytond.transaction import (
     Transaction, inactive_records, record_cache_size, without_check_access)
 
@@ -294,6 +295,34 @@ def no_table_query(func):
             raise NotImplementedError("On table_query")
         return func(cls, *args, **kwargs)
     return wrapper
+
+
+@cache
+def apply_sorting(keywords):
+    order_types = {
+        'DESC': Desc,
+        'ASC': Asc,
+        }
+    null_ordering_types = {
+        'NULLS FIRST': NullsFirst,
+        'NULLS LAST': NullsLast,
+        None: lambda _: _
+        }
+
+    if not keywords:
+        keywords = 'ASC'
+    keywords = keywords.upper()
+
+    try:
+        otype, null_ordering = keywords.split(' ', 1)
+    except ValueError:
+        otype = keywords
+        null_ordering = None
+
+    Order = order_types[otype]
+    NullOrdering = null_ordering_types[null_ordering]
+
+    return lambda col: NullOrdering(Order(col))
 
 
 class ModelSQL(ModelStorage):
@@ -1641,6 +1670,23 @@ class ModelSQL(ModelStorage):
         pool = Pool()
         Rule = pool.get('ir.rule')
 
+        def convert(domain):
+            if is_leaf(domain):
+                fname, *_ = domain[0].split('.', 1)
+                field = cls._fields[fname]
+                if (fname != 'active' and isinstance(field, fields.Function)
+                        and field.searcher):
+                    new_leaf = getattr(cls, field.searcher)(fname, domain)
+                    assert not isinstance(new_leaf, (Operator, Expression))
+                    return new_leaf
+                else:
+                    return domain
+            elif isinstance(domain, str):
+                return domain
+            else:
+                return [convert(d) for d in domain]
+
+        domain = simplify(convert(domain))
         rule_domain = Rule.domain_get(cls.__name__, mode='read')
         joined_domains = None
         if domain and domain[0] == 'OR':
@@ -1651,19 +1697,7 @@ class ModelSQL(ModelStorage):
                     local_domains.insert(0, 'OR')
                     joined_domains.append(local_domains)
 
-        def get_local_columns(order_exprs):
-            local_columns = []
-            for order_expr in order_exprs:
-                if (isinstance(order_expr, Column)
-                        and isinstance(order_expr._from, Table)
-                        and order_expr._from._name == cls._table):
-                    local_columns.append(order_expr._name)
-                else:
-                    raise NotImplementedError
-            return local_columns
-
         # The UNION optimization needs the columns used to order the query
-        extra_columns = set()
         if order and joined_domains:
             tables = {
                 None: (cls.__table__(), None),
@@ -1671,17 +1705,15 @@ class ModelSQL(ModelStorage):
             for oexpr, otype in order:
                 fname = oexpr.partition('.')[0]
                 field = cls._fields[fname]
-                field_orders = field.convert_order(oexpr, tables, cls)
-                try:
-                    order_columns = get_local_columns(field_orders)
-                    extra_columns.update(order_columns)
-                except NotImplementedError:
+                field.convert_order(oexpr, tables, cls)
+                if len(tables) > 1:
                     joined_domains = None
                     break
 
         # In case the search uses subqueries it's more efficient to use a UNION
         # of queries than using clauses with some JOIN because databases can
         # used indexes
+        orderings = []
         if joined_domains is not None:
             union_tables = []
             for sub_domain in joined_domains:
@@ -1693,9 +1725,8 @@ class ModelSQL(ModelStorage):
                     expression &= domain_exp
                 main_table, _ = tables[None]
                 table = convert_from(None, tables)
-                columns = cls.__searched_columns(main_table,
-                    eager=not count and not query,
-                    extra_columns=extra_columns)
+                columns, orderings = cls.__searched_columns(
+                    main_table, eager=not count and not query, order=order)
                 union_tables.append(table.select(
                         *columns, where=expression))
             expression = None
@@ -1709,30 +1740,39 @@ class ModelSQL(ModelStorage):
                     rule_domain, active_test=False, tables=tables)
                 expression &= domain_exp
 
-        return tables, expression
+        return tables, expression, orderings
 
     @classmethod
     def __searched_columns(
-            cls, table, *, eager=False, history=False, extra_columns=None):
-        if extra_columns is None:
-            extra_columns = []
-        else:
-            extra_columns = sorted(extra_columns - {'id', '__id', '_datetime'})
+            cls, table, *, eager=False, history=False, order=None):
+        if order is None:
+            order = []
         columns = [table.id.as_('id')]
         if (cls._history and Transaction().context.get('_datetime')
                 and (eager or history)):
             columns.append(
                 Coalesce(table.write_date, table.create_date).as_('_datetime'))
             columns.append(Column(table, '__id').as_('__id'))
-        for column_name in extra_columns:
+
+        orderings = []
+        o_idx = 0
+        tables = {
+            None: (table, None),
+            }
+        for oexpr, otype in order:
+            column_name, _, extra_expr = oexpr.partition('.')
             field = cls._fields[column_name]
-            sql_column = field.sql_column(table).as_(column_name)
-            columns.append(sql_column)
+            # By construction tables is left untouched
+            forder = field.convert_order(oexpr, tables, cls)
+            columns.extend(o.as_(f'_order_{o_idx + idx}')
+                for idx, o in enumerate(forder))
+            o_idx += len(forder)
+            orderings.extend([otype] * len(forder))
+
         if eager:
             columns += [f.sql_column(table).as_(n)
                 for n, f in sorted(cls._fields.items())
                 if not hasattr(f, 'get')
-                    and n not in extra_columns
                     and n != 'id'
                     and not getattr(f, 'translate', False)
                     and f.loading == 'eager']
@@ -1741,41 +1781,22 @@ class ModelSQL(ModelStorage):
                 columns += [Extract('EPOCH',
                         Coalesce(table.write_date, table.create_date)
                         ).cast(sql_type).as_('_timestamp')]
-        return columns
+        return columns, orderings
 
     @classmethod
     def __search_order(cls, order, tables):
         order_by = []
-        order_types = {
-            'DESC': Desc,
-            'ASC': Asc,
-            }
-        null_ordering_types = {
-            'NULLS FIRST': NullsFirst,
-            'NULLS LAST': NullsLast,
-            None: lambda _: _
-            }
         for oexpr, otype in order:
             fname, _, extra_expr = oexpr.partition('.')
             field = cls._fields[fname]
-            if not otype:
-                otype, null_ordering = 'ASC', None
-            else:
-                otype = otype.upper()
-                try:
-                    otype, null_ordering = otype.split(' ', 1)
-                except ValueError:
-                    null_ordering = None
-            Order = order_types[otype]
-            NullOrdering = null_ordering_types[null_ordering]
             forder = field.convert_order(oexpr, tables, cls)
-            order_by.extend((NullOrdering(Order(o)) for o in forder))
-
+            order_by.extend(apply_sorting(otype)(o) for o in forder)
         return order_by
 
     @classmethod
     def search(cls, domain, offset=0, limit=None, order=None, count=False,
             query=False):
+        domain = domain if domain is not None else []
         transaction = Transaction()
         cursor = transaction.connection.cursor()
 
@@ -1784,7 +1805,8 @@ class ModelSQL(ModelStorage):
 
         if order is None or order is False:
             order = cls._order
-        tables, expression = cls.__search_query(domain, count, query, order)
+        tables, expression, union_orderings = cls.__search_query(
+            domain, count, query, order)
 
         main_table, _ = tables[None]
         if count:
@@ -1801,10 +1823,21 @@ class ModelSQL(ModelStorage):
                 cursor.execute(*select)
                 return cursor.fetchone()[0]
 
-        order_by = cls.__search_order(order, tables)
+        if union_orderings:
+            # union_orderings is not empty only when the OR-to-UNION
+            # optimization has been applied. In this case we must rely on the
+            # _order_XXX columns that were added to the subqueries to properly
+            # sort the results.
+            order_by = []
+            for idx, otype in enumerate(union_orderings):
+                column = getattr(main_table, f'_order_{idx}')
+                order_by.append(apply_sorting(otype)(column))
+        else:
+            order_by = cls.__search_order(order, tables)
+
         # compute it here because __search_order might modify tables
         table = convert_from(None, tables)
-        columns = cls.__searched_columns(main_table, eager=not query)
+        columns, _ = cls.__searched_columns(main_table, eager=not query)
         select = table.select(
             *columns, where=expression, limit=limit, offset=offset,
             order_by=order_by)

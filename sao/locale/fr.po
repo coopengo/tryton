@@ -430,7 +430,7 @@ msgid "Modified at"
 msgstr "Modifié le"
 
 msgid "\"%1\" is required."
-msgstr "« %1 » est requis."
+msgstr "Le champ « %1 » est requis."
 
 msgid "\"%1\" is not valid according to its domain."
 msgstr "« %1 » n'est pas valide selon son domaine."
