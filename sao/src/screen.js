@@ -2129,23 +2129,39 @@
             const process_action = action => {
                 // [Coog specific]
                 // JMO: report https://github.com/coopengo/tryton/pull/13
-                var action_id;
-                if (action && typeof action != 'string' &&
-                    action.length && action.length === 2) {
-                    action_id = action[0];
-                    action = action[1];
-                } else if (typeof action == 'number') {
-                    action_id = action;
-                    action = undefined;
+                if (Array.isArray(action)) {
+                    var prms = [];
+                    var later_actions = [];
+                    for (const act of action) {
+                        if (typeof act == 'string') {
+                            later_actions.push(act);
+                        } else if (act) {
+                            prms.push(
+                                Sao.Action.execute(act, {
+                                    model: this.model_name,
+                                    id: this.current_record.id,
+                                    ids: ids
+                                }, null, this.context, true));
+                        }
+                    }
+                    return jQuery.when.apply(jQuery, prms).always(() => {
+                        return this.reload(ids, true).always(() => {
+                            for (const a of later_actions) {
+                                this.client_action(a);
+                            }
+                            return this.record_saved();
+                        });
+                    });
                 }
+                else
                 // end
                 if (typeof action == 'string') {
                     return this.reload(ids, true).then(() => {
                         return this.client_action(action);
                     });
                 }
-                if (action_id) {
-                    return Sao.Action.execute(action_id, {
+                else if (action) {
+                    return Sao.Action.execute(action, {
                         model: this.model_name,
                         id: this.current_record.id,
                         ids: ids
