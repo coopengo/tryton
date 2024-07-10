@@ -122,6 +122,21 @@
 // Tree views
 ///////////////////////////////////////////////////////////////////////////////
 
+div.screen-container > div.content-box > div.tree-container {
+    height: 100%;
+    height: -moz-available;
+    height: -webkit-fill-available;
+    height: fill-available;
+}
+
+div.wizard-form > div.wizard {
+    height: 100%;
+    height: -moz-available;
+    height: -webkit-fill-available;
+    height: fill-available;
+    overflow-y: auto;
+}
+
 // Use variable for border width
 .treeview > table.tree > tbody > tr > td {
     border-top-width:   @tree-line-border-top;
