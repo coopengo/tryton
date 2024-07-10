@@ -1614,6 +1614,7 @@ function eval_pyson(value){
                     async: true
                 }
             });
+            this.codeMirror.on('change', this.send_modified.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
                 "Alt-R": "replace", "Shift-Alt-R": "replaceAll",
             });
@@ -1635,6 +1636,25 @@ function eval_pyson(value){
                 'display': 'block',
                 'height': '490px'
             });
+        },
+        get modified() {
+            if (this.record && this.field) {
+                var value = this.get_client_value();
+                return value != this.get_value();
+            }
+            return false;
+        },
+        get_client_value: function() {
+            var field = this.field;
+            var record = this.record;
+            var value = '';
+            if (field) {
+                value = field.get_client(record);
+            }
+            return value;
+        },
+        get_value: function() {
+            return this.codeMirror.getValue();
         },
         display: function(){
             Sao.View.Form.Source._super.display.call(this);
