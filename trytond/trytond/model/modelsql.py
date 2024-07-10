@@ -1674,7 +1674,8 @@ class ModelSQL(ModelStorage):
             if is_leaf(domain):
                 fname, *_ = domain[0].split('.', 1)
                 field = cls._fields[fname]
-                if isinstance(field, fields.Function) and field.searcher:
+                if (fname != 'active' and isinstance(field, fields.Function)
+                        and field.searcher):
                     new_leaf = getattr(cls, field.searcher)(fname, domain)
                     assert not isinstance(new_leaf, (Operator, Expression))
                     return new_leaf
@@ -1795,6 +1796,7 @@ class ModelSQL(ModelStorage):
     @classmethod
     def search(cls, domain, offset=0, limit=None, order=None, count=False,
             query=False):
+        domain = domain if domain is not None else []
         transaction = Transaction()
         cursor = transaction.connection.cursor()
 
