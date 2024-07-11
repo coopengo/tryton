@@ -3152,7 +3152,9 @@ function eval_pyson(value){
             if (this.has_target(value)) {
                 var m2o_id =
                     this.id_from_value(record.field_get(this.field_name));
-                if (evt && !(evt.ctrlKey || evt.metaKey)) {
+                var body, listener;
+                body = listener = jQuery(document.body);
+                if (evt && !(evt.ctrlKey || evt.metaKey || body.hasClass('modal-open'))) {
                     var params = {};
                     params.model = this.get_model();
                     params.res_id = m2o_id;
