@@ -2,6 +2,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import doctest
+import hashlib
 import inspect
 import multiprocessing
 import operator
@@ -103,12 +104,11 @@ def activate_module(modules, lang='en', cache_name=None):
 def restore_db_cache(name):
     result = False
     if DB_CACHE:
-        cache_file = _db_cache_file(DB_CACHE, name, backend.name)
-        if os.path.exists(cache_file):
-            if backend.name == 'sqlite':
-                result = _sqlite_copy(cache_file, restore=True)
-            elif backend.name == 'postgresql':
-                result = _pg_restore(cache_file)
+        cache_file = _db_cache_file(DB_CACHE, name)
+        if backend.name == 'sqlite':
+            result = _sqlite_copy(cache_file, restore=True)
+        elif backend.name == 'postgresql':
+            result = _pg_restore(cache_file)
     if result:
         Pool(DB_NAME).init()
     return result
@@ -118,7 +118,7 @@ def backup_db_cache(name):
     if DB_CACHE:
         if not os.path.exists(DB_CACHE):
             os.makedirs(DB_CACHE)
-        cache_file = _db_cache_file(DB_CACHE, name, backend.name)
+        cache_file = _db_cache_file(DB_CACHE, name)
         if not os.path.exists(cache_file):
             if backend.name == 'sqlite':
                 _sqlite_copy(cache_file)
@@ -126,8 +126,18 @@ def backup_db_cache(name):
                 _pg_dump(cache_file)
 
 
-def _db_cache_file(path, name, backend_name):
-    return os.path.join(path, 'test_%s_cache_%s.dump' % (backend_name, name))
+def _db_cache_file(path, name):
+    if DB_CACHE.startswith('postgresql://'):
+        uri = parse_uri(DB_CACHE)
+        prefix_len = len('test-') + len(uri.netloc) + 1
+        hash_name = hashlib.shake_128(name.encode('utf8')).hexdigest(
+            (63 - prefix_len) // 2)
+        if not uri.netloc:
+            return f"{DB_CACHE}/test-{hash_name}"
+        else:
+            return f"{DB_CACHE}/{uri.netloc}-test-{hash_name}"
+    else:
+        return os.path.join(path, '%s-%s.dump' % (name, backend.name))
 
 
 def _sqlite_copy(file_, restore=False):
