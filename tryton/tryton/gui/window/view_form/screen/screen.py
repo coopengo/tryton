@@ -1329,7 +1329,7 @@ class Screen:
                             }, context=self.context, keyword=True)
         elif isinstance(action, str):
             self.client_action(action)
-        else:
+        elif action:
             Action.execute(action, {
                     'model': self.model_name,
                     'id': current_id,
