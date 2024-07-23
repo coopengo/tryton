@@ -362,36 +362,48 @@
             var mutation = mutationList.at(-1);
             var col_idx = mutation.target.dataset.col;
             var width = mutation.target.style.width;
-            const css_width_re = /width: ([^;]*)/i;
-            var old_width;
-            if (mutation.oldValue) {
-                old_width = mutation.oldValue.match(css_width_re);
-                old_width = old_width ? old_width[1] : undefined;
-            }
-            if (old_width && (width != old_width)) {
-                const width_re = /^([0-9\.]+)px$/i;
-                var old_value = old_width.match(width_re);
-                var value = width.match(width_re);
-                old_value = old_value ? Number(old_value[1]) : undefined;
-                value = value ? Number(value[1]) : undefined;
+            var full_width = this.colgroup[0].parentNode.parentNode.clientWidth;
+            var all_cols = this.colgroup.find('col');
+            var target = this.colgroup.find('col').eq(col_idx)[0];
 
-                if (old_value && value) {
-                    var offset = old_value - value;
-                    var tr_node = jQuery(mutation.target.parentNode.parentNode);
-                    var last_col = this.colgroup.find('col')
-                        .eq(tr_node.data('last_col'));
-                    var last_col_width = last_col.css('width').match(width_re);
-                    last_col_width = last_col_width ? Number(last_col_width[1]) : undefined;
-                    if (last_col_width || (last_col_width === 0)) {
-                        this.colgroup.find('col').eq(col_idx).css('width', width);
-                        this.colgroup.find('col').eq(tr_node.data('last_col'))
-                            .css('width', `${last_col_width + offset}px`);
-                        Sao.common.debounce(this.save_width, 1000)(this);
-                    }
+            // evil
+            // to avoid weird resizing when we reduce the size of column when
+            // there is no overflow on the tree, we add the same number of
+            // pixels to the rightmost visible column.
+            // To provide a way to reduce the size of the rightmost column,
+            // increasing the size of the second to rightmost column will
+            // also reduce the size of the rightmost one
+            var prev_width = target.clientWidth;
+            var new_width = parseInt(width.replace("px", ""));
+            let iteration = 0;
+            let resize_last = false;
+            let to_update;
+            let total = 0;
+            for (let index = all_cols.length - 1; index >= 0; index--) {
+                var col = all_cols[index];
+                if (col.style.width === "0px") {
+                    continue;
                 }
-            } else if (!old_width) {
-                this.colgroup.find('col').eq(col_idx).css('width', width);
+                if ((to_update === undefined) && (col !== target)) {
+                    to_update = col;
+                }
+                if ((iteration === 1) && (col === target)) {
+                    resize_last = true;
+                }
+                if (col === target) {
+                    total += new_width;
+                } else {
+                    total += col.clientWidth;
+                }
+                iteration += 1;
             }
+            if ((resize_last === true) && (prev_width < new_width)) {
+                to_update.style.width = (to_update.clientWidth - new_width + prev_width) + "px";
+            } else if (full_width > total) {
+                to_update.style.width = (to_update.clientWidth + full_width - total) + "px";
+            }
+            this.colgroup.find('col').eq(col_idx).css('width', width);
+            Sao.common.debounce(this.save_width, 1000)(this);
         },
         save_width: function(tree) {
             var widths = {};
