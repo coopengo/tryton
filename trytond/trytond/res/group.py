@@ -47,6 +47,7 @@ class Group(DeactivableMixin, tree(), ModelSQL, ModelView):
        domain=[('global_p', '!=', True), ('default_p', '!=', True)])
     menu_access = MenuMany2Many('ir.ui.menu-res.group',
        'group', 'menu', 'Access Menu')
+    code = fields.Char('Code')
 
     @classmethod
     def __setup__(cls):

@@ -5,13 +5,16 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_account">
             <field name="name">Account</field>
+            <field name="code">account</field>
         </record>
         <record model="res.group" id="group_account_party">
             <field name="name">Accounting Party</field>
+            <field name="code">accounting_party</field>
             <field name="parent" ref="group_account"/>
         </record>
         <record model="res.group" id="group_account_admin">
             <field name="name">Account Administration</field>
+            <field name="code">account_administration</field>
             <field name="parent" ref="group_account"/>
         </record>
         <record model="res.user-res.group" id="user_admin_group_account">

@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_account_product_admin">
             <field name="name">Account Product Administration</field>
+            <field name="code">account_product_administration</field>
             <field name="parent" ref="product.group_product_admin"/>
         </record>
         <record model="res.user-res.group" id="user_admin_group_account_product_admin">
