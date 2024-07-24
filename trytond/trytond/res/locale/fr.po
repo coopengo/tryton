@@ -118,6 +118,10 @@ msgctxt "field:res.group,buttons:"
 msgid "Buttons"
 msgstr "Boutons"
 
+msgctxt "field:res.group,code:"
+msgid "Code"
+msgstr "Code"
+
 msgctxt "field:res.group,field_access:"
 msgid "Access Field"
 msgstr "Droit d'accès"
