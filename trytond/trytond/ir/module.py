@@ -136,15 +136,6 @@ class Module(ModelSQL, ModelView):
                     raise AccessError(gettext('ir.msg_module_delete_state'))
 
     @classmethod
-    def view_attributes(cls):
-        return [('/tree', 'colors',
-                If(Eval('state').in_(['to upgrade', 'to install']),
-                    'blue',
-                    If(Eval('state') == 'uninstalled',
-                        'grey',
-                        'black')))]
-
-    @classmethod
     def on_written(cls, modules):
         dependencies = set()
 
