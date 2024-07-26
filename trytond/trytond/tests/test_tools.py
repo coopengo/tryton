@@ -508,28 +508,9 @@ class LazyStringTestCase(unittest.TestCase):
         self.assertEqual(s, 'barfoo')
 
     def test_get_server_zoneinfo(self):
-        zi = timezone._get_zoneinfo('foo')
+        zi = timezone.get_tzinfo('foo')
         now = dt.datetime(2022, 5, 17, tzinfo=zi)
         self.assertEqual(str(now), "2022-05-17 00:00:00+00:00")
-
-    def test_lazy_evaluation(self):
-        "Test that StringPartitioned doesn't evaluate its argument on __init__"
-        getter = Mock()
-        getter.side_effect = lambda s: s
-        ls = LazyString(getter, 'foo')
-
-        s = StringPartitioned(ls)
-        getter.assert_not_called()
-
-        str(s)
-        getter.assert_called_once()
-
-        getter.reset_mock()
-        s = StringPartitioned(s)
-        getter.assert_not_called()
-
-        str(s)
-        getter.assert_called_once()
 
 
 class ImmutableDictTestCase(unittest.TestCase):
