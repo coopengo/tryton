@@ -189,9 +189,6 @@ class Pool(object):
             # Clear before loading modules
             self._pool = defaultdict(dict)
             self._modules = []
-            # Clean the _pool before loading modules
-            for type in self.classes.keys():
-                self._pool[self.database_name][type] = {}
             self._post_init_calls[self.database_name] = []
             self._final_migrations[self.database_name] = []
             self._notification_callbacks[self.database_name] = {}
@@ -201,7 +198,6 @@ class Pool(object):
                         self.database_name, self, update=update, lang=lang,
                         activatedeps=activatedeps, indexes=indexes)
             except Exception:
-                del self._pool[self.database_name]
                 self._modules = None
                 raise
             self._pools[self.database_name] = self._pool
