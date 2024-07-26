@@ -124,15 +124,6 @@ class Module(ModelSQL, ModelView):
         return child_ids
 
     @classmethod
-    def view_attributes(cls):
-        return [('/tree', 'colors',
-                If(Eval('state').in_(['to upgrade', 'to install']),
-                    'blue',
-                    If(Eval('state') == 'uninstalled',
-                        'grey',
-                        'black')))]
-
-    @classmethod
     def delete(cls, records):
         for module in records:
             if module.state in (
