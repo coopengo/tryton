@@ -4,6 +4,7 @@ import configparser
 import itertools
 import logging
 import os
+import os.path
 import pkgutil
 import tempfile
 from collections import defaultdict
@@ -383,12 +384,12 @@ def load_modules(
         update = []
 
     def migrate_modules(cursor):
-        modules_in_dir = get_module_list()
+        modules_in_dir = get_modules()
         modules_to_migrate = {}
         for module_dir in modules_in_dir:
             try:
                 with tools.file_open(
-                        OPJ(module_dir, '__migrated_modules')) as f:
+                        os.path.join(module_dir, '__migrated_modules')) as f:
                     for line in f.readlines():
                         line = line.replace(' ', '').strip('\n')
                         if not line:
