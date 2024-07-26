@@ -130,6 +130,8 @@ class Translation(
             table.drop_column('src_md5')
 
         # Migration from 7.2
+        cursor = Transaction().connection.cursor()
+        ir_translation = cls.__table__()
         cursor.execute(*ir_translation.update(
                 [ir_translation.res_id], [Null],
                 where=(ir_translation.res_id == -1)))
