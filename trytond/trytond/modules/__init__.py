@@ -223,7 +223,7 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=True):
                     filename = filename.replace('/', os.sep)
                     logger.info('%s:loading %s', logging_prefix, filename)
                     # Feed the parser with xml content:
-                    with (Transaction().set_contex(language='en'),
+                    with (Transaction().set_context(language='en'),
                             tools.file_open(
                                 os.path.join(module, filename), 'rb') as fp):
                         tryton_parser.parse_xmlstream(fp)
