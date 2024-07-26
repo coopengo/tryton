@@ -11,7 +11,7 @@ from unidecode import unidecode
 from trytond import backend
 from trytond.i18n import gettext
 from trytond.config import config as config_parser
-from trytond.exceptions import TimeoutException, UserError
+from trytond.exceptions import UserError
 from trytond.model import ModelSQL, ModelView, fields, Workflow
 from trytond.pyson import Eval, Not, In
 from trytond.pool import Pool
@@ -194,7 +194,7 @@ class Signature(Workflow, ModelSQL, ModelView):
             req = requests.post(url, headers=cls.headers(conf['provider']),
                 auth=cls.auth(conf), timeout=conf['timeout'], data=all_data)
         except requests.Timeout:
-            raise TimeoutException()
+            raise
         if req.status_code > 299:
             message = gettext('electronic_signature.msg_provider_error',
                 description=HTTPStatus(req.status_code).description)
