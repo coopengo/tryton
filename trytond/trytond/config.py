@@ -192,4 +192,4 @@ config = TrytonConfigParser().apply_overriden_defaults()
 
 if os.path.basename(getattr(main, '__file__', '')) != 'trytond-stat':
     from . import status
-    status.start(config.get('database', 'path'))
+    status.start()
