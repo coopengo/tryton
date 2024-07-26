@@ -184,6 +184,7 @@ class BackendTestCase(unittest.TestCase):
         value, = cursor.fetchone()
         self.assertEqual(value, None)
 
+    @with_transaction()
     def test_estimated_count(self):
         "Test estimated count queries"
         pool = Pool()
