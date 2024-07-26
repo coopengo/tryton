@@ -6,8 +6,7 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 
 from trytond.tools import resolve
 from trytond.config import config
-from trytond.exceptions import (UserError, UserWarning,
-    ConcurrencyException, TimeoutException)
+from trytond.exceptions import UserError, UserWarning, ConcurrencyException
 
 error_handler_configuration = config.get('admin', 'error_handling_class')
 
