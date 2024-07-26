@@ -278,6 +278,12 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
         if not update:
             pool.setup()
         else:
+            class Options:
+                pass
+
+            options = Options()
+            options.indexes = indexes
+
             pool.final_migrations(options)
             # As the caches are cleared at the end of the process there's
             # no need to do it here.
