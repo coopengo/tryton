@@ -170,19 +170,17 @@ class Journal(metaclass=PoolMeta):
         return config['paybox']
 
 
-class ProcessPaymentStart(metaclass=PoolMeta):
-    __name__ = 'account.payment.process.start'
-
-    is_paybox = fields.Boolean('Is Paybox', states={
-            'invisible': True})
-
-
 class ProcessPayment(metaclass=PoolMeta):
     __name__ = 'account.payment.process'
 
     def do_process(self, action):
+        pool = Pool()
+        Payment = pool.get('account.payment')
+
         action, res = super(ProcessPayment, self).do_process(action)
-        if res['res_id'] and self.start.is_paybox:
+        payments = Payment.browse(Transaction().context['active_ids'])
+        is_paybox = any(p.journal.process_method == 'paybox' for p in payments)
+        if res['res_id'] and is_paybox:
             group = Pool().get('account.payment.group')(res['res_id'][0])
             res['paybox_url'] = group.generate_paybox_url()
             if not res['paybox_url']:
@@ -190,11 +188,3 @@ class ProcessPayment(metaclass=PoolMeta):
                     gettext('account_payment_paybox.msg_error_url_generation'))
             group.save()
         return action, res
-
-    def default_start(self, name):
-        defaults = super(ProcessPayment, self).default_start(name)
-        Payment = Pool().get('account.payment')
-        payments = Payment.browse(Transaction().context['active_ids'])
-        defaults['is_paybox'] = any(p.journal.process_method == 'paybox'
-            for p in payments)
-        return defaults
