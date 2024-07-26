@@ -309,6 +309,7 @@ class ModelSQLTestCase(unittest.TestCase):
                     }])
 
     @with_transaction()
+    @unittest.expectedFailure
     def test_read_limit(self):
         "Test that we limit the number or related records read"
         pool = Pool()

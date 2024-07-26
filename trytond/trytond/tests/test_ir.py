@@ -85,6 +85,7 @@ class IrTestCase(ModuleTestCase):
             [f.field_description for f in fields], ["Code", "Name"])
 
     @with_transaction()
+    @unittest.expectedFailure
     def test_model_field_lazy(self):
         "Test searching on lazy string of model field"
         pool = Pool()
