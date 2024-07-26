@@ -152,7 +152,9 @@ class Function(Field):
                         value = int(value)
             elif field._type in {'one2many', 'many2many'}:
                 if value:
-                    value = [int(r) for r in value]
+                    # Coopengo allows dict as value of x2Many fields
+                    value = [v if isinstance(v, dict) else int(v)
+                        for v in value]
             return value
 
         def convert_dict(values, name):
