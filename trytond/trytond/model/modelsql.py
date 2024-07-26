@@ -1882,6 +1882,11 @@ class ModelSQL(ModelStorage):
         # compute it here because __search_order might modify tables
         table = convert_from(None, tables)
         columns, _ = cls.__searched_columns(main_table, eager=not query)
+        if backend.name == 'sqlite' and not query:
+            for column in columns:
+                field = cls._fields.get(column.output_name)
+                if field:
+                    column.output_name += ' [%s]' % field.sql_type().base
         select = table.select(
             *columns, where=expression, limit=limit, offset=offset,
             order_by=order_by)
