@@ -246,6 +246,10 @@ class ModelStorage(Model):
         return 0
 
     @classmethod
+    def _must_log(cls):
+        return bool(Transaction().check_access)
+
+    @classmethod
     def write(cls, records, values, *args):
         '''
         Write values on records.
@@ -253,7 +257,7 @@ class ModelStorage(Model):
         pool = Pool()
         ModelAccess = pool.get('ir.model.access')
         ModelFieldAccess = pool.get('ir.model.field.access')
-        transaction = Transaction()
+        must_log = cls._must_log()
 
         assert not len(args) % 2
         actions = iter((records, values) + args)
@@ -263,7 +267,7 @@ class ModelStorage(Model):
             cls.check_xml_record(records, values)
             all_records += records
             all_fields.update(values.keys())
-            if transaction.check_access and values:
+            if must_log and values:
                 cls.log(records, 'write', ','.join(sorted(values.keys())))
 
         ModelAccess.check(cls.__name__, 'write')
@@ -331,7 +335,7 @@ class ModelStorage(Model):
         if ModelData.has_model(cls.__name__):
             ModelData.clean(records)
 
-        if transaction.check_access:
+        if cls._must_log():
             cls.log(records, 'delete')
 
         # Increase transaction counter

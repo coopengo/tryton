@@ -300,6 +300,10 @@ def load_module_graph(graph, pool, update=None, lang=None, options=None):
             # It would deadlock the ir_cache SELECT in the cache when altering
             # the table anyway
             Cache._reset.clear()
+            # The log model may have changed between when the log object was
+            # created and now (if there was an override of the model), so we
+            # cannot save any logs
+            transaction._clear_log_records()
             transaction.commit()
             # Remove unknown models and fields
             Model = pool.get('ir.model')
