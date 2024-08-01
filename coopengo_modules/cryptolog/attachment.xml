@@ -5,7 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="ir.model.button" id="cryptolog_update_transaction_info">
             <field name="name">cryptolog_update_transaction_info</field>
-            <field name="model" search="[('model', '=', 'ir.attachment')]"/>
+            <field name="model">ir.attachment</field>
         </record>
     </data>
 </tryton>

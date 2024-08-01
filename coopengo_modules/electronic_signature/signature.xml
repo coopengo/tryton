@@ -45,11 +45,11 @@ this repository contains the full copyright notices and license terms. -->
         </record>
         <record model="ir.model.button" id="update_transaction_info">
             <field name="name">update_transaction_info</field>
-            <field name="model" search="[('model', '=', 'document.signature')]"/>
+            <field name="model">document.signature</field>
         </record>
         <record model="ir.model.button" id="relaunch_transaction">
             <field name="name">relaunch_transaction</field>
-            <field name="model" search="[('model', '=', 'document.signature')]"/>
+            <field name="model">document.signature</field>
         </record>
     </data>
 </tryton>
