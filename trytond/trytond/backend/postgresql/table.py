@@ -527,7 +527,10 @@ class TableHandler(TableHandlerInterface):
                     params)
                 old.discard(name)
         for name in old:
-            if name.startswith('idx_') or name.endswith('_index'):
+            if (name.startswith('idx_') or
+                name.endswith('_index') or
+                (len(name) == self.namedatalen - 1 and
+                    name not in self._constraints)):
                 cursor.execute(SQL('DROP INDEX {}').format(Identifier(name)))
         self.__indexes = None
 
