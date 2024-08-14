@@ -524,10 +524,14 @@ img.icon {
             }
         }
         > thead > tr > th {
-            &:not(:last-child) div {
-                resize: horizontal;
+            padding: 0;
+
+            div {
+                padding: 5px;
             }
+
             &:not(:first-child) div {
+                resize: horizontal;
                 overflow: hidden;
                 text-overflow: ellipsis;
 
@@ -793,13 +797,14 @@ img.icon {
         .treeview, .list-form {
             height: auto;
             min-height: 150px;
-            max-height: 300px;
+            max-height: 400px;
         }
     }
     .form-text, .form-richtext {
         > textarea {
+            resize: vertical;
             min-height: 150px;
-            max-height: 300px;
+            max-height: 400px;
         }
     }
     .form-richtext {

@@ -889,8 +889,13 @@
             } else if (!view_id && this.views_preload[view_type]) {
                 view = this.views_preload[view_type];
             } else {
+                var context = {
+                    screen_size: [window.screen.width, window.screen.height],
+                    view_tree_width: true,
+                };
+                jQuery.extend(context, this.context);
                 var prm = this.model.execute('fields_view_get',
-                        [view_id, view_type], this.context);
+                        [view_id, view_type], context);
                 return prm.pipe(this.add_view.bind(this));
             }
             this.add_view(view);
@@ -1775,8 +1780,13 @@
                 return this._domain_parser[view_id];
             }
             if (!(view_id in this.fields_view_tree)) {
+                var context = {
+                    screen_size: [window.screen.width, window.screen.height],
+                    view_tree_width: true,
+                };
+                jQuery.extend(context, this.context);
                 view_tree = this.model.execute('fields_view_get', [false, 'tree'],
-                    this.context, false);
+                    context, false);
                 this.fields_view_tree[view_id] = view_tree;
             } else {
                 view_tree = this.fields_view_tree[view_id];
@@ -2017,26 +2027,32 @@
                 return this.reload(ids, true).then(() => {
                     // [Coog specific]
                     // JMO: report https://github.com/coopengo/tryton/pull/13
-                    var action_id;
-                    if (action && typeof action != 'string' &&
-                      action.length && action.length === 2) {
-                      action_id = action[0];
-                      action = action[1];
-                    } else if (typeof action == 'number') {
-                      action_id = action;
-                      action = undefined;
+                    if (Array.isArray(action)) {
+                        for (const act of action) {
+                            if (typeof act == 'string') {
+                                this.client_action(act);
+                            } else if (act) {
+                                Sao.Action.execute(act, {
+                                    model: this.model_name,
+                                    id: this.current_record.id,
+                                    ids: ids
+                                }, null, this.context, true);
+                            }
+                        }
                     }
+                    else
                     // end
                     if (typeof action == 'string') {
                         this.client_action(action);
                     }
-                    if (action_id) {
-                        Sao.Action.execute(action_id, {
+                    else if (action) {
+                        Sao.Action.execute(action, {
                             model: this.model_name,
                             id: this.current_record.id,
                             ids: ids
                         }, null, this.context, true);
                     }
+                    this.record_saved();
                 });
             };
 
@@ -2395,5 +2411,6 @@
             });
         }
     });
+    Sao.Screen.tree_column_width = {};
     Sao.Screen.tree_column_optional = {};
 }());

@@ -17,8 +17,8 @@ from gi.repository import GLib, Gtk
 
 from tryton.action import Action
 from tryton.common import (
-    MODELACCESS, RPCContextReload, RPCException, RPCExecute, node_attributes,
-    sur, warning)
+    MODELACCESS, RPCContextReload, RPCException, RPCExecute, get_monitor_size,
+    node_attributes, sur, warning)
 from tryton.common.domain_parser import DomainParser
 from tryton.config import CONFIG
 from tryton.gui.window.infobar import InfoBar
@@ -181,6 +181,7 @@ class Screen:
         if view_id not in self.fields_view_tree:
             context = self.context
             context['view_tree_width'] = CONFIG['client.save_tree_width']
+            context['screen_size'] = get_monitor_size()
             try:
                 self.fields_view_tree[view_id] = view_tree = RPCExecute(
                     'model', self.model_name, 'fields_view_get', False, 'tree',
@@ -651,6 +652,8 @@ class Screen:
         else:
             context = self.context
             context['view_tree_width'] = CONFIG['client.save_tree_width']
+            context['user_agent'] = 'tryton'
+            context['screen_size'] = get_monitor_size()
             try:
                 view = RPCExecute(
                     'model', self.model_name, 'fields_view_get', view_id,
@@ -1315,20 +1318,22 @@ class Screen:
                 ids, context=context)
         except RPCException:
             action = None
-
+        self.reload(ids, written=True)
         # PJA: handle different returns values from button
         if isinstance(action, list):
-            action_id, action = action
-        elif isinstance(action, int):
-            action_id, action = action, None
-        else:
-            action_id, action = None, action
-
-        self.reload(ids, written=True)
-        if isinstance(action, str):
+            for act in action:
+                if isinstance(act, str):
+                    self.client_action(act)
+                elif act:
+                    Action.execute(act, {
+                            'model': self.model_name,
+                            'id': current_id,
+                            'ids': ids,
+                            }, context=self.context, keyword=True)
+        elif isinstance(action, str):
             self.client_action(action)
-        if action_id:
-            Action.execute(action_id, {
+        elif action:
+            Action.execute(action, {
                     'model': self.model_name,
                     'id': current_id,
                     'ids': ids,
