@@ -5,6 +5,7 @@ from sql import Column, Literal, Null
 from sql.aggregate import Min
 from sql.functions import CharLength
 from stdnum import get_cc_module
+from collections import defaultdict
 
 from trytond import backend
 from trytond.i18n import gettext
@@ -904,6 +905,7 @@ class Replace(Wizard):
         source.save()
 
         cursor = transaction.connection.cursor()
+        modified_fields = defaultdict(list)
         for model_name, field_name in self.fields_to_replace():
             Model = pool.get(model_name)
             field = getattr(Model, field_name)
@@ -934,8 +936,9 @@ class Replace(Wizard):
                 ids = [x[0] for x in cursor]
 
             Model._insert_history(ids)
+            modified_fields[(model_name, field_name)].extend(ids)
 
-        self.hook_after_replace(source, destination)
+        self.hook_after_replace(modified_fields)
         return 'end'
 
     @classmethod
@@ -946,10 +949,12 @@ class Replace(Wizard):
             ('party.identifier', 'party'),
             ]
 
-    def hook_before_replace(self, source, destination):
+    @classmethod
+    def hook_before_replace(cls, source, destination):
         return
 
-    def hook_after_replace(self, source, destination):
+    @classmethod
+    def hook_after_replace(cls, modified_fields):
         return
 
 
