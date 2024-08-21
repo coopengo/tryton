@@ -518,8 +518,9 @@ class TableHandler(TableHandlerInterface):
                     cursor.execute(
                         SQL("DROP INDEX {}").format(Identifier(name)))
                 cursor.execute(
-                    SQL('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {}')
+                    SQL('CREATE {} INDEX {} IF NOT EXISTS {} ON {} USING {}')
                     .format(
+                        SQL('UNIQUE' if index.options.get('unique') else ''),
                         SQL('CONCURRENTLY' if concurrently else ''),
                         Identifier(name),
                         Identifier(self.table_name),
