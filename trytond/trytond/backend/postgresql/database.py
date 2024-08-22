@@ -537,6 +537,18 @@ class Database(DatabaseInterface):
             if cursor.rowcount:
                 return schema
 
+    def get_view_schema(self, connection, table_name):
+        cursor = connection.cursor()
+        for schema in self.search_path:
+            cursor.execute("""
+                SELECT 1
+                FROM pg_catalog.pg_class AS c
+                INNER JOIN pg_namespace AS ns ON ns.oid = c.relnamespace
+                WHERE c.relkind = 'm' AND ns.nspname = %s AND c.relname = %s
+                """, (schema, table_name))
+            if cursor.rowcount:
+                return schema
+
     @property
     def current_user(self):
         if self._current_user is None:
@@ -842,6 +854,24 @@ class Database(DatabaseInterface):
 
     def json_contains(self, column, json):
         return JSONContains(Cast(column, 'jsonb'), Cast(json, 'jsonb'))
+
+    @classmethod
+    def has_materialized_views(cls):
+        return True
+
+    def create_materialized_views(self, connection, view_name, query):
+        cursor = connection.cursor()
+        cursor.execute(
+            SQL("CREATE MATERIALIZED VIEW IF NOT EXISTS {} AS {}").format(
+                Identifier(view_name),
+                SQL(str(query))),
+            query._params)
+
+    def refresh_materialized_view(self, connection, view_name):
+        cursor = connection.cursor()
+        cursor.execute(
+            SQL("REFRESH MATERIALIZED VIEW CONCURRENTLY {}")
+            .format(Identifier(view_name)))
 
 
 register_type(UNICODE)
