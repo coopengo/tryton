@@ -30,11 +30,17 @@ class TableHandler(TableHandlerInterface):
         cursor = transaction.connection.cursor()
 
         # Create new table if necessary
-        if not self.table_exist(self.table_name):
+        if (not self.table_exist(self.table_name)
+                and not self.view_exist(self.table_name)):
             cursor.execute(SQL('CREATE TABLE {} ()').format(
                     Identifier(self.table_name)))
         self.table_schema = transaction.database.get_table_schema(
             transaction.connection, self.table_name)
+        self.view_schema = transaction.database.get_view_schema(
+            transaction.connection, self.table_name)
+
+        if self.view_schema:
+            return
 
         cursor.execute('SELECT tableowner = current_user FROM pg_tables '
             'WHERE tablename = %s AND schemaname = %s',
@@ -122,6 +128,12 @@ class TableHandler(TableHandlerInterface):
         transaction = Transaction()
         return bool(transaction.database.get_table_schema(
                 transaction.connection, table_name))
+
+    @classmethod
+    def view_exist(cls, view_name):
+        transaction = Transaction()
+        return bool(transaction.database.get_view_schema(
+                transaction.connection, view_name))
 
     @classmethod
     def table_rename(cls, old_name, new_name):
@@ -518,8 +530,9 @@ class TableHandler(TableHandlerInterface):
                     cursor.execute(
                         SQL("DROP INDEX {}").format(Identifier(name)))
                 cursor.execute(
-                    SQL('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {}')
+                    SQL('CREATE {} INDEX {} IF NOT EXISTS {} ON {} USING {}')
                     .format(
+                        SQL('UNIQUE' if index.options.get('unique') else ''),
                         SQL('CONCURRENTLY' if concurrently else ''),
                         Identifier(name),
                         Identifier(self.table_name),
@@ -645,6 +658,8 @@ class HashTranslator(IndexMixin, IndexTranslatorInterface):
             return 0
         if index.options.get('include'):
             return 0
+        if index.options.get('unique'):
+            return 0
         return 100
 
     @classmethod
@@ -694,6 +709,8 @@ class TrigramTranslator(IndexMixin, IndexTranslatorInterface):
     def score(cls, index):
         has_trigram = Transaction().database.has_extension('pg_trgm')
         if not has_trigram:
+            return 0
+        if index.options.get('unique'):
             return 0
 
         score = 0
