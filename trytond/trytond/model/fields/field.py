@@ -635,7 +635,7 @@ class FieldTranslate(Field):
         if Model.__name__ == 'ir.model':
             name_ = Concat(Concat(table.model, ','), name)
             type_ = 'model'
-            res_id = -1
+            res_id = None
         elif Model.__name__ == 'ir.model.field':
             from_ = from_.join(model, 'LEFT',
                 condition=model.id == table.model)
@@ -644,7 +644,7 @@ class FieldTranslate(Field):
                 type_ = 'field'
             else:
                 type_ = 'help'
-            res_id = -1
+            res_id = None
         else:
             name_ = '%s,%s' % (Model.__name__, name)
             type_ = 'model'
