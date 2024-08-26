@@ -89,6 +89,8 @@ class Screen:
         if attributes.get('context_model'):
             self.context_screen = Screen(
                 attributes['context_model'], mode=['form'], context=context)
+            self.context_screen.parent_screen = self
+            self.context_screen.add_reload_button()
             self.context_screen.new()
             context_widget = self.context_screen.widget
 
@@ -164,6 +166,24 @@ class Screen:
     @property
     def count_limit(self):
         return self.limit * 100 + self.offset
+
+    def add_reload_button(self):
+        if not self.parent_screen:
+            return
+
+        def refresh(*args):
+            text = self.parent_screen.screen_container.get_text()
+            self.parent_screen.search_filter(text)
+
+        button = Gtk.Button("Refresh")
+        button.connect('clicked', refresh)
+
+        buttonbox = Gtk.HButtonBox()
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
+        buttonbox.pack_end(button, expand=False, fill=False, padding=0)
+        self.screen_container.vbox.pack_end(
+            buttonbox, expand=False, fill=False, padding=0)
+        self.screen_container.vbox.show_all()
 
     def search_active(self, active=True):
         if active and not self.parent:

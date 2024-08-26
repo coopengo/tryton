@@ -831,6 +831,8 @@
                         attributes.context_model, {
                             'mode': ['form'],
                             'context': attributes.context });
+                this.context_screen.parent_screen = this;
+                this.context_screen.add_reload_button();
 
                 this.context_screen_prm = this.context_screen.switch_view()
                     .then(() => {
@@ -878,6 +880,28 @@
         },
         get count_limit() {
             return this.limit * 100 + this.offset;
+        },
+        add_reload_button: function() {
+            if (!this.parent_screen) {
+                return;
+            }
+            var button =  jQuery('<button/>', {
+                'class': 'btn btn-primary',
+                'type': 'submit',
+                'title': 'Sao.i18n.gettext("Refresh")',
+            }).text(Sao.i18n.gettext("Refresh"));
+            var button_container = jQuery('<div/>', {
+                'class': 'row'
+            }).append(jQuery('<div/>', {
+                'class': 'col-md-1 col-md-offset-11'
+            }).append(button));
+            this.screen_container.el.append(button_container);
+
+            button.click(evt => {
+                evt.preventDefault();
+                var domain_txt = this.parent_screen.screen_container.get_text();
+                this.parent_screen.search_filter(domain_txt);
+            });
         },
         load_next_view: function() {
             if (!jQuery.isEmptyObject(this.view_to_load)) {
