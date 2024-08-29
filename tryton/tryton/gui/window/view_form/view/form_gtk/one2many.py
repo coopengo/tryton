@@ -39,10 +39,15 @@ class One2Many(Widget):
         self.title_box = hbox = Gtk.HBox(homogeneous=False, spacing=0)
         hbox.set_border_width(2)
 
+        click_catcher = Gtk.EventBox.new()
+        click_catcher.set_above_child(True)
+        click_catcher.connect('button-press-event', self._toggle_body)
         self.title = Gtk.Label(
             label=set_underline(attrs.get('string', '')),
             use_underline=True, halign=Gtk.Align.START)
-        hbox.pack_start(self.title, expand=True, fill=True, padding=0)
+        click_catcher.add(self.title)
+        click_catcher.show()
+        hbox.pack_start(click_catcher, expand=True, fill=True, padding=0)
 
         hbox.pack_start(Gtk.VSeparator(), expand=False, fill=True, padding=0)
 
@@ -224,6 +229,14 @@ class One2Many(Widget):
     @property
     def delete_access(self):
         return int(self.attrs.get('delete', 1)) and self.get_access('delete')
+
+    def _toggle_body(self, eventbox, event):
+        if self.screen.widget.props.visible:
+            self.screen.widget.hide()
+            self.widget.set_vexpand(False)
+        else:
+            self.screen.widget.show()
+            self.widget.set_vexpand(True)
 
     def on_keypress(self, widget, event):
         if ((event.keyval == Gdk.KEY_F3)

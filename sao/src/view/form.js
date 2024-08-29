@@ -11,6 +11,34 @@ function eval_pyson(value){
 }
 /* jshint ignore:end */
 
+function hide_x2m_body(widget) {
+    var container = widget.content.closest('.form-container');
+    var cols = container
+        .css('grid-template-columns')
+        .split(' ').length;
+    var item = widget.content.closest('.form-item');
+    var colspan = Number(item.css('grid-column-end')) -
+        Number(item.css('grid-column-start'));
+    var row = Number(item.css('grid-row-start'));
+    var alone_line = colspan >= cols;
+
+    var shown = widget.content.data('shown');
+    if (shown) {
+        widget.content.hide();
+        widget.content.data('shown', false);
+    } else {
+        widget.content.show();
+        widget.content.data('shown', true);
+    }
+    if (alone_line) {
+        var template = container.data('template-rows');
+        if (shown) {
+            template.splice(row - 1, 1, 'min-content');
+        }
+        container.css('grid-template-rows', template.join(' '));
+    }
+}
+
 (function() {
     'use strict';
 
@@ -671,13 +699,8 @@ function eval_pyson(value){
             if (this._yexpand.size) {
                 for (i = 1; i <= this._row; i++) {
                     if (this._yexpand.has(i)) {
-                        // JCA: algorith is broken atm, min-content will
-                        // usually give a better (though non-perfect) UI
-                        // this._grid_rows.push(
-                        //      `minmax(min-content, ${this._row}fr)`);
-                        // this._grid_rows.push('min-content');
-                        // this._grid_rows.push('1fr');
-                        this._grid_rows.push('auto');
+                         this._grid_rows.push(
+                              `minmax(min-content, ${this._row}fr)`);
                     } else {
                         this._grid_rows.push('min-content');
                     }
@@ -744,6 +767,7 @@ function eval_pyson(value){
                 'grid-template-columns', grid_cols.join(" "));
             this.el.css(
                 'grid-template-rows', grid_rows.join(" "));
+            this.el.data('template-rows', grid_rows);
         }
     });
 
@@ -3567,6 +3591,9 @@ function eval_pyson(value){
             this.el.uniqueId();
             this.el.attr('aria-labelledby', this.title.attr('id'));
             this.title.attr('for', this.el.attr('id'));
+            this.title.on('click', (evt) => {
+                hide_x2m_body(this);
+            });
 
             var toolbar = jQuery('<div/>', {
                 'class': this.class_ + '-toolbar'
@@ -3731,6 +3758,7 @@ function eval_pyson(value){
             this.content = jQuery('<div/>', {
                 'class': content_class
             });
+            this.content.data('shown', true);
             this.el.append(this.content);
 
             var modes = (attributes.mode || 'tree,form').split(',');
@@ -4284,6 +4312,9 @@ function eval_pyson(value){
                 'class': this.class_ + '-string',
                 text: attributes.string
             });
+            this.title.on('click', (evt) => {
+                hide_x2m_body(this);
+            });
             this.menu.append(this.title);
 
             this.title.uniqueId();
@@ -4361,6 +4392,7 @@ function eval_pyson(value){
             this.content = jQuery('<div/>', {
                 'class': content_class
             });
+            this.content.data('shown', true);
             this.el.append(this.content);
             var model = attributes.relation;
             var breadcrumb = jQuery.extend([], this.view.screen.breadcrumb);
