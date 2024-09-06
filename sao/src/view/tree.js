@@ -1080,7 +1080,7 @@
                 }
             }).done(() => {
                 if (!this.record && this.rows.length) {
-                    this.rows[0].select_row();
+                    this.rows[0].select_row({});
                 }
                 Sao.common.debounce(this.update_sum.bind(this), 250)();
             });
@@ -2387,10 +2387,8 @@
         },
         select_row: function(event_) {
             var body, listener;
-            if (event_ !== undefined) {
-                event_.stopPropagation();
-            }
-            if (this.tree.edited_row && (event_ !== undefined) &&
+            event_.stopPropagation();
+            if (this.tree.edited_row &&
                     (event_.currentTarget == this.tree.edited_row.el[0])) {
                 return;
             }
@@ -2407,13 +2405,12 @@
                 listener = this.tree.el.parents('.modal').last();
             }
             const handler = event_ => {
-                if ((event_ === undefined) || (
-                    (event_.currentTarget == body[0]) &&
-                        body.hasClass('modal-open'))) {
+                if ((event_.currentTarget == body[0]) &&
+                    body.hasClass('modal-open')) {
                     return;
                 }
 
-                if ((event_ !== undefined) && (!this.tree.save_row())) {
+                if (!this.tree.save_row()) {
                     event_.preventDefault();
                     event_.stopPropagation();
                     return;
@@ -2429,8 +2426,7 @@
 
             Sao.View.Tree.RowEditable._super.select_row.call(this, event_);
 
-            if ((event_ !== undefined) &&
-                    (!event_.shiftKey && !(event_.ctrlKey || event_.metaKey))) {
+            if (!event_.shiftKey && !(event_.ctrlKey || event_.metaKey)) {
                 this.tree.edit_row(this);
             }
         },
