@@ -143,8 +143,7 @@ class ModelInfo(ModelView):
     @classmethod
     def get_possible_model_names(cls):
         pool = Pool()
-        return list([(x, x) for x in
-                pool._pool[pool.database_name]['model'].keys()])
+        return list([(x, x) for x in pool._pool['model'].keys()])
 
     @staticmethod
     def field_translate(model_name, field_name, src):
