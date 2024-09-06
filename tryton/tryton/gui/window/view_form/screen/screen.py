@@ -90,7 +90,6 @@ class Screen:
             self.context_screen = Screen(
                 attributes['context_model'], mode=['form'], context=context)
             self.context_screen.parent_screen = self
-            self.context_screen.add_reload_button()
             self.context_screen.new()
             context_widget = self.context_screen.widget
 
@@ -166,24 +165,6 @@ class Screen:
     @property
     def count_limit(self):
         return self.limit * 100 + self.offset
-
-    def add_reload_button(self):
-        if not self.parent_screen:
-            return
-
-        def refresh(*args):
-            text = self.parent_screen.screen_container.get_text()
-            self.parent_screen.search_filter(text)
-
-        button = Gtk.Button("Refresh")
-        button.connect('clicked', refresh)
-
-        buttonbox = Gtk.HButtonBox()
-        buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
-        buttonbox.pack_end(button, expand=False, fill=False, padding=0)
-        self.screen_container.vbox.pack_end(
-            buttonbox, expand=False, fill=False, padding=0)
-        self.screen_container.vbox.show_all()
 
     def search_active(self, active=True):
         if active and not self.parent:
@@ -1328,16 +1309,18 @@ class Screen:
         if self.current_view:
             self.current_view.set_value()
             fields = self.current_view.get_fields()
-        for record in self.selected_records:
-            domain = record.expr_eval(
-                button.get('states', {})).get('pre_validate', [])
-            if not record.validate(fields, pre_validate=domain):
-                warning(self.invalid_message(record), _('Pre-validation'))
-                self.display(set_cursor=True)
-                if domain:
-                    # Reset valid state with normal domain
-                    record.validate(fields)
-                return
+        if button.get('type') != 'client_action':
+            fields = self.current_view.get_fields()
+            for record in self.selected_records:
+                domain = record.expr_eval(
+                    button.get('states', {})).get('pre_validate', [])
+                if not record.validate(fields, pre_validate=domain):
+                    warning(self.invalid_message(record), _('Pre-validation'))
+                    self.display(set_cursor=True)
+                    if domain:
+                        # Reset valid state with normal domain
+                        record.validate(fields)
+                    return
         if button.get('confirm', False) and not sur(button['confirm']):
             return
         if button.get('type', 'class') == 'class':
@@ -1345,8 +1328,10 @@ class Screen:
             if record_id is False or record_id < 0:
                 return
             self._button_class(button)
-        else:
+        elif button.get('type') == 'instance':
             self._button_instance(button)
+        else:
+            self._button_client_action(button)
 
     def _button_instance(self, button):
         record = self.current_record
@@ -1394,6 +1379,9 @@ class Screen:
                     'ids': ids,
                     }, context=self.context, keyword=True)
 
+    def _button_client_action(self, button):
+        self.client_action(button['name'])
+
     def client_action(self, action):
         access = MODELACCESS[self.model_name]
         # Coog : Allow multiple actions (review 10530001)
@@ -1436,6 +1424,10 @@ class Screen:
             RPCContextReload(Main().sig_win_menu)
         elif action == 'reload context':
             RPCContextReload()
+        elif action == 'refresh parent':
+            if self.parent_screen:
+                domain_txt = self.parent_screen.screen_container.get_text()
+                self.parent_screen.search_filter(domain_txt)
 
     def get_url(self, name=''):
         query_string = []

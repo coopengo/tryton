@@ -832,7 +832,6 @@
                             'mode': ['form'],
                             'context': attributes.context });
                 this.context_screen.parent_screen = this;
-                this.context_screen.add_reload_button();
 
                 this.context_screen_prm = this.context_screen.switch_view()
                     .then(() => {
@@ -880,28 +879,6 @@
         },
         get count_limit() {
             return this.limit * 100 + this.offset;
-        },
-        add_reload_button: function() {
-            if (!this.parent_screen) {
-                return;
-            }
-            var button =  jQuery('<button/>', {
-                'class': 'btn btn-primary',
-                'type': 'submit',
-                'title': 'Sao.i18n.gettext("Refresh")',
-            }).text(Sao.i18n.gettext("Refresh"));
-            var button_container = jQuery('<div/>', {
-                'class': 'row'
-            }).append(jQuery('<div/>', {
-                'class': 'col-md-1 col-md-offset-11'
-            }).append(button));
-            this.screen_container.el.append(button_container);
-
-            button.click(evt => {
-                evt.preventDefault();
-                var domain_txt = this.parent_screen.screen_container.get_text();
-                this.parent_screen.search_filter(domain_txt);
-            });
         },
         load_next_view: function() {
             if (!jQuery.isEmptyObject(this.view_to_load)) {
@@ -2097,12 +2074,12 @@
         },
         button: function(attributes) {
             var ids;
-            const process_action = action => {
+            const do_action = action => {
                 // [Coog specific]
                 // JMO: report https://github.com/coopengo/tryton/pull/13
+                var prms = [];
+                var later_actions = [];
                 if (Array.isArray(action)) {
-                    var prms = [];
-                    var later_actions = [];
                     for (const act of action) {
                         if (typeof act == 'string') {
                             later_actions.push(act);
@@ -2115,55 +2092,58 @@
                                 }, null, this.context, true));
                         }
                     }
-                    return jQuery.when.apply(jQuery, prms).always(() => {
-                        return this.reload(ids, true).always(() => {
-                            for (const a of later_actions) {
-                                this.client_action(a);
-                            }
-                            return this.record_saved();
-                        });
-                    });
                 }
                 else
                 // end
                 if (typeof action == 'string') {
-                    return this.reload(ids, true).then(() => {
-                        return this.client_action(action);
-                    });
+                    later_actions.push(action);
                 }
                 else if (action) {
-                    return Sao.Action.execute(action, {
-                        model: this.model_name,
-                        id: this.current_record.id,
-                        ids: ids
-                    }, null, this.context, true).always(() => {
-                        return this.reload(ids, true)
-                            .always(() => this.record_saved());
-                    });
-                } else {
-                    return this.reload(ids, true)
-                        .always(() => this.record_saved());
+                    prms.push(
+                        Sao.Action.execute(action, {
+                            model: this.model_name,
+                            id: this.current_record.id,
+                            ids: ids
+                        }, null, this.context, true));
                 }
+                return jQuery.when.apply(jQuery, prms).then(() => {
+                    for (let a of later_actions) {
+                        this.client_action(a);
+                    }
+                });
             };
 
-            if (this.current_view) {
-                var selected_records = this.current_view.selected_records;
-                this.current_view.set_value();
-                var fields = this.current_view.get_fields();
-            }
+            const process_action = action => {
+                return this.reload(ids, true).then(() => {
+                    return do_action(action).then(() => {
+                        return this.record_saved();
+                    });
+                });
+            };
 
             var prms = [];
-            const reset_state = record => {
-                return () => {
-                    this.display(true);
-                    // Reset valid state with normal domain
-                    record.validate(fields);
+            var reset_state;
+            var selected_records;
+            if (attributes.type == 'client_action') {
+                reset_state = record => {};
+                selected_records = [];
+            } else {
+                selected_records = this.current_view.selected_records;
+                this.current_view.set_value();
+                var fields = this.current_view.get_fields();
+
+                reset_state = record => {
+                    return () => {
+                        this.display(true);
+                        // Reset valid state with normal domain
+                        record.validate(fields);
+                    };
                 };
-            };
-            for (const record of selected_records) {
-                const domain = record.expr_eval(
-                    (attributes.states || {})).pre_validate || [];
-                prms.push(record.validate(fields, false, domain));
+                for (const record of selected_records) {
+                    const domain = record.expr_eval(
+                        (attributes.states || {})).pre_validate || [];
+                    prms.push(record.validate(fields, false, domain));
+                }
             }
             return jQuery.when.apply(jQuery, prms).then((...args) => {
                 var record;
@@ -2193,7 +2173,7 @@
                             record.set_on_change(changes);
                             record.set_modified();
                         });
-                    } else {
+                    } else if (attributes.type === 'class') {
                         return record.save(false).then(() => {
                             var context = this.context;
                             context._timestamp = {};
@@ -2209,6 +2189,8 @@
                                 .then(process_action)
                                 .fail(() => this.reload(ids, true));
                         });
+                    } else {
+                        do_action(attributes.name);
                     }
                 });
             });
@@ -2261,6 +2243,13 @@
                     });
             } else if (action == 'reload context') {
                 return Sao.Session.current_session.reload_context();
+            } else if (action == 'refresh parent') {
+                if (this.parent_screen) {
+                    let domain_txt = this.parent_screen
+                        .screen_container
+                        .get_text();
+                    return this.parent_screen.search_filter(domain_txt);
+                }
             }
         },
         get_url: function(name) {
