@@ -2,7 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 import gettext
 
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 import tryton.common as common
 from tryton.common.completion import get_completion, update_completion
@@ -35,15 +35,33 @@ class Many2Many(Widget):
         hbox = Gtk.HBox(homogeneous=False, spacing=0)
         hbox.set_border_width(2)
 
-        click_catcher = Gtk.EventBox.new()
-        click_catcher.set_above_child(True)
-        click_catcher.connect('button-press-event', self._toggle_body)
-        self.title = Gtk.Label(
-            label=set_underline(attrs.get('string', '')),
-            use_underline=True, halign=Gtk.Align.START)
-        click_catcher.add(self.title)
-        click_catcher.show()
-        hbox.pack_start(click_catcher, expand=True, fill=True, padding=0)
+        if not attrs.get('expand_toolbar'):
+            if attrs.get('collapse_body'):
+                click_catcher = Gtk.EventBox.new()
+                click_catcher.set_above_child(True)
+                click_catcher.connect('button-press-event', self._toggle_body)
+
+                collapse_hbox = Gtk.HBox()
+                self.title = Gtk.Label(
+                    label=set_underline(attrs.get('string', '')),
+                    use_underline=True, halign=Gtk.Align.START)
+                self.title_expander = Gtk.Image()
+                self.title_expander.set_from_pixbuf(
+                    common.IconFactory.get_pixbuf('tryton-arrow-down'))
+                collapse_hbox.pack_start(
+                    self.title_expander, expand=False, fill=False, padding=0)
+                collapse_hbox.pack_start(
+                    self.title, expand=False, fill=False, padding=0)
+
+                click_catcher.add(collapse_hbox)
+                click_catcher.show()
+                hbox.pack_start(
+                    click_catcher, expand=True, fill=True, padding=0)
+            else:
+                self.title = Gtk.Label(
+                    label=set_underline(attrs.get('string', '')),
+                    use_underline=True, halign=Gtk.Align.START)
+                hbox.pack_start(self.title, expand=True, fill=True, padding=0)
 
         hbox.pack_start(Gtk.VSeparator(), expand=False, fill=True, padding=0)
 
@@ -123,6 +141,15 @@ class Many2Many(Widget):
         self.screen.widget.connect('key_press_event', self.on_keypress)
         self.wid_text.connect('key_press_event', self.on_keypress)
 
+        if (not attrs.get('expand_toolbar')
+                and attrs.get('collapse_body') == '1'):
+            def hide_body():
+                self.screen.widget.hide()
+                self.widget.set_vexpand(False)
+                self.title_expander.set_from_pixbuf(
+                    common.IconFactory.get_pixbuf('tryton-arrow-right'))
+            GLib.idle_add(hide_body)
+
     def _color_widget(self):
         if hasattr(self.screen.current_view, 'treeview'):
             return self.screen.current_view.treeview
@@ -179,9 +206,13 @@ class Many2Many(Widget):
         if self.screen.widget.props.visible:
             self.screen.widget.hide()
             self.widget.set_vexpand(False)
+            self.title_expander.set_from_pixbuf(
+                common.IconFactory.get_pixbuf('tryton-arrow-right'))
         else:
             self.screen.widget.show()
             self.widget.set_vexpand(True)
+            self.title_expander.set_from_pixbuf(
+                common.IconFactory.get_pixbuf('tryton-arrow-down'))
 
     def _sig_add(self, *args):
         if not self.focus_out:

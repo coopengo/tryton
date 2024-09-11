@@ -26,16 +26,24 @@ function hide_x2m_body(widget) {
     if (shown) {
         widget.content.hide();
         widget.content.data('shown', false);
+        Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-right')
+            .done(icon => {
+                widget.title_expander.attr('src', icon);
+            });
     } else {
         widget.content.show();
         widget.content.data('shown', true);
+        Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-down')
+            .done(icon => {
+                widget.title_expander.attr('src', icon);
+            });
     }
     if (alone_line) {
         var template = container.data('template-rows');
-        if (shown) {
+        if (template && shown) {
             template.splice(row - 1, 1, 'min-content');
+            container.css('grid-template-rows', template.join(' '));
         }
-        container.css('grid-template-rows', template.join(' '));
     }
 }
 
@@ -698,12 +706,7 @@ function hide_x2m_body(widget) {
 
             if (this._yexpand.size) {
                 for (i = 1; i <= this._row; i++) {
-                    if (this._yexpand.has(i)) {
-                         this._grid_rows.push(
-                              `minmax(min-content, ${this._row}fr)`);
-                    } else {
-                        this._grid_rows.push('min-content');
-                    }
+                    this._grid_rows.push('min-content');
                 }
             } else {
                 for (i = 1; i <= this._row; i++) {
@@ -3591,9 +3594,23 @@ function hide_x2m_body(widget) {
             this.el.uniqueId();
             this.el.attr('aria-labelledby', this.title.attr('id'));
             this.title.attr('for', this.el.attr('id'));
-            this.title.on('click', (evt) => {
-                hide_x2m_body(this);
-            });
+            if (!attributes.expand_toolbar) {
+                if (attributes.collapse_body) {
+                    this.title.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    this.title_expander = jQuery('<img/>');
+                    this.title_expander.addClass('coog-x2m-expander');
+                    this.title_expander.insertBefore(this.title);
+                    this.title_expander.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-down')
+                        .done(icon => {
+                            this.title_expander.attr('src', icon);
+                        });
+                }
+            }
 
             var toolbar = jQuery('<div/>', {
                 'class': this.class_ + '-toolbar'
@@ -3810,6 +3827,10 @@ function hide_x2m_body(widget) {
             }
 
             this.but_switch.prop('disabled', this.screen.number_of_views <= 0);
+
+            if (!attributes.expand_toolbar && attributes.collapse_body == 1) {
+                window.setTimeout(() => hide_x2m_body(this));
+            }
         },
         get_access: function(type) {
             var model = this.attributes.relation;
@@ -4312,10 +4333,24 @@ function hide_x2m_body(widget) {
                 'class': this.class_ + '-string',
                 text: attributes.string
             });
-            this.title.on('click', (evt) => {
-                hide_x2m_body(this);
-            });
+            if (!attributes.expand_toolbar) {
+                if (attributes.collapse_body) {
+                    this.title.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    this.title_expander = jQuery('<img/>');
+                    this.title_expander.addClass('coog-x2m-expander');
+                    this.title_expander.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-down')
+                        .done(icon => {
+                            this.title_expander.attr('src', icon);
+                        });
+                }
+            }
             this.menu.append(this.title);
+            this.title_expander.insertBefore(this.title);
 
             this.title.uniqueId();
             this.el.uniqueId();
@@ -4412,6 +4447,10 @@ function hide_x2m_body(widget) {
             this.prm = this.screen.switch_view('tree').done(() => {
                 this.content.append(this.screen.screen_container.el);
             });
+
+            if (!attributes.expand_toolbar && attributes.collapse_body == 1) {
+                window.setTimeout(() => hide_x2m_body(this));
+            }
         },
         get_access: function(type) {
             var model = this.attributes.relation;
