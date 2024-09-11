@@ -176,6 +176,7 @@
             }).appendTo(search_row));
 
             if (!show_filter) {
+                this.filter_box.css('margin', 0);
                 search_row.hide();
             }
 

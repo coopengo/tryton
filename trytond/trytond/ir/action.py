@@ -752,10 +752,7 @@ class ActionActWindow(ActionMixin, ModelSQL, ModelView):
     context_domain = fields.Char(
         "Context Domain",
         help="Part of the domain that will be evaluated on each refresh.")
-    show_filter = fields.Boolean("Show filter entry",
-        states={
-            'invisible': ~Eval('context_domain', False),
-            })
+    show_filter = fields.Boolean("Show filter entry")
     act_window_views = fields.One2Many('ir.action.act_window.view',
             'act_window', 'Views')
     views = fields.Function(fields.Binary('Views'), 'get_views')
