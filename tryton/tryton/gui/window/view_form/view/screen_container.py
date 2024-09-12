@@ -210,7 +210,7 @@ class Selection(Gtk.ScrolledWindow):
 
 class ScreenContainer(object):
 
-    def __init__(self, tab_domain):
+    def __init__(self, tab_domain, show_filter=True):
         self.viewport = Gtk.Viewport()
         self.viewport.set_shadow_type(Gtk.ShadowType.NONE)
         self.vbox = Gtk.VBox(spacing=3)
@@ -322,8 +322,10 @@ class ScreenContainer(object):
         but_next.set_relief(Gtk.ReliefStyle.NONE)
         hbox.pack_start(but_next, expand=False, fill=False, padding=0)
 
-        hbox.show_all()
-        self.filter_vbox.pack_start(hbox, expand=False, fill=False, padding=0)
+        if show_filter:
+            hbox.show_all()
+            self.filter_vbox.pack_start(
+                hbox, expand=False, fill=False, padding=0)
 
         hseparator = Gtk.HSeparator()
         hseparator.show()
