@@ -6,6 +6,7 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 
 from trytond.tools import resolve
 from trytond.config import config
+from trytond.backend import DatabaseTimeoutError
 from trytond.exceptions import UserError, UserWarning, ConcurrencyException
 
 error_handler_configuration = config.get('admin', 'error_handling_class')
@@ -101,7 +102,7 @@ def error_wrap(func):
         try:
             return func(*args, **kwargs)
         except (UserError, UserWarning, ConcurrencyException, Forbidden,
-                Unauthorized, TimeoutException):
+                Unauthorized, DatabaseTimeoutError):
             # Those errors are supposed to make their way to the end user
             raise
         except Exception as e:
