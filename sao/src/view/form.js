@@ -11,6 +11,42 @@ function eval_pyson(value){
 }
 /* jshint ignore:end */
 
+function hide_x2m_body(widget) {
+    var container = widget.content.closest('.form-container');
+    var cols = container
+        .css('grid-template-columns')
+        .split(' ').length;
+    var item = widget.content.closest('.form-item');
+    var colspan = Number(item.css('grid-column-end')) -
+        Number(item.css('grid-column-start'));
+    var row = Number(item.css('grid-row-start'));
+    var alone_line = colspan >= cols;
+
+    var shown = widget.content.data('shown');
+    if (shown) {
+        widget.content.hide();
+        widget.content.data('shown', false);
+        Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-right')
+            .done(icon => {
+                widget.title_expander.attr('src', icon);
+            });
+    } else {
+        widget.content.show();
+        widget.content.data('shown', true);
+        Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-down')
+            .done(icon => {
+                widget.title_expander.attr('src', icon);
+            });
+    }
+    if (alone_line) {
+        var template = container.data('template-rows');
+        if (template && shown) {
+            template.splice(row - 1, 1, 'min-content');
+            container.css('grid-template-rows', template.join(' '));
+        }
+    }
+}
+
 (function() {
     'use strict';
 
@@ -670,17 +706,7 @@ function eval_pyson(value){
 
             if (this._yexpand.size) {
                 for (i = 1; i <= this._row; i++) {
-                    if (this._yexpand.has(i)) {
-                        // JCA: algorith is broken atm, min-content will
-                        // usually give a better (though non-perfect) UI
-                        // this._grid_rows.push(
-                        //      `minmax(min-content, ${this._row}fr)`);
-                        // this._grid_rows.push('min-content');
-                        // this._grid_rows.push('1fr');
-                        this._grid_rows.push('auto');
-                    } else {
-                        this._grid_rows.push('min-content');
-                    }
+                    this._grid_rows.push('min-content');
                 }
             } else {
                 for (i = 1; i <= this._row; i++) {
@@ -744,6 +770,7 @@ function eval_pyson(value){
                 'grid-template-columns', grid_cols.join(" "));
             this.el.css(
                 'grid-template-rows', grid_rows.join(" "));
+            this.el.data('template-rows', grid_rows);
         }
     });
 
@@ -3566,6 +3593,27 @@ function eval_pyson(value){
             this.el.uniqueId();
             this.el.attr('aria-labelledby', this.title.attr('id'));
             this.title.attr('for', this.el.attr('id'));
+            if (!attributes.expand_toolbar) {
+                if (attributes.collapse_body) {
+                    this.title.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    this.title_expander = jQuery('<img/>');
+                    this.title_expander.addClass('coog-x2m-expander');
+                    this.title_expander.insertBefore(this.title);
+                    this.title_expander.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    let icon_url = 'tryton-arrow-down';
+                    if (attributes.collapse_body === "1") {
+                        icon_url = 'tryton-arrow-right';
+                    }
+                    Sao.common.ICONFACTORY.get_icon_url(icon_url)
+                        .done(icon => {
+                            this.title_expander.attr('src', icon);
+                        });
+                }
+            }
 
             var toolbar = jQuery('<div/>', {
                 'class': this.class_ + '-toolbar'
@@ -3730,6 +3778,7 @@ function eval_pyson(value){
             this.content = jQuery('<div/>', {
                 'class': content_class
             });
+            this.content.data('shown', true);
             this.el.append(this.content);
 
             var modes = (attributes.mode || 'tree,form').split(',');
@@ -3781,6 +3830,10 @@ function eval_pyson(value){
             }
 
             this.but_switch.prop('disabled', this.screen.number_of_views <= 0);
+
+            if (!attributes.expand_toolbar && attributes.collapse_body == 1) {
+                window.setTimeout(() => hide_x2m_body(this));
+            }
         },
         get_access: function(type) {
             var model = this.attributes.relation;
@@ -4283,7 +4336,30 @@ function eval_pyson(value){
                 'class': this.class_ + '-string',
                 text: attributes.string
             });
+            if (!attributes.expand_toolbar) {
+                if (attributes.collapse_body) {
+                    this.title.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    this.title_expander = jQuery('<img/>');
+                    this.title_expander.addClass('coog-x2m-expander');
+                    this.title_expander.on('click', (evt) => {
+                        hide_x2m_body(this);
+                    });
+                    let icon_url = 'tryton-arrow-down';
+                    if (attributes.collapse_body === "1") {
+                        icon_url = 'tryton-arrow-right';
+                    }
+                    Sao.common.ICONFACTORY.get_icon_url(icon_url)
+                        .done(icon => {
+                            this.title_expander.attr('src', icon);
+                        });
+                }
+            }
             this.menu.append(this.title);
+            if (!attributes.expand_toolbar && attributes.collapse_body) {
+                this.title_expander.insertBefore(this.title);
+            }
 
             this.title.uniqueId();
             this.el.uniqueId();
@@ -4360,6 +4436,7 @@ function eval_pyson(value){
             this.content = jQuery('<div/>', {
                 'class': content_class
             });
+            this.content.data('shown', true);
             this.el.append(this.content);
             var model = attributes.relation;
             var breadcrumb = jQuery.extend([], this.view.screen.breadcrumb);
@@ -4379,6 +4456,10 @@ function eval_pyson(value){
             this.prm = this.screen.switch_view('tree').done(() => {
                 this.content.append(this.screen.screen_container.el);
             });
+
+            if (!attributes.expand_toolbar && attributes.collapse_body == 1) {
+                window.setTimeout(() => hide_x2m_body(this));
+            }
         },
         get_access: function(type) {
             var model = this.attributes.relation;
