@@ -4,7 +4,8 @@
     'use strict';
 
     Sao.ScreenContainer = Sao.class_(Object, {
-        init: function(tab_domain, show_filter) {
+        init: function(screen, tab_domain, show_filter) {
+            this.screen = screen;
             this.alternate_viewport = jQuery('<div/>', {
                 'class': 'screen-container'
             });
@@ -836,7 +837,7 @@
             this.new_group(attributes.context || {});
             this.current_record = null;
             this.screen_container = new Sao.ScreenContainer(
-                attributes.tab_domain, attributes.show_filter);
+                this, attributes.tab_domain, attributes.show_filter);
             this.breadcrumb = attributes.breadcrumb || [];
 
             this.context_screen = null;
