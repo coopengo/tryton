@@ -5842,8 +5842,8 @@ function eval_pyson(value){
                 var group = jQuery('<div/>', {
                     'class': 'input-group input-group-sm'
                 }).appendTo(jQuery('<div>', {
-                    'class': 'dict-row'
-                }).appendTo(body)));
+                    'class': 'dict-row',
+                }).appendTo(body));
                 this.wid_text = jQuery('<input/>', {
                     'type': 'text',
                     'class': 'form-control input-sm',
