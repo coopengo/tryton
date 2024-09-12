@@ -130,7 +130,7 @@ class Action(DeactivableMixin, ModelSQL, ModelView):
         elif type_ == 'ir.action.act_window':
             columns += [
                 'views', 'domains', 'res_model', 'limit',
-                'context_model', 'context_domain',
+                'context_model', 'context_domain', 'show_filter',
                 'pyson_domain', 'pyson_context', 'pyson_order',
                 'pyson_search_value']
         elif type_ == 'ir.action.wizard':
@@ -775,6 +775,7 @@ class ActionActWindow(
     context_domain = fields.Char(
         "Context Domain",
         help="Part of the domain that will be evaluated on each refresh.")
+    show_filter = fields.Boolean("Show filter entry")
     act_window_views = fields.One2Many('ir.action.act_window.view',
             'act_window', 'Views')
     views = fields.Function(fields.Field('Views'), 'get_views')
@@ -809,6 +810,10 @@ class ActionActWindow(
     @staticmethod
     def default_search_value():
         return '[]'
+
+    @classmethod
+    def default_show_filter(cls):
+        return True
 
     @classmethod
     def validate(cls, actions):
