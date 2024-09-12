@@ -95,8 +95,8 @@ module.exports = function(grunt) {
         styles: {
             files: [
                 'src/*.less',
-                'theme/coog/*.less',
-                'theme/coog/elements/*.less'
+                'src/theme/coog/*.less',
+                'src/theme/coog/elements/*.less'
             ],
             tasks: 'less'
         },
