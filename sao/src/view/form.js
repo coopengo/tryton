@@ -3605,7 +3605,11 @@ function hide_x2m_body(widget) {
                     this.title_expander.on('click', (evt) => {
                         hide_x2m_body(this);
                     });
-                    Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-down')
+                    let icon_url = 'tryton-arrow-down';
+                    if (attributes.collapse_body === "1") {
+                        icon_url = 'tryton-arrow-right';
+                    }
+                    Sao.common.ICONFACTORY.get_icon_url(icon_url)
                         .done(icon => {
                             this.title_expander.attr('src', icon);
                         });
@@ -4343,7 +4347,11 @@ function hide_x2m_body(widget) {
                     this.title_expander.on('click', (evt) => {
                         hide_x2m_body(this);
                     });
-                    Sao.common.ICONFACTORY.get_icon_url('tryton-arrow-down')
+                    let icon_url = 'tryton-arrow-down';
+                    if (attributes.collapse_body === "1") {
+                        icon_url = 'tryton-arrow-right';
+                    }
+                    Sao.common.ICONFACTORY.get_icon_url(icon_url)
                         .done(icon => {
                             this.title_expander.attr('src', icon);
                         });
