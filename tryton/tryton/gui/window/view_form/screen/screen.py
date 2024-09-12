@@ -79,7 +79,7 @@ class Screen:
         self.new_group(context or {})
         self.current_record = None
         self.screen_container = ScreenContainer(
-            self, attributes.get('tab_domain'))
+            self, attributes.get('tab_domain'), attributes.get('show_filter'))
         self.screen_container.alternate_view = attributes.get(
             'alternate_view', False)
         self.widget = self.screen_container.widget_get()
