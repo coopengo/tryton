@@ -4350,7 +4350,9 @@ function hide_x2m_body(widget) {
                 }
             }
             this.menu.append(this.title);
-            this.title_expander.insertBefore(this.title);
+            if (!attributes.expand_toolbar && attributes.collapse_body) {
+                this.title_expander.insertBefore(this.title);
+            }
 
             this.title.uniqueId();
             this.el.uniqueId();
