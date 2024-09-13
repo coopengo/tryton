@@ -35,6 +35,9 @@ class Many2Many(Widget):
         hbox = Gtk.HBox(homogeneous=False, spacing=0)
         hbox.set_border_width(2)
 
+        self.title = Gtk.Label(
+            label=set_underline(attrs.get('string', '')),
+            use_underline=True, halign=Gtk.Align.START)
         if not attrs.get('expand_toolbar'):
             if attrs.get('collapse_body'):
                 click_catcher = Gtk.EventBox.new()
@@ -42,9 +45,6 @@ class Many2Many(Widget):
                 click_catcher.connect('button-press-event', self._toggle_body)
 
                 collapse_hbox = Gtk.HBox()
-                self.title = Gtk.Label(
-                    label=set_underline(attrs.get('string', '')),
-                    use_underline=True, halign=Gtk.Align.START)
                 self.title_expander = Gtk.Image()
                 self.title_expander.set_from_pixbuf(
                     common.IconFactory.get_pixbuf('tryton-arrow-down'))
@@ -58,9 +58,6 @@ class Many2Many(Widget):
                 hbox.pack_start(
                     click_catcher, expand=True, fill=True, padding=0)
             else:
-                self.title = Gtk.Label(
-                    label=set_underline(attrs.get('string', '')),
-                    use_underline=True, halign=Gtk.Align.START)
                 hbox.pack_start(self.title, expand=True, fill=True, padding=0)
 
         hbox.pack_start(Gtk.VSeparator(), expand=False, fill=True, padding=0)
