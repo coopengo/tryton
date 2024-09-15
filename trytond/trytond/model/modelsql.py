@@ -1689,13 +1689,14 @@ class ModelSQL(ModelStorage):
         domain = simplify(convert(domain))
         rule_domain = Rule.domain_get(cls.__name__, mode='read')
         joined_domains = None
-        if domain and domain[0] == 'OR':
-            local_domains, subquery_domains = split_subquery_domain(domain)
-            if subquery_domains:
-                joined_domains = subquery_domains
-                if local_domains:
-                    local_domains.insert(0, 'OR')
-                    joined_domains.append(local_domains)
+        if backend.name != 'sqlite':
+            if domain and domain[0] == 'OR':
+                local_domains, subquery_domains = split_subquery_domain(domain)
+                if subquery_domains:
+                    joined_domains = subquery_domains
+                    if local_domains:
+                        local_domains.insert(0, 'OR')
+                        joined_domains.append(local_domains)
 
         # The UNION optimization needs the columns used to order the query
         if order and joined_domains:
