@@ -295,16 +295,6 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
         if update:
             if indexes or indexes is None:
                 create_indexes(concurrently=False)
-            else:
-                with tempfile.NamedTemporaryFile(
-                        suffix='.sql', delete=False) as tfd:
-                    for model_name in models_with_indexes:
-                        model = pool.get(model_name)
-                        if model._sql_indexes:
-                            model._dump_sql_indexes(tfd)
-                    logger.warning(
-                        'index:skipping indexes creation. SQL dumped on %s',
-                        tfd.name)
             for model_name in models_to_update_history:
                 model = pool.get(model_name)
                 if model._history:
