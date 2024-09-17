@@ -103,7 +103,7 @@ setattr(klass, method_name, %s)'''
     for meth_name in to_patch:
         logger.warning(
             'Patching model \'%s\' method for profiling' % meth_name)
-        for klass in pool._pool[pool.database_name].get('model', {}).values():
+        for klass in pool._pool.get('model', {}).values():
             change_method_name_for_profiling(klass, meth_name)
 
 
@@ -133,7 +133,7 @@ def name_one2many_gets(pool, update):
     for meth_name in to_patch:
         logger.warning(
             'Patching fields \'%s\' method for profiling' % meth_name)
-        for klass in pool._pool[pool.database_name].get('model', {}).values():
+        for klass in pool._pool.get('model', {}).values():
             for fname, field in list(klass._fields.items()):
                 if not hasattr(field, meth_name):
                     continue
@@ -217,7 +217,7 @@ def activate_auto_profile(pool, update):
             *pool_type, model = model.strip().split('/')
             pool_type = (pool_type or ['model'])[0]
 
-            Model = pool._pool[pool.database_name].get(pool_type).get(model)
+            Model = pool._pool.get(pool_type).get(model)
             for method in methods.split(','):
                 method = method.strip()
                 logger.warning('Enabling auto-profile for %s -> %s' % (
@@ -305,7 +305,7 @@ def detect_api_changes(pool):
             return True
         return False
 
-    for klass in pool._pool[pool.database_name].get('model', {}).values():
+    for klass in pool._pool.get('model', {}).values():
         meths_data = defaultdict(list)
         full_mro = klass.__mro__[::-1]
         for mname in dir(klass):
