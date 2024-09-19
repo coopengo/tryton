@@ -470,7 +470,8 @@
         save_width: function(tree) {
             var widths = {};
             for (const column of tree.columns) {
-                if (!column.get_visible()) {
+                if (!column.get_visible() || !column.attributes.name ||
+                    column instanceof Sao.View.Tree.ButtonColumn) {
                     continue;
                 }
                 var width = column.col.css('width');
