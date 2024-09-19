@@ -851,7 +851,7 @@ class Screen:
                     root_parent.model_name, 'is not',
                     self._multiview_form.screen.model_name)
             self._multiview_form.screen.reload([root_parent.id])
-        self.display(res_id=record_id)
+        self.display()
 
     def unremove(self):
         records = self.selected_records
