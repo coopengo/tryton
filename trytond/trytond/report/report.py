@@ -485,9 +485,10 @@ class Report(URLMixin, PoolBase):
                 if r.status_code < 300:
                     return oext, r.content
                 else:
-                    raise UnoConversionError('Conversion of "%s" failed. '
-                        'Unoconv responsed with "%s".' % (
-                            report.report_name, r.reason))
+                    raise UnoConversionError(
+                        f'Conversion of "{report.report_name}" failed.\n'
+                        f'The conversion API responsed with:\n'
+                        f'{r.status_code}: {r.text}')
             except UnoConversionError as e:
                 if count:
                     time.sleep(0.1)
