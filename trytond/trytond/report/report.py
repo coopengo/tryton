@@ -487,7 +487,7 @@ class Report(URLMixin, PoolBase):
                 else:
                     raise UnoConversionError(
                         f'Conversion of "{report.report_name}" failed.\n'
-                        f'The conversion API responsed with:\n'
+                        f'The conversion API responded with:\n'
                         f'{r.status_code}: {r.text}')
             except UnoConversionError as e:
                 if count:
