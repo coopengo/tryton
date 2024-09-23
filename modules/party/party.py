@@ -1067,6 +1067,10 @@ class Replace(Wizard):
             ('party.identifier', 'party'),
             ]
 
+    @classmethod
+    def hook_after_replace(cls, modified_fields):
+        return
+
 
 class ReplaceAsk(ModelView):
     "Replace Party"
