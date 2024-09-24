@@ -1,6 +1,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import stdnum.exceptions
+from collections import defaultdict
 from sql import Column, Literal, Null
 from sql.aggregate import Min
 from sql.functions import CharLength
@@ -902,6 +903,7 @@ class Replace(Wizard):
         source.save()
 
         cursor = transaction.connection.cursor()
+        modified_fields = defaultdict(list)
         for model_name, field_name in self.fields_to_replace():
             Model = pool.get(model_name)
             field = getattr(Model, field_name)
@@ -932,6 +934,9 @@ class Replace(Wizard):
                 ids = [x[0] for x in cursor]
 
             Model._insert_history(ids)
+            modified_fields[(model_name, field_name)].extend(ids)
+
+        self.hook_after_replace(modified_fields)
         return 'end'
 
     @classmethod
@@ -941,6 +946,10 @@ class Replace(Wizard):
             ('party.contact_mechanism', 'party'),
             ('party.identifier', 'party'),
             ]
+
+    @classmethod
+    def hook_after_replace(cls, modified_fields):
+        return
 
 
 class ReplaceAsk(ModelView):
