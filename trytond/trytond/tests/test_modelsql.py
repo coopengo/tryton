@@ -1517,6 +1517,28 @@ class ModelSQLTranslationTestCase(TranslationTestCase):
         self.assertFalse(other.fuzzy)
 
     @with_transaction()
+    def test_write_ir_model(self):
+        "Test writing on ir.model"
+        pool = Pool()
+        NameTranslated = pool.get('test.modelsql.name_translated')
+        Model = pool.get('ir.model')
+
+        record, = NameTranslated.create([{'name': "Toto"}])
+        with Transaction().set_context(language=self.other_language):
+            NameTranslated.write([record], {'name': "Foo"})
+
+            values = NameTranslated.read([record.id], ['name'])
+            self.assertEqual(values[0]['name'], "Foo")
+
+            translated_model, = Model.search([
+                    ('model', '=', 'test.modelsql.name_translated'),
+                    ])
+            Model.write([translated_model], {'name': "NameTranslated"})
+
+            values = NameTranslated.read([record.id], ['name'])
+            self.assertEqual(values[0]['name'], "Foo")
+
+    @with_transaction()
     def test_write_default_language_with_other_language(self):
         "Test write default language with other language"
         pool = Pool()
