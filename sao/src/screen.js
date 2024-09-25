@@ -175,7 +175,7 @@
                 'class': 'col-sm-2 pull-right'
             }).appendTo(search_row));
 
-            if (!show_filter) {
+            if (!show_filter && (show_filter !== undefined)) {
                 this.filter_box.css('margin', 0);
                 search_row.hide();
             }
