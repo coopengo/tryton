@@ -39,8 +39,8 @@
 // Simple fields readonly styles
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
-    border-top-left-radius:   5px;
-    border-top-right-radius:  5px;
+    border-top-left-radius:   5px !important;
+    border-top-right-radius:  5px !important;
 }
 
 // XXX2Many Mixin
@@ -569,6 +569,7 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
     .readonly {
         .input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
+            background-image: none;
         }
     }
 }
@@ -627,6 +628,7 @@ div.form-text {
 // Make selections without any options look readonly
 select:empty, select:has(> option[value="null"]):not(:has(> option:not([value="null"]))) {
     .coog-readonly-field-mixin();
+    background-image:       none;
     pointer-events:         none;
 }
 
