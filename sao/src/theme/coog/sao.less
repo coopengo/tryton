@@ -605,7 +605,7 @@ div.form-selection select.form-control {
 div.form-text {
     padding:                3px 10px 3px 10px;
     textarea.form-control {
-        min-height: 150px;
+        min-height: inherit !important;
         max-height: 300px;
         border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
         box-shadow: 0 1px 4px rgba(@color-black,    @coog-box-opacity);
@@ -748,6 +748,14 @@ div.CodeMirror {
 // Hide line of notebooks with all tabs hidden
 ul.nav.nav-tabs:empty {
     border-bottom:    none;
+}
+
+// Properly apply min-height
+div.form-text:has(> div.input-group > textarea.form-control) {
+    min-height: 200px;
+    > div.input-group {
+        min-height: inherit;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
