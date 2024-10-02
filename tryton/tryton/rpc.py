@@ -23,7 +23,6 @@ _USER = None
 _USERNAME = ''
 _HOST = ''
 _PORT = None
-_CLIENT_DATE = None
 _DATABASE = ''
 CONTEXT = {}
 _VIEW_CACHE = {}
@@ -116,14 +115,12 @@ def set_service_session(parameters):
 def login(parameters):
     from tryton import common
     global CONNECTION, _USER
-    global _CLIENT_DATE
     host = CONFIG['login.host']
     hostname = common.get_hostname(host)
     port = common.get_port(host)
     database = CONFIG['login.db']
     username = CONFIG['login.login']
     language = CONFIG['client.lang']
-    date = CONFIG['login.date']
     parameters['device_cookie'] = device_cookie.get()
     connection = ServerProxy(hostname, port, database)
     logger.info('common.db.login(%s, %s, %s)', username, 'x' * 10, language)
@@ -135,14 +132,12 @@ def login(parameters):
         CONNECTION.close()
     CONNECTION = ServerPool(
         hostname, port, database, session=session, cache=not CONFIG['dev'])
-    _CLIENT_DATE = date
     device_cookie.renew()
     bus.listen(CONNECTION)
 
 
 def logout():
     global CONNECTION, _USER
-    global _CLIENT_DATE
     if CONNECTION is not None:
         try:
             logger.info('common.db.logout()')
@@ -152,7 +147,6 @@ def logout():
             pass
         CONNECTION.close()
         CONNECTION = None
-    _CLIENT_DATE = None
     _USER = None
     _VIEW_CACHE.clear()
     _TOOLBAR_CACHE.clear()

@@ -116,6 +116,12 @@
                     ([k, v]) => (k != 'locale') && !k.endsWith('.rec_name')));
                 jQuery.extend(this.context, context);
                 this.store_context();
+                Sao.set_title(context.status_bar || '');
+                if (context.status_bar) {
+                    var user_menu = jQuery('#user-preferences > a');
+                    user_menu.attr('title', context.status_bar);
+                    user_menu.text(context.status_bar);
+                }
             });
         },
         reset_context: function() {
