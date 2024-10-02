@@ -9,6 +9,7 @@
 @color-light-blue:      rgb(0, 174, 229); // #00aee5
 @color-lighter-blue:    rgb(162, 218, 244); // #a2daf4
 @color-lightest-blue:   rgb(231, 244, 252); // #E7F4FC
+@color-hint-blue:       rgb(247, 252, 255); // #F7FCFF
 @color-lightest-red:    rgb(255, 208, 205); // #ffd0cd
 
 @coog-background:       @color-white;
@@ -39,8 +40,8 @@
 // Simple fields readonly styles
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
-    border-top-left-radius:   5px;
-    border-top-right-radius:  5px;
+    border-top-left-radius:   5px !important;
+    border-top-right-radius:  5px !important;
 }
 
 // XXX2Many Mixin
@@ -569,6 +570,7 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
     .readonly {
         .input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
+            background-image: none;
         }
     }
 }
@@ -627,6 +629,7 @@ div.form-text {
 // Make selections without any options look readonly
 select:empty, select:has(> option[value="null"]):not(:has(> option:not([value="null"]))) {
     .coog-readonly-field-mixin();
+    background-image:       none;
     pointer-events:         none;
 }
 
@@ -710,6 +713,45 @@ div.readonly div.CodeMirror-sizer {
 
 div.CodeMirror {
     height: @coog-rule-engine-height;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Notebooks
+///////////////////////////////////////////////////////////////////////////////
+div.form-notebook > ul.nav.nav-tabs {
+    margin-bottom:                  8px;
+    border-color:                   @color-lighter-blue;
+    > li {
+        > a {
+            padding:                    8px 8px;
+            border-top-left-radius:     8px;
+            border-top-right-radius:    8px;
+            border:                     solid @color-lighter-blue 1px;
+            &:hover {
+                .coog-group-header-colors();
+            }
+            > span.badge-empty {
+                min-width:          0px;
+                padding:            0px 0px;
+            }
+        }
+
+        &:not(active) &:not(focus) > a {
+            box-shadow: none;
+        }
+    }
+    > li.active {
+        > a {
+            .coog-group-header-colors();
+            border:                     solid @color-light-blue 1px;
+            &:hover {
+                border-bottom:          none;
+                border:                 solid @color-light-blue 1px;
+                background-color:       @color-lighter-blue;
+                .coog-group-header-colors();
+            }
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
