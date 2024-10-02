@@ -38,7 +38,7 @@
             this.context.active_ids = this.ids;
             this.context.active_model = this.model;
             this.context.action_id = this.action_id;
-            return Sao.rpc({
+            Sao.rpc({
                 'method': 'wizard.' + this.action + '.create',
                 'params': [this.session.context]
             }, this.session).then(result => {
