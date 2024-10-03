@@ -1,8 +1,10 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import datetime as dt
+import operator
 
 from sql import Literal
+from sql.functions import Substring
 from sql.conditionals import Coalesce
 
 from trytond import backend
@@ -462,6 +464,19 @@ class Subdivision(DeactivableMixin, ModelSQL, ModelView):
             ('name', operator, operand, *extra),
             ('code', operator, code_value, *extra),
             ]
+
+    @classmethod
+    def domain_code(cls, domain, tables):
+        table, _ = tables[None]
+
+        _, op, value = domain
+        Operator = fields.SQL_OPERATORS[op]
+        column = cls.code.sql_column(table)
+        if op.endswith('like'):
+            bool_op = operator.and_ if op.startswith('not ') else operator.or_
+            return bool_op(
+                Operator(column, value), Operator(Substring(column, 4), value))
+        return Operator(column, value)
 
     @classmethod
     def create(cls, vlist):
