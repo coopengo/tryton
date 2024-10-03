@@ -324,23 +324,28 @@
         },
         destroy: function(action) {
             Sao.Wizard.Dialog._super.destroy.call(this, action);
+            let modal_dialog_elem = this.dialog[0];
+            let is_menu = false;
+            // Don't use an arrow function as "this" will point to each element
+            // found by jQuery
+            let dialog = jQuery('.wizard-dialog').filter(function(idx) {
+                return this !== modal_dialog_elem;
+            }).filter(':visible')[0];
+            let screen;
+            if (!dialog) {
+                dialog = Sao.Tab.tabs.get_current();
+            }
+            if (!dialog ||
+                !this.model ||
+                (Sao.main_menu_screen &&
+                (Sao.main_menu_screen.model_name == this.model))) {
+                is_menu = true;
+                screen = Sao.main_menu_screen;
+            } else {
+                screen = dialog.screen;
+            }
             const destroy = () => {
                 this.dialog.remove();
-                var dialog = jQuery('.wizard-dialog').filter(':visible')[0];
-                var is_menu = false;
-                var screen;
-                if (!dialog) {
-                    dialog = Sao.Tab.tabs.get_current();
-                }
-                if (!dialog ||
-                    !this.model ||
-                    (Sao.main_menu_screen &&
-                    (Sao.main_menu_screen.model_name == this.model))) {
-                    is_menu = true;
-                    screen = Sao.main_menu_screen;
-                } else {
-                    screen = dialog.screen;
-                }
                 if (screen) {
                     var prm = jQuery.when();
                     if (screen.current_record && !is_menu) {
