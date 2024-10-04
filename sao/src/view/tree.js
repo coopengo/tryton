@@ -396,7 +396,7 @@
                 }
             }
             var mutation = mutationList.at(-1);
-            var col_idx = mutation.target.dataset.col;
+            var col_idx = Number(mutation.target.dataset.col) + 1;
             var width = mutation.target.style.width;
             const css_width_re = /width: ([^;]*)/i;
             var old_width;
@@ -418,7 +418,7 @@
                 max_idx = idx;
             });
             if (old_width && (width != old_width)) {
-                const width_re = /^([0-9\.]+)px$/i;
+                const width_re = /^([0-9.]+)px$/i;
                 var old_value = old_width.match(width_re);
                 var value = width.match(width_re);
                 old_value = old_value ? Number(old_value[1]) : undefined;
@@ -447,7 +447,7 @@
                                 this.colgroup.find('col').eq(tr_node.data('last_col'))
                                     .css('width', `${last_col_width - delta + offset}px`);
                                 total_size += offset - delta;
-                            } else if (Number(col_idx) == max_idx - 1) {
+                            } else if (col_idx == max_idx - 1) {
                                 // if the total size is greater than the
                                 // visible scope, and we reduce the width of
                                 // the second to last column, we also reduce

@@ -2558,7 +2558,7 @@ function hide_x2m_body(widget) {
                 record = this.record;
             var value = '';
             if (this.width !== null){
-                this.input_text.css('width', this.width + 'ch');
+                this.input_text.css('width', (this.width + 5) + 'ch');
                 this.input.css('width', (this.width + 5) + 'ch');
                 this.group.css('width', (this.width + 5) + 'ch');
             }

@@ -1230,16 +1230,6 @@
         },
         set_on_change: function(values) {
             var fieldname, value;
-            let missing_keys = new Set(Object.keys(values)).difference(
-                new Set(Object.keys(this.model.fields)));
-            if (missing_keys.size > 0) {
-                let args = {
-                    method: `model.${this.model.name}.fields_get`,
-                    params: [missing_keys.keys(), this.get_context()],
-                };
-                let new_fields = Sao.rpc(args, this.model.session, false);
-                this.group.add_fields(new_fields);
-            }
             for (fieldname in values) {
                 value = values[fieldname];
                 if (!(fieldname in this.model.fields)) {
@@ -2242,8 +2232,8 @@
         set: function(record, value) {
             var promise;
             var rec_name = (
-                record._values[this.name + '.'] || {}).rec_name;
-            if (!rec_name && rec_name !== '' && (value >= 0) && (value !== null)) {
+                record._values[this.name + '.'] || {}).rec_name || '';
+            if (!rec_name && (value >= 0) && (value !== null)) {
                 var model_name = record.model.fields[this.name].description
                     .relation;
                 rec_name = Sao.rpc({

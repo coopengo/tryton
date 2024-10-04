@@ -9,6 +9,7 @@
 @color-light-blue:      rgb(0, 174, 229); // #00aee5
 @color-lighter-blue:    rgb(162, 218, 244); // #a2daf4
 @color-lightest-blue:   rgb(231, 244, 252); // #E7F4FC
+@color-hint-blue:       rgb(247, 252, 255); // #F7FCFF
 @color-lightest-red:    rgb(255, 208, 205); // #ffd0cd
 
 @coog-background:       @color-white;
@@ -39,8 +40,8 @@
 // Simple fields readonly styles
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
-    border-top-left-radius:   5px;
-    border-top-right-radius:  5px;
+    border-top-left-radius:   5px !important;
+    border-top-right-radius:  5px !important;
 }
 
 // XXX2Many Mixin
@@ -544,6 +545,22 @@ div.wizard-dialog {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Vertical alignment
+///////////////////////////////////////////////////////////////////////////////
+
+label.form-label {
+    margin-bottom:         0px;
+}
+
+input[type="text"].form-control.input-sm {
+    padding-top:           2px;
+}
+
+span.expander > img.icon {
+    height:                33px;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Misc fields
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -553,6 +570,7 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
     .readonly {
         .input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
+            background-image: none;
         }
     }
 }
@@ -589,7 +607,7 @@ div.form-selection select.form-control {
 div.form-text {
     padding:                3px 10px 3px 10px;
     textarea.form-control {
-        min-height: 150px;
+        min-height: inherit !important;
         max-height: 300px;
         border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
         box-shadow: 0 1px 4px rgba(@color-black,    @coog-box-opacity);
@@ -611,6 +629,7 @@ div.form-text {
 // Make selections without any options look readonly
 select:empty, select:has(> option[value="null"]):not(:has(> option:not([value="null"]))) {
     .coog-readonly-field-mixin();
+    background-image:       none;
     pointer-events:         none;
 }
 
@@ -642,7 +661,7 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
             min-width: 17ch;
         }
     }
-    .form-date {
+    .form-date, .form-datetime {
         input {
             min-width: 17ch;
         }
@@ -697,6 +716,45 @@ div.CodeMirror {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Notebooks
+///////////////////////////////////////////////////////////////////////////////
+div.form-notebook > ul.nav.nav-tabs {
+    margin-bottom:                  8px;
+    border-color:                   @color-lighter-blue;
+    > li {
+        > a {
+            padding:                    8px 8px;
+            border-top-left-radius:     8px;
+            border-top-right-radius:    8px;
+            border:                     solid @color-lighter-blue 1px;
+            &:hover {
+                .coog-group-header-colors();
+            }
+            > span.badge-empty {
+                min-width:          0px;
+                padding:            0px 0px;
+            }
+        }
+
+        &:not(active) &:not(focus) > a {
+            box-shadow: none;
+        }
+    }
+    > li.active {
+        > a {
+            .coog-group-header-colors();
+            border:                     solid @color-light-blue 1px;
+            &:hover {
+                border-bottom:          none;
+                border:                 solid @color-light-blue 1px;
+                background-color:       @color-lighter-blue;
+                .coog-group-header-colors();
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Pop up menu
 ///////////////////////////////////////////////////////////////////////////////
 #popup-menu {
@@ -732,6 +790,14 @@ div.CodeMirror {
 // Hide line of notebooks with all tabs hidden
 ul.nav.nav-tabs:empty {
     border-bottom:    none;
+}
+
+// Properly apply min-height
+div.form-text:has(> div.input-group > textarea.form-control) {
+    min-height: 200px;
+    > div.input-group {
+        min-height: inherit;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
