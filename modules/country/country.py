@@ -4,8 +4,8 @@ import datetime as dt
 import operator
 
 from sql import Literal
-from sql.functions import Substring
 from sql.conditionals import Coalesce
+from sql.functions import Position, Substring
 
 from trytond import backend
 from trytond.model import DeactivableMixin, ModelSQL, ModelView, fields, tree
@@ -473,9 +473,16 @@ class Subdivision(DeactivableMixin, ModelSQL, ModelView):
         Operator = fields.SQL_OPERATORS[op]
         column = cls.code.sql_column(table)
         if op.endswith('like'):
+            if op.endswith('ilike') and cls.code.search_unaccented:
+                database = Transaction().database
+                column = database.unaccent(column)
+                value = database.unaccent(value)
             bool_op = operator.and_ if op.startswith('not ') else operator.or_
             return bool_op(
-                Operator(column, value), Operator(Substring(column, 4), value))
+                Operator(column, value),
+                Operator(
+                    Substring(column, Position('-', column) + Literal(1)),
+                    value))
         return Operator(column, value)
 
     @classmethod
