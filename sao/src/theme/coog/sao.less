@@ -30,6 +30,7 @@
 @brand-primary:         @color-blue;
 @coog-box-shadow:       0 1px 4px rgba(0, 0, 0, 0.3);
 @coog-max-menu-width:   28em;
+@coog-card-bottom-padding: 5px;
 
 // header colors for groups
 .coog-group-header-colors {
@@ -46,7 +47,7 @@
 
 // XXX2Many Mixin
 .coog-xxx2many-mixin {
-    padding-bottom:             15px;
+    padding-bottom:             @coog-card-bottom-padding;
 
     // No padding if the toolbar is disabled
     :has(> div > div.coog-hidden-toolbar) {
@@ -127,6 +128,18 @@
 // Links without a border are not obviously clickable for users
 .coog-highlight-link-button {
     box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Main view
+///////////////////////////////////////////////////////////////////////////////
+#tabcontent > div.tab-pane.active > div.panel.tab-form > div.panel-body.row {
+    padding-top:                @coog-card-bottom-padding;
+    padding-bottom:             @coog-card-bottom-padding;
+    > div {
+        padding-right:          @coog-card-bottom-padding;
+        padding-left:           @coog-card-bottom-padding;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -434,7 +447,7 @@ div.form-item.form-many2many {
 ///////////////////////////////////////////////////////////////////////////////
 
 div.form-dict {
-    margin-bottom:              5px;
+    margin-bottom:              @coog-card-bottom-padding;
 
     // Apply readonly value of dict field to values
     .readonly {
@@ -470,7 +483,7 @@ div.form-dict {
 
 // Style group headers as dicts
 div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
-    padding-bottom:             15px;
+    padding-bottom:             5px;
 
     // "legends" are special and default style is weird, transform the style to
     // look like dicts
@@ -478,7 +491,7 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
         display: flex;
         flex-direction: column;
         box-shadow:                     @coog-box-shadow;
-        margin-bottom:                  10px;
+        padding-bottom:                 10px;
 
         > div.form-container {
             clear:                      both;
