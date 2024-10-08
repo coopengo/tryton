@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_party_admin">
             <field name="name">Party Administration</field>
+            <field name="code">party_administration</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_party_admin">

@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_company_admin">
             <field name="name">Company Administration</field>
+            <field name="code">company_administration</field>
         </record>
         <record model="res.user-res.group" id="user_admin_company_admin">
             <field name="user" ref="res.user_admin"/>
@@ -13,6 +14,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="res.group" id="group_employee_admin">
             <field name="name">Employee Administration</field>
+            <field name="code">employee_administration</field>
         </record>
         <record model="res.user-res.group" id="user_admin_employee_admin">
             <field name="user" ref="res.user_admin"/>
