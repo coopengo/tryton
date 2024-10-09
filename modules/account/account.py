@@ -9,12 +9,14 @@ from itertools import zip_longest
 from dateutil.relativedelta import relativedelta
 from sql import Column, Literal, Null, Window
 from sql.aggregate import Count, Max, Min, Sum
+from sql.functions import CurrentTimestamp
 from sql.conditionals import Case, Coalesce
 
 from trytond import backend
 from trytond.i18n import gettext
 from trytond.model import (
-    Check, Index, ModelSQL, ModelView, Unique, fields, sequence_ordered, tree)
+    Check, Index, ModelSQL, ModelView, Unique, fields, materialize,
+    sequence_ordered, tree)
 from trytond.model.exceptions import AccessError
 from trytond.modules.currency.fields import Monetary
 from trytond.pool import Pool
@@ -1447,7 +1449,7 @@ class Account(
             ]
 
 
-class AccountParty(ActivePeriodMixin, ModelSQL):
+class AccountParty(materialize(), ActivePeriodMixin, ModelSQL):
     "Account Party"
     __name__ = 'account.account.party'
     account = fields.Many2One('account.account', "Account")
@@ -1505,7 +1507,9 @@ class AccountParty(ActivePeriodMixin, ModelSQL):
 
         columns = []
         for fname, field in cls._fields.items():
-            if not hasattr(field, 'set'):
+            if fname in {'create_date', 'write_date'}:
+                columns.append(CurrentTimestamp().as_(fname))
+            elif not hasattr(field, 'set'):
                 if fname in {'id', 'account', 'party'}:
                     column = Column(account_party, fname)
                 else:
@@ -2306,6 +2310,12 @@ class GeneralLedgerAccountParty(_GeneralLedgerAccount):
             ('account.rec_name',) + tuple(clause[1:]),
             ('party.rec_name',) + tuple(clause[1:]),
             ]
+
+    @classmethod
+    def refresh_view(cls):
+        pool = Pool()
+        AccountParty = pool.get('account.account.party')
+        AccountParty.refresh_view()
 
 
 class OpenGeneralLedgerAccountParty(Wizard):
