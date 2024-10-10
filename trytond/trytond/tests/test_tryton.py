@@ -416,6 +416,8 @@ class ModuleTestCase(_DBTestCase):
                                             field, Model.__name__))
                         if element.tag == 'button':
                             button_name = element.get('name')
+                            if button_name == 'refresh parent':
+                                continue
                             self.assertIn(button_name, Model._buttons.keys(),
                                 msg="Button '%s' is not in %s._buttons"
                                 % (button_name, Model.__name__))
