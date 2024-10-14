@@ -2819,6 +2819,9 @@ function hide_x2m_body(widget) {
                         Sao.i18n.BC47(record.expr_eval(this.attributes.spell)));
                     this.input.attr('spellcheck', 'true');
                 }
+                if (this.attributes.yexpand) {
+                    this.input.css('height', value.split('\n').length * 2.5 + 2 + "ex");
+                }
             } else {
                 this.input.val('');
             }
