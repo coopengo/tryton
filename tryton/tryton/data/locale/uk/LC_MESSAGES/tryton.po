@@ -1,7 +1,3 @@
-#
-msgid ""
-msgstr "Content-Type: text/plain; charset=utf-8\n"
-
 msgid "specify alternate config file"
 msgstr "вкажіть альтернативний конфігураційний файл"
 
@@ -71,9 +67,6 @@ msgstr "Зберегти як..."
 msgid "Do you want to proceed?"
 msgstr "Ви бажаєте продовжити?"
 
-msgid "Always ignore this warning."
-msgstr "Завжди ігнорувати це попередження."
-
 msgid "No"
 msgstr "Ні"
 
@@ -118,19 +111,6 @@ msgstr ""
 msgid "Report Bug"
 msgstr "Повідомити про помилку"
 
-#, python-format
-msgid "Check URL: %s"
-msgstr "Перевірка URL: %s"
-
-msgid "Unable to check for new version."
-msgstr "Неможливо перевірити наявність нової версії."
-
-msgid "A new version is available!"
-msgstr "Доступна нова версія!"
-
-msgid "Download"
-msgstr "Завантажити"
-
 msgid "Concurrency Exception"
 msgstr "Виняток одночасного доступу"
 
@@ -173,6 +153,13 @@ msgstr "<i>Створити...</i>"
 msgid "Create \"%s\"..."
 msgstr "Створити \"%s\"..."
 
+#, fuzzy
+msgid "Validity"
+msgstr "Обмеження"
+
+msgid "Date Validity"
+msgstr ""
+
 msgid "Value"
 msgstr "Значення"
 
@@ -187,6 +174,12 @@ msgstr "Формат відображення"
 
 msgid "Open the calendar"
 msgstr "Відкрити календар"
+
+msgid "Time Validity"
+msgstr ""
+
+msgid "DateTime Validity"
+msgstr ""
 
 msgid "Date Format"
 msgstr "Формат дати"
@@ -294,6 +287,13 @@ msgstr "с"
 msgid "Preferences..."
 msgstr "Налаштування..."
 
+msgid "Log out"
+msgstr ""
+
+#, fuzzy
+msgid "Open logs directory"
+msgstr "Відкрити пов'язані записи"
+
 msgid "Toolbar"
 msgstr "Панель інструментів"
 
@@ -329,9 +329,6 @@ msgstr "Спрощений режим"
 
 msgid "Search Limit..."
 msgstr "Обмеження пошуку..."
-
-msgid "Check Version"
-msgstr "Перевірка версії"
 
 msgid "Options"
 msgstr "Параметри"
@@ -598,6 +595,10 @@ msgstr "Сервер / База даних"
 msgid "User name:"
 msgstr "Ім'я користувача:"
 
+#, fuzzy
+msgid "Date:"
+msgstr "База даних:"
+
 msgid "Unable to complete email entry"
 msgstr "Не вдалося відправити ел.лист"
 
@@ -682,6 +683,9 @@ msgstr "Зараз працюємо з дубльованим записом(з�
 msgid "Record saved."
 msgstr "Запис збережено."
 
+msgid " of "
+msgstr ""
+
 msgid ""
 "This record has been modified\n"
 "do you want to save it?"
@@ -704,17 +708,15 @@ msgstr "Звіт"
 msgid "Open report"
 msgstr "Відкрити звіт"
 
-msgid "Print"
-msgstr "Друк"
-
-msgid "Print report"
-msgstr "Друкувати звіт"
-
 msgid "_Copy URL"
 msgstr "_Копіювати URL"
 
 msgid "Copy URL into clipboard"
 msgstr "Копіювати URL в буфер обміну"
+
+#, fuzzy
+msgid "name"
+msgstr "Ім'я"
 
 msgid "Unknown"
 msgstr "Невідомо"
@@ -1088,6 +1090,10 @@ msgstr "Значення \"%s\" обов'язкове."
 msgid "The values of \"%s\" are not valid."
 msgstr "Значення \"%s\" недійсні."
 
+#, fuzzy, python-format
+msgid "The value of \"%s\" is not valid."
+msgstr "Значення \"%s\" недійсні."
+
 msgid "Pre-validation"
 msgstr "Попередня перевірка"
 
@@ -1232,6 +1238,29 @@ msgstr "Видалити вибраний запис"
 msgid "%s%%"
 msgstr "%s%%"
 
+#, fuzzy
+msgid "Replace"
+msgstr "Пов'язані"
+
+#, fuzzy
+msgid "Replace All"
+msgstr "Вибрати всі"
+
+msgid "L"
+msgstr ""
+
+#, fuzzy
+msgid "Message"
+msgstr "Зображення"
+
+#, fuzzy
+msgid "Parameters: {}"
+msgstr "Параметри CSV"
+
+#, fuzzy
+msgid "No parameters"
+msgstr "Параметри CSV"
+
 msgid "Choose a language"
 msgstr "Вибрати мову"
 
@@ -1250,8 +1279,13 @@ msgstr "Треба зберегти запис перед додаванням �
 msgid "No other language available."
 msgstr "Немає іншої мови."
 
+#, fuzzy
+msgid ": "
+msgstr ":"
+
 msgid "#ERROR"
 msgstr ""
 
 msgid "Translate view"
 msgstr "Переклад вкладки"
+

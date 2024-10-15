@@ -1,10 +1,3 @@
-# Translations template for tryton.
-# Copyright (C) 2016 Tryton
-# This file is distributed under the same license as the tryton project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
-msgid ""
-msgstr "Content-Type: text/plain; charset=utf-8\n"
-
 msgid "specify alternate config file"
 msgstr "zadejte alternativní konfigurační soubor"
 
@@ -78,9 +71,6 @@ msgstr "Uložit jako..."
 msgid "Do you want to proceed?"
 msgstr ""
 
-msgid "Always ignore this warning."
-msgstr "zadejte alternativní konfigurační soubor"
-
 msgid "No"
 msgstr ""
 
@@ -126,19 +116,6 @@ msgstr ""
 msgid "Report Bug"
 msgstr "Nahlásit chybu"
 
-#, python-format
-msgid "Check URL: %s"
-msgstr ""
-
-msgid "Unable to check for new version."
-msgstr ""
-
-msgid "A new version is available!"
-msgstr ""
-
-msgid "Download"
-msgstr ""
-
 msgid "Concurrency Exception"
 msgstr "Výjimka při souběhu"
 
@@ -182,6 +159,13 @@ msgid "Create \"%s\"..."
 msgstr ""
 
 #, fuzzy
+msgid "Validity"
+msgstr "Omezit:"
+
+msgid "Date Validity"
+msgstr ""
+
+#, fuzzy
 msgid "Value"
 msgstr "Nepravda"
 
@@ -198,6 +182,12 @@ msgstr ""
 #, fuzzy
 msgid "Open the calendar"
 msgstr "Otevřít kalendář"
+
+msgid "Time Validity"
+msgstr ""
+
+msgid "DateTime Validity"
+msgstr ""
 
 msgid "Date Format"
 msgstr ""
@@ -314,6 +304,13 @@ msgstr ""
 msgid "Preferences..."
 msgstr "_Vlastnosti..."
 
+msgid "Log out"
+msgstr ""
+
+#, fuzzy
+msgid "Open logs directory"
+msgstr "Otevřít záznam"
+
 #, fuzzy
 msgid "Toolbar"
 msgstr "Nástrojová lišta"
@@ -354,9 +351,6 @@ msgid "PDA Mode"
 msgstr ""
 
 msgid "Search Limit..."
-msgstr ""
-
-msgid "Check Version"
 msgstr ""
 
 #, fuzzy
@@ -632,6 +626,10 @@ msgid "User name:"
 msgstr "Uživatelské jméno:"
 
 #, fuzzy
+msgid "Date:"
+msgstr "Databáze:"
+
+#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Nemohu nastavit lokalizaci %s"
 
@@ -728,6 +726,9 @@ msgstr "Nyní pracujete s duplicitním záznamem!"
 msgid "Record saved."
 msgstr "Záznam uložen!"
 
+msgid " of "
+msgstr ""
+
 #, fuzzy
 msgid ""
 "This record has been modified\n"
@@ -755,17 +756,15 @@ msgstr "Sestavy"
 msgid "Open report"
 msgstr "Otevřít záznam"
 
-msgid "Print"
-msgstr "Tisk"
-
-msgid "Print report"
-msgstr ""
-
 msgid "_Copy URL"
 msgstr ""
 
 msgid "Copy URL into clipboard"
 msgstr ""
+
+#, fuzzy
+msgid "name"
+msgstr "Uživatelské jméno:"
 
 msgid "Unknown"
 msgstr "Neznámý"
@@ -1172,6 +1171,10 @@ msgstr ""
 msgid "The values of \"%s\" are not valid."
 msgstr ""
 
+#, python-format
+msgid "The value of \"%s\" is not valid."
+msgstr ""
+
 msgid "Pre-validation"
 msgstr ""
 
@@ -1321,6 +1324,28 @@ msgstr "Smazat vybraný záznam"
 msgid "%s%%"
 msgstr ""
 
+#, fuzzy
+msgid "Replace"
+msgstr "_Vytvořit"
+
+msgid "Replace All"
+msgstr ""
+
+msgid "L"
+msgstr ""
+
+#, fuzzy
+msgid "Message"
+msgstr "Obrázky"
+
+#, fuzzy
+msgid "Parameters: {}"
+msgstr "Parametry CSV"
+
+#, fuzzy
+msgid "No parameters"
+msgstr "Parametry CSV"
+
 msgid "Choose a language"
 msgstr ""
 
@@ -1342,8 +1367,13 @@ msgstr "Musíte uložit záznam před přidáváním překladů!"
 msgid "No other language available."
 msgstr "Jiný jazyk není k dispozici!"
 
+#, fuzzy
+msgid ": "
+msgstr ":"
+
 msgid "#ERROR"
 msgstr ""
 
 msgid "Translate view"
 msgstr "Přeložit pohled"
+

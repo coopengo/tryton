@@ -1,6 +1,3 @@
-msgid ""
-msgstr "Content-Type: text/plain; charset=utf-8\n"
-
 msgid "specify alternate config file"
 msgstr "spécifier un fichier de configuration alternatif"
 
@@ -117,20 +114,6 @@ msgstr "Détails"
 msgid "Report Bug"
 msgstr "Rapporter un bogue"
 
-#, python-format
-msgid "Check URL: %s"
-msgstr "Vérification de l'URL : %s"
-
-msgid "Unable to check for new version."
-msgstr "Impossible de vérifier les nouvelles versions."
-
-msgid ""
-"The server took too much time to answer.\n"
-"You may try again later."
-msgstr ""
-"Le serveur a mis trop de temps à répondre.\n"
-"Veuillez réessayer ultérieurement."
-
 msgid "Concurrency Exception"
 msgstr "Erreur d'accès concurrent"
 
@@ -173,6 +156,12 @@ msgstr "<i>Créer...</i>"
 msgid "Create \"%s\"..."
 msgstr "Créer « %s »..."
 
+msgid "Validity"
+msgstr "Validité"
+
+msgid "Date Validity"
+msgstr "Date de validité"
+
 msgid "Value"
 msgstr "Valeur"
 
@@ -187,6 +176,12 @@ msgstr "Format d'affichage"
 
 msgid "Open the calendar"
 msgstr "Ouvrir le calendrier"
+
+msgid "Time Validity"
+msgstr ""
+
+msgid "DateTime Validity"
+msgstr ""
 
 msgid "Date Format"
 msgstr "Format de date"
@@ -293,6 +288,12 @@ msgstr "s"
 msgid "Preferences..."
 msgstr "Préférences..."
 
+msgid "Log out"
+msgstr "Sortie de la log"
+
+msgid "Open logs directory"
+msgstr "Ouvrir le répertoire des logs"
+
 msgid "Toolbar"
 msgstr "Barre d'outils"
 
@@ -328,9 +329,6 @@ msgstr "Mode PDA"
 
 msgid "Search Limit..."
 msgstr "Limite la recherche à..."
-
-msgid "Check Version"
-msgstr "Vérifier la version"
 
 msgid "Options"
 msgstr "Options"
