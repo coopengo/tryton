@@ -3692,7 +3692,7 @@
 
     Sao.common.Processing = Sao.class_(Object, {
         queries: 0,
-        timeout: 3000,
+        timeout: 200,
         init: function() {
             this.el = jQuery('<div/>', {
                 'id': 'processing',
@@ -3719,8 +3719,10 @@
             }
             return window.setTimeout(() => {
                 this.queries += 1;
-                this.el.show();
-            }, timeout);
+                if (this.el.is(':visible')) {
+                    this.el.addClass('spinning');
+                }
+            }, this.timeout);
         },
         hide: function(timeoutID) {
             window.clearTimeout(timeoutID);
@@ -3729,6 +3731,7 @@
             }
             if (this.queries <= 0) {
                 this.queries = 0;
+                this.el.removeClass('spinning');
                 this.el.hide();
             }
         }
