@@ -595,20 +595,12 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 
 // increase minimum width of fields
 .form {
-    .form-password, .form-float,
+    .form-password, .form-float, .form-char, .form-integer,
     .form-datetime, .form-time, .form-timedelta, .form-selection,
     .form-multiselection, .form-url, .form-email, .form-callto, .form-sip,
     .form-pyson {
         input, select {
             min-width: 17ch;
-        }
-    }
-    .form-char, .form-integer {
-        input:not([size]) {
-            min-width: 17ch;
-        }
-        input[size] {
-            min-width: unset;
         }
     }
     .form-many2one, .form-one2one, .form-reference, form-binary {
