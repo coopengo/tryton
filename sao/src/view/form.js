@@ -4178,6 +4178,8 @@ function hide_x2m_body(widget) {
                         .find('.treeview,.list-form').first()
                         .css('min-height', this.attributes.height + 'px')
                         .css('max-height', this.attributes.height + 'px');
+                } else {
+                    this.content.addClass('resizable');
                 }
             });
         },
@@ -4760,6 +4762,8 @@ function hide_x2m_body(widget) {
                         .find('.treeview,.list-form').first()
                         .css('min-height', this.attributes.height + 'px')
                         .css('max-height', this.attributes.height + 'px');
+                } else {
+                    this.content.addClass('resizable');
                 }
             });
         },
