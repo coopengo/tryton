@@ -220,6 +220,20 @@ div.scrollbar:has(+ div.treeview) {
     border-bottom:    none;
 }
 
+// the expander in the th should be set outside of the normal flow because
+// resizing the column makes the span and the div into the th to stack
+.treeview {
+    th {
+        .expander {
+            position: absolute;
+            top: 0;
+            // A negative offset for the case so that the text inside the title
+            // does not mangle with the expander
+            left: -0.4em;
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Top Menu
 ///////////////////////////////////////////////////////////////////////////////
