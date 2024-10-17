@@ -9,6 +9,7 @@
 @color-light-blue:      rgb(0, 174, 229); // #00aee5
 @color-lighter-blue:    rgb(162, 218, 244); // #a2daf4
 @color-lightest-blue:   rgb(231, 244, 252); // #E7F4FC
+@color-hint-blue:       rgb(247, 252, 255); // #F7FCFF
 @color-lightest-red:    rgb(255, 208, 205); // #ffd0cd
 
 @coog-background:       @color-white;
@@ -29,6 +30,7 @@
 @brand-primary:         @color-blue;
 @coog-box-shadow:       0 1px 4px rgba(0, 0, 0, 0.3);
 @coog-max-menu-width:   28em;
+@coog-card-bottom-padding: 5px;
 
 // header colors for groups
 .coog-group-header-colors {
@@ -39,13 +41,13 @@
 // Simple fields readonly styles
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
-    border-top-left-radius:   5px;
-    border-top-right-radius:  5px;
+    border-top-left-radius:   5px !important;
+    border-top-right-radius:  5px !important;
 }
 
 // XXX2Many Mixin
 .coog-xxx2many-mixin {
-    padding-bottom:             15px;
+    padding-bottom:             @coog-card-bottom-padding;
 
     // No padding if the toolbar is disabled
     :has(> div > div.coog-hidden-toolbar) {
@@ -126,6 +128,18 @@
 // Links without a border are not obviously clickable for users
 .coog-highlight-link-button {
     box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Main view
+///////////////////////////////////////////////////////////////////////////////
+#tabcontent > div.tab-pane.active > div.panel.tab-form > div.panel-body.row {
+    padding-top:                @coog-card-bottom-padding;
+    padding-bottom:             @coog-card-bottom-padding;
+    > div {
+        padding-right:          @coog-card-bottom-padding;
+        padding-left:           @coog-card-bottom-padding;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -433,7 +447,7 @@ div.form-item.form-many2many {
 ///////////////////////////////////////////////////////////////////////////////
 
 div.form-dict {
-    margin-bottom:              5px;
+    margin-bottom:              @coog-card-bottom-padding;
 
     // Apply readonly value of dict field to values
     .readonly {
@@ -469,7 +483,7 @@ div.form-dict {
 
 // Style group headers as dicts
 div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
-    padding-bottom:             15px;
+    padding-bottom:             5px;
 
     // "legends" are special and default style is weird, transform the style to
     // look like dicts
@@ -477,7 +491,7 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
         display: flex;
         flex-direction: column;
         box-shadow:                     @coog-box-shadow;
-        margin-bottom:                  10px;
+        padding-bottom:                 10px;
 
         > div.form-container {
             clear:                      both;
@@ -496,6 +510,29 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             margin-bottom:              5px;
             padding:                    2px 7px 2px 7px;
         }
+
+        // Better space usage if there is only one item in the group
+        &:has(> div.form-container > div.form-text:only-child) {
+            padding-bottom:             0px;
+            > legend {
+                margin-bottom:          0px;
+            }
+            > div.form-container > div.form-text {
+                padding:                0px;
+                > div.form-text {
+                    padding:            5px;
+                    padding-bottom:     1px;
+                }
+            }
+        }
+    }
+}
+
+// Improve vertical usage of groups with only one item
+div.form-item.form-group_:not(.yfill):has(> *:only-child), div.form-item.form-dict {
+    align-items:                        start;
+    > * {
+        height:                         auto;
     }
 }
 
@@ -569,6 +606,7 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
     .readonly {
         .input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
+            background-image: none;
         }
     }
 }
@@ -605,8 +643,8 @@ div.form-selection select.form-control {
 div.form-text {
     padding:                3px 10px 3px 10px;
     textarea.form-control {
-        min-height: 150px;
-        max-height: 300px;
+        min-height: inherit !important;
+        max-height: 500px;
         border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
         box-shadow: 0 1px 4px rgba(@color-black,    @coog-box-opacity);
         padding:            5px;
@@ -627,6 +665,7 @@ div.form-text {
 // Make selections without any options look readonly
 select:empty, select:has(> option[value="null"]):not(:has(> option:not([value="null"]))) {
     .coog-readonly-field-mixin();
+    background-image:       none;
     pointer-events:         none;
 }
 
@@ -667,6 +706,28 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
         }
     }
 }
+
+// Use all space for XXX2Many which are the sole item in a notebook page
+.tab-pane.active > div.form-container:has(> div.form-one2many:only-child) {
+    > div.form-item.form-one2many {
+        padding-top:               0px;
+        > div.form-one2many.panel {
+            margin-left:           0px;
+            margin-right:          0px;
+        }
+    }
+}
+.tab-pane.active > div.form-container:has(> div.form-many2many:only-child) {
+    > div.form-item.form-many2many {
+        padding-top:               0px;
+        > div.form-many2many.panel {
+            margin-left:           0px;
+            margin-right:          0px;
+        }
+    }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Rule engine
 ///////////////////////////////////////////////////////////////////////////////
@@ -713,6 +774,45 @@ div.CodeMirror {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Notebooks
+///////////////////////////////////////////////////////////////////////////////
+div.form-notebook > ul.nav.nav-tabs {
+    margin-bottom:                  8px;
+    border-color:                   @color-lighter-blue;
+    > li {
+        > a {
+            padding:                    8px 8px;
+            border-top-left-radius:     8px;
+            border-top-right-radius:    8px;
+            border:                     solid @color-lighter-blue 1px;
+            &:hover {
+                .coog-group-header-colors();
+            }
+            > span.badge-empty {
+                min-width:          0px;
+                padding:            0px 0px;
+            }
+        }
+
+        &:not(active) &:not(focus) > a {
+            box-shadow: none;
+        }
+    }
+    > li.active {
+        > a {
+            .coog-group-header-colors();
+            border:                     solid @color-light-blue 1px;
+            &:hover {
+                border-bottom:          none;
+                border:                 solid @color-light-blue 1px;
+                background-color:       @color-lighter-blue;
+                .coog-group-header-colors();
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Pop up menu
 ///////////////////////////////////////////////////////////////////////////////
 #popup-menu {
@@ -748,6 +848,14 @@ div.CodeMirror {
 // Hide line of notebooks with all tabs hidden
 ul.nav.nav-tabs:empty {
     border-bottom:    none;
+}
+
+// Properly apply min-height
+div.form-text:has(> div.input-group > textarea.form-control) {
+    min-height: 200px;
+    > div.input-group {
+        min-height: inherit;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -798,8 +906,14 @@ div.infobar {
 #processing {
     padding-top:   300px;
     padding-bottom: 100%;
-    background-color: rgba(@color-black, 0.6);
     cursor: wait;
+    .label-info {
+        display: none;
+    }
+}
+
+#processing.spinning {
+    background-color: rgba(@color-black, 0.6);
     .label-info {
         display: inline-block;
         width: 80px;

@@ -447,7 +447,7 @@
                                 this.colgroup.find('col').eq(tr_node.data('last_col'))
                                     .css('width', `${last_col_width - delta + offset}px`);
                                 total_size += offset - delta;
-                            } else if (col_idx == max_idx) {
+                            } else if (col_idx == max_idx - 1) {
                                 // if the total size is greater than the
                                 // visible scope, and we reduce the width of
                                 // the second to last column, we also reduce

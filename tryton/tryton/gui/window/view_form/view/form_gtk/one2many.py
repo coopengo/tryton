@@ -227,6 +227,7 @@ class One2Many(Widget):
             def hide_body():
                 self.screen.widget.hide()
                 self.widget.set_vexpand(False)
+                self.widget.set_size_request(-1, -1)
                 self.title_expander.set_from_pixbuf(
                     common.IconFactory.get_pixbuf('tryton-arrow-right'))
             GLib.idle_add(hide_body)
@@ -258,11 +259,15 @@ class One2Many(Widget):
         if self.screen.widget.props.visible:
             self.screen.widget.hide()
             self.widget.set_vexpand(False)
+            self.widget.set_size_request(-1, -1)
             self.title_expander.set_from_pixbuf(
                 common.IconFactory.get_pixbuf('tryton-arrow-right'))
         else:
             self.screen.widget.show()
             self.widget.set_vexpand(True)
+            self.widget.set_size_request(
+                int(self.attrs.get('width', -1)),
+                int(self.attrs.get('height', -1)))
             self.title_expander.set_from_pixbuf(
                 common.IconFactory.get_pixbuf('tryton-arrow-down'))
 

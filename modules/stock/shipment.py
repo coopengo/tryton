@@ -1250,17 +1250,12 @@ class ShipmentOut(
                 },
             help="The moves that pick the stock from the storage area."),
         'get_inventory_moves', setter='set_inventory_moves')
-<<<<<<< HEAD
     moves = fields.One2Many(
         'stock.move', 'shipment', "Moves",
-        domain=[('company', '=', Eval('company'))],
+        domain=[('company', '=', Eval('company', -1))],
         states={
             'readonly': True,
             })
-=======
-    moves = fields.One2Many('stock.move', 'shipment', 'Moves',
-        domain=[('company', '=', Eval('company', -1))], readonly=True)
->>>>>>> 9219de0bf0 (Alert when using underspecified relation in domain [PREVIEW] (#217))
     origins = fields.Function(fields.Char('Origins'), 'get_origins')
     picked_by = employee_field("Picked By")
     packed_by = employee_field("Packed By")
@@ -1947,17 +1942,12 @@ class ShipmentOutReturn(
                 },
             help="The moves that put the stock away into the storage area."),
         'get_inventory_moves', setter='set_inventory_moves')
-<<<<<<< HEAD
     moves = fields.One2Many(
         'stock.move', 'shipment', "Moves",
-        domain=[('company', '=', Eval('company'))],
+        domain=[('company', '=', Eval('company', -1))],
         states={
             'readonly': True,
             })
-=======
-    moves = fields.One2Many('stock.move', 'shipment', 'Moves',
-        domain=[('company', '=', Eval('company', -1))], readonly=True)
->>>>>>> 9219de0bf0 (Alert when using underspecified relation in domain [PREVIEW] (#217))
     origins = fields.Function(fields.Char('Origins'), 'get_origins')
     received_by = employee_field("Received By")
     done_by = employee_field("Done By")
