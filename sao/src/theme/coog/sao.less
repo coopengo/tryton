@@ -153,8 +153,14 @@ div.screen-container > div.content-box > div.tree-container {
     height: fill-available;
 }
 
-div.wizard-form > div.wizard {
-    overflow-y: auto;
+div.wizard-form {
+    display: flex;
+    flex-direction: column;
+
+    > div.wizard {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
 }
 
 // Use variable for border width
