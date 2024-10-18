@@ -69,7 +69,7 @@ class ErrorHandler(object):
         Handler = ErrorHandler._get_handling_class()
         if Handler is None:
             if reraise:
-                raise
+                raise error
             return error
 
         error_id = Handler.do_handle_exception(error)
