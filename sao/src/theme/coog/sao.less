@@ -213,6 +213,11 @@ div.scrollbar:has(+ div.treeview) {
     display:                none;
 }
 
+// Highlight boolean fields in editable trees
+td.editable > div.cell > span.widget > input[type="checkbox"]:before {
+    border-color:     @color-light-blue !important;
+}
+
 // Remove horizontal lines for editable trees
 .table-bordered > tbody > tr > td
 {
