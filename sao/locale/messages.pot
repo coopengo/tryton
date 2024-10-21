@@ -130,6 +130,9 @@ msgstr ""
 msgid "Send you an email to reset your password."
 msgstr ""
 
+msgid "Reset forgotten password"
+msgstr ""
+
 msgid ""
 "A request to reset your password has been sent.\n"
 "Please check your mailbox."
