@@ -342,13 +342,9 @@ nav.toolbar.panel-heading {
         // The computation of the columns width when resizing sets a width
         width: 0px;
     }
-}
 
-// Do not use too much space for the menu
-@media (min-width: @screen-lg-min) {
-    .make-offcanvas(min(calc(25%), @coog-max-menu-width));
-    .main-offcanvas {
-        width: calc(100% - min(calc(25%), @coog-max-menu-width));
+    @media (min-width: @screen-lg-min) {
+        width: min(calc(25%), @coog-max-menu-width);
     }
 }
 
