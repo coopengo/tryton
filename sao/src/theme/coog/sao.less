@@ -229,7 +229,12 @@ div.scrollbar:has(+ div.treeview) {
             top: 0;
             // A negative offset for the case so that the text inside the title
             // does not mangle with the expander
-            left: -0.4em;
+            left: -3px;
+        }
+    }
+    th:has(> .expander) {
+        > div > label {
+            padding-left:       9px;
         }
     }
 }
