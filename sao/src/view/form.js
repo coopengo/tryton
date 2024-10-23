@@ -4455,6 +4455,10 @@ function hide_x2m_body(widget) {
                         .find('.treeview,.list-form').first()
                         .css('min-height', this.attributes.height + 'px')
                         .css('max-height', this.attributes.height + 'px');
+                } else {
+                    this.screen.current_view.el
+                        .find('.treeview,.list-form').first()
+                        .css('resize', 'vertical')
                 }
                 return prm;
             }
@@ -5076,6 +5080,10 @@ function hide_x2m_body(widget) {
                         .find('.treeview,.list-form').first()
                         .css('min-height', this.attributes.height + 'px')
                         .css('max-height', this.attributes.height + 'px');
+                } else {
+                    this.screen.current_view.el
+                        .find('.treeview,.list-form').first()
+                        .css('resize', 'vertical')
                 }
                 return prm;
             };
