@@ -4199,6 +4199,9 @@ function hide_x2m_body(widget) {
                         .css('max-height', this.attributes.height + 'px');
                 } else {
                     this.content.addClass('resizable');
+                    this.screen.current_view.el
+                        .find('.treeview,.list-form').first()
+                        .css('resize', 'vertical')
                 }
                 return prm;
             }
@@ -4793,6 +4796,9 @@ function hide_x2m_body(widget) {
                         .css('max-height', this.attributes.height + 'px');
                 } else {
                     this.content.addClass('resizable');
+                    this.screen.current_view.el
+                        .find('.treeview,.list-form').first()
+                        .css('resize', 'vertical')
                 }
                 return prm;
             };
