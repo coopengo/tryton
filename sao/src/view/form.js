@@ -1661,7 +1661,7 @@ function hide_x2m_body(widget) {
             this.codeMirror = CodeMirror.fromTextArea(input[0], {
                 mode: {
                     name: 'python',
-                    version: 2,
+                    version: 3,
                     singleLineStringErrors: false
                 },
                 lineNumbers: true,
@@ -1671,15 +1671,20 @@ function hide_x2m_body(widget) {
                 autoRefresh: true,
                 gutters: ["CodeMirror-lint-markers"],
                 lint: {
-                    lintOnChange: false,
+                    lintOnChange: true,
                     getAnnotations: this.pythonLinter.bind(this),
                     async: true
                 }
             });
             this.codeMirror.on('change', this.send_modified.bind(this));
+            this.codeMirror.on('blur', this._focus_out.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
                 "Alt-R": "replace", "Shift-Alt-R": "replaceAll",
             });
+        },
+        _focus_out: function() {
+            this.send_modified();
+            this.focus_out();
         },
         init_tree: function(width){
             var container = jQuery('<div/>', {
