@@ -4629,6 +4629,10 @@ function eval_pyson(value){
                         .find('.treeview,.list-form').first()
                         .css('min-height', this.attributes.height + 'px')
                         .css('max-height', this.attributes.height + 'px');
+                } else {
+                    this.screen.current_view.el
+                        .find('.treeview,.list-form').first()
+                        .css('resize', 'vertical')
                 }
             });
         },
@@ -5219,6 +5223,10 @@ function eval_pyson(value){
                         .find('.treeview,.list-form').first()
                         .css('min-height', this.attributes.height + 'px')
                         .css('max-height', this.attributes.height + 'px');
+                } else {
+                    this.screen.current_view.el
+                        .find('.treeview,.list-form').first()
+                        .css('resize', 'vertical')
                 }
             });
         },
