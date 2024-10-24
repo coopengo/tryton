@@ -134,6 +134,9 @@ msgstr "Pas trouvé."
 msgid "Send you an email to reset your password."
 msgstr "Envoyez-vous un email pour réinitialiser votre mot de passe."
 
+msgid "Reset forgotten password"
+msgstr "Réinitialiser le mot de passe oublié"
+
 msgid ""
 "A request to reset your password has been sent.\n"
 "Please check your mailbox."
