@@ -3118,7 +3118,7 @@ function hide_x2m_body(widget) {
 
             if (!record) {
                 this.entry.val('');
-                return;
+                return Promise.resolve();
             }
             this.set_text(field.get_client(record));
             var primary, tooltip1, secondary, tooltip2;
