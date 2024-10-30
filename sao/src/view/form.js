@@ -262,7 +262,6 @@ function hide_x2m_body(widget) {
             var group = new Sao.View.Form.Container(
                 Number(node.getAttribute('col') || 4));
             this.view.containers.push(group);
-            this.parse_child(node, group);
 
             if (attributes.xalign === undefined) {
                 attributes.xalign = 0.5;
@@ -287,6 +286,7 @@ function hide_x2m_body(widget) {
 
             this.view.state_widgets.push(widget);
             this.container.add(widget, attributes);
+            this.parse_child(node, group);
         },
         _parse_hpaned: function(node, attributes) {
             this._parse_paned(node, attributes, 'horizontal');
