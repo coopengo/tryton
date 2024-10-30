@@ -5895,7 +5895,7 @@ function hide_x2m_body(widget) {
 
             var value = field.get_client(record);
             var new_key_names = Object.keys(value).filter(
-                e => !this.fields[e]);
+                e => !this.field.keys[e]);
 
             var prm;
             if (!jQuery.isEmptyObject(new_key_names)) {
