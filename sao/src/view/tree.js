@@ -198,9 +198,6 @@
             }
 
             var col_idx = 1;
-            if (this.optionals.length) {
-                col_idx += 1;
-            }
             for (const column of this.columns) {
                 col = jQuery('<col/>', {
                     'class': column.attributes.widget,
