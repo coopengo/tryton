@@ -1679,8 +1679,17 @@ function hide_x2m_body(widget) {
             this.codeMirror.on('change', this.send_modified.bind(this));
             this.codeMirror.on('blur', this._focus_out.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
-                "Alt-R": "replace", "Shift-Alt-R": "replaceAll",
+                "Alt-R": "replace",
+                "Shift-Alt-R": "replaceAll",
+                "Ctrl-S": this._save.bind(this),
             });
+        },
+        _save: function() {
+            var current_tab = Sao.Tab.tabs.get_current();
+            if (current_tab) {
+                this._focus_out();
+                current_tab.save();
+            }
         },
         _focus_out: function() {
             this.send_modified();
