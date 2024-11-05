@@ -18,7 +18,7 @@
                 'class': 'screen-container'
             });
             this.filter_box = jQuery('<form/>', {
-                'class': 'filter-box hidden-xs'
+                'class': 'container-fluid filter-box hidden-xs'
             }).submit(e => {
                 e.preventDefault();
                 this.do_search();
