@@ -4611,6 +4611,13 @@ function eval_pyson(value){
                 }
 
                 var new_group = record.field_get_client(this.field_name);
+                if (new_group && new_group != this.screen.group) {
+                    this.screen.set_group(new_group);
+                    if ((this.screen.current_view.view_type == 'form') &&
+                        this.screen.group.length) {
+                        this.screen.current_record = this.screen.group[0];
+                    }
+                }
 
                 // [Coog specific]
                 // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
@@ -4619,13 +4626,7 @@ function eval_pyson(value){
                         this.set_invisible(this.visible);
                     }
                 }
-                if (new_group && new_group != this.screen.group) {
-                    this.screen.set_group(new_group);
-                    if ((this.screen.current_view.view_type == 'form') &&
-                        this.screen.group.length) {
-                        this.screen.current_record = this.screen.group[0];
-                    }
-                }
+
                 var domain = [];
                 var size_limit = null;
                 if (record) {
@@ -6393,7 +6394,7 @@ function eval_pyson(value){
 
             var value = field.get_client(record);
             var new_key_names = Object.keys(value).filter(
-                e => !this.fields[e]);
+                e => !this.field.keys[e]);
 
             var prm;
             if (!jQuery.isEmptyObject(new_key_names)) {
