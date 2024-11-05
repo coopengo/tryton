@@ -133,25 +133,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Main view
 ///////////////////////////////////////////////////////////////////////////////
-#tabcontent {
-    overflow-x: auto;
-
-    > div.tab-pane.active > div.panel.tab-form > div.panel-body.row {
-        padding-left: 0;
-        padding-right: 0;
-        margin-left: 0;
-        margin-right: 0;
-
-        padding-top:                @coog-card-bottom-padding;
-        padding-bottom:             @coog-card-bottom-padding;
-        > div {
-            padding-right:          @coog-card-bottom-padding;
-            padding-left:           @coog-card-bottom-padding;
-        }
-    }
-
-    div.screen-container > form > div.row {
-        margin: 0;
+#tabcontent > div.tab-pane.active > div.panel.tab-form > div.panel-body.row {
+    padding-top:                @coog-card-bottom-padding;
+    padding-bottom:             @coog-card-bottom-padding;
+    > div {
+        padding-right:          @coog-card-bottom-padding;
+        padding-left:           @coog-card-bottom-padding;
     }
 }
 
