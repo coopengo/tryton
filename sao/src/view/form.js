@@ -4444,7 +4444,6 @@ function eval_pyson(value){
                 }
 
                 var new_group = record.field_get_client(this.field_name);
-
                 if (new_group && new_group != this.screen.group) {
                     this.screen.set_group(new_group);
                     if ((this.screen.current_view.view_type == 'form') &&
@@ -4463,7 +4462,7 @@ function eval_pyson(value){
                 } else {
                     this.empty_el.sao_hide();
                 }
-                //
+
                 // [Coog specific]
                 // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
                 if (this.attributes.group && this.attributes.mode == 'form') {
