@@ -394,12 +394,11 @@
                 total_size += size;
                 if (!jqElement.hasClass('optional') &&
                     !jqElement.hasClass('selection-state')) {
-                    var width = jqElement.width();
+                    var width = Math.floor(jqElement.width());
                     if (width !== 0) {
                         last_visible = idx;
-                        jqElement.width(jqElement.width() + "px");
-                        jqElement.css('width',
-                            Math.floor(jqElement.width()) + "px");
+                        jqElement.width(width + "px");
+                        jqElement.css('width', width + "px");
                     }
                 }
             });
@@ -425,15 +424,15 @@
                         total_size -= offset;
                         if (old_value > value) {
                             // When reducing the size of a column, we way have
-                            if (displayed_width >= total_size + offset) {
+                            if (displayed_width > total_size + offset) {
                                 // If the total size of columns is less than
                                 // the visible scope of the table, we add to
                                 // the last column so the sum of column sizes
                                 // matches the displayed size
                                 this.colgroup.find('col').eq(tr_node.data('last_col'))
                                     .css('width', `${last_col_width - delta + offset}px`);
-                                total_size += offset - delta;
-                            } else if (col_idx == max_col - 1) {
+                                total_size -= offset - delta;
+                            } else if (col_idx == last_visible - 1) {
                                 // if the total size is greater than the
                                 // visible scope, and we reduce the width of
                                 // the second to last column, we also reduce
