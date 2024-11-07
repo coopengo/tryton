@@ -245,6 +245,7 @@ class EditableTreeView(TreeView):
                         GLib.idle_add(
                             self.set_cursor, path, column, None, True)
                         return
+                    self.view.screen.record_saved()
                     entry.handler_block(entry.editing_done_id)
                     if keyval == Gdk.KEY_Up:
                         self._key_up(path, model, column)

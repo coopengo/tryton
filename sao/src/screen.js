@@ -17,6 +17,7 @@
             this.el = jQuery('<div/>', {
                 'class': 'screen-container'
             });
+            this.context_container = null;
             this.filter_box = jQuery('<form/>', {
                 'class': 'filter-box hidden-xs'
             }).submit(e => {
@@ -399,6 +400,19 @@
             this.but_bookmark.prop('disabled',
                     jQuery.isEmptyObject(this.bookmarks()));
             this.bookmark_match();
+        },
+        set_context_screen: function(screen) {
+            this.context_container = jQuery('<fieldset/>');
+            this.context_container.append(screen.screen_container.el);
+            jQuery('<div/>', {
+                'class': 'row',
+            }).append(jQuery('<div/>', {
+                'class': 'col-md-12',
+            }).append(this.context_container))
+            .prependTo(this.filter_box);
+        },
+        set_context_active: function(active) {
+            this.context_container.prop('disabled', !active);
         },
         show_filter: function() {
             this.filter_box.show();
@@ -792,6 +806,7 @@
         init: function(model_name, attributes) {
             this.model_name = model_name;
             this.windows = [];
+            this.context_screen = null;
             this.model = new Sao.Model(model_name, attributes);
             this.attributes = jQuery.extend({}, attributes);
             this.view_ids = jQuery.extend([], attributes.view_ids);
@@ -825,7 +840,6 @@
                 attributes.tab_domain, attributes.show_filter);
             this.breadcrumb = attributes.breadcrumb || [];
 
-            this.context_screen = null;
             if (attributes.context_model) {
                 this.context_screen = new Sao.Screen(
                         attributes.context_model, {
@@ -835,12 +849,14 @@
 
                 this.context_screen_prm = this.context_screen.switch_view()
                     .then(() => {
-                        jQuery('<div/>', {
-                            'class': 'row'
-                        }).append(jQuery('<div/>', {
-                            'class': 'col-md-12'
-                        }).append(this.context_screen.screen_container.el))
-                        .prependTo(this.screen_container.filter_box);
+                        this.screen_container.set_context_screen(
+                            this.context_screen);
+                        for (let field_widgets of
+                                Object.values(this.context_screen.current_view.widgets)) {
+                            for (let widget of field_widgets) {
+                                widget.connect(() => this.screen_container.do_search());
+                            }
+                        }
                         return this.context_screen.new_(false).then(
                             // Set manually default to get context_screen_prm
                             // resolved when default is set.
@@ -1267,6 +1283,10 @@
                     window_.record_modified();
                 }
             }
+            if (this.context_screen) {
+                this.screen_container.set_context_active(
+                    !this.current_record || !this.modified());
+            }
             if (display) {
                 return this.display();
             }
@@ -1295,6 +1315,10 @@
                 if (window_.record_saved) {
                     window_.record_saved();
                 }
+            }
+            if (this.context_screen) {
+                this.screen_container.set_context_active(
+                    !this.current_record || !this.modified());
             }
         },
         update_resources: function(resources) {

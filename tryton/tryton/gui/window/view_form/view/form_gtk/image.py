@@ -109,6 +109,9 @@ class Image(BinaryMixin, Widget):
         self.image.set_from_pixbuf(pixbuf)
         return bool(value)
 
+    def connect(self, callback):
+        self.event.connect('drag_data_received', callback)
+
     def display(self):
         super(Image, self).display()
         value = self.update_img()

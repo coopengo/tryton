@@ -72,6 +72,9 @@ class Selection(Widget, SelectionMixin, PopdownMixin):
             value = (value, self.get_popdown_text(self.entry))
         self.field.set_client(self.record, value)
 
+    def connect(self, callback):
+        self.entry.connect('changed', callback)
+
     def display(self):
         self.update_selection(self.record, self.field)
         self.set_popdown(self.selection, self.entry)

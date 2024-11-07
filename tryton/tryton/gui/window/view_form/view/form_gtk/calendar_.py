@@ -85,6 +85,9 @@ class Date(Widget):
                 self.view.screen.context.get('date_format'))
         self.entry.props.format = format_
 
+    def connect(self, callback):
+        self.entry.connect(self._changed_signal, callback)
+
     def display(self):
         super(Date, self).display()
         if self.field and self.record:

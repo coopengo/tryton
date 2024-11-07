@@ -122,6 +122,9 @@ class TextBox(Widget, TranslateMixin):
         iter_end = buf.get_end_iter()
         return buf.get_text(iter_start, iter_end, False)
 
+    def connect(self, callback):
+        self.textview.connect('focus-out-event', callback)
+
     def display(self):
         super(TextBox, self).display()
         value = self.field and self.field.get(self.record)

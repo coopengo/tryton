@@ -73,6 +73,10 @@ class MultiSelection(Widget, SelectionMixin):
     def set_value(self):
         self.field.set_client(self.record, self.get_value())
 
+    def connect(self, callback):
+        selection = self.tree.get_selection()
+        selection.connect('changed', callback)
+
     def display(self):
         selection = self.tree.get_selection()
         selection.handler_block_by_func(self.changed)

@@ -138,6 +138,11 @@ class Reference(Many2One, SelectionMixin, PopdownMixin):
             self.set_popdown_value(self.widget_combo, value)
         self.widget_combo.handler_unblock_by_func(self.sig_changed_combo)
 
+    def connect(self, callback):
+        super().connect(callback)
+        child = self.widget_combo.get_child()
+        child.connect('focus-out-event', callback)
+
     def display(self):
         self.update_selection(self.record, self.field)
         self.set_popdown(self.selection, self.widget_combo)
