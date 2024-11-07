@@ -417,6 +417,10 @@ class FloatField(Field):
         except ValueError:
             return self._default
 
+    def set(self, record, value):
+        value = self.apply_factor(record, value, factor=1)
+        super().set(record, value)
+
     def set_client(self, record, value, force_change=False, factor=1):
         if isinstance(value, str):
             value = self.convert(value)
