@@ -10,6 +10,7 @@ import json
 import logging
 import urllib.parse
 import xml.dom.minidom
+from itertools import chain
 from operator import itemgetter
 
 from gi.repository import GLib, Gtk
@@ -48,6 +49,7 @@ class Screen:
         self.position = 0
         self.offset = 0
         self.windows = []
+        self.context_screen = None
 
         self.readonly = attributes.get('readonly', False)
         if not (MODELACCESS[model_name]['write']
@@ -85,29 +87,14 @@ class Screen:
         self.widget = self.screen_container.widget_get()
         self.breadcrumb = attributes.get('breadcrumb') or []
 
-        self.context_screen = None
         if attributes.get('context_model'):
             self.context_screen = Screen(
                 attributes['context_model'], mode=['form'], context=context)
             self.context_screen.parent_screen = self
             self.context_screen.new()
-            context_widget = self.context_screen.widget
-
-            def walk_descendants(widget):
-                yield widget
-                if not hasattr(widget, 'get_children'):
-                    return
-                for child in widget.get_children():
-                    for widget in walk_descendants(child):
-                        yield widget
-
-            for widget in reversed(list(walk_descendants(context_widget))):
-                if isinstance(widget, Gtk.Entry):
-                    widget.connect_after(
-                        'activate', self.screen_container.activate)
-                elif isinstance(widget, Gtk.CheckButton):
-                    widget.connect_after(
-                        'toggled', self.screen_container.activate)
+            ctx_widgets = self.context_screen.current_view.widgets.values()
+            for ctx_widget in chain.from_iterable(ctx_widgets):
+                ctx_widget.connect(self.screen_container.activate)
 
             def remove_bin(widget):
                 assert isinstance(widget, (Gtk.ScrolledWindow, Gtk.Viewport))
@@ -126,10 +113,7 @@ class Screen:
                 remove_bin(
                     self.context_screen.current_view.widget.get_children()[0])
 
-            self.screen_container.filter_vbox.pack_start(
-                context_widget, expand=False, fill=True, padding=0)
-            self.screen_container.filter_vbox.reorder_child(
-                context_widget, 0)
+            self.screen_container.set_context_screen(self.context_screen)
             self.context_screen.widget.show()
 
         self.__current_view = 0
@@ -454,6 +438,9 @@ class Screen:
         for window in self.windows:
             if hasattr(window, 'record_modified'):
                 window.record_modified()
+        if self.context_screen:
+            self.screen_container.set_context_active(
+                not self.current_record or not self.modified())
         if display:
             self.display()
 
@@ -478,6 +465,9 @@ class Screen:
         for window in self.windows:
             if hasattr(window, 'record_saved'):
                 window.record_saved()
+        if self.context_screen:
+            self.screen_container.set_context_active(
+                not self.current_record or not self.modified())
 
     def update_resources(self, resources):
         for window in self.windows:

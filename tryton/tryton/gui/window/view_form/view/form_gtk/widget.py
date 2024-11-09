@@ -151,6 +151,9 @@ class Widget(object):
                     raise ValueError(FORMAT_ERROR + attr)
                 functions[key[0]](key[1])
 
+    def connect(self, callback):
+        pass
+
     def display(self):
         if not self.field:
             self._readonly_set(self.attrs.get('readonly', True))

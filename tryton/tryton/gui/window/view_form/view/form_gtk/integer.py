@@ -59,6 +59,9 @@ class Integer(Widget):
     def width(self):
         return self.attrs.get('width', 8)
 
+    def connect(self, callback):
+        self.entry.connect('focus-out-event', callback)
+
     def display(self):
         def set_symbol(entry, text):
             if text:

@@ -197,6 +197,10 @@ class Binary(BinaryMixin, Widget):
         if icon_pos == Gtk.EntryIconPosition.PRIMARY:
             self.open_()
 
+    def callback(self, callback):
+        if self.mnemonic_widget:
+            self.mnemonic_widget.connect('focus-out-event', callback)
+
     def display(self):
         super(Binary, self).display()
         if not self.field:

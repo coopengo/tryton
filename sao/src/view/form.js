@@ -1453,6 +1453,8 @@ function hide_x2m_body(widget) {
         focus: function() {
             this.el.focus();
         },
+        connect: function(callback) {
+        }
     });
 
     // [Coog] widget Source (engine)
@@ -2175,6 +2177,9 @@ function hide_x2m_body(widget) {
                 'readonly': 'readonly',
                 'name': this.attributes.name,
             });
+        },
+        connect: function(callback) {
+            this.el.change(callback);
         }
     });
 
@@ -2379,6 +2384,9 @@ function hide_x2m_body(widget) {
             }
             return value;
         },
+        connect: function(callback) {
+            this.input.change(callback);
+        }
     });
 
     Sao.View.Form.DateTime = Sao.class_(Sao.View.Form.Date, {
@@ -2471,6 +2479,9 @@ function hide_x2m_body(widget) {
         set_readonly: function(readonly) {
             Sao.View.Form.TimeDelta._super.set_readonly.call(this, readonly);
             this.input.prop('readonly', readonly);
+        },
+        connect: function(callback) {
+            this.el.change(callback);
         }
     });
 
@@ -2757,7 +2768,10 @@ function hide_x2m_body(widget) {
         set_readonly: function(readonly) {
             Sao.View.Form.Selection._super.set_readonly.call(this, readonly);
             this.select.prop('disabled', readonly);
-        }
+        },
+        connect: function(callback) {
+            this.select.change(callback);
+        },
     });
 
     Sao.View.Form.Boolean = Sao.class_(Sao.View.Form.Widget, {
@@ -2799,6 +2813,9 @@ function hide_x2m_body(widget) {
         set_readonly: function(readonly) {
             Sao.View.Form.Boolean._super.set_readonly.call(this, readonly);
             this.input.prop('readonly', readonly);
+        },
+        connect: function(callback) {
+            this.input.change(callback);
         }
     });
 
@@ -2880,6 +2897,9 @@ function hide_x2m_body(widget) {
             widget.css('min-height', this.el.height());
             widget.css('max-height', this.el.height());
             return widget;
+        },
+        connect: function(callback) {
+            this.input.change(callback);
         }
     });
 
@@ -3012,6 +3032,9 @@ function hide_x2m_body(widget) {
         translate_widget_get: function(el) {
             return this._normalize_markup(
                 el.find('div[contenteditable]').html());
+        },
+        connect: function(callback) {
+            this.group.focusout(callback);
         }
     });
 
@@ -3485,7 +3508,10 @@ function hide_x2m_body(widget) {
             } else if (action == 'create') {
                 this.new_();
             }
-        }
+        },
+        connect: function(callback) {
+            this.el.change(callback);
+        },
     });
 
     Sao.View.Form.One2One = Sao.class_(Sao.View.Form.Many2One, {

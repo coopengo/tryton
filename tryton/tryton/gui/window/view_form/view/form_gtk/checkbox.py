@@ -25,6 +25,9 @@ class CheckBox(Widget):
     def set_value(self):
         self.field.set_client(self.record, self.widget.get_active())
 
+    def connect(self, callback):
+        self.widget.connect('toggled', callback)
+
     def display(self):
         super(CheckBox, self).display()
         if not self.field:

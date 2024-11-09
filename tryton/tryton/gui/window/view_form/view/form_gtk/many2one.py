@@ -321,6 +321,9 @@ class Many2One(Widget):
         self.wid_text.set_text(value)
         reset_position(self.wid_text)
 
+    def connect(self, callback):
+        self.wid_text.connect('focus-out-event', callback)
+
     def display(self):
         self.changed = False
         super(Many2One, self).display()

@@ -383,6 +383,15 @@ class ScreenContainer(object):
         self.but_bookmark.set_sensitive(bool(list(self.bookmarks())))
         self.bookmark_match()
 
+    def set_context_screen(self, screen):
+        self.context_screen = screen
+        self.filter_vbox.pack_start(
+            screen.widget, expand=False, fill=True, padding=0)
+        self.filter_vbox.reorder_child(screen.widget, 0)
+
+    def set_context_active(self, active):
+        self.context_screen.widget.set_sensitive(active)
+
     def show_filter(self):
         if self.filter_vbox:
             self.filter_vbox.show()

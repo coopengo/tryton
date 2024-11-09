@@ -39,6 +39,9 @@ class TimeDelta(Widget):
     def get_value(self):
         return self.entry.get_text()
 
+    def connect(self, callback):
+        self.entry.connect('focus-out-event', callback)
+
     def display(self):
         super(TimeDelta, self).display()
         if not self.field:

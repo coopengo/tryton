@@ -109,6 +109,13 @@ class Char(Widget, TranslateMixin, PopdownMixin):
             value = self.field.get_client(self.record)
         return value
 
+    def connect(self, callback):
+        if self.autocomplete:
+            focus_entry = self.entry.get_child()
+        else:
+            focus_entry = self.entry
+        focus_entry.connect('focus-out-event', callback)
+
     def display(self):
         super(Char, self).display()
         if self.autocomplete:
