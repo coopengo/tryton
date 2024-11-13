@@ -3046,6 +3046,7 @@ function hide_x2m_body(widget) {
             // Use keydown to not receive focus-in TAB
             this.entry.on('keydown', this.send_modified.bind(this));
             this.entry.on('keydown', this.key_press.bind(this));
+            this.entry.on('contextmenu', this.contextmenu.bind(this));
 
             if (!attributes.completion || attributes.completion == "1") {
                 this.wid_completion = Sao.common.get_completion(
@@ -3485,7 +3486,22 @@ function hide_x2m_body(widget) {
             } else if (action == 'create') {
                 this.new_();
             }
-        }
+        },
+        contextmenu: function(evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            let value = this.field.get(this.record);
+            if (!this.has_target(value)) {
+                return;
+            }
+
+            let ul = Sao.common.PopupMenu.initialize(evt);
+            let context = this.field.get_context(this.record);
+            let model_name = this.get_model();
+            let m2o_record = new Sao.Record(new Sao.Model(model_name), value);
+            Sao.common.PopupMenu.populate(
+                ul, model_name, null, context, [m2o_record], true);
+        },
     });
 
     Sao.View.Form.One2One = Sao.class_(Sao.View.Form.Many2One, {
