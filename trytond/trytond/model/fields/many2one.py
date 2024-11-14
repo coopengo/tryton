@@ -5,7 +5,7 @@ import warnings
 from sql import As, Column, Expression, Literal, Query, With
 from sql.aggregate import Max
 from sql.conditionals import Coalesce
-from sql.operators import Or
+from sql.operators import Exists, Or
 
 from trytond.config import config
 from trytond.pool import Pool
@@ -203,6 +203,7 @@ class Many2One(Field):
         pool = Pool()
         Rule = pool.get('ir.rule')
         Target = self.get_target()
+        use_in = Target.estimated_count() < _subquery_threshold
 
         table, _ = tables[None]
         name, operator, value = domain[:3]
@@ -255,7 +256,10 @@ class Many2One(Field):
                     query.where &= target_id == column
                 else:
                     query.where = target_id == column
-                expression = column.in_(query)
+                if use_in:
+                    expression = column.in_(query)
+                else:
+                    expression = Exists(query)
                 if operator.startswith('not'):
                     return ~expression
                 return expression
@@ -275,7 +279,7 @@ class Many2One(Field):
             # No need to join with the target table
             return super().convert_domain(
                 (self.name, operator, value), tables, Model)
-        elif Target.estimated_count() < _subquery_threshold:
+        elif use_in:
             query = Target.search(target_domain, order=[], query=True)
             return column.in_(query)
         else:
