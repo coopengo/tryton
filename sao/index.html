@@ -119,6 +119,21 @@ this repository contains the full copyright notices and license terms. -->
                         }
                     });
                 });
+
+                const menu_resize_obs = new MutationObserver((mutationList) => {
+                    if (mutationList.length == 0) {
+                        return;
+                    }
+                    let last_mut = mutationList.at(-1);
+                    let menu_width = last_mut.target.style.width;
+                    jQuery('#tabs').css(
+                        'width',
+                        `calc(100vw - .5rem - ${menu_width})`);
+                });
+                menu_resize_obs.observe(document.getElementById('menu'), {
+                    attributeFilter: ["style"],
+                    subtree: false,
+                });
             }
         </script>
     </body>
