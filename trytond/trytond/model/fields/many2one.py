@@ -5,7 +5,7 @@ import warnings
 from sql import As, Column, Expression, Literal, Query, With
 from sql.aggregate import Max
 from sql.conditionals import Coalesce
-from sql.operators import Exists, Or
+from sql.operators import Or
 
 from trytond.config import config
 from trytond.pool import Pool
@@ -255,7 +255,7 @@ class Many2One(Field):
                     query.where &= target_id == column
                 else:
                     query.where = target_id == column
-                expression = Exists(query)
+                expression = column.in_(query)
                 if operator.startswith('not'):
                     return ~expression
                 return expression
