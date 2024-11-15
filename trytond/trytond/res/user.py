@@ -1099,7 +1099,6 @@ class Warning_(ModelSQL, ModelView):
         if not warnings:
             return True
         transaction.check_warnings.add(key)
-        cls.delete([x for x in warnings if not x.always])
         return False
 
 

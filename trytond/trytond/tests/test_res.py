@@ -8,6 +8,7 @@ except ImportError:
     PIL = None
 
 from trytond.pool import Pool
+from trytond.tests.test_tryton import CONTEXT, DB_NAME, USER
 from trytond.transaction import Transaction
 
 from .test_tryton import ModuleTestCase, with_transaction
@@ -16,6 +17,12 @@ from .test_tryton import ModuleTestCase, with_transaction
 class ResTestCase(ModuleTestCase):
     'Test res module'
     module = 'res'
+
+    def tearDown(self):
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            pool = Pool()
+            Warning_ = pool.get('res.user.warning')
+            Warning_.delete(Warning_.search([]))
 
     @unittest.skipUnless(PIL, "Avatars are not generated without PIL")
     @with_transaction()
@@ -44,14 +51,12 @@ class ResTestCase(ModuleTestCase):
         pool = Pool()
         Warning_ = pool.get('res.user.warning')
 
-        user_id = Transaction().user
-        Warning_.create([{
-                    'user': user_id,
-                    'name': 'test',
-                    }])
+        with Transaction().new_transaction():
+            Warning_.skip('test')
+            self.assertFalse(Warning_.check('test'))
 
-        self.assertFalse(Warning_.check('test'))
-        self.assertFalse(Warning_.search([]))
+        with Transaction().new_transaction():
+            self.assertTrue(Warning_.check('test'))
 
     @with_transaction()
     def test_user_warning_always_ignored(self):
@@ -59,15 +64,12 @@ class ResTestCase(ModuleTestCase):
         pool = Pool()
         Warning_ = pool.get('res.user.warning')
 
-        user_id = Transaction().user
-        Warning_.create([{
-                    'user': user_id,
-                    'name': 'test',
-                    'always': True,
-                    }])
+        with Transaction().new_transaction():
+            Warning_.skip('test', always=True)
+            self.assertFalse(Warning_.check('test'))
 
-        self.assertFalse(Warning_.check('test'))
-        self.assertTrue(Warning_.search([]))
+        with Transaction().new_transaction():
+            self.assertFalse(Warning_.check('test'))
 
     @with_transaction()
     def test_user_warning_reentrant(self):

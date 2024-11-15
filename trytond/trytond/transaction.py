@@ -362,10 +362,32 @@ class Transaction(object):
         # the connection pool.
         self._sub_transactions_to_close.append(sub_transaction)
 
+    def _remove_warnings(self):
+        from trytond.pool import Pool
+        if self.check_warnings:
+            pool = Pool()
+            Warning_ = pool.get('res.user.warning')
+            user2warnings = {}
+            for user, w_name in self.check_warnings:
+                user2warnings.setdefault(user, []).append(w_name)
+            warnings = []
+            for user, names in user2warnings.items():
+                warnings.extend(Warning_.search([
+                            ('user', '=', user),
+                            ('name', 'in', names),
+                            ]))
+            Warning_.delete([w for w in warnings if not w.always])
+        self._clear_warnings()
+
+    def _clear_warnings(self):
+        if self.check_warnings:
+            self.check_warnings.clear()
+
     def commit(self):
         from trytond.cache import Cache
         try:
             self._store_log_records()
+            self._remove_warnings()
             if self._datamanagers:
                 for datamanager in self._datamanagers:
                     datamanager.tpc_begin(self)
@@ -411,6 +433,7 @@ class Transaction(object):
             datamanager.tpc_abort(self)
         Cache.rollback(self)
         self._clear_log_records()
+        self._clear_warnings()
         if self.connection:
             self.connection.rollback()
 
