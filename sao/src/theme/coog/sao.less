@@ -113,7 +113,7 @@
 
         > div.panel-body.coog-hidden-toolbar:has(> div.screen-container > div.content-box > div > div.treeview),
         > div.panel-body.coog-hidden-toolbar:has(> div.screen-container > div.content-box > div > div.form-item.form-one2many) {
-            box-shadow:             0 1px 4px rgba(0, 0, 0, 0.3);
+            box-shadow:         @coog-box-shadow;
             margin-bottom: 5px;
             margin-top: 5px;
         }
@@ -133,13 +133,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Main view
 ///////////////////////////////////////////////////////////////////////////////
-#tabcontent > div.tab-pane.active > div.panel.tab-form > div.panel-body.row {
-    padding-top:                @coog-card-bottom-padding;
-    padding-bottom:             @coog-card-bottom-padding;
-    > div {
-        padding-right:          @coog-card-bottom-padding;
-        padding-left:           @coog-card-bottom-padding;
-    }
+#tabs {
+    padding-left:       0px;
+    padding-right:      0px;
+}
+#tabcontent > div.tab-pane.active {
+    box-shadow:         @coog-box-shadow;
+    padding-left:       @coog-card-bottom-padding;
+    padding-right:      @coog-card-bottom-padding;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -402,10 +403,14 @@ form.modal-content > div.modal-body > div.screen-container,
 // Act window tab
 div.tab-form > div.panel-body > div > div.screen-container {
     // highlight filter button
-    > form.filter-box > div.row > div > div.input-group > span > button.btn-link {
-        .coog-highlight-link-button();
-        border-radius: 3px;
-        margin-right: 5px
+    > form.filter-box > div.row > div {
+        padding-left:           @coog-card-bottom-padding;
+        padding-right:          @coog-card-bottom-padding;
+        > div.input-group > span > button.btn-link {
+            .coog-highlight-link-button();
+            border-radius: 3px;
+            margin-right: 5px
+        }
     }
     // Slightly round corner on main list view
     > div.content-box > div > div.treeview {
@@ -574,18 +579,37 @@ div.form-item.form-group_:not(:has(> fieldset.form-group_ > legend)) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Wizards
+// Modals
 ///////////////////////////////////////////////////////////////////////////////
-
-// Use lighter headers for wizards
 div.modal-header {
     border-top-left-radius:     3px;
     border-top-right-radius:    3px;
     .coog-group-header-colors();
 }
 
-div.modal-header .close {
-    font-size: 21px;
+///////////////////////////////////////////////////////////////////////////////
+// Wizards
+///////////////////////////////////////////////////////////////////////////////
+
+// Tab wizards
+div.panel.tab-wizard {
+    box-shadow:        none;
+    div.modal-header {
+        padding:                    @coog-card-bottom-padding;
+        > button.close {
+            // .coog-group-header-colors();
+            color: black;
+            border-radius: 3px;
+            margin-top: -3px;
+            font-size:  30px;
+            > span {
+                font-size: 30px;
+            }
+        }
+        > .model-title {
+            padding-left:           5px;
+        }
+    }
 }
 
 div.wizard-dialog {
@@ -666,7 +690,7 @@ div.form-text {
         min-height: inherit !important;
         max-height: 500px;
         border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
-        box-shadow: 0 1px 4px rgba(@color-black,    @coog-box-opacity);
+        box-shadow:         @coog-box-shadow;
         padding:            5px;
         margin-bottom:      2px;
 
