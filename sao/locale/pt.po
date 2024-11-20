@@ -46,6 +46,9 @@ msgstr "Gerenciar..."
 msgid "Logout"
 msgstr "Sair"
 
+msgid "Close"
+msgstr "Fechar"
+
 msgid "Action"
 msgstr "Ação"
 
@@ -112,9 +115,6 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-msgid "Close"
-msgstr "Fechar"
-
 msgid "Documentation..."
 msgstr ""
 
@@ -153,6 +153,9 @@ msgid "Not found."
 msgstr ""
 
 msgid "Send you an email to reset your password."
+msgstr ""
+
+msgid "Reset forgotten password"
 msgstr ""
 
 msgid ""
@@ -210,9 +213,6 @@ msgstr "v"
 
 msgid "False"
 msgstr "Falso"
-
-msgid "Always ignore this warning."
-msgstr "Sempre ignorar este alerta."
 
 msgid "Do you want to proceed?"
 msgstr "Você deseja continuar?"
@@ -305,6 +305,18 @@ msgstr ""
 
 msgid "Justify Full"
 msgstr ""
+
+#, fuzzy
+msgid "Edit..."
+msgstr "Editar"
+
+#, fuzzy
+msgid "Relation"
+msgstr "Relacionar"
+
+#, fuzzy
+msgid "Report"
+msgstr "Relatar erro"
 
 msgid "Switch view"
 msgstr "Alternar a visão"
@@ -475,6 +487,10 @@ msgstr "\"%1\" não é válido de acordo com seu domínio"
 
 #, fuzzy
 msgid "The values of \"%1\" are not valid."
+msgstr "Os valores para \"%1\" não são válidos"
+
+#, fuzzy
+msgid "The value of \"%1\" is not valid."
 msgstr "Os valores para \"%1\" não são válidos"
 
 msgid "Pre-validation"
@@ -814,3 +830,6 @@ msgstr "Assistente"
 
 msgid "Translate view"
 msgstr "Traduzir tela"
+
+#~ msgid "Always ignore this warning."
+#~ msgstr "Sempre ignorar este alerta."

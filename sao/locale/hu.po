@@ -29,6 +29,9 @@ msgstr "Módosítás..."
 msgid "Logout"
 msgstr "Kilépés"
 
+msgid "Close"
+msgstr "Bezárás"
+
 msgid "Action"
 msgstr "Művelet"
 
@@ -95,9 +98,6 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-msgid "Close"
-msgstr "Bezárás"
-
 msgid "Documentation..."
 msgstr ""
 
@@ -136,6 +136,9 @@ msgid "Not found."
 msgstr ""
 
 msgid "Send you an email to reset your password."
+msgstr ""
+
+msgid "Reset forgotten password"
 msgstr ""
 
 msgid ""
@@ -194,9 +197,6 @@ msgstr "w"
 
 msgid "False"
 msgstr "Hamis"
-
-msgid "Always ignore this warning."
-msgstr "Ne mutassa többet ezt a figyelmeztetést"
 
 msgid "Do you want to proceed?"
 msgstr "Akarja folyatni?"
@@ -289,6 +289,18 @@ msgstr ""
 
 msgid "Justify Full"
 msgstr ""
+
+#, fuzzy
+msgid "Edit..."
+msgstr "Módosítás"
+
+#, fuzzy
+msgid "Relation"
+msgstr "Kapcsolat"
+
+#, fuzzy
+msgid "Report"
+msgstr "Nyomtatványok"
 
 msgid "Switch view"
 msgstr "Nézet váltása"
@@ -449,6 +461,9 @@ msgid "\"%1\" is not valid according to its domain."
 msgstr "A(z) „%1” mezőben helytelen értéket adott meg."
 
 msgid "The values of \"%1\" are not valid."
+msgstr ""
+
+msgid "The value of \"%1\" is not valid."
 msgstr ""
 
 msgid "Pre-validation"
@@ -774,3 +789,6 @@ msgstr ""
 
 msgid "Translate view"
 msgstr "Nézet fordítása."
+
+#~ msgid "Always ignore this warning."
+#~ msgstr "Ne mutassa többet ezt a figyelmeztetést"
