@@ -376,7 +376,8 @@ class Transaction(object):
                             ('user', '=', user),
                             ('name', 'in', names),
                             ]))
-            Warning_.delete([w for w in warnings if not w.always])
+            with without_check_access():
+                Warning_.delete([w for w in warnings if not w.always])
         self._clear_warnings()
 
     def _clear_warnings(self):
