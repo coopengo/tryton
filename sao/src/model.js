@@ -6,11 +6,12 @@
     function get_x2m_sub_fields(f_attrs, prefix) {
         if (f_attrs.loading == 'eager' && f_attrs.views) {
             // There's only one key but we don't know its value
-            const [[, view],] = Object.entries(f_attrs.views);
+            let sub_fields = {};
+            for (let [, view] of Object.entries(f_attrs.views)) {
+                Object.assign(sub_fields, view.fields || {});
+            }
 
-            const sub_fields = view.fields || {};
             const x2m_sub_fields = [];
-
             for (const [s_field, f_def] of Object.entries(sub_fields)) {
                 x2m_sub_fields.push(`${prefix}.${s_field}`);
 
