@@ -1742,14 +1742,16 @@ function hide_x2m_body(widget) {
                 if (str === this.codeMirror.getValue()) {
                     return
                 }
+                let prev_position = this.codeMirror.getScrollInfo()
                 this.codeMirror.setValue(str);
                 this.codeMirror.refresh();
+                this.codeMirror.scrollTo(prev_position.left, prev_position.top);
                 // We must do this to avoid considering the previously
                 // displayed record's algorithm as an history entry for the
                 // current one (meaning using "Ctrl+Z" can replace the current
                 // algorithm with the previous record's)
-                if (this.record !== this.previous_record) {
-                    this.previous_record = this.record;
+                if (this.record !== this.prev_record) {
+                    this.prev_record = this.record;
                     this.codeMirror.clearHistory();
                 }
             }.bind(this);
