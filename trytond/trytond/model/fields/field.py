@@ -633,7 +633,7 @@ class FieldTranslate(Field):
                 type_ = 'field'
             else:
                 type_ = 'help'
-            res_id = -1
+            res_id = Null
         else:
             name_ = '%s,%s' % (Model.__name__, name)
             type_ = 'model'
