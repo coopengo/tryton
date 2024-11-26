@@ -246,7 +246,7 @@ def _dispatch(request, pool, *args, **kwargs):
         username = username.decode('utf-8')
     log_args = (
         obj.__name__, method,
-        format_args(args, kwargs, not logger.isEnabledFor(logging.DEBUG)),
+        format_args(args, kwargs, verbose=logger.isEnabledFor(logging.DEBUG)),
         username, request.remote_addr, request.path)
 
     def duration():
@@ -365,7 +365,6 @@ def _dispatch(request, pool, *args, **kwargs):
             context = {'_request': request.context}
             security.reset(pool.database_name, session, context=context)
         logger.info(log_message, *log_args, duration())
-        logger.debug('Result: %s', result)
 
         # JCA: Allow to format json result
         if format_json_result and logger.isEnabledFor(logging.DEBUG):
