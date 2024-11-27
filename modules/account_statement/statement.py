@@ -263,7 +263,7 @@ class Statement(Workflow, ModelSQL, ModelView):
             origin.lines = lines
         self.origins = origins
 
-    @fields.depends('lines')
+    @fields.depends('lines', 'journal')
     def on_change_lines(self):
         pool = Pool()
         Line = pool.get('account.statement.line')
