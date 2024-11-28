@@ -438,7 +438,7 @@ class Record:
             self.parent.save(force_reload=force_reload)
         return self.id
 
-    def default_get(self, defaults=None):
+    def default_get(self, defaults=None, delay_on_changes=False):
         vals = None
         if len(self.group.fields):
             context = self.get_context()
@@ -459,7 +459,7 @@ class Record:
                 elif (self.group.fields[self.parent_name].attrs['relation']
                         == self.group.parent.model_name):
                     vals[self.parent_name] = self.parent.id
-            self.set_default(vals)
+            self.set_default(vals, delay_on_changes=delay_on_changes)
         return vals
 
     def rec_name(self):
@@ -502,7 +502,8 @@ class Record:
         else:
             return self.group.local_context
 
-    def set_default(self, val, modified=True, validate=True):
+    def set_default(
+            self, val, modified=True, validate=True, delay_on_changes=False):
         fieldnames = []
         for fieldname, value in list(val.items()):
             if fieldname in {'_write', '_delete', '_timestamp'}:
@@ -519,8 +520,9 @@ class Record:
             self.group.fields[fieldname].set_default(self, value)
             self._loaded.add(fieldname)
             fieldnames.append(fieldname)
-        self.on_change(fieldnames)
-        self.on_change_with(fieldnames)
+        if not delay_on_changes:
+            self.on_change(fieldnames)
+            self.on_change_with(fieldnames)
         if validate:
             self.validate(softvalidation=True)
         if modified:

@@ -443,7 +443,7 @@ class Form(TabContent):
         if autosave:
             if not self.modified_save():
                 return
-        self.screen.new()
+        self.screen.new(delay_on_changes=delay_on_changes)
         self.info_bar_clear()
         self.set_buttons_sensitive()
 

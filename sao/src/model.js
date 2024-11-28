@@ -191,9 +191,9 @@
                 }
             }
             record.modified_fields.id = true;
-            if (modified) {
+            if (modified && this.parent) {
                 // Set parent field to trigger on_change
-                if (this.parent && this.model.fields[this.parent_name]) {
+                if (this.model.fields[this.parent_name]) {
                     var field = this.model.fields[this.parent_name];
                     if ((field instanceof Sao.field.Many2One) ||
                             field instanceof Sao.field.Reference) {
@@ -203,6 +203,8 @@
                         }
                         field.set_client(record, value);
                     }
+                } else {
+                    this.record_modified();
                 }
             }
             return record;
@@ -967,7 +969,7 @@
         field_set_client: function(name, value, force_change) {
             this.model.fields[name].set_client(this, value, force_change);
         },
-        default_get: function(defaults=null) {
+        default_get: function(defaults=null, delay_on_changes=false) {
             if (!jQuery.isEmptyObject(this.model.fields)) {
                 var context = this.get_context();
                 if (defaults) {
@@ -992,12 +994,14 @@
                                 this.group.parent.id;
                         }
                     }
-                    return this.set_default(values);
+                    return this.set_default(
+                        values, true, true, delay_on_changes);
                 });
             }
             return jQuery.when();
         },
-        set_default: function(values, validate=true, modified=true) {
+        set_default: function(
+                values, validate=true, modified=true, delay_on_changes=false) {
             var promises = [];
             var fieldnames = [];
             for (var fname in values) {
@@ -1024,8 +1028,10 @@
                 fieldnames.push(fname);
             }
             return jQuery.when.apply(jQuery, promises).then(() => {
-                this.on_change(fieldnames);
-                this.on_change_with(fieldnames);
+                if (!delay_on_changes) {
+                    this.on_change(fieldnames);
+                    this.on_change_with(fieldnames);
+                }
                 const callback = () => {
                     if (modified) {
                         this.set_modified();

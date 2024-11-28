@@ -167,7 +167,9 @@
                 .done(() => {
                     if (kwargs.new_ &&
                         (this.screen.current_view.view_type == view_type)) {
-                        this.screen.new_(undefined, kwargs.defaults);
+                        this.screen.new_(
+                            undefined, kwargs.defaults,
+                            kwargs.delay_on_changes);
                     }
                 });
             var dialog = new Sao.Dialog('', 'window-form', 'lg', false);

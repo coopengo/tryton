@@ -708,7 +708,7 @@ class Screen:
             return self.current_view.widget_tree.editable_open
         return False
 
-    def new(self, default=True, defaults=None):
+    def new(self, default=True, defaults=None, delay_on_changes=False):
         previous_view = self.current_view
         if self.current_view and self.current_view.view_type == 'calendar':
             selected_date = self.current_view.get_selected_date()
@@ -720,7 +720,8 @@ class Screen:
             group = self.current_record.group
         else:
             group = self.group
-        record = group.new(default, defaults=defaults)
+        record = group.new(
+            default, defaults=defaults, delay_on_changes=delay_on_changes)
         group.add(record, self.new_position)
         if previous_view.view_type == 'calendar':
             previous_view.set_default_date(record, selected_date)

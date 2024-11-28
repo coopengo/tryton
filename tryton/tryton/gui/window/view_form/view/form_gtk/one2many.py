@@ -458,7 +458,7 @@ class One2Many(Widget):
             self._popup = False
 
         if self.screen.current_view.creatable:
-            self.screen.new()
+            self.screen.new(delay_on_changes=True)
             self.screen.current_view.widget.set_sensitive(True)
             update_sequence()
         else:
@@ -466,7 +466,7 @@ class One2Many(Widget):
             field_size -= len(self.field.get_eval(self.record)) + 1
             WinForm(
                 self.screen, lambda a: update_sequence(), new=True,
-                defaults=defaults, many=field_size)
+                defaults=defaults, many=field_size, delay_on_changes=True)
 
     def _new_product(self, defaults=None):
         fields = self.attrs['product'].split(',')
@@ -476,9 +476,9 @@ class One2Many(Widget):
             return
         else:
             self._popup = True
-        first = self.screen.new(default=False)
+        first = self.screen.new(default=False, delay_on_changes=True)
         default = first.default_get(defaults=defaults)
-        first.set_default(default)
+        first.set_default(default, delay_on_changes=True)
 
         def search_set(*args):
             if not fields:
@@ -498,7 +498,7 @@ class One2Many(Widget):
 
             win_search = WinSearch(relation, callback, sel_multi=True,
                 context=context, domain=domain, order=order,
-                title=self.attrs.get('string'))
+                title=self.attrs.get('string'), delay_on_changes=True)
             win_search.win.connect('destroy', search_set)
             win_search.screen.search_filter()
             win_search.show()
@@ -511,13 +511,13 @@ class One2Many(Widget):
 
             fields = list(product.keys())
             for values in itertools.product(*list(product.values())):
-                record = self.screen.new(default=False)
+                record = self.screen.new(default=False, delay_on_changes=True)
                 default_value = default.copy()
                 for field, value in zip(fields, values):
                     id_, rec_name = value
                     default_value[field] = id_
                     default_value[field + '.rec_name'] = rec_name
-                record.set_default(default_value)
+                record.set_default(default_value, delay_on_changes=True)
 
             sequence = self._sequence()
             if sequence:
