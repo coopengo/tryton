@@ -1580,23 +1580,14 @@ function hide_x2m_body(widget) {
             });
             this.tree_data_field = attributes.context_tree || null;
 
-            var editor_width;
-            if (this.tree_data_field) {
-                this.init_tree(4);
-                editor_width = 8;
-            }
-            else {
-                editor_width = 12;
-            }
-
             this.tree_data = [];
             this.tree_elements = [];
             this.value = '';
             this.json_data = '';
             this.prev_record = undefined;
-            this.init_editor(editor_width);
+            this.init_editor();
         },
-        init_editor: function(width){
+        init_editor: function(){
             var button_apply_command = function(evt) {
                 var cmDoc = this.codeMirror.getDoc();
                 switch (evt.data) {
@@ -1630,7 +1621,7 @@ function hide_x2m_body(widget) {
                 }
             }.bind(this);
             this.sc_editor = jQuery('<div/>', {
-                'class': 'panel panel-default col-md-' + parseInt(width)
+                'class': 'panel panel-default'
             }).appendTo(this.el).css('padding', '0');
 
             this.toolbar = jQuery('<div/>', {
@@ -1697,9 +1688,7 @@ function hide_x2m_body(widget) {
             this.focus_out();
         },
         init_tree: function(width){
-            var container = jQuery('<div/>', {
-                'class': 'col-md-' + parseInt(width)
-            }).appendTo(this.el);
+            var container = jQuery('<div/>').appendTo(this.el);
             this.sc_tree = jQuery('<div/>', {
                 'class': 'treeview responsive'
             }).appendTo(container).css('padding', '0');
