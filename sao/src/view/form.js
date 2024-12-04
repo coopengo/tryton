@@ -1691,6 +1691,7 @@ function hide_x2m_body(widget) {
         init_tree: function() {
             var container = jQuery('<div/>').appendTo(this.el);
             container.css('flex', '1');
+            container.css('position', 'relative');
             const tree_resizer_obs = new MutationObserver((mutationList) => {
                 if (mutationList.length == 0) {
                     return;
@@ -1714,6 +1715,26 @@ function hide_x2m_body(widget) {
             this.tbody.css({
                 'display': 'block',
                 'height': '490px'
+            });
+            let arrows = {
+                left: '🡄',
+                right: '🡆',
+            };
+            let collapser = jQuery('<div/>').appendTo(container);
+            collapser.css('position', 'absolute');
+            collapser.css('top', '0');
+            collapser.css('right', '10px');
+            collapser.text(arrows.left);
+            collapser.on('click', (e) => {
+                if (collapser.text() == arrows.left) {
+                    container.data('tree-width', container.width());
+                    container.css('width', '25px');
+                    collapser.text(arrows.right);
+                } else {
+                    let prev_width = container.data('tree-width');
+                    container.css('width', `${prev_width}px`);
+                    collapser.text(arrows.left);
+                }
             });
         },
         get modified() {
