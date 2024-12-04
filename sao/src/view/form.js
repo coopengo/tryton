@@ -1580,6 +1580,7 @@ function hide_x2m_body(widget) {
             });
             this.tree_data_field = attributes.context_tree || null;
 
+            this.init_tree();
             this.tree_data = [];
             this.tree_elements = [];
             this.value = '';
@@ -1687,8 +1688,20 @@ function hide_x2m_body(widget) {
             this.send_modified();
             this.focus_out();
         },
-        init_tree: function(width){
+        init_tree: function() {
             var container = jQuery('<div/>').appendTo(this.el);
+            container.css('flex', '1');
+            const tree_resizer_obs = new MutationObserver((mutationList) => {
+                if (mutationList.length == 0) {
+                    return;
+                }
+                container.css('flex', 'unset');
+                tree_resizer_obs.disconnect();
+            });
+            tree_resizer_obs.observe(container[0], {
+                attributeFilter: ["style"],
+                subtree: false,
+            });
             this.sc_tree = jQuery('<div/>', {
                 'class': 'treeview responsive'
             }).appendTo(container).css('padding', '0');
