@@ -994,7 +994,7 @@
                                 this.group.parent.id;
                         }
                     }
-                    return this.set_default(values, true, true);
+                    return this.set_default(values);
                 });
             }
             return jQuery.when();

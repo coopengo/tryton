@@ -4370,7 +4370,7 @@ function hide_x2m_body(widget) {
                 this._popup = false;
             };
             if (this.screen.current_view.creatable) {
-                this.screen.new_(true, null, true).then(update_sequence);
+                this.screen.new_().then(update_sequence);
                 this.screen.current_view.el.prop('disabled', false);
             } else {
                 var record = this.record;
@@ -4395,9 +4395,9 @@ function hide_x2m_body(widget) {
                 this._popup = true;
             }
 
-            screen.new_(false, null).then(first => {
+            screen.new_(false).then(first => {
                 first.default_get(defaults).then(default_ => {
-                    first.set_default(default_, true, true, true);
+                    first.set_default(default_);
 
                     const search_set = () => {
                         if (jQuery.isEmptyObject(fields)) {
@@ -4443,13 +4443,13 @@ function hide_x2m_body(widget) {
                             return product[field];
                         });
                         Sao.common.product(values).forEach(function(values) {
-                            screen.new_(false, null, true).then(function(record) {
+                            screen.new_(false).then(function(record) {
                                 var default_value = jQuery.extend({}, default_);
                                 fields.forEach(function(field, i) {
                                     default_value[field] = values[i][0];
                                     default_value[field + '.rec_name'] = values[i][1];
                                 });
-                                record.set_default(default_value, true, true, true);
+                                record.set_default(default_value);
                             });
                         });
                         var sequence = this._sequence();
