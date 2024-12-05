@@ -4395,7 +4395,7 @@ function hide_x2m_body(widget) {
                 this._popup = true;
             }
 
-            screen.new_(false, null, true).then(first => {
+            screen.new_(false, null).then(first => {
                 first.default_get(defaults).then(default_ => {
                     first.set_default(default_, true, true, true);
 
