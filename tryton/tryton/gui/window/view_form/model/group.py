@@ -395,12 +395,10 @@ class Group(list):
         if changed:
             self.record_modified()
 
-    def new(self, default=True, obj_id=None, defaults=None,
-            delay_on_changes=False):
+    def new(self, default=True, obj_id=None, defaults=None):
         record = Record(self.model_name, obj_id, group=self)
         if default:
-            record.default_get(
-                defaults=defaults, delay_on_changes=delay_on_changes)
+            record.default_get(defaults=defaults)
         return record
 
     def unremove(self, record, modified=True):

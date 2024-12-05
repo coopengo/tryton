@@ -4381,7 +4381,6 @@ function hide_x2m_body(widget) {
                     new_: true,
                     defaults: defaults,
                     many: field_size,
-                    delay_on_changes: true,
                 });
             }
         },
@@ -4428,7 +4427,6 @@ function hide_x2m_body(widget) {
                                     order: order,
                                     search_filter: '',
                                     title: this.attributes.string,
-                                    delay_on_changes: true,
 
                         });
                     };

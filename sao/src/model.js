@@ -969,7 +969,7 @@
         field_set_client: function(name, value, force_change) {
             this.model.fields[name].set_client(this, value, force_change);
         },
-        default_get: function(defaults=null, delay_on_changes=false) {
+        default_get: function(defaults=null) {
             if (!jQuery.isEmptyObject(this.model.fields)) {
                 var context = this.get_context();
                 if (defaults) {
@@ -994,14 +994,12 @@
                                 this.group.parent.id;
                         }
                     }
-                    return this.set_default(
-                        values, true, true, delay_on_changes);
+                    return this.set_default(values, true, true);
                 });
             }
             return jQuery.when();
         },
-        set_default: function(
-                values, validate=true, modified=true, delay_on_changes=false) {
+        set_default: function(values, validate=true, modified=true) {
             var promises = [];
             var fieldnames = [];
             for (var fname in values) {
@@ -1028,10 +1026,8 @@
                 fieldnames.push(fname);
             }
             return jQuery.when.apply(jQuery, promises).then(() => {
-                if (!delay_on_changes) {
-                    this.on_change(fieldnames);
-                    this.on_change_with(fieldnames);
-                }
+                this.on_change(fieldnames);
+                this.on_change_with(fieldnames);
                 const callback = () => {
                     if (modified) {
                         this.set_modified();

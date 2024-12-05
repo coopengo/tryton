@@ -23,8 +23,7 @@ class WinForm(NoModal, InfoBar):
 
     def __init__(self, screen, callback=None, view_type='form',
             new=False, many=0, domain=None, context=None,
-            save_current=False, title='', defaults=None,
-            delay_on_changes=False):
+            save_current=False, title='', defaults=None):
         tooltips = common.Tooltips()
         NoModal.__init__(self)
         self.screen = screen
@@ -53,8 +52,7 @@ class WinForm(NoModal, InfoBar):
             self.destroy()
             return
         if new:
-            self.screen.new(
-                defaults=defaults, delay_on_changes=delay_on_changes)
+            self.screen.new(defaults=defaults)
         self.win = Gtk.Dialog(
             title=_('Link'), transient_for=self.parent,
             destroy_with_parent=True)
