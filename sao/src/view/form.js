@@ -1580,23 +1580,15 @@ function hide_x2m_body(widget) {
             });
             this.tree_data_field = attributes.context_tree || null;
 
-            var editor_width;
-            if (this.tree_data_field) {
-                this.init_tree(4);
-                editor_width = 8;
-            }
-            else {
-                editor_width = 12;
-            }
-
+            this.init_tree();
             this.tree_data = [];
             this.tree_elements = [];
             this.value = '';
             this.json_data = '';
             this.prev_record = undefined;
-            this.init_editor(editor_width);
+            this.init_editor();
         },
-        init_editor: function(width){
+        init_editor: function(){
             var button_apply_command = function(evt) {
                 var cmDoc = this.codeMirror.getDoc();
                 switch (evt.data) {
@@ -1609,6 +1601,9 @@ function hide_x2m_body(widget) {
                     case 'check':
                         this.codeMirror.performLint();
                         break;
+                    case 'toggle_menu':
+                        this.toggle_menu();
+                        break;;
                 }
             }.bind(this);
 
@@ -1630,7 +1625,7 @@ function hide_x2m_body(widget) {
                 }
             }.bind(this);
             this.sc_editor = jQuery('<div/>', {
-                'class': 'panel panel-default col-md-' + parseInt(width)
+                'class': 'panel panel-default'
             }).appendTo(this.el).css('padding', '0');
 
             this.toolbar = jQuery('<div/>', {
@@ -1645,6 +1640,9 @@ function hide_x2m_body(widget) {
 
             add_buttons([
                     {
+                        'icon': 'menu-hamburger',
+                        'command': 'toggle_menu'
+                    }, {
                         'icon': 'arrow-left',
                         'command': 'undo'
                     }, {
@@ -1696,13 +1694,36 @@ function hide_x2m_body(widget) {
             this.send_modified();
             this.focus_out();
         },
-        init_tree: function(width){
-            var container = jQuery('<div/>', {
-                'class': 'col-md-' + parseInt(width)
-            }).appendTo(this.el);
+        toggle_menu: function() {
+            if (this.container.data('collapsed') === true) {
+                this.container.data('collapsed', false)
+                this.container.css(
+                    'width', this.container.data('previous-width'));
+                this.container.css('display', 'block');
+            } else {
+                this.container.data('collapsed', true)
+                this.container.data(
+                    'previous-width', this.container.css('width'));
+                this.container.css('display', 'none');
+            }
+        },
+        init_tree: function() {
+            this.container = jQuery('<div/>').appendTo(this.el);
+            this.container.css('flex', '1');
+            const tree_resizer_obs = new MutationObserver((mutationList) => {
+                if (mutationList.length == 0) {
+                    return;
+                }
+                this.container.css('flex', 'unset');
+                tree_resizer_obs.disconnect();
+            });
+            tree_resizer_obs.observe(this.container[0], {
+                attributeFilter: ["style"],
+                subtree: false,
+            });
             this.sc_tree = jQuery('<div/>', {
                 'class': 'treeview responsive'
-            }).appendTo(container).css('padding', '0');
+            }).appendTo(this.container).css('padding', '0');
 
             this.table = jQuery('<table/>', {
                 'class': 'tree table table-hover'
