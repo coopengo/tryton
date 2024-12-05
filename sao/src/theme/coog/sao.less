@@ -791,15 +791,15 @@ div.form-item.form-source > div.form-source {
     // This is the tree view with all the rule engine functions, we want it
     // a little more compact
     > div:first-child {
-        resize: horizontal;
-        overflow: auto;
-        margin-bottom: 10px;
+        resize:                       horizontal;
+        overflow:                     auto;
+        margin-bottom:                10px;
+        box-shadow:                   @coog-box-shadow;
+        min-width:                    240px;
+        border-radius:                2px;
 
         > div.treeview {
             height:                   calc(@coog-rule-engine-height + 42px);
-            padding:                  10px 3px 10px 3px !important;
-            box-shadow:               @coog-box-shadow;
-            border-radius:            2px;
 
             > table.tree > tbody > tr > td > td > table > tbody > tr > td {
                 span {
@@ -815,7 +815,8 @@ div.form-item.form-source > div.form-source {
     }
 
     > div.panel {
-        flex: 2;
+        flex:                     2;
+        margin-bottom:            10px;
 
         > div.panel-heading {
             background-color:     @color-lighter-blue;

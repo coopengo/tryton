@@ -1601,6 +1601,9 @@ function hide_x2m_body(widget) {
                     case 'check':
                         this.codeMirror.performLint();
                         break;
+                    case 'toggle_menu':
+                        this.toggle_menu();
+                        break;;
                 }
             }.bind(this);
 
@@ -1637,6 +1640,9 @@ function hide_x2m_body(widget) {
 
             add_buttons([
                     {
+                        'icon': 'menu-hamburger',
+                        'command': 'toggle_menu'
+                    }, {
                         'icon': 'arrow-left',
                         'command': 'undo'
                     }, {
@@ -1688,24 +1694,37 @@ function hide_x2m_body(widget) {
             this.send_modified();
             this.focus_out();
         },
+        toggle_menu: function() {
+            if (this.container.data('collapsed') === true) {
+                this.container.data('collapsed', false)
+                this.container.css(
+                    'width', this.container.data('previous-width'));
+                this.container.css('display', 'block');
+            } else {
+                this.container.data('collapsed', true)
+                this.container.data(
+                    'previous-width', this.container.css('width'));
+                this.container.css('display', 'none');
+            }
+        },
         init_tree: function() {
-            var container = jQuery('<div/>').appendTo(this.el);
-            container.css('flex', '1');
-            container.css('position', 'relative');
+            this.container = jQuery('<div/>').appendTo(this.el);
+            this.container.css('flex', '1');
+            this.container.css('position', 'relative');
             const tree_resizer_obs = new MutationObserver((mutationList) => {
                 if (mutationList.length == 0) {
                     return;
                 }
-                container.css('flex', 'unset');
+                this.container.css('flex', 'unset');
                 tree_resizer_obs.disconnect();
             });
-            tree_resizer_obs.observe(container[0], {
+            tree_resizer_obs.observe(this.container[0], {
                 attributeFilter: ["style"],
                 subtree: false,
             });
             this.sc_tree = jQuery('<div/>', {
                 'class': 'treeview responsive'
-            }).appendTo(container).css('padding', '0');
+            }).appendTo(this.container).css('padding', '0');
 
             this.table = jQuery('<table/>', {
                 'class': 'tree table table-hover'
@@ -1715,26 +1734,6 @@ function hide_x2m_body(widget) {
             this.tbody.css({
                 'display': 'block',
                 'height': '490px'
-            });
-            let arrows = {
-                left: '🡄',
-                right: '🡆',
-            };
-            let collapser = jQuery('<div/>').appendTo(container);
-            collapser.css('position', 'absolute');
-            collapser.css('top', '0');
-            collapser.css('right', '10px');
-            collapser.text(arrows.left);
-            collapser.on('click', (e) => {
-                if (collapser.text() == arrows.left) {
-                    container.data('tree-width', container.width());
-                    container.css('width', '25px');
-                    collapser.text(arrows.right);
-                } else {
-                    let prev_width = container.data('tree-width');
-                    container.css('width', `${prev_width}px`);
-                    collapser.text(arrows.left);
-                }
             });
         },
         get modified() {
