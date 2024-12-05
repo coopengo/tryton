@@ -127,11 +127,13 @@ def get_parser_admin():
     parser.add_argument("--activate-dependencies", dest="activatedeps",
         action="store_true",
         help="Activate missing dependencies of updated modules")
-    parser.add_argument("--email", dest="email", help="set the admin email")
+    parser.add_argument("--email", dest="email", help="set the user email")
+    parser.add_argument("--login", dest="login", type=str,
+        help="set the login username of the modified user", default='admin')
     parser.add_argument("-p", "--password", dest="password",
-        action='store_true', help="set the admin password")
+        action='store_true', help="set the user password")
     parser.add_argument("--reset-password", dest='reset_password',
-        action='store_true', help="reset the admin password")
+        action='store_true', help="reset the user password")
     parser.add_argument("--test-email", dest='test_email',
         help="send a test email to the specified address")
     parser.add_argument("-m", "--update-modules-list", action="store_true",
