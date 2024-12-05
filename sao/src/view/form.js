@@ -1710,7 +1710,6 @@ function hide_x2m_body(widget) {
         init_tree: function() {
             this.container = jQuery('<div/>').appendTo(this.el);
             this.container.css('flex', '1');
-            this.container.css('position', 'relative');
             const tree_resizer_obs = new MutationObserver((mutationList) => {
                 if (mutationList.length == 0) {
                     return;
