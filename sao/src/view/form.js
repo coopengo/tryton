@@ -4660,7 +4660,7 @@ function hide_x2m_body(widget) {
                                     domain: domain,
                                     order: order,
                                     search_filter: '',
-                                    title: this.attributes.string
+                                    title: this.attributes.string,
 
                         });
                     };
