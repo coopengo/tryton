@@ -358,6 +358,7 @@ class Report(URLMixin, PoolBase):
             Transaction().set_context(language=language)
         report_context['set_lang'] = set_lang
 
+        report_context['_relatorio_zip64'] = True
         return report_context
 
     @classmethod
