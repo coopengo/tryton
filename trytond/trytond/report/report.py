@@ -395,6 +395,7 @@ class Report(URLMixin, PoolBase):
         report_context['msg_gettext'] = gettext
         report_context['msg_ngettext'] = ngettext
 
+        report_context['_relatorio_zip64'] = True
         return report_context
 
     @classmethod
