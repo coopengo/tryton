@@ -167,8 +167,6 @@
             tr.append(th);
             this.thead.append(tr);
 
-            const observer = new MutationObserver(this.column_resize.bind(this));
-
             this.tfoot = null;
             var sum_row;
             if (this.sum_widgets.size) {
@@ -197,7 +195,7 @@
                     });
             }
 
-            var col_idx = 1;
+            this.table.resized_th = null;
             for (const column of this.columns) {
                 col = jQuery('<col/>', {
                     'class': column.attributes.widget,
@@ -206,13 +204,21 @@
                     'class': column.attributes.widget,
                 });
                 th.uniqueId();
-                var resize_div = jQuery('<div/>', {
-                    'data-col': col_idx,
-                });
                 var label = jQuery('<label/>')
                     .text(column.attributes.string)
                     .attr('title', column.attributes.string)
-                    .appendTo(resize_div);
+                    .appendTo(th);
+                let resizer = jQuery('<div/>', {
+                    'class': 'resizer',
+                    'draggable': true,
+                }).appendTo(th);
+                resizer.on('dragstart', (event) => {
+                    let th = event.currentTarget.parentNode;
+                    th.dataset.startPosition = event.screenX;
+                    th.dataset.originalWidth = th.offsetWidth;
+                    this.table.resized_th = th;
+                });
+
                 if (this.editable) {
                     if (column.attributes.required) {
                         label.addClass('required');
@@ -233,14 +239,9 @@
                     label.click(column, this.sort_model.bind(this));
                     label.addClass('sortable');
                 }
-                tr.append(th.append(resize_div));
+                tr.append(th);
                 column.header = th;
                 column.col = col;
-                observer.observe(resize_div[0], {
-                    attributeFilter: ["style"],
-                    attributeOldValue: true,
-                    subtree: false,
-                });
 
                 column.footers = [];
                 if (this.sum_widgets.size) {
@@ -256,9 +257,23 @@
                     sum_row.append(total_cell);
                     column.footers.push(total_cell);
                 }
-
-                col_idx += 1;
             }
+
+            this.table.on('dragover', (event) => {
+                event.preventDefault();
+            });
+            this.table.on('drop', (event) => {
+                event.preventDefault();
+                if (!this.table.resized_th) {
+                    return;
+                }
+                let width = (Number(this.table.resized_th.dataset.originalWidth) +
+                    (event.screenX - Number(this.table.resized_th.dataset.startPosition)));
+                this.table.resized_th.style.width = `${width}px`;
+                this.table.resized_th = null;
+                this.save_width();
+            });
+
             this.tbody = jQuery('<tbody/>');
             this.table.append(this.tbody);
             this.tbody.on('contextmenu', this.contextmenu.bind(this));
@@ -351,6 +366,27 @@
                     this.on_copy();
                     menu.dropdown('toggle');
                 })));
+            menu.append(jQuery('<li/>', {
+                'role': 'presentation',
+            }).append(jQuery('<a/>', {
+                'role': 'menuitem',
+                'href': '#',
+                'tabindex': -1,
+            }).text(' ' + Sao.i18n.gettext("Restore Column Width"))
+                .prepend(
+                    Sao.common.ICONFACTORY.get_icon_img('tryton-refresh', {
+                        'aria-hidden': 'true',
+                    }))
+                .click(evt => {
+                    evt.preventDefault();
+                    for (let col of this.columns) {
+                        let th = col.header[0];
+                        if (th.dataset.originalWidth) {
+                            th.style.width = `${th.dataset.originalWidth}px`;
+                        }
+                    }
+                    menu.dropdown('toggle');
+                })));
         },
         save_optional: function(store=true) {
             if (!this.optionals.length) {
@@ -368,104 +404,23 @@
             }
             Sao.Screen.tree_column_optional[this.view_id] = fields;
         },
-        column_resize: function(mutationList) {
-            if (mutationList.length == 0) {
-                return;
-            }
-            var mutation = mutationList.at(-1);
-            var col_idx = Number(mutation.target.dataset.col) + 1;
-            var width = mutation.target.style.width;
-            const css_width_re = /width: ([^;]*)/i;
-            var old_width;
-            if (mutation.oldValue) {
-                old_width = mutation.oldValue.match(css_width_re);
-                old_width = old_width ? old_width[1] : undefined;
-            }
-            // The sum of the required sizes of the columns
-            var total_size = 0;
-            // The available size for displaying the columns
-            var displayed_width = this.treeview.width();
-            var last_visible;
-            this.colgroup.find('col').each((idx, element) => {
-                var jqElement = jQuery(element);
-                var matched = jqElement.css('width').match(css_width_re);
-                var size = Math.floor(
-                    matched ? Number(matched[0]) : jqElement.width());
-                total_size += size;
-                if (!jqElement.hasClass('optional') &&
-                    !jqElement.hasClass('selection-state')) {
-                    var width = Math.floor(jqElement.width());
-                    if (width !== 0) {
-                        last_visible = idx;
-                        jqElement.width(width + "px");
-                        jqElement.css('width', width + "px");
-                    }
-                }
-            });
-            if (old_width && (width != old_width)) {
-                const width_re = /^([0-9.]+)px$/i;
-                var old_value = old_width.match(width_re);
-                var value = width.match(width_re);
-                old_value = old_value ? Number(old_value[1]) : undefined;
-                value = value ? Number(value[1]) : undefined;
-
-                if (old_value && value) {
-                    var offset = old_value - value;
-                    var tr_node = jQuery(mutation.target.parentNode.parentNode);
-                    var last_col = this.colgroup.find('col')
-                        .eq(tr_node.data('last_col'));
-                    var last_col_width = last_col.css('width').match(width_re);
-                    last_col_width = last_col_width ? Number(last_col_width[1]) : undefined;
-                    if ((last_col_width || (last_col_width === 0))) {
-                        // In some cases, the size may end up with pixel
-                        // fractions. We do not want this
-                        var delta = last_col_width - Math.floor(last_col_width);
-                        this.colgroup.find('col').eq(col_idx).css('width', width);
-                        total_size -= offset;
-                        if (old_value > value) {
-                            // When reducing the size of a column, we way have
-                            if (displayed_width > total_size + offset) {
-                                // If the total size of columns is less than
-                                // the visible scope of the table, we add to
-                                // the last column so the sum of column sizes
-                                // matches the displayed size
-                                this.colgroup.find('col').eq(tr_node.data('last_col'))
-                                    .css('width', `${last_col_width - delta + offset}px`);
-                                total_size -= offset - delta;
-                            } else if (col_idx == last_visible - 1) {
-                                // if the total size is greater than the
-                                // visible scope, and we reduce the width of
-                                // the second to last column, we also reduce
-                                // the width of the last column, so there is an
-                                // actual way to do so
-                                this.colgroup.find('col').eq(tr_node.data('last_col'))
-                                    .css('width', `${last_col_width - delta - offset}px`);
-                                total_size -= offset + delta;
-                            }
-                        }
-                        // Sync the table size with the total column size
-                        this.table.css('min-width', 'calc(' + Math.max(total_size, displayed_width) + "px)");
-                        Sao.common.debounce(this.save_width, 1000)(this);
-                    }
-                }
-            } else if (!old_width) {
-                this.colgroup.find('col').eq(col_idx).css('width', width);
-                this.table.css('min-width', total_size + "px)");
-            }
-        },
-        save_width: function(tree) {
+        save_width: function() {
             var widths = {};
-            for (const column of tree.columns) {
+            for (const column of this.columns) {
                 if (!column.get_visible() || !column.attributes.name ||
                     column instanceof Sao.View.Tree.ButtonColumn) {
                     continue;
                 }
-                var width = column.col.css('width');
-                widths[column.attributes.name] = Number(
-                    width.substr(0, width.length - 2));
+
+                // Use the DOM element to retrieve the exact style set
+                var width = column.header[0].style.width;
+                if (width.endsWith('px')) {
+                    widths[column.attributes.name] = Number(
+                        width.substr(0, width.length - 2));
+                }
             }
 
-            var model_name = tree.screen.model_name;
+            var model_name = this.screen.model_name;
             var TreeWidth = new Sao.Model('ir.ui.view_tree_width');
             TreeWidth.execute(
                 'set_width',
@@ -999,7 +954,7 @@
                 }
 
                 if (!column.get_visible()) {
-                    column.col.css('width', 0);
+                    column.header.css('width', 0);
                     column.col.hide();
                 } else if (!column.col.hasClass('draggable-handle') &&
                     !column.col.hasClass('optional') &&
@@ -1032,7 +987,7 @@
                         c_width = width * 100 * factor  + '%';
                         min_width.push(width + 'em');
                     }
-                    column.col.css('width', c_width);
+                    column.header.css('width', c_width);
                     column.col.show();
                 }
             }
@@ -1115,6 +1070,7 @@
                 if (!this.record && this.rows.length) {
                     this.rows[0].select_row(new Event({}));
                 }
+                this.table.css('--table-height', `${this.table.height()}px`);
                 Sao.common.debounce(this.update_sum.bind(this), 250)();
             });
         },
@@ -1163,22 +1119,22 @@
         update_visible: function() {
             var to_hide = [];
             var to_show = [];
+            let last_visible_column;
             for (var i = 0; i < this.columns.length; i++) {
                 var column = this.columns[i];
                 if (!column.get_visible() && column.header.css('display') == 'none') {
                     to_hide.push(i);
                 } else {
                     to_show.push(i);
+                    last_visible_column = column;
                 }
             }
             // Take into account the selection or optional column
             var offset = 2;
-
             const make_selector = (col_idx) => {
                 return `tr td:nth-child(${col_idx + offset + 1})`;
             };
 
-            this.thead.find('tr').data('last_col', to_show.at(-1) + offset);
             if (to_hide.length) {
                 this.tbody.find(to_hide.map(make_selector).join(','))
                     .addClass('invisible').hide();
@@ -1186,10 +1142,10 @@
             if (to_show.length) {
                 this.tbody.find(to_show.map(make_selector).join(','))
                     .removeClass('invisible').show();
-                this.thead.find(
-                        `tr th:nth-child(${to_show[to_show.length - 1] + offset + 1}) div`)
-                    .css('resize', 'none');
             }
+
+            this.thead.find('div.resizer').show();
+            last_visible_column.header.find('div.resizer').hide();
         },
         update_sum: function() {
             for (const [column, sum_widget] of this.sum_widgets) {

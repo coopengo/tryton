@@ -623,6 +623,7 @@ img.icon {
     > table.tree {
         width: 100%;
         table-layout: fixed;
+        --table-height: 100%;
 
         col.selection-state, col.favorite, col.tree-menu {
             width: 30px;
@@ -642,14 +643,23 @@ img.icon {
             }
         }
         > thead > tr > th {
+            position: relative;
             padding: 0;
 
-            div {
-                padding: 5px;
+            div.resizer {
+                z-index: 1;
+                position: absolute;
+                top: 0;
+                right: 1px;
+                width: 2px;
+                height: var(--table-height);
+                cursor: ew-resize;
+                border-right: 1px solid;
+
+                padding: 0 4px;
             }
 
             &:not(:first-child) div {
-                resize: horizontal;
                 overflow: hidden;
                 text-overflow: ellipsis;
 
