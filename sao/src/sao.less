@@ -623,7 +623,6 @@ img.icon {
     > table.tree {
         width: 100%;
         table-layout: fixed;
-        --table-height: 100%;
 
         col.selection-state, col.favorite, col.tree-menu {
             width: 30px;
@@ -644,32 +643,35 @@ img.icon {
         }
         > thead > tr > th {
             position: relative;
-            padding: 0;
+            padding: 5px;
 
-            div.resizer {
-                z-index: 1;
-                position: absolute;
-                top: 0;
-                right: 1px;
-                width: 2px;
-                height: var(--table-height);
-                cursor: ew-resize;
-                border-right: 1px solid;
-
-                padding: 0 4px;
-            }
-
-            &:not(:first-child) div {
+            > label {
+                display: inline-block;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                white-space: nowrap;
+                margin: 0;
 
-                > label {
-                    white-space: nowrap;
-                }
-                > label.sortable {
+                &.sortable {
                     cursor: pointer;
                 }
             }
+
+            > div.resizer {
+                z-index: 1;
+                position: absolute;
+                top: 0;
+                right: -5px;
+                width: 2px;
+                height: 100%;
+                cursor: ew-resize;
+                padding: 0 4px;
+
+                &:hover {
+                    background: @table-border-color;
+                }
+            }
+
             &.tree-menu {
                 cursor: pointer;
                 overflow: visible;
@@ -691,26 +693,28 @@ img.icon {
                 text-align: end;
             }
         }
-        > thead > tr:first-child th {
-            background-color: @body-bg;
+        > thead > tr:first-child {
             position: sticky;
             top: 0;
             z-index: 100;
 
-            &:first-child {
-                z-index: 200;
+            th {
+                background-color: @body-bg;
             }
         }
-        > tfoot > tr th {
-            background-color: @body-bg;
+        > tfoot > tr {
             bottom: 0;
             position: sticky;
             z-index: 100;
-            & > label {
-                display: none;
-            }
-            & > div.value {
-                white-space: pre;
+
+            th {
+                background-color: @body-bg;
+                & > label {
+                    display: none;
+                }
+                & > div.value {
+                    white-space: pre;
+                }
             }
         }
         > tbody > tr > td {

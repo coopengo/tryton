@@ -213,10 +213,36 @@
                     'draggable': true,
                 }).appendTo(th);
                 resizer.on('dragstart', (event) => {
-                    let th = event.currentTarget.parentNode;
+                    let th = event.target.parentNode;
+                    let tr = th.parentNode;
+                    for (let header of tr.childNodes) {
+                        if (header == th) {
+                            break;
+                        }
+                        if (header.style.display != 'none') {
+                            header.style.width = `${header.offsetWidth}px`;
+                        }
+                    }
                     th.dataset.startPosition = event.screenX;
                     th.dataset.originalWidth = th.offsetWidth;
                     this.table.resized_th = th;
+
+                    event.originalEvent.dataTransfer.setDragImage(
+                        document.createElement('img'), 0, 0);
+                });
+                let column_widths = {};
+                resizer.on('drag', (event) => {
+                    if (!this.table.resized_th) {
+                        return;
+                    }
+                    let width = (Number(this.table.resized_th.dataset.originalWidth) +
+                        (event.screenX -
+                            Number(this.table.resized_th.dataset.startPosition)));
+                    column_widths[this.table.resized_th] = width;
+                    setTimeout(() => {
+                        let width = column_widths[this.table.resized_th];
+                        this.table.resized_th.style.width = `${width}px`;
+                    });
                 });
 
                 if (this.editable) {
@@ -264,12 +290,6 @@
             });
             this.table.on('drop', (event) => {
                 event.preventDefault();
-                if (!this.table.resized_th) {
-                    return;
-                }
-                let width = (Number(this.table.resized_th.dataset.originalWidth) +
-                    (event.screenX - Number(this.table.resized_th.dataset.startPosition)));
-                this.table.resized_th.style.width = `${width}px`;
                 this.table.resized_th = null;
                 this.save_width();
             });
@@ -377,7 +397,7 @@
                     Sao.common.ICONFACTORY.get_icon_img('tryton-refresh', {
                         'aria-hidden': 'true',
                     }))
-                .click(evt => {
+                .click((evt) => {
                     evt.preventDefault();
                     for (let col of this.columns) {
                         let th = col.header[0];
@@ -385,6 +405,7 @@
                             th.style.width = `${th.dataset.originalWidth}px`;
                         }
                     }
+                    this.save_width();
                     menu.dropdown('toggle');
                 })));
         },
