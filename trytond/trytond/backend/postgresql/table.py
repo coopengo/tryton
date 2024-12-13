@@ -516,7 +516,9 @@ class TableHandler(TableHandlerInterface):
                     (name,))
                 if (idx_valid := cursor.fetchone()) and not idx_valid[0]:
                     cursor.execute(
-                        SQL("DROP INDEX {}").format(Identifier(name)))
+                        SQL("DROP INDEX {} {}").format(
+                            SQL('CONCURRENTLY' if concurrently else ''),
+                            Identifier(name)))
                 cursor.execute(
                     SQL('CREATE INDEX {} IF NOT EXISTS {} ON {} USING {}')
                     .format(
@@ -533,7 +535,10 @@ class TableHandler(TableHandlerInterface):
                     '_' not in name and
                     name not in self._constraints)):
                 logger.info(f'Drop index {name}')
-                cursor.execute(SQL('DROP INDEX {}').format(Identifier(name)))
+                cursor.execute(
+                    SQL("DROP INDEX {} {}").format(
+                        SQL('CONCURRENTLY' if concurrently else ''),
+                        Identifier(name)))
         self.__indexes = None
 
     def dump_indexes(self, indexes, file, concurrently=False):
