@@ -8,6 +8,7 @@ import selectors
 import threading
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
+from uuid import uuid4
 from weakref import WeakKeyDictionary
 
 from sql import Table
@@ -160,6 +161,8 @@ class MemoryCache(BaseCache):
     _default_lower = Transaction.monotonic_time()
     _listener = {}
     _listener_lock = defaultdict(threading.Lock)
+    _listener_id = None
+    _listener_id_lock = threading.Lock()
     _table = 'ir_cache'
     _channel = _table
 
@@ -375,10 +378,15 @@ class MemoryCache(BaseCache):
         if not _clear_timeout and database.has_channel():
             database = backend.Database(dbname)
             conn = database.get_connection()
+            with cls._listener_id_lock:
+                if cls._listener_id:
+                    process_id = cls._listener_id
+                else:
+                    cls._listener_id = process_id = uuid4()
+            payload = json.dumps(('refresh_pool', str(process_id)))
             try:
                 cursor = conn.cursor()
-                cursor.execute(
-                    'NOTIFY "%s", %%s' % cls._channel, ('refresh pool',))
+                cursor.execute(f'NOTIFY "{cls._channel}", %s', (payload,))
                 conn.commit()
             finally:
                 database.put_connection(conn)
@@ -417,13 +425,19 @@ class MemoryCache(BaseCache):
                     pool = Pool(dbname)
                     callbacks = pool._notification_callbacks.get(dbname, {})
                     notification = conn.notifies.pop()
-                    if notification.payload == 'refresh pool':
-                        Pool.refresh(dbname, _get_modules(cursor))
-                    elif notification.payload in callbacks:
-                        callbacks[notification.payload](pool)
-                    elif notification.payload:
-                        reset = json.loads(notification.payload)
-                        for name in reset:
+                    payload = json.loads(notification.payload)
+                    if payload and payload[0] == 'refresh pool':
+                        with cls._listener_id_lock:
+                            if cls._listener_id:
+                                process_id = cls._listener_id
+                            else:
+                                cls._listener_id = process_id = uuid4()
+                        if payload[1] != str(process_id):
+                            Pool.refresh(dbname, _get_modules(cursor))
+                    elif payload in callbacks:
+                        callbacks[payload](pool)
+                    elif payload:
+                        for name in payload:
                             # XUNG
                             # Name not in instances when control_vesion_upgrade
                             # table is locked because another process is
