@@ -898,11 +898,14 @@
             } else if (!view_id && this.views_preload[view_type]) {
                 view = this.views_preload[view_type];
             } else {
-                var context = {
-                    screen_size: [window.screen.width, window.screen.height],
+                let context = {
+                    screen_size: [
+                        window.visualViewport.width,
+                        window.visualViewport.height
+                    ],
                     view_tree_width: true,
                 };
-                jQuery.extend(context, this.context);
+                Object.assign(context, this.context);
                 var prm = this.model.execute('fields_view_get',
                         [view_id, view_type], context);
                 return prm.pipe(this.add_view.bind(this));
@@ -1832,11 +1835,14 @@
                 return this._domain_parser[view_id];
             }
             if (!(view_id in this.fields_view_tree)) {
-                var context = {
-                    screen_size: [window.screen.width, window.screen.height],
+                let context = {
+                    screen_size: [
+                        window.visualViewport.width,
+                        window.visualViewport.height,
+                    ],
                     view_tree_width: true,
                 };
-                jQuery.extend(context, this.context);
+                Object.assign(context, this.context);
                 view_tree = this.model.execute('fields_view_get', [false, 'tree'],
                     context, false);
                 this.fields_view_tree[view_id] = view_tree;
@@ -2350,6 +2356,7 @@
                 } else if (~['tree', 'list-form'].indexOf(view.view_type)) {
                     var paths;
                     if (view.view_type == 'tree') {
+                        view.save_width();
                         paths = view.get_expanded_paths();
                     } else {
                         paths = [];

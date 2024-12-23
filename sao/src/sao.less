@@ -623,6 +623,11 @@ img.icon {
     > table.tree {
         width: 100%;
         table-layout: fixed;
+        border: 1px solid transparent;
+
+        &.table-bordered {
+            border-color: @table-border-color;
+        }
 
         col.selection-state, col.favorite, col.tree-menu {
             width: 30px;
@@ -666,10 +671,7 @@ img.icon {
                 height: 100%;
                 cursor: ew-resize;
                 padding: 0 4px;
-
-                &:hover {
-                    background: @table-border-color;
-                }
+                background-color: transparent;
             }
 
             &.tree-menu {
@@ -699,7 +701,14 @@ img.icon {
             z-index: 100;
 
             th {
+                border: 1px solid transparent;
+                border-bottom: 2px solid @table-border-color;
                 background-color: @body-bg;
+            }
+
+            &:hover th {
+                border: 1px solid @table-border-color;
+                border-bottom-width: 2px;
             }
         }
         > tfoot > tr {
@@ -840,6 +849,26 @@ img.icon {
     .btn {
         padding-top: 0;
         padding-bottom: 0;
+    }
+
+    > table.table-bordered {
+        border: 1px solid @table-border-color;
+        > thead,
+        > tbody,
+        > tfoot {
+            > tr:first-child {
+                > th,
+                > td {
+                    border: 1px solid @table-border-color;
+                }
+            }
+        }
+        > thead > tr:first-child {
+            > th,
+            > td {
+                border-bottom-width: 2px;
+            }
+        }
     }
 }
 

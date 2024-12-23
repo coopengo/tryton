@@ -15,6 +15,35 @@
         });
     }
 
+    // circumvent https://bugzilla.mozilla.org/show_bug.cgi?id=505521
+    let dragoverFixAdded = false;
+    let lastWindowDragEvent = null;
+    const fillEventScreenPosition = (e) => {
+        e.screenPosition = {
+            x: e.screenX,
+            y: e.screenY,
+        };
+
+        if (!navigator.userAgent.search("Firefox")) {
+            return;
+        }
+
+        if (!dragoverFixAdded) {
+            window.addEventListener('dragover', (e) => {
+                lastWindowDragEvent = e;
+            });
+            dragoverFixAdded = true;
+        }
+
+        if (lastWindowDragEvent &&
+            (e.timeStamp - lastWindowDragEvent.timeStamp) < 100) {
+            e.screenPosition = {
+                x: lastWindowDragEvent.screenX,
+                y: lastWindowDragEvent.screenY,
+            };
+        }
+    }
+
     Sao.View.TreeXMLViewParser = Sao.class_(Sao.View.XMLViewParser, {
         _parse_tree: function(node, attributes) {
             for (const child of node.childNodes) {
@@ -117,6 +146,10 @@
             this.treeview = jQuery('<div/>', {
                 'class': 'treeview responsive'
             }).appendTo(this.el);
+            this.dragged_div = jQuery('<div/>', {
+            }).appendTo(this.el);
+            this.dragged_div.css('position', 'absolute');
+            this.dragged_div.html('&nbsp;');
 
             // Synchronize both scrollbars
             this.treeview.scroll(() => {
@@ -195,7 +228,10 @@
                     });
             }
 
-            this.table.resized_th = null;
+            let idx = 1;
+            if (!jQuery.isEmptyObject(this.optionals)) {
+                idx += 1;
+            }
             for (const column of this.columns) {
                 col = jQuery('<col/>', {
                     'class': column.attributes.widget,
@@ -204,6 +240,7 @@
                     'class': column.attributes.widget,
                 });
                 th.uniqueId();
+                th[0].dataset.column = idx;
                 var label = jQuery('<label/>')
                     .text(column.attributes.string)
                     .attr('title', column.attributes.string)
@@ -214,34 +251,35 @@
                 }).appendTo(th);
                 resizer.on('dragstart', (event) => {
                     let th = event.target.parentNode;
-                    let tr = th.parentNode;
-                    for (let header of tr.childNodes) {
+                    let headers = Array.from(th.parentNode.childNodes);
+                    let cols = Array.from(this.colgroup[0].childNodes);
+                    let cols_n_headers = headers.map((h, i) => [h, cols[i]]);
+                    for (let [header, col] of cols_n_headers) {
                         if (header == th) {
                             break;
                         }
-                        if (header.style.display != 'none') {
-                            header.style.width = `${header.offsetWidth}px`;
+                        if (col.style.display != 'none') {
+                            col.style.width = `${header.offsetWidth}px`;
                         }
                     }
                     th.dataset.startPosition = event.screenX;
                     th.dataset.originalWidth = th.offsetWidth;
-                    this.table.resized_th = th;
 
+                    this.table.addClass('table-bordered');
                     event.originalEvent.dataTransfer.setDragImage(
-                        document.createElement('img'), 0, 0);
+                        this.dragged_div[0], 0, 0);
                 });
                 let column_widths = {};
                 resizer.on('drag', (event) => {
-                    if (!this.table.resized_th) {
-                        return;
-                    }
-                    let width = (Number(this.table.resized_th.dataset.originalWidth) +
-                        (event.screenX -
-                            Number(this.table.resized_th.dataset.startPosition)));
-                    column_widths[this.table.resized_th] = width;
+                    fillEventScreenPosition(event);
+                    let resized_th = event.target.parentNode;
+                    let col = this.colgroup[0].childNodes[resized_th.dataset.column];
+                    let width = (Number(resized_th.dataset.originalWidth) +
+                        (event.screenPosition.x - resized_th.dataset.startPosition));
+                    column_widths[resized_th] = width;
                     setTimeout(() => {
-                        let width = column_widths[this.table.resized_th];
-                        this.table.resized_th.style.width = `${width}px`;
+                        let width = column_widths[resized_th];
+                        col.style.width = `${width}px`;
                     });
                 });
 
@@ -283,15 +321,18 @@
                     sum_row.append(total_cell);
                     column.footers.push(total_cell);
                 }
+                idx += 1;
             }
 
             this.table.on('dragover', (event) => {
+                // This is necessary so that the 'drop' event is processed
                 event.preventDefault();
             });
             this.table.on('drop', (event) => {
                 event.preventDefault();
-                this.table.resized_th = null;
-                this.save_width();
+                if (!this.editable) {
+                    this.table.removeClass('table-bordered');
+                }
             });
 
             this.tbody = jQuery('<tbody/>');
@@ -408,6 +449,34 @@
                     this.save_width();
                     menu.dropdown('toggle');
                 })));
+            menu.append(jQuery('<li/>', {
+                'role': 'presentation',
+            }).append(jQuery('<a/>', {
+                'role': 'menuitem',
+                'href': '#',
+                'tabindex': -1,
+            }).text(' ' + Sao.i18n.gettext("Reset Column Width"))
+                .prepend(
+                    Sao.common.ICONFACTORY.get_icon_img('tryton-refresh', {
+                        'aria-hidden': 'true',
+                    }))
+                .click((evt) => {
+                    evt.preventDefault();
+                    let TreeWidth = new Sao.Model('ir.ui.view_tree_width');
+                    TreeWidth.execute(
+                        'reset_width',
+                        [this.screen.model_name, window.screen.width],
+                        {});
+
+                    for (let column of this.columns) {
+                        if (column.col.data('recommendedWidth')) {
+                            column.col.css(
+                                'width', column.col.data('recommendedWidth'));
+                        }
+                    }
+                    delete Sao.Screen.tree_column_width[this.screen.model_name];
+                    menu.dropdown('toggle');
+                })));
         },
         save_optional: function(store=true) {
             if (!this.optionals.length) {
@@ -450,6 +519,36 @@
             if (Object.hasOwn(
                 Sao.Screen.tree_column_width, model_name)) {
                 jQuery.extend(
+                    Sao.Screen.tree_column_width[model_name],
+                    widths);
+            } else {
+                Sao.Screen.tree_column_width[model_name] = widths;
+            }
+        },
+        save_width: function() {
+            var widths = {};
+            for (const column of this.columns) {
+                if (!column.get_visible() || !column.attributes.name ||
+                    column instanceof Sao.View.Tree.ButtonColumn) {
+                    continue;
+                }
+
+                // Use the DOM element to retrieve the exact style set
+                var width = column.header[0].style.width;
+                if (width.endsWith('px')) {
+                    widths[column.attributes.name] = Number(width.slice(0, -2));
+                }
+            }
+
+            var model_name = this.screen.model_name;
+            var TreeWidth = new Sao.Model('ir.ui.view_tree_width');
+            TreeWidth.execute(
+                'set_width',
+                [model_name, widths, window.screen.width],
+                {});
+            if (Object.hasOwn(
+                    Sao.Screen.tree_column_width, model_name)) {
+                Object.assign(
                     Sao.Screen.tree_column_width[model_name],
                     widths);
             } else {
@@ -981,33 +1080,34 @@
                     !column.col.hasClass('optional') &&
                     !column.col.hasClass('selection-state') &&
                     !column.col.hasClass('favorite')) {
-                    var width, c_width;
-                    if (Object.hasOwn(tree_column_width, column.attributes.name)) {
-                        width = c_width = tree_column_width[column.attributes.name];
-                        min_width.push(width);
-                    } else if (column.attributes.width) {
+                    let width, c_width, recommended_width;
+                    width = {
+                        'integer': 8,
+                        'selection': 9,
+                        'reference': 20,
+                        'one2many': 5,
+                        'many2many': 5,
+                        'boolean': 3,
+                        'binary': 20,
+                    }[column.attributes.widget] || 10;
+                    if (column.attributes.symbol) {
+                        width += 2;
+                    }
+                    var factor = 1;
+                    if (column.attributes.expand) {
+                        factor += parseInt(column.attributes.expand, 10);
+                    }
+                    recommended_width = width * 100 * factor  + '%';
+                    column.col.data('recommendedWidth', recommended_width);
+
+                    if (column.attributes.width) {
                         width = c_width = column.attributes.width;
                         min_width.push(width + 'px');
                     } else {
-                        width = {
-                            'integer': 8,
-                            'selection': 9,
-                            'reference': 20,
-                            'one2many': 5,
-                            'many2many': 5,
-                            'boolean': 3,
-                            'binary': 20,
-                        }[column.attributes.widget] || 10;
-                        if (column.attributes.symbol) {
-                            width += 2;
-                        }
-                        var factor = 1;
-                        if (column.attributes.expand) {
-                            factor += parseInt(column.attributes.expand, 10);
-                        }
-                        c_width = width * 100 * factor  + '%';
-                        min_width.push(width + 'em');
+                        c_width = recommended_width;
+                        min_width.push(`${width}em`);
                     }
+
                     column.header.css('width', c_width);
                     column.col.show();
                 }
