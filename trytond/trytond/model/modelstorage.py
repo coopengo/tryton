@@ -15,6 +15,7 @@ from functools import lru_cache
 from itertools import chain, groupby, islice
 from operator import itemgetter
 
+from trytond.server_context import ServerContext
 from trytond.cache import Cache, LRUDictTransaction, freeze, unfreeze
 from trytond.config import config
 from trytond.const import OPERATORS
@@ -827,13 +828,14 @@ class ModelStorage(Model):
 
     @classmethod
     def export_data(cls, records, fields_names, header=False):
-        fields_names = [x.split('/') for x in fields_names]
-        data = []
-        if header:
-            data.append(cls._convert_field_names(fields_names))
-        for record in records:
-            data += record.__export_row(fields_names)
-        return data
+        with ServerContext().set_context(extracted_records=records):
+            fields_names = [x.split('/') for x in fields_names]
+            data = []
+            if header:
+                data.append(cls._convert_field_names(fields_names))
+            for record in records:
+                data += record.__export_row(fields_names)
+            return data
 
     @classmethod
     def export_data_domain(
