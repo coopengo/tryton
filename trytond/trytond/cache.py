@@ -434,7 +434,7 @@ class MemoryCache(BaseCache):
                                 cls._listener_id = process_id = uuid4()
                         if payload[1] != str(process_id):
                             Pool.refresh(dbname, _get_modules(cursor))
-                    elif payload in callbacks:
+                    elif isinstance(payload, str) and payload in callbacks:
                         callbacks[payload](pool)
                     elif payload:
                         for name in payload:
