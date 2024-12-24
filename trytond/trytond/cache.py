@@ -426,7 +426,7 @@ class MemoryCache(BaseCache):
                     callbacks = pool._notification_callbacks.get(dbname, {})
                     notification = conn.notifies.pop()
                     payload = json.loads(notification.payload)
-                    if payload and payload[0] == 'refresh pool':
+                    if payload and payload[0] == 'refresh_pool':
                         with cls._listener_id_lock:
                             if cls._listener_id:
                                 process_id = cls._listener_id
