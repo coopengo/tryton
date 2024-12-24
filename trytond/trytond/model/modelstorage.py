@@ -799,12 +799,9 @@ class ModelStorage(Model):
         return [data] + lines
 
     @classmethod
-    def _get_field_name(cls, class_, name, record):
-        ModelField = Pool().get('ir.model.field')
-        return ModelField.get_name(class_.__name__, name)
-
-    @classmethod
-    def _convert_field_names(cls, fields_names, record=None):
+    def _convert_field_names(cls, fields_names):
+        pool = Pool()
+        ModelField = pool.get('ir.model.field')
         result = []
         for names in fields_names:
             descriptions = []
@@ -814,7 +811,7 @@ class ModelStorage(Model):
                 if translated:
                     name = name[:-len('.translated')]
                 field = class_._fields[name]
-                field_name = cls._get_field_name(class_, name, record)
+                field_name = ModelField.get_name(class_.__name__, name)
                 if translated:
                     if isinstance(field, fields.Selection):
                         field_name = gettext(
@@ -833,8 +830,7 @@ class ModelStorage(Model):
         fields_names = [x.split('/') for x in fields_names]
         data = []
         if header:
-            data.append(
-                cls._convert_field_names(fields_names, record=records[0]))
+            data.append(cls._convert_field_names(fields_names))
         for record in records:
             data += record.__export_row(fields_names)
         return data
