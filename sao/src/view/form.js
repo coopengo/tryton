@@ -2719,6 +2719,7 @@ function hide_x2m_body(widget) {
                 });
         },
         set_selection: function(selection, help) {
+            let width = 0;
             var select = this.select;
             select.empty();
             for (const e of selection) {
@@ -2727,7 +2728,9 @@ function hide_x2m_body(widget) {
                     'text': e[1],
                     'title': help[e[0]],
                 }));
+                width = Math.max(width, e[1].length);
             }
+            this.el.css('width', `${width + 2}ch`);
         },
         display_update_selection: function() {
             var record = this.record;
