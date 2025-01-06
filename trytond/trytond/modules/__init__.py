@@ -343,6 +343,8 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
             # Ensure cache is clear for other instances
             Cache.clear_all()
             Cache.refresh_pool(transaction)
+
+        pool.setup_complete(update)
     logger.info('all modules loaded')
 
 
