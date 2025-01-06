@@ -707,7 +707,9 @@ function hide_x2m_body(widget) {
                 }
             }
 
-            if (attributes.help) {
+            if ((Sao.config.developer_help) && (attributes.developer_help)) {
+                widget.el.attr('title', attributes.developer_help);
+            } else if (attributes.help) {
                 widget.el.attr('title', attributes.help);
             }
         },
