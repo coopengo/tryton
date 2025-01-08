@@ -144,7 +144,7 @@
                 if ((node.tagName == 'field') && (!node_attrs.help)) {
                     node_attrs.help = field.help;
                 }
-                if (true) {
+                try {
                     var decoder = new Sao.PYSON.Decoder({}, true);
                     var h = node_attrs.help;
                     if (h) {
@@ -191,6 +191,9 @@
                         }
                     }
                     node_attrs.developer_help = h;
+                } catch (error) {
+                    node_attrs.developer_help = '';
+                    Sao.Logger.warn("Error creating developer help", error);
                 }
 
                 for (const name of [
