@@ -67,7 +67,7 @@ class Model(
     module = fields.Char("Module", readonly=True)
     global_search_p = fields.Boolean('Global Search')
     fields = fields.One2Many('ir.model.field', 'model_ref', "Fields")
-    _get_names_cache = Cache('ir.model.get_names')
+    _get_names_cache = Cache('ir.model.get_names', context=False)
 
     @classmethod
     def __setup__(cls):
@@ -164,22 +164,26 @@ class Model(
             and model._on_change_notify_depends}
 
     @classmethod
+    @without_check_access
     def get_name_items(cls):
         "Return a list of couple mapping models to names"
-        items = cls._get_names_cache.get('items')
+        key = ('items', Transaction().context.get('language', None))
+        items = cls._get_names_cache.get(key)
         if items is None:
             models = cls.search([])
             items = [(m.model, m.name) for m in models]
-            cls._get_names_cache.set('items', items)
+            cls._get_names_cache.set(key, items)
         return items
 
     @classmethod
+    @without_check_access
     def get_names(cls):
         "Return a dictionary mapping models to names"
-        dict_ = cls._get_names_cache.get('dict')
+        key = ('dict', Transaction().context.get('language', None))
+        dict_ = cls._get_names_cache.get(key)
         if dict_ is None:
             dict_ = dict(cls.get_name_items())
-            cls._get_names_cache.set('dict', dict_)
+            cls._get_names_cache.set(key, dict_)
         return dict_
 
     @classmethod
