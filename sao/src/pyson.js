@@ -22,6 +22,12 @@
             return JSON.stringify(value);
         }
     };
+    Sao.PYSON.checkTypes = function(value, allowed_types) {
+        const types = value.types();
+        return types.filter(
+            item => allowed_types.includes(item)
+            ).length === 0;
+    };
 
     Sao.PYSON.PYSON = class PYSON {
         constructor() {
@@ -469,8 +475,7 @@
                     if ( (!(statement instanceof Sao.PYSON.DateTime ||
                         statement instanceof Sao.PYSON.Date ||
                         statement instanceof Sao.PYSON.TimeDelta)) &&
-                        (jQuery(statement.types()).not(
-                            ['number', 'object']).length) ) {
+                        (Sao.PYSON.checkTypes(statement, ['number', 'object'])) ) {
                         throw 'statement must be an integer, float, ' +
                             'date, datetime or timedelta';
                     }
@@ -994,8 +999,7 @@
         constructor(value) {
             super();
             if (value instanceof Sao.PYSON.PYSON) {
-                if (jQuery(value.types()).not(['object', 'string']).length ||
-                    jQuery(['object', 'string']).not(value.types()).length) {
+                if (Sao.PYSON.checkTypes(value, ['object', 'string'])) {
                     throw 'value must be an object or a string';
                 }
             } else {
@@ -1012,7 +1016,7 @@
             };
         }
         types() {
-            return ['integer'];
+            return ['number'];
         }
         __string_params__() {
             return [this._value];
