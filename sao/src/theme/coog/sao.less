@@ -38,6 +38,11 @@
     background-color:       @color-lightest-blue;
 }
 
+.coog-group-contrast-colors {
+    color:              @color-black;
+    background-color:   rgba(@color-lighter-blue, @coog-header-opacity);
+}
+
 // Simple fields readonly styles
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
@@ -542,7 +547,7 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             padding:                    2px 7px 2px 7px;
         }
 
-        // Better space usage if there is only one item in the group
+        // Better space usage if there is only one text in the group
         &:has(> div.form-container > div.form-text:only-child) {
             padding-bottom:             0px;
             > legend {
@@ -550,9 +555,22 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             }
             > div.form-container > div.form-text {
                 padding:                0px;
-                > div.form-text {
-                    padding:            5px;
-                    padding-bottom:     1px;
+            }
+        }
+        // Better space usage if there is only one xxx2many in the group
+        &:has(> div.form-container > div.form-one2many:only-child,
+                > div.form-container > div.form-many2many:only-child) {
+            padding-bottom:             0px;
+            > legend {
+                margin-bottom:          0px;
+                // Use extra contrast to differentiate with O2M tree view header
+                .coog-group-contrast-colors();
+            }
+            > div.form-container > div.form-one2many,
+            > div.form-container > div.form-many2many {
+                padding:                0px;
+                > div.panel > div.panel-body {
+                    margin:             0px;
                 }
             }
         }
