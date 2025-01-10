@@ -560,13 +560,23 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
         // Better space usage if there is only one xxx2many in the group
         &:has(> div.form-container > div.form-one2many:only-child,
                 > div.form-container > div.form-many2many:only-child) {
-            padding-bottom:             0px;
+            // Use extra contrast to differentiate with X2M tree view header
             > legend {
-                margin-bottom:          0px;
-                // Use extra contrast to differentiate with O2M tree view header
                 .coog-group-contrast-colors();
             }
-            > div.form-container > div.form-one2many,
+            // Remove bottom padding for groups with only a list inside
+            &:has(> div.form-container > div.form-one2many > div.panel
+                        > div.panel-body > div.screen-container > div.content-box
+                        > div.tree-container,
+                    > div.form-container > div.form-many2many) {
+                padding-bottom:             0px;
+                > legend {
+                    margin-bottom:          0px;
+                }
+            }
+            // Remove all padding in the xxx2many in tree view
+            > div.form-container > div.form-one2many:has(
+                div.panel > div.panel-body > div.screen-container > div.content-box, div.tree-container),
             > div.form-container > div.form-many2many {
                 padding:                0px;
                 > div.panel > div.panel-body {
