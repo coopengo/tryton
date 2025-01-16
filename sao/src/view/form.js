@@ -2751,6 +2751,8 @@ function hide_x2m_body(widget) {
                     }
                 }
                 if (!found) {
+                    Sao.Logger.debug(
+                        `Selection value "${value}" not found for "${field.name}"`);
                     prm = Sao.common.selection_mixin.get_inactive_selection
                         .call(this, value);
                     prm.done(inactive => {
