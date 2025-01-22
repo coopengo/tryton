@@ -2616,6 +2616,7 @@
             if (value && (value.add || value.update)) {
                 // First set already added fields to prevent triggering a
                 // second on_change call
+                let vals_to_set = {};
                 if (value.update) {
                     for (const vals of value.update) {
                         if (!vals.id) {
@@ -2623,7 +2624,7 @@
                         }
                         const record2 = group.get(vals.id);
                         if (record2) {
-                            var vals_to_set = {};
+                            vals_to_set = {};
                             for (var key in vals) {
                                 if (!(key in new_field_names)) {
                                     vals_to_set[key] = vals[key];
@@ -2659,7 +2660,13 @@
                         }
                         const record2 = group.get(vals.id);
                         if (record2) {
-                            record2.set_on_change(vals);
+                            vals_to_set = {};
+                            for (let key in Object.keys(vals)) {
+                                if (key in new_field_names) {
+                                    vals_to_set[key] = vals[key];
+                                }
+                            }
+                            record2.set_on_change(vals_to_set);
                         }
                     }
                 }
