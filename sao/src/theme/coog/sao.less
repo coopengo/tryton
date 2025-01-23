@@ -685,6 +685,7 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
         .input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
             background-image: none;
+            border-right: unset;
         }
     }
 }
@@ -715,8 +716,6 @@ div.form-item.form-float:has(+ div.form-item.form-label) {
 }
 
 div.form-selection {
-    max-width:              30ch;
-
     select.form-control {
         padding:            0px 5px 0px 5px;
     }
