@@ -752,6 +752,42 @@ div.form-text {
     }
 }
 
+// Hide richtext selection if field is readonly
+div.form-richtext.readonly {
+    > div.panel-heading {
+        display:                none;
+    }
+}
+div.form-richtext.panel {
+    padding:                0px;
+    box-shadow:             none;
+    // > div.panel-body > div.input-group > div.richtext {
+    > div.panel-body {
+        padding:            0px;
+        box-shadow:         none;
+        min-height: inherit !important;
+        max-height: 500px;
+        border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
+        box-shadow:         @coog-box-shadow;
+        margin-bottom:      2px;
+
+        &:focus {
+            box-shadow: 0 1px 4px rgba(@color-blue, 0.6);
+        }
+
+        > div.input-group > div.richtext {
+            padding:        5px;
+        }
+    }
+    // highlight readonly text contents
+    &.readonly {
+        > div.panel-body > div.input-group {
+            .coog-readonly-field-mixin();
+            margin:         0px;
+        }
+    }
+}
+
 // Make selections without any options look readonly
 select:empty, select:has(> option[value="null"]):not(:has(> option:not([value="null"]))) {
     .coog-readonly-field-mixin();
