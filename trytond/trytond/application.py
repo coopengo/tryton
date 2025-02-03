@@ -5,6 +5,8 @@ import logging
 import logging.config
 import os
 import threading
+import datetime
+import uwsgidecorators
 from io import StringIO
 
 __all__ = ['app', 'application']
@@ -36,11 +38,13 @@ Pool.start_app_initialization()
 Pool.start()
 # TRYTOND_CONFIG it's managed by importing config
 db_names = os.environ.get('TRYTOND_DATABASE_NAMES')
+db_list = []
 if db_names:
     # Read with csv so database name can include special chars
     reader = csv.reader(StringIO(db_names))
     threads = []
     for name in next(reader):
+        db_list.append(name)
         thread = threading.Thread(target=lambda: Pool(name).init())
         thread.start()
         threads.append(thread)
@@ -65,3 +69,21 @@ application = app
 
 Pool.app_initialization_completed()
 assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
+
+
+@uwsgidecorators.postfork
+def preload():
+    from trytond.transaction import Transaction
+    from trytond.cache import Cache
+    pid = os.getpid()
+    for db_name in db_list:
+        if (pid, db_name) not in Cache._listener:
+            if not Cache._clean_last:
+                Cache._clean_last = datetime.date.min
+            with Transaction().start(db_name, 0, readonly=True):
+                # Starting a transaction will trigger `Cache.sync`, which
+                # should spawn a thread to listen for cache invalidation and
+                # pool refresh events
+                pass
+        if (pid, db_name) not in Cache._listener:
+            raise AssertionError
