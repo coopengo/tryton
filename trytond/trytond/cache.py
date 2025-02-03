@@ -447,8 +447,8 @@ class MemoryCache(BaseCache):
                         process_id = cls._local.portable_id
                         if remote_id != process_id:
                             Pool.refresh(dbname, _get_modules(cursor))
-                    elif notification.payload in callbacks:
-                        callbacks[notification.payload](pool)
+                    elif isinstance(payload, str) and payload in callbacks:
+                        callbacks[payload](pool)
                     elif payload:
                         for name in json.loads(payload):
                             try:
