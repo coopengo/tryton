@@ -513,6 +513,15 @@ div.form-dict {
         }
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Multiselection
+///////////////////////////////////////////////////////////////////////////////
+div.form-multiselection > select > option:checked {
+    color:                  @color-black;
+    background-color:       @color-lightest-blue;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Groups
 ///////////////////////////////////////////////////////////////////////////////
@@ -685,6 +694,7 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
         .input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
             background-image: none;
+            border-right: unset;
         }
     }
 }
@@ -715,8 +725,6 @@ div.form-item.form-float:has(+ div.form-item.form-label) {
 }
 
 div.form-selection {
-    max-width:              30ch;
-
     select.form-control {
         padding:            0px 5px 0px 5px;
     }
@@ -740,6 +748,42 @@ div.form-text {
     .readonly {
         textarea.form-control {
             .coog-readonly-field-mixin();
+        }
+    }
+}
+
+// Hide richtext selection if field is readonly
+div.form-richtext.readonly {
+    > div.panel-heading {
+        display:                none;
+    }
+}
+div.form-richtext.panel {
+    padding:                0px;
+    box-shadow:             none;
+    // > div.panel-body > div.input-group > div.richtext {
+    > div.panel-body {
+        padding:            0px;
+        box-shadow:         none;
+        min-height: inherit !important;
+        max-height: 500px;
+        border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
+        box-shadow:         @coog-box-shadow;
+        margin-bottom:      2px;
+
+        &:focus {
+            box-shadow: 0 1px 4px rgba(@color-blue, 0.6);
+        }
+
+        > div.input-group > div.richtext {
+            padding:        5px;
+        }
+    }
+    // highlight readonly text contents
+    &.readonly {
+        > div.panel-body > div.input-group {
+            .coog-readonly-field-mixin();
+            margin:         0px;
         }
     }
 }
@@ -911,9 +955,11 @@ div.form-notebook > ul.nav.nav-tabs {
 // Pop up menu
 ///////////////////////////////////////////////////////////////////////////////
 #popup-menu {
+    // Show pop-up below processing overlay and error pop-ups
+    z-index:                1030;
     * > li.divider {
         margin-top:         2px;
-        margin-bottom:         2px;
+        margin-bottom:      2px;
     }
 
     * > li > a:hover {
