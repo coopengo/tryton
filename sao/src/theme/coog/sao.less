@@ -955,9 +955,11 @@ div.form-notebook > ul.nav.nav-tabs {
 // Pop up menu
 ///////////////////////////////////////////////////////////////////////////////
 #popup-menu {
+    // Show pop-up below processing overlay and error pop-ups
+    z-index:                1030;
     * > li.divider {
         margin-top:         2px;
-        margin-bottom:         2px;
+        margin-bottom:      2px;
     }
 
     * > li > a:hover {
