@@ -3,9 +3,9 @@
 from trytond.pool import Pool
 
 from . import (
-    action, attachment, avatar, cache, calendar_, configuration, cron, date,
-    email_, error, export, lang, message, model, module, note, queue_, routes,
-    rule, sequence, session, translation, trigger, ui)
+    action, attachment, avatar, binary, cache, calendar_, configuration, cron,
+    date, email_, error, export, lang, message, model, module, note, queue_,
+    routes, rule, sequence, session, translation, trigger, ui)
 
 __all__ = ['register', 'routes']
 
@@ -88,6 +88,7 @@ def register():
         email_.EmailTemplate,
         email_.EmailTemplate_Report,
         error.Error,
+        binary.RemovedFile,
         module='ir', type_='model')
     Pool.register(
         translation.TranslationSet,

@@ -30,7 +30,7 @@ class BinaryRequired(ModelSQL):
 class BinaryFileStorage(ModelSQL):
     "Binary in FileStorage"
     __name__ = 'test.binary_filestorage'
-    binary = fields.Binary('Binary', file_id='binary_id')
+    binary = fields.Binary('Binary', file_id='binary_id', store_prefix='test')
     binary_id = fields.Char('Binary ID')
 
 
