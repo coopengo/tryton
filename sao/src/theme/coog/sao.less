@@ -955,8 +955,6 @@ div.form-notebook > ul.nav.nav-tabs {
 // Pop up menu
 ///////////////////////////////////////////////////////////////////////////////
 #popup-menu {
-    // Show pop-up below processing overlay and error pop-ups
-    z-index:                1030;
     * > li.divider {
         margin-top:         2px;
         margin-bottom:      2px;
@@ -965,6 +963,11 @@ div.form-notebook > ul.nav.nav-tabs {
     * > li > a:hover {
         background-color:   @color-lightest-blue;
         color:              @color-black;
+    }
+
+    > ul.dropdown-menu.contextual {
+        // Show pop-up above modals if they are triggered inside it
+        z-index:                2001;
     }
 }
 
