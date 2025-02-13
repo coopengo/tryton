@@ -83,8 +83,8 @@ SOFTWARE.
                 for (var i = 0; i < node.attributes.length; i++) {
                     var attr = node.attributes[i];
                     if (attribute_whitelist[attr.name]) {
-                        styles += attribute_whitelist[attr.name] + ':'
-                            + attr.value + ';';
+                        styles +=
+                            `${attribute_whitelist[attr.name]}: ${attr.value};`
                     }
                 }
                 if (styles !== "") {
