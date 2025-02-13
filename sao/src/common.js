@@ -4578,6 +4578,9 @@
                 }
             }
         });
+        // The sanitizer duplicates the attributes as inline style for
+        // display only: store the attributes alone
+        el.find('[style]').removeAttr('style');
         return el.html();
     };
 
