@@ -84,7 +84,7 @@ SOFTWARE.
                     var attr = node.attributes[i];
                     if (attribute_whitelist[attr.name]) {
                         styles +=
-                            `${attribute_whitelist[attr.name]}: ${attr.value};`
+                            `${attribute_whitelist[attr.name]}: ${attr.value};`;
                     }
                 }
                 if (styles !== "") {
