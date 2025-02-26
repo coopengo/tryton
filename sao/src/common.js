@@ -3687,7 +3687,7 @@
         el.closest('.treeview')
             .css('overflow-y', overflow)
             .css('max-height', height);
-        el.closest('.modal-body').css('overflow-y', overflow);
+        el.closest('.modal-body').css('overflow', overflow);
         el.closest('.navbar-collapse.in').css('overflow-y', overflow);
         el.closest('.content-box').css('overflow-y', overflow);
         el.parents('fieldset.form-group_').css('overflow', overflow);
