@@ -366,7 +366,6 @@ function hide_x2m_body(widget) {
             return buttons;
         },
         display: function() {
-            console.log('display');
             var record = this.record;
             var field;
             var promesses = [];
