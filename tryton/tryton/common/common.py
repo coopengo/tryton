@@ -530,12 +530,23 @@ def slugify(value):
     return _slugify_hyphenate_re.sub('-', value)
 
 
+_slugify_brace_strip_re = re.compile(r'[^\w\s\-\[\]]')
+
+
+def slugify_file_name(value):
+    if not isinstance(value, str):
+        value = str(value)
+    value = unicodedata.normalize('NFKD', value)
+    value = str(_slugify_brace_strip_re.sub('', value).strip())
+    return _slugify_hyphenate_re.sub('-', value)
+
+
 def _slugify_filename(filename):
     if not isinstance(filename, str):
         name, ext = filename
     else:
         name, ext = os.path.splitext(filename)
-    return ''.join([slugify(name), os.extsep, slugify(ext)])
+    return ''.join([slugify_file_name(name), os.extsep, slugify(ext)])
 
 
 def file_write(filename, data):
