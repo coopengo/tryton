@@ -366,6 +366,7 @@ function hide_x2m_body(widget) {
             return buttons;
         },
         display: function() {
+            console.log('display');
             var record = this.record;
             var field;
             var promesses = [];
@@ -467,8 +468,8 @@ function hide_x2m_body(widget) {
             if (button.attributes.type != 'client_action') {
                 button.el.prop('disabled', true);  // state will be reset at display
             }
-            this.screen.button(button.attributes).always(() => {
-                button.el.prop('disabled', false);
+            this.screen.button(button.attributes).fail(() => {
+                button.set_state(this.record);
             });
         },
         on_scan_code: function(code) {
