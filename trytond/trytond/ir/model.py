@@ -34,6 +34,8 @@ from .resource import ResourceAccessMixin
 
 logger = logging.getLogger(__name__)
 _request_timeout = config.getint('request', 'timeout', default=0)
+_global_search_limit_size = config.getint(
+    'request', 'global_search_limit', default=0)
 
 
 class ConditionError(ValidationError):
@@ -83,7 +85,11 @@ class Model(
                 'list_history': RPC(),
                 'get_notification': RPC(),
                 'get_names': RPC(),
-                'global_search': RPC(timeout=_request_timeout),
+                'global_search': RPC(
+                    size_limits={
+                        0: _global_search_limit_size,
+                        },
+                    timeout=_request_timeout),
                 })
 
     @classmethod
