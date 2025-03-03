@@ -1632,6 +1632,15 @@
             this.set_buttons_sensitive();
             this.refresh_attachment_preview();
             this.forced_count = false;
+
+            if ((view_type == 'form') &&
+                    this.screen.current_record &&
+                    this.attributes.window_name_field) {
+                let tab_name = this.screen.current_record.load(
+                    this.attributes.window_name_field,
+                    false, false);
+                this.set_name(tab_name);
+            }
         },
         record_modified: function() {
             this.set_buttons_sensitive();
