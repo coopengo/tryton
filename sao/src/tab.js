@@ -349,6 +349,9 @@
             return jQuery.when();
         },
         set_name: function(name) {
+            if (name != this.attributes.name) {
+                name = `${this.attributes.name}: ${name}`;
+            };
             this.name_short_el.text(name.split(' / ').pop());
             this.name_long_el.text(name);
             this.name_el.attr('title', name);
@@ -1636,9 +1639,10 @@
             if ((view_type == 'form') &&
                     this.screen.current_record &&
                     this.attributes.window_name_field) {
-                let tab_name = this.screen.current_record.load(
+                let name_field = this.screen.current_record.load(
                     this.attributes.window_name_field,
                     false, false);
+                let tab_name = name_field.get_client(this.screen.current_record);
                 this.set_name(tab_name);
             }
         },
