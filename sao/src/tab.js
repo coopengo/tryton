@@ -1636,6 +1636,10 @@
             this.refresh_attachment_preview();
             this.forced_count = false;
 
+            this.refresh_name();
+        },
+        refresh_name: function() {
+            let view_type = this.screen.current_view.view_type;
             if ((view_type == 'form') &&
                     this.screen.current_record &&
                     this.attributes.window_name_field) {
@@ -1644,6 +1648,8 @@
                     false, false);
                 let tab_name = name_field.get_client(this.screen.current_record);
                 this.set_name(tab_name);
+            } else {
+                this.set_name(this.attributes.name);
             }
         },
         record_modified: function() {
@@ -1653,6 +1659,7 @@
         record_saved: function() {
             this.set_buttons_sensitive();
             this.refresh_resources();
+            this.refresh_name();
         },
         action: function() {
             window.setTimeout(() => {
