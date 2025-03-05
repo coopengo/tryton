@@ -1538,7 +1538,7 @@ class AccountParty(ActivePeriodMixin, ModelSQL):
         for sub_account_ids in grouped_slice(account_ids):
             account_sql = reduce_ids(table_a.id, sub_account_ids)
             for sub_party_ids in grouped_slice(party_ids):
-                party_sql = reduce_ids(line.party, sub_party_ids)
+                party_sql = line.party.in_(list(sub_party_ids))
                 cursor.execute(*table_a.join(table_c,
                         condition=(table_c.left >= table_a.left)
                         & (table_c.right <= table_a.right)
