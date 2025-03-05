@@ -5352,6 +5352,8 @@ function hide_x2m_body(widget) {
                     }
                 });
             }
+            let len = this.select.children().length;
+            this.select.css('height', `calc(${len} * var(--lh))`);
         },
         get modified() {
             if (this.record && this.field) {
