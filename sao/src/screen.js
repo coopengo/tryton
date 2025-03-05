@@ -1007,7 +1007,12 @@
                             this.switch_callback();
                         }
                         const tab = Sao.Tab.tabs.get_current();
-                        Sao.Tab.set_view_type(tab ? tab.current_view_type : null);
+                        if (tab) {
+                            Sao.Tab.set_view_type(tab.current_view_type);
+                            tab.refresh_name();
+                        } else {
+                            Sao.Tab.set_view_type(null);
+                        }
                     });
                 };
                 const set_current_view = () => {
