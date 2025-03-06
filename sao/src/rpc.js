@@ -108,7 +108,7 @@
                         );
                 } else {
                     Sao.common.error.run(data.error[0], data.error[1])
-                        .always(dfd.reject);
+                        .always(() => dfd.reject(data.error));
                 }
             } else {
                 result = data.result;
