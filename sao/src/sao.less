@@ -924,6 +924,18 @@ img.icon {
         }
     }
 
+    .form-selection {
+        select.form-control {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            // size is fixed by the theme
+            border-right: 13px solid transparent;
+            background-position: right -13px center;
+        }
+    }
+
     @media screen and (min-width: @screen-sm-min) {
         .form-reference {
             > .input-sm, > .input-group {
@@ -1107,6 +1119,17 @@ img.icon {
     input:last-of-type {
         text-align: right;
         text-align: end;
+    }
+}
+
+.form-multiselection, .dict-multiselection {
+    select {
+        option:before {
+            content: "☐ ";
+        }
+        option:checked:before {
+            content: "☑ ";
+        }
     }
 }
 
