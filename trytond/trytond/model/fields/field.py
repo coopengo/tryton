@@ -626,14 +626,14 @@ class FieldTranslate(Field):
         if Model.__name__ == 'ir.model':
             name_ = Concat(Concat(table.model, ','), name)
             type_ = 'model'
-            res_id = -1
+            res_id = Null
         elif Model.__name__ == 'ir.model.field':
             name_ = Concat(Concat(table.model, ','), table.name)
             if name == 'field_description':
                 type_ = 'field'
             else:
                 type_ = 'help'
-            res_id = -1
+            res_id = Null
         else:
             name_ = '%s,%s' % (Model.__name__, name)
             type_ = 'model'

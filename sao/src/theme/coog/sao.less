@@ -38,6 +38,11 @@
     background-color:       @color-lightest-blue;
 }
 
+.coog-group-contrast-colors {
+    color:              @color-black;
+    background-color:   rgba(@color-lighter-blue, @coog-header-opacity);
+}
+
 // Simple fields readonly styles
 .coog-readonly-field-mixin {
     background-color:     @color-lightest-grey;
@@ -508,6 +513,15 @@ div.form-dict {
         }
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Multiselection
+///////////////////////////////////////////////////////////////////////////////
+div.form-multiselection > select > option:checked {
+    color:                  @color-black;
+    background-color:       @color-lightest-blue;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Groups
 ///////////////////////////////////////////////////////////////////////////////
@@ -542,7 +556,7 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             padding:                    2px 7px 2px 7px;
         }
 
-        // Better space usage if there is only one item in the group
+        // Better space usage if there is only one text in the group
         &:has(> div.form-container > div.form-text:only-child) {
             padding-bottom:             0px;
             > legend {
@@ -550,9 +564,32 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             }
             > div.form-container > div.form-text {
                 padding:                0px;
-                > div.form-text {
-                    padding:            5px;
-                    padding-bottom:     1px;
+            }
+        }
+        // Better space usage if there is only one xxx2many in the group
+        &:has(> div.form-container > div.form-one2many:only-child,
+                > div.form-container > div.form-many2many:only-child) {
+            // Use extra contrast to differentiate with X2M tree view header
+            > legend {
+                .coog-group-contrast-colors();
+            }
+            // Remove bottom padding for groups with only a list inside
+            &:has(> div.form-container > div.form-one2many > div.panel
+                        > div.panel-body > div.screen-container > div.content-box
+                        > div.tree-container,
+                    > div.form-container > div.form-many2many) {
+                padding-bottom:             0px;
+                > legend {
+                    margin-bottom:          0px;
+                }
+            }
+            // Remove all padding in the xxx2many in tree view
+            > div.form-container > div.form-one2many:has(
+                div.panel > div.panel-body > div.screen-container > div.content-box, div.tree-container),
+            > div.form-container > div.form-many2many {
+                padding:                0px;
+                > div.panel > div.panel-body {
+                    margin:             0px;
                 }
             }
         }
@@ -657,6 +694,7 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
         .input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
             background-image: none;
+            border-right: unset;
         }
     }
 }
@@ -686,8 +724,10 @@ div.form-item.form-float:has(+ div.form-item.form-label) {
     }
 }
 
-div.form-selection select.form-control {
-    padding:              0px 5px 0px 5px;
+div.form-selection {
+    select.form-control {
+        padding:            0px 5px 0px 5px;
+    }
 }
 
 div.form-text {
@@ -708,6 +748,42 @@ div.form-text {
     .readonly {
         textarea.form-control {
             .coog-readonly-field-mixin();
+        }
+    }
+}
+
+// Hide richtext selection if field is readonly
+div.form-richtext.readonly {
+    > div.panel-heading {
+        display:                none;
+    }
+}
+div.form-richtext.panel {
+    padding:                0px;
+    box-shadow:             none;
+    // > div.panel-body > div.input-group > div.richtext {
+    > div.panel-body {
+        padding:            0px;
+        box-shadow:         none;
+        min-height: inherit !important;
+        max-height: 500px;
+        border: 1px solid rgba(@color-lighter-grey, @coog-box-opacity);
+        box-shadow:         @coog-box-shadow;
+        margin-bottom:      2px;
+
+        &:focus {
+            box-shadow: 0 1px 4px rgba(@color-blue, 0.6);
+        }
+
+        > div.input-group > div.richtext {
+            padding:        5px;
+        }
+    }
+    // highlight readonly text contents
+    &.readonly {
+        > div.panel-body > div.input-group {
+            .coog-readonly-field-mixin();
+            margin:         0px;
         }
     }
 }
@@ -785,26 +861,39 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 @coog-rule-engine-height:         500px;
 
 div.form-item.form-source > div.form-source {
+    display: flex;
+    gap: 5px;
+
     // This is the tree view with all the rule engine functions, we want it
     // a little more compact
-    > div > div.treeview {
-        height:                   calc(@coog-rule-engine-height + 42px);
-        padding:                  10px 3px 10px 3px !important;
-        box-shadow:               @coog-box-shadow;
-        border-radius:            2px;
+    > div:first-child {
+        resize:                       horizontal;
+        overflow:                     auto;
+        margin-bottom:                10px;
+        box-shadow:                   @coog-box-shadow;
+        min-width:                    240px;
+        border-radius:                2px;
 
-        > table.tree > tbody > tr > td > td > table > tbody > tr > td {
-            span {
-                font-size:        10px;
-                padding-bottom:   3px;
-            }
+        > div.treeview {
+            height:                   calc(@coog-rule-engine-height + 42px);
 
-            > p {
-                margin:           1px 1px 2px 0px;
+            > table.tree > tbody > tr > td > td > table > tbody > tr > td {
+                span {
+                    font-size:        10px;
+                    padding-bottom:   3px;
+                }
+
+                > p {
+                    margin:           1px 1px 2px 0px;
+                }
             }
         }
     }
+
     > div.panel {
+        flex:                     2;
+        margin-bottom:            10px;
+
         > div.panel-heading {
             background-color:     @color-lighter-blue;
             padding:              5px;
@@ -868,12 +957,17 @@ div.form-notebook > ul.nav.nav-tabs {
 #popup-menu {
     * > li.divider {
         margin-top:         2px;
-        margin-bottom:         2px;
+        margin-bottom:      2px;
     }
 
     * > li > a:hover {
         background-color:   @color-lightest-blue;
         color:              @color-black;
+    }
+
+    > ul.dropdown-menu.contextual {
+        // Show pop-up above modals if they are triggered inside it
+        z-index:                2001;
     }
 }
 

@@ -695,7 +695,9 @@ function hide_x2m_body(widget) {
                 }
             }
 
-            if (attributes.help) {
+            if ((Sao.config.developer_help) && (attributes.developer_help)) {
+                widget.el.attr('title', attributes.developer_help);
+            } else if (attributes.help) {
                 widget.el.attr('title', attributes.help);
             }
         },
@@ -1580,22 +1582,15 @@ function hide_x2m_body(widget) {
             });
             this.tree_data_field = attributes.context_tree || null;
 
-            var editor_width;
-            if (this.tree_data_field) {
-                this.init_tree(4);
-                editor_width = 8;
-            }
-            else {
-                editor_width = 12;
-            }
-
+            this.init_tree();
             this.tree_data = [];
             this.tree_elements = [];
             this.value = '';
             this.json_data = '';
-            this.init_editor(editor_width);
+            this.prev_record = undefined;
+            this.init_editor();
         },
-        init_editor: function(width){
+        init_editor: function(){
             var button_apply_command = function(evt) {
                 var cmDoc = this.codeMirror.getDoc();
                 switch (evt.data) {
@@ -1608,6 +1603,9 @@ function hide_x2m_body(widget) {
                     case 'check':
                         this.codeMirror.performLint();
                         break;
+                    case 'toggle_menu':
+                        this.toggle_menu();
+                        break;;
                 }
             }.bind(this);
 
@@ -1629,7 +1627,7 @@ function hide_x2m_body(widget) {
                 }
             }.bind(this);
             this.sc_editor = jQuery('<div/>', {
-                'class': 'panel panel-default col-md-' + parseInt(width)
+                'class': 'panel panel-default'
             }).appendTo(this.el).css('padding', '0');
 
             this.toolbar = jQuery('<div/>', {
@@ -1644,6 +1642,9 @@ function hide_x2m_body(widget) {
 
             add_buttons([
                     {
+                        'icon': 'menu-hamburger',
+                        'command': 'toggle_menu'
+                    }, {
                         'icon': 'arrow-left',
                         'command': 'undo'
                     }, {
@@ -1695,13 +1696,36 @@ function hide_x2m_body(widget) {
             this.send_modified();
             this.focus_out();
         },
-        init_tree: function(width){
-            var container = jQuery('<div/>', {
-                'class': 'col-md-' + parseInt(width)
-            }).appendTo(this.el);
+        toggle_menu: function() {
+            if (this.container.data('collapsed') === true) {
+                this.container.data('collapsed', false)
+                this.container.css(
+                    'width', this.container.data('previous-width'));
+                this.container.css('display', 'block');
+            } else {
+                this.container.data('collapsed', true)
+                this.container.data(
+                    'previous-width', this.container.css('width'));
+                this.container.css('display', 'none');
+            }
+        },
+        init_tree: function() {
+            this.container = jQuery('<div/>').appendTo(this.el);
+            this.container.css('flex', '1');
+            const tree_resizer_obs = new MutationObserver((mutationList) => {
+                if (mutationList.length == 0) {
+                    return;
+                }
+                this.container.css('flex', 'unset');
+                tree_resizer_obs.disconnect();
+            });
+            tree_resizer_obs.observe(this.container[0], {
+                attributeFilter: ["style"],
+                subtree: false,
+            });
             this.sc_tree = jQuery('<div/>', {
                 'class': 'treeview responsive'
-            }).appendTo(container).css('padding', '0');
+            }).appendTo(this.container).css('padding', '0');
 
             this.table = jQuery('<table/>', {
                 'class': 'tree table table-hover'
@@ -1736,10 +1760,23 @@ function hide_x2m_body(widget) {
             let prm = Sao.View.Form.Source._super.display.call(this);
 
             var display_code = function(str){
+                // Resetting the same value will reset the view at the top,
+                // and it serves no purpose anyway
+                if (str === this.codeMirror.getValue()) {
+                    return
+                }
+                let prev_position = this.codeMirror.getScrollInfo()
                 this.codeMirror.setValue(str);
-                // Call refresh because when codemirror is initialized it's not
-                // displayed and its computation are off
                 this.codeMirror.refresh();
+                this.codeMirror.scrollTo(prev_position.left, prev_position.top);
+                // We must do this to avoid considering the previously
+                // displayed record's algorithm as an history entry for the
+                // current one (meaning using "Ctrl+Z" can replace the current
+                // algorithm with the previous record's)
+                if (this.record !== this.prev_record) {
+                    this.prev_record = this.record;
+                    this.codeMirror.clearHistory();
+                }
             }.bind(this);
 
             var display_tree = function(){
@@ -2711,6 +2748,9 @@ function hide_x2m_body(widget) {
                     }
                 }
                 if (!found) {
+                    Sao.Logger.debug(
+                        `Selection value "${value}" not found for `
+                        + `"${record.model.name}->${field.name}"`);
                     prm = Sao.common.selection_mixin.get_inactive_selection
                         .call(this, value);
                     prm.done(inactive => {
@@ -4412,7 +4452,7 @@ function hide_x2m_body(widget) {
                                     domain: domain,
                                     order: order,
                                     search_filter: '',
-                                    title: this.attributes.string
+                                    title: this.attributes.string,
 
                         });
                     };
@@ -4664,6 +4704,12 @@ function hide_x2m_body(widget) {
                     this._completion_match_selected.bind(this),
                     this._completion_action_activated.bind(this),
                     this.read_access, this.create_access);
+                this.wid_completion.dropdown.on('hide.bs.dropdown', () => {
+                    Sao.common.set_overflow(this.el, 'hide');
+                });
+                this.wid_completion.dropdown.on('show.bs.dropdown', () => {
+                    Sao.common.set_overflow(this.el, 'show');
+                });
                 this.entry.completion = this.wid_completion;
             }
 
@@ -5283,6 +5329,14 @@ function hide_x2m_body(widget) {
             Sao.View.Form.MultiSelection._super.init.call(
                 this, view, attributes);
             this.select.prop('multiple', true);
+
+            this.select.on('mousedown', 'option', (evt) => {
+                evt.preventDefault();
+                var scroll = this.select.get(0).scrollTop;
+                evt.target.selected = !evt.target.selected;
+                this.select.trigger('change');
+                setTimeout(() => this.select.get(0).scrollTop = scroll, 0);
+            }).mousemove(evt => evt.preventDefault());
         },
         set_selection: function(selection, help) {
             Sao.View.Form.MultiSelection._super.set_selection.call(
@@ -6160,6 +6214,15 @@ function hide_x2m_body(widget) {
                 Sao.View.Form.Dict.MultiSelection._super
                     .create_widget.call(this);
                 this.input.prop('multiple', true);
+
+                this.input.on('mousedown', 'option', (evt) => {
+                    evt.preventDefault();
+                    var scroll = this.input.get(0).scrollTop;
+                    evt.target.selected = !evt.target.selected;
+                    this.input.trigger('change');
+                    setTimeout(() => this.input.get(0).scrollTop = scroll, 0);
+                }).mousemove(evt => evt.preventDefault());
+
                 var widget_help = this.definition.help;
                 if (widget_help) {
                     this.input.children().each(function() {

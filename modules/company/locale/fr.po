@@ -276,10 +276,6 @@ msgctxt "model:ir.action,name:act_employee_subordinates"
 msgid "Supervised by"
 msgstr "Supervisé par"
 
-msgctxt "model:ir.action,name:report_letter"
-msgid "Letter"
-msgstr "Lettre"
-
 msgctxt "model:ir.cron-company.company,name:"
 msgid "Cron - Company"
 msgstr "Tâche planifiée - Société"

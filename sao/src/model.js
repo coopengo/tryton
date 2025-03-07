@@ -192,9 +192,9 @@
                 }
             }
             record.modified_fields.id = true;
-            if (modified) {
+            if (modified && this.parent) {
                 // Set parent field to trigger on_change
-                if (this.parent && this.model.fields[this.parent_name]) {
+                if (this.model.fields[this.parent_name]) {
                     var field = this.model.fields[this.parent_name];
                     if ((field instanceof Sao.field.Many2One) ||
                             field instanceof Sao.field.Reference) {
@@ -204,6 +204,8 @@
                         }
                         field.set_client(record, value);
                     }
+                } else {
+                    this.record_modified();
                 }
             }
             return record;
@@ -1761,14 +1763,23 @@
                         pre_validate));
             if (!softvalidation) {
                 if (!this.check_required(record)) {
+                    Sao.Logger.debug(
+                        `validate:required: ${record.model.name}->${this.name}`
+                    );
                     invalid = 'required';
                 }
             }
             if (typeof domain == 'boolean') {
                 if (!domain) {
+                    Sao.Logger.debug(
+                        `validate:domain: ${record.model.name}->${this.name}`
+                    );
                     invalid = 'domain';
                 }
             } else if (Sao.common.compare(domain, [['id', '=', null]])) {
+                Sao.Logger.debug(
+                    `validate:domain: ${record.model.name}->${this.name}`
+                );
                 invalid = 'domain';
             } else {
                 let [screen_domain] = this.get_domains(record, pre_validate);
@@ -1824,6 +1835,10 @@
                 }
                 if (!inversion.eval_domain(domain,
                             Sao.common.EvalEnvironment(record))) {
+                    Sao.Logger.debug(
+                        `validate:domain: ${record.model.name}->${this.name}`
+                        + ` (${domain})`
+                    );
                     invalid = domain;
                 }
             }
@@ -2661,8 +2676,7 @@
             if (record.model.name == this.description.relation) {
                 model = record.model;
             }
-            var context = record.expr_eval(this.description.context || {});
-            var group = Sao.Group(model, context, []);
+            var group = Sao.Group(model, {}, []);
             group.set_parent(record);
             group.parent_name = this.description.relation_field;
             group.child_name = this.name;
