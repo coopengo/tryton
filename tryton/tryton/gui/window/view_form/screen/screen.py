@@ -660,7 +660,6 @@ class Screen:
         else:
             context = self.context
             context['view_tree_width'] = CONFIG['client.save_tree_width']
-            context['user_agent'] = 'tryton'
             context['screen_size'] = get_monitor_size()
             try:
                 view = RPCExecute(
