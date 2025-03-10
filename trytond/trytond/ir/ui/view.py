@@ -19,6 +19,15 @@ from trytond.wizard import Button, StateView, Wizard
 
 from ..action import DomainError, ViewError
 
+# Numbers taken from Bootstrap's breakpoints
+WIDTH_BREAKPOINTS = [
+    1400,
+    1200,
+    992,
+    768,
+    576,
+    ]
+
 
 WIDTH_BREAKPOINTS = [
     1400,
@@ -494,6 +503,7 @@ class ViewTreeWidth(
         table = cls.__table__()
         cls.__rpc__.update({
                 'set_width': RPC(readonly=False),
+                'reset_width': RPC(readonly=False),
                 })
         cls._sql_indexes.add(
             Index(
@@ -606,6 +616,25 @@ class ViewTreeWidth(
 
         if to_save:
             cls.save(to_save)
+
+    @classmethod
+    def reset_width(cls, model, width):
+        for screen_size in WIDTH_BREAKPOINTS:
+            if width >= screen_size:
+                break
+        else:
+            screen_size = 0
+
+        user_id = Transaction().user
+        records = cls.search([
+                ('user', '=', user_id),
+                ('model', '=', model),
+                ['OR',
+                    ('screen_size', '=', screen_size),
+                    ('screen_size', '=', None),
+                    ],
+                ])
+        cls.delete(records)
 
 
 class ViewTreeOptional(ModelSQL, ModelView):
