@@ -208,6 +208,14 @@
                     }
                 }
             }
+
+            if (['field', 'label'].includes(node.tagName) &&
+                jQuery.isEmptyObject(field)) {
+                Sao.Logger.error(
+                    `Field '${node_attrs.name}' not defined ` +
+                    `in '${this.view.screen.model.name}'`);
+            }
+
             return node_attrs;
         },
         parse: function(node) {
