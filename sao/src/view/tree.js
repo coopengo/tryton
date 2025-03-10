@@ -506,38 +506,7 @@
                 }
 
                 // Use the DOM element to retrieve the exact style set
-                var width = column.header[0].style.width;
-                if (width.endsWith('px')) {
-                    widths[column.attributes.name] = Number(
-                        width.substr(0, width.length - 2));
-                }
-            }
-
-            var model_name = this.screen.model_name;
-            var TreeWidth = new Sao.Model('ir.ui.view_tree_width');
-            TreeWidth.execute(
-                'set_width',
-                [model_name, widths, window.screen.width],
-                {});
-            if (Object.hasOwn(
-                Sao.Screen.tree_column_width, model_name)) {
-                jQuery.extend(
-                    Sao.Screen.tree_column_width[model_name],
-                    widths);
-            } else {
-                Sao.Screen.tree_column_width[model_name] = widths;
-            }
-        },
-        save_width: function() {
-            var widths = {};
-            for (const column of this.columns) {
-                if (!column.get_visible() || !column.attributes.name ||
-                    column instanceof Sao.View.Tree.ButtonColumn) {
-                    continue;
-                }
-
-                // Use the DOM element to retrieve the exact style set
-                var width = column.header[0].style.width;
+                var width = column.col[0].style.width;
                 if (width.endsWith('px')) {
                     widths[column.attributes.name] = Number(width.slice(0, -2));
                 }
@@ -1084,7 +1053,7 @@
                     !column.col.hasClass('selection-state') &&
                     !column.col.hasClass('favorite')) {
                     let width, c_width, recommended_width;
-                    width = {
+                    let default_width = {
                         'integer': 8,
                         'selection': 9,
                         'reference': 20,
@@ -1094,24 +1063,28 @@
                         'binary': 20,
                     }[column.attributes.widget] || 10;
                     if (column.attributes.symbol) {
-                        width += 2;
+                        default_width += 2;
                     }
                     var factor = 1;
                     if (column.attributes.expand) {
                         factor += parseInt(column.attributes.expand, 10);
                     }
-                    recommended_width = width * 100 * factor  + '%';
+                    recommended_width = default_width * 100 * factor  + '%';
                     column.col.data('recommendedWidth', recommended_width);
 
-                    if (column.attributes.width) {
-                        width = c_width = column.attributes.width;
+                    width = tree_column_width[name];
+                    if (width) {
+                        c_width = width;
+                        min_width.push(`${width}px`);
+                    } else if (column.attributes.width) {
+                        c_width = column.attributes.width;
                         min_width.push(width + 'px');
                     } else {
                         c_width = recommended_width;
-                        min_width.push(`${width}em`);
+                        min_width.push(`${default_width}em`);
                     }
 
-                    column.header.css('width', c_width);
+                    column.col.css('width', c_width);
                     column.col.show();
                 }
             }
