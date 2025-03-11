@@ -458,6 +458,11 @@ msgctxt "field:ir.model.debug.model_info,name_filter:"
 msgid "Name Filter"
 msgstr "Filtrer par"
 
+
+msgctxt "field:ir.model.debug.model_info,previous_models:"
+msgid "Previous Models"
+msgstr "Modèles Précédents"
+
 msgctxt "field:ir.model.debug.model_info,field_infos:"
 msgid "Fields Infos"
 msgstr "Infos sur le champ"
@@ -785,6 +790,10 @@ msgstr "Champs"
 msgctxt "view:ir.model.debug.model_info:"
 msgid "Follow"
 msgstr "Suivre"
+
+msgctxt "view:ir.model.debug.model_info:"
+msgid "Previous"
+msgstr "Précédent"
 
 msgctxt "view:ir.model.debug.model_info:"
 msgid "Refresh"

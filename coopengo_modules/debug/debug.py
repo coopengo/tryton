@@ -6,6 +6,7 @@ from collections import defaultdict
 import pprint
 import logging
 import unicodedata
+import json
 
 from trytond.wizard import Wizard, StateTransition, StateView, Button
 from trytond.config import config
@@ -126,6 +127,8 @@ class ModelInfo(ModelView):
             'invisible': ~Bool(Eval('id_to_calculate', False))},
         readonly=True, depends=['id_to_calculate'])
     name_filter = fields.Char('Name Filter')
+    previous_models = fields.Text('Previous Models',
+        states={'invisible': True})
 
     @classmethod
     def __setup__(cls):
@@ -136,6 +139,7 @@ class ModelInfo(ModelView):
                 'raw_field_infos': RPC(),
                 })
         cls._buttons.update({
+                'previous': {},
                 'follow_link': {},
                 'refresh': {},
                 })
@@ -261,7 +265,7 @@ class ModelInfo(ModelView):
 
     @ModelView.button_change('model_name', 'id_to_calculate', 'to_evaluate',
         'must_raise_exception', 'previous_runs', 'hide_functions',
-        'filter_value', 'field_infos', 'name_filter')
+        'filter_value', 'field_infos', 'name_filter', 'previous_models')
     def follow_link(self):
         try:
             target = self.evaluate()
@@ -269,11 +273,32 @@ class ModelInfo(ModelView):
                 return
         except:
             return
+        new_previous = json.loads(self.previous_models)
+        new_previous['model_names'].append(self.model_name)
+        new_previous['ids'].append(self.id_to_calculate)
         self.id_to_calculate = target.id
         self.model_name = target.__name__
         self.evaluation_result = ''
         self.to_evaluate = ''
         self.name_filter = ''
+
+        self.previous_models = json.dumps(new_previous)
+        self.recalculate_field_infos()
+
+
+    @ModelView.button_change('model_name', 'id_to_calculate', 'to_evaluate',
+        'must_raise_exception', 'previous_runs', 'hide_functions',
+        'filter_value', 'field_infos', 'name_filter', 'previous_models')
+    def previous(self):
+        previous_models = json.loads(self.previous_models)
+        if not len(previous_models['ids']):
+            return
+        self.id_to_calculate = previous_models['ids'].pop()
+        self.model_name = previous_models['model_names'].pop()
+        self.evaluation_result = ''
+        self.to_evaluate = ''
+        self.name_filter = ''
+        self.previous_models = json.dumps(previous_models)
         self.recalculate_field_infos()
 
     def recalculate_field_infos(self):
@@ -596,6 +621,7 @@ class DebugModel(Wizard):
             'hide_functions': True,
             'filter_value': 'name',
             'name_filter': '',
+            'previous_models': json.dumps({'model_names': [], 'ids': []}),
             }
 
 
