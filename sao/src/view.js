@@ -211,7 +211,8 @@
 
             if (['field', 'label'].includes(node.tagName) &&
                 jQuery.isEmptyObject(field)) {
-                Sao.Logger.error(
+                Sao.common.error.run(
+                    "Error",
                     `Field '${node_attrs.name}' not defined ` +
                     `in '${this.view.screen.model.name}'`);
             }
