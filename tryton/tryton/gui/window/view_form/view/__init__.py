@@ -158,6 +158,12 @@ class XMLViewParser:
                     'help_field', 'order', 'symbol', 'monetary']:
                 if name in field:
                     node_attrs.setdefault(name, field[name])
+
+        if node.tagName in {'field', 'label'} and not field:
+            raise KeyError(
+                f"Field '{node_attrs['name']}' not defined "
+                f"in '{self.view.screen.model_name}'")
+
         return node_attrs
 
     def parse(self, node):
