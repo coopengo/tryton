@@ -26,43 +26,6 @@ from .wrappers import HTTPStatus, Response, abort, with_pool
 
 __all__ = ['register_authentication_service']
 
-KNOWN_METHODS = {
-    # Model
-    'default_get',
-    'fields_get',
-    'pre_validate',
-    # ModelStorage
-    'create',
-    'read',
-    'write',
-    'delete',
-    'copy',
-    'search',
-    'search_count',
-    'search_read',
-    'resources',
-    'export_data_domain',
-    'export_data',
-    'import_data',
-    # ModelSQL
-    'history_revisions',
-    # ModelView
-    'fields_view_get',
-    'view_toolbar_get',
-    'on_change',
-    'on_change_with',
-    'on_change_notify',
-    'on_scan_code',
-    'autocomplete',
-    # DigitsMixin
-    'get_digits',
-    # DictSchemaMixin
-    'get_keys',
-    'search_get_keys',
-    # SymbolMixin
-    'get_symbol',
-    }
-
 logger = logging.getLogger(__name__)
 
 # JCA: log slow RPC (> log_time_threshold)
@@ -263,10 +226,9 @@ def _dispatch(request, pool, *args, **kwargs):
     if method in obj.__rpc__:
         rpc = obj.__rpc__[method]
     else:
-        if method in KNOWN_METHODS:
-            abort(HTTPStatus.METHOD_NOT_ALLOWED)
-        else:
-            abort(HTTPStatus.FORBIDDEN)
+        abort(
+            HTTPStatus.BAD_REQUEST,
+            description=f"Method {method} is not available on {obj.__name__}")
 
     if request.authorization.type == 'session':
         session = request.authorization.get('session')
