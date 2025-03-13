@@ -485,7 +485,7 @@
                     var input;
                     var entry;
                     var format, date_format, time_format;
-                    let len;
+                    let len, lheight;
                     switch (field.type) {
                         case 'boolean':
                             entry = input = jQuery('<select/>', {
@@ -508,7 +508,8 @@
                                     field.selection, prefix + field.name);
                             input = entry.el;
                             len = field.selection.length;
-                            input.css('height', `calc(${len} * var(--lh))`);
+                            lheight = input.css('line-height');
+                            input.css('height', `calc(${len} * ${lheight})`);
                             break;
                         case 'date':
                             format = Sao.common.date_format(
@@ -774,6 +775,10 @@
                     text: s[1]
                 }).appendTo(this.el);
             }
+            this.el.on('mousedown', 'option', (evt) => {
+                evt.preventDefault();
+                evt.target.selected = !evt.target.selected;
+            });
         },
         get_value: function(quote) {
             var value = this.el.val();

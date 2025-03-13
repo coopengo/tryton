@@ -5353,7 +5353,8 @@ function hide_x2m_body(widget) {
                 });
             }
             let len = this.select.children().length;
-            this.select.css('height', `calc(${len} * var(--lh))`);
+            let lheight = this.select.css('line-height');
+            this.select.css('height', `calc(${len} * ${lheight})`);
         },
         get modified() {
             if (this.record && this.field) {
