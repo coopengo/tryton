@@ -116,7 +116,7 @@
                     this.__processing = false;
                     return jQuery.when.apply(jQuery, prms);
                 }, result => {
-                    if (!result || !this.screen) {
+                    if (!result[0] || !this.screen) {
                         this.state = this.end_state;
                         this.end();
                     }
