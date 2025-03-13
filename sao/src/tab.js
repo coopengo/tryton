@@ -1640,17 +1640,19 @@
         },
         refresh_name: function() {
             let view_type = this.screen.current_view.view_type;
+            let tab_name;
             if ((view_type == 'form') &&
                     this.screen.current_record &&
                     this.attributes.window_name_field) {
                 let name_field = this.screen.current_record.load(
                     this.attributes.window_name_field,
                     false, false);
-                let tab_name = name_field.get_client(this.screen.current_record);
-                this.set_name(tab_name);
-            } else {
-                this.set_name(this.attributes.name);
+                tab_name = name_field.get_client(this.screen.current_record);
             }
+            if (!tab_name) {
+                tab_name = this.attributes.name || "";
+            }
+            this.set_name(tab_name);
         },
         record_modified: function() {
             this.set_buttons_sensitive();
