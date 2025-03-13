@@ -113,6 +113,8 @@ class Attachment(metaclass=PoolMeta):
         report['report_name'] = unidecode(report['report_name'])
         party = self.get_party(report)
         if party and party.email:
+            if (contact_mechanism := party.contact_mechanism_get('email')):
+                contact_mechanism.check_email()
             report['signers'] = [party]
             return report
 
