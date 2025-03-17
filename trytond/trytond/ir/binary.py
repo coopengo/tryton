@@ -24,7 +24,8 @@ class RemovedFile(ModelSQL):
         pool = Pool()
 
         table = cls.__table__()
-        cursor = Transaction().connection.cursor()
+        transaction = Transaction()
+        cursor = transaction.connection.cursor()
         cursor.execute(*table.select(
                 table.file_id, table.model, table.field,
                 order_by=[table.model, table.field]))
@@ -33,12 +34,15 @@ class RemovedFile(ModelSQL):
         for (model, fname), deleted in groupby(cursor, key=itemgetter(1, 2)):
             Model = pool.get(model)
             field = Model._fields[fname]
+            prefix = field.store_prefix
+            if prefix is None:
+                prefix = transaction.database.name
 
             deleted_ids = {d[0] for d in deleted}
             active_ids = {getattr(r, field.file_id) for r in Model.search([
                         (field.file_id, 'in', list(deleted_ids)),
                         ])}
-            to_remove[field.store_prefix].extend(deleted_ids - active_ids)
+            to_remove[prefix].extend(deleted_ids - active_ids)
 
-        for prefix, to_delete in to_remove.items():
-            filestore.delete_many(to_delete, prefix=prefix)
+        for store_prefix, to_delete in to_remove.items():
+            filestore.delete_many(to_delete, prefix=store_prefix)
