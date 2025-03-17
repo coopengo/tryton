@@ -29,6 +29,7 @@
         const id_ = Sao.rpc.id++;
 
         var ajax_success = function(data, status_, query) {
+            Sao.common.processing.hide(timeoutID);
             if (data === null) {
                 Sao.common.warning.run('',
                         Sao.i18n.gettext('Unable to reach the server.'))
