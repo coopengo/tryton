@@ -564,6 +564,16 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             }
             > div.form-container > div.form-text {
                 padding:                0px;
+
+                > div.form-text {
+                    padding:            0px;
+                    > div.input-group {
+                        margin-bottom: 0px;
+                        > textarea {
+                            margin-bottom: 0px;
+                        }
+                    }
+                }
             }
         }
         // Better space usage if there is only one xxx2many in the group
@@ -784,6 +794,10 @@ div.form-richtext.panel {
         > div.panel-body > div.input-group {
             .coog-readonly-field-mixin();
             margin:         0px;
+
+            > div.richtext {
+                user-select:       text;
+            }
         }
     }
 }
