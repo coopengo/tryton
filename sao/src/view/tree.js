@@ -228,10 +228,7 @@
                     });
             }
 
-            let idx = 1;
-            if (!jQuery.isEmptyObject(this.optionals)) {
-                idx += 1;
-            }
+            let idx = 2;
             for (const column of this.columns) {
                 col = jQuery('<col/>', {
                     'class': column.attributes.widget,
