@@ -508,8 +508,7 @@
                                     field.selection, prefix + field.name);
                             input = entry.el;
                             len = field.selection.length;
-                            lheight = input.css('line-height');
-                            input.css('height', `calc(${len} * ${lheight})`);
+                            input.prop('size', len);
                             break;
                         case 'date':
                             format = Sao.common.date_format(

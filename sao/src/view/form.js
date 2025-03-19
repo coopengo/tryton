@@ -5352,9 +5352,6 @@ function hide_x2m_body(widget) {
                     }
                 });
             }
-            let len = this.select.children().length;
-            let lheight = this.select.css('line-height');
-            this.select.css('height', `calc(${len} * ${lheight})`);
         },
         get modified() {
             if (this.record && this.field) {
@@ -5368,13 +5365,7 @@ function hide_x2m_body(widget) {
             var record = this.record;
             var field = this.field;
             this.update_selection(record, field, () => {
-                var yexpand = this.attributes.yexpand;
-                if (yexpand === undefined) {
-                    yexpand = this.expand;
-                }
-                if (!yexpand) {
-                    this.select.prop('size', this.select.children().length);
-                }
+                this.select.prop('size', this.select.children().length);
                 if (!field) {
                     return;
                 }
