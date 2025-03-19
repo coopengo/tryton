@@ -7,6 +7,7 @@ import unittest
 from sql import Literal
 
 from trytond.config import config
+from trytond.filestore import filestore
 from trytond.model import fields
 from trytond.model.exceptions import RequiredValidationError
 from trytond.pool import Pool
@@ -250,3 +251,37 @@ class FieldBinaryTestCase(unittest.TestCase):
         copy, = Binary.copy([binary], default={'binary': b'bar'})
 
         self.assertEqual(copy.binary, b'bar')
+
+    @with_transaction()
+    def test_removal(self):
+        "Test the removal method of binary fields"
+        pool = Pool()
+        RemovedFile = pool.get('ir.removed_file')
+        Binary = pool.get('test.binary_filestorage')
+
+        binary = Binary(binary=b'foo')
+        binary.save()
+        file_id = binary.binary_id
+
+        Binary.delete([binary])
+        RemovedFile.remove()
+
+        with self.assertRaises(IOError):
+            filestore.get(file_id, prefix='test')
+
+    @with_transaction()
+    def test_removal_copy(self):
+        "Test the removal method of copied binary fields"
+        pool = Pool()
+        RemovedFile = pool.get('ir.removed_file')
+        Binary = pool.get('test.binary_filestorage')
+
+        binary = Binary(binary=b'foo')
+        binary.save()
+        file_id = binary.binary_id
+        copy, = Binary.copy([binary])
+
+        Binary.delete([binary])
+        RemovedFile.remove()
+
+        self.assertTrue(filestore.get(file_id, prefix='test'))
