@@ -932,6 +932,25 @@
                         .description.loading;
                 }
             }
+            let win_name_field;
+            let missing_name_fields = []
+            for (let window_ of this.windows) {
+                win_name_field = window_.attributes.window_name_field;
+                if (!win_name_field) {
+                    continue;
+                }
+                if (Object.hasOwn(fields, win_name_field)) {
+                    continue;
+                }
+                missing_name_fields.push(win_name_field);
+            }
+            if (missing_name_fields.length) {
+                let missing_fields = this.model.execute(
+                    'fields_get', [missing_name_fields],
+                    Sao.Session.current_session.context, false);
+                Object.assign(fields, missing_fields);
+            }
+
             this.group.add_fields(fields);
             for (field in fields) {
                 this.group.model.fields[field].views.add(view_id);
