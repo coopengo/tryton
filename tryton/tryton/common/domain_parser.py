@@ -98,43 +98,34 @@ def group_operator(tokens):
         yield cur
 
 
-def escape_all_underscores(value, escape='\\'):
-    sub_strings = value.split(escape + '_')
-    new_value = sub_strings[0].replace('_', escape + '_')
-    for sub_string in sub_strings[1:]:
-        new_value += '\\_' + sub_string.replace('_', escape + '_')
-    return new_value
-
-
 def likify(value, escape='\\'):
     "Add % if needed"
     if not value:
         return '%'
-    new_value = escape_all_underscores(value, escape)
-    escaped = new_value.replace(escape + '%', '').replace(escape + '_', '')
+    escaped = value.replace(escape + '%', '')
     if '%' in escaped:
-        return new_value
+        return value
     else:
-        return '%' + new_value + '%'
+        return '%' + value + '%'
 
 
 def is_full_text(value, escape='\\'):
     escaped = value
     if escaped.startswith('%') and escaped.endswith('%'):
         escaped = escaped[1:-1]
-    escaped = escaped.replace(escape + '%', '').replace(escape + '_', '')
-    if '%' in escaped or '_' in escaped:
+    escaped = escaped.replace(escape + '%', '')
+    if '%' in escaped:
         return False
     return value.startswith('%') and value.endswith('%')
 
 
 def is_like(value, escape='\\'):
-    escaped = value.replace(escape + '%', '').replace(escape + '_', '')
-    return '%' in escaped or '_' in escaped
+    escaped = value.replace(escape + '%', '')
+    return '%' in escaped
 
 
 def unescape(value, escape='\\'):
-    return value.replace(escape + '%', '%').replace(escape + '_', '_')
+    return value.replace(escape + '%', '%')
 
 
 def quote(value):
