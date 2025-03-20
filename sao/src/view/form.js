@@ -5367,13 +5367,7 @@ function hide_x2m_body(widget) {
             var record = this.record;
             var field = this.field;
             this.update_selection(record, field, () => {
-                var yexpand = this.attributes.yexpand;
-                if (yexpand === undefined) {
-                    yexpand = this.expand;
-                }
-                if (!yexpand) {
-                    this.select.prop('size', this.select.children().length);
-                }
+                this.select.prop('size', this.select.children().length);
                 if (!field) {
                     return;
                 }
