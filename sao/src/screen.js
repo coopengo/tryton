@@ -456,6 +456,7 @@
                 this.search_modal = dialog.modal;
                 this.search_form = dialog.content;
                 this.search_form.addClass('form-horizontal');
+                this.search_form.addClass('filter-window');
                 this.search_form.submit(function(e) {
                     e.preventDefault();
                     search();
@@ -484,6 +485,7 @@
                     var input;
                     var entry;
                     var format, date_format, time_format;
+                    let len, lheight;
                     switch (field.type) {
                         case 'boolean':
                             entry = input = jQuery('<select/>', {
@@ -505,6 +507,8 @@
                             entry = new Sao.ScreenContainer.Selection(
                                     field.selection, prefix + field.name);
                             input = entry.el;
+                            len = field.selection.length;
+                            input.prop('size', len);
                             break;
                         case 'date':
                             format = Sao.common.date_format(
@@ -770,6 +774,10 @@
                     text: s[1]
                 }).appendTo(this.el);
             }
+            this.el.on('mousedown', 'option', (evt) => {
+                evt.preventDefault();
+                evt.target.selected = !evt.target.selected;
+            });
         },
         get_value: function(quote) {
             var value = this.el.val();
