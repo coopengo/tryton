@@ -98,15 +98,24 @@ def group_operator(tokens):
         yield cur
 
 
+def escape_all_underscores(value, escape='\\'):
+    sub_strings = value.split(escape + '_')
+    new_value = sub_strings[0].replace('_', escape + '_')
+    for sub_string in sub_strings[1:]:
+        new_value += '\\_' + sub_string.replace('_', escape + '_')
+    return new_value
+
+
 def likify(value, escape='\\'):
     "Add % if needed"
     if not value:
         return '%'
-    escaped = value.replace(escape + '%', '').replace(escape + '_', '')
+    new_value = escape_all_underscores(value, escape)
+    escaped = new_value.replace(escape + '%', '').replace(escape + '_', '')
     if '%' in escaped:
-        return value
+        return new_value
     else:
-        return '%' + value + '%'
+        return '%' + new_value + '%'
 
 
 def is_full_text(value, escape='\\'):
