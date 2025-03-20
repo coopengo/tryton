@@ -103,7 +103,7 @@ def likify(value, escape='\\'):
     if not value:
         return '%'
     escaped = value.replace(escape + '%', '').replace(escape + '_', '')
-    if '%' in escaped or '_' in escaped:
+    if '%' in escaped:
         return value
     else:
         return '%' + value + '%'
