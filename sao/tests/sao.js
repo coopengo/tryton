@@ -2440,57 +2440,60 @@
     });
 
     QUnit.test('DomainInversion unconstrained_inversion', function() {
-        let domain_inversion = new Sao.common.DomainInversion();
+        var domain_inversion = new Sao.common.DomainInversion();
         domain_inversion = domain_inversion.domain_inversion.bind(
             domain_inversion);
-        let compare = Sao.common.compare;
+        var compare = Sao.common.compare;
 
-        let domain = [['x', '=', 3], ['y', 'in', ['a', 'b']]];
+        var domain = [['x', '=', 3], ['y', 'in', ['a', 'b']]];
+        var domainJSON = JSON.stringify(domain);
         QUnit.ok(
             compare(domain_inversion(domain, 'x'), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x')`);
+            'domain_inversion(' + domainJSON + ', \'x\')');
         QUnit.ok(
             compare(domain_inversion(domain, 'x', {'y': 'a'}), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x', {'y': 'a'})`);
+            'domain_inversion(' + domainJSON + ', \'x\', {\'y\': \'a\'})');
         QUnit.strictEqual(
             domain_inversion(domain, 'x', {'y': 'c'}), false,
-            `domain_inversion(${domain}, 'x', {'y': 'c'})`);
+            'domain_inversion(' + domainJSON + ', \'x\', {\'y\': \'c\'})');
     });
 
     QUnit.test('DomainInversion constrained_equal_inversion', function() {
-        let domain_inversion = new Sao.common.DomainInversion();
+        var domain_inversion = new Sao.common.DomainInversion();
         domain_inversion = domain_inversion.domain_inversion.bind(
             domain_inversion);
-        let compare = Sao.common.compare;
+        var compare = Sao.common.compare;
 
-        let domain = [['x', '=', 3], ['y', '=', 'a']];
+        var domain = [['x', '=', 3], ['y', '=', 'a']];
+        var domainJSON = JSON.stringify(domain);
         QUnit.ok(
             compare(domain_inversion(domain, 'x'), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x')`);
+            'domain_inversion(' + domainJSON + ', \'x\')');
         QUnit.ok(
             compare(domain_inversion(domain, 'x', {'y': 'a'}), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x', {'y': 'a'})`);
+            'domain_inversion(' + domainJSON + ', \'x\', {\'y\': \'a\'})');
         QUnit.ok(
             compare(domain_inversion(domain, 'x', {'y': 'c'}), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x', {'y': 'c'})`);
+            'domain_inversion(' + domainJSON + ', \'x\', {\'y\': \'c\'})');
     });
 
     QUnit.test('DomainInversion constrained_in_inversion', function() {
-        let domain_inversion = new Sao.common.DomainInversion();
+        var domain_inversion = new Sao.common.DomainInversion();
         domain_inversion = domain_inversion.domain_inversion.bind(
             domain_inversion);
-        let compare = Sao.common.compare;
+        var compare = Sao.common.compare;
 
-        let domain = [['x', '=', 3], ['y', 'in', ['a']]];
+        var domain = [['x', '=', 3], ['y', 'in', ['a']]];
+        var domainJSON = JSON.stringify(domain);
         QUnit.ok(
             compare(domain_inversion(domain, 'x'), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x')`);
+            'domain_inversion(' + domainJSON + ', \'x\')');
         QUnit.ok(
             compare(domain_inversion(domain, 'x', {'y': 'a'}), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x', {'y': 'a'})`);
+            'domain_inversion(' + domainJSON + ', \'x\', {\'y\': \'a\'})');
         QUnit.ok(
             compare(domain_inversion(domain, 'x', {'y': 'c'}), [['x', '=', 3]]),
-            `domain_inversion(${domain}, 'x', {'y': 'c'})`);
+            'domain_inversion(' + domainJSON + ', \'x\', {\'y\': \'c\'})');
     });
 
     QUnit.test('DomainInversion and_inversion', function() {
