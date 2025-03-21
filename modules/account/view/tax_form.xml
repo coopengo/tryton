@@ -15,37 +15,39 @@ this repository contains the full copyright notices and license terms. -->
     <label name="description"/>
     <field name="description" colspan="5"/>
     <notebook colspan="6">
-        <page string="General Information" id="general">
-            <label name="group"/>
-            <field name="group"/>
-            <label name="sequence"/>
-            <field name="sequence"/>
-            <label name="start_date"/>
-            <group col="-1" id="start_end_date">
+        <page string="General Information" id="general" col="4"> <!-- TODO: better display -> More cols? 8? -->
+            <label name="group" colspan="1"/>
+            <field name="group" colspan="1"/>
+            <label name="sequence" colspan="1"/>
+            <field name="sequence" colspan="1"/>
+            <label name="start_date" colspan="1"/>
+            <group col="-1" id="start_end_date" colspan="1">
                 <field name="start_date"/>
                 <label name="end_date"/>
                 <field name="end_date"/>
             </group>
-            <label name="update_unit_price"/>
-            <field name="update_unit_price"/>
-            <label name="type"/>
-            <field name="type"/>
-            <group col="1" id="label_amount_rate">
-                <label name="amount" yfill="1" xexpand="1" yexpand="1"/>
-                <label name="rate" yfill="1" xexpand="1" yexpand="1"/>
+            <label name="update_unit_price" colspan="1"/>
+            <field name="update_unit_price" colspan="1"/>
+            <label name="type" colspan="1"/>
+            <field name="type" colspan="1" xfill="0" xalign="0"/>
+            <newline/>
+            <group col="1" id="label_amount_rate" colspan="1" xexpand="0">
+                <label name="amount"/>  <!--yfill="1" xexpand="1" yexpand="1"/>--> <!-- Why? (display: none)-->
+                <label name="rate"/>  <!--yfill="1" xexpand="1" yexpand="1"/>-->
             </group>
-            <group col="1" id="amount_rate">
-                <field name="amount"/>
-                <group col="2" id="rate">
-                    <field name="rate" factor="100" xexpand="0"/>
+            <group col="3" id="amount_rate"> <!-- badly ugly -->
+                <field name="amount" xexpand="1" xalign="0"/>
+                <group col="3" id="rate">
+                    <field name="rate" factor="100" colspan="2" xexpand="0"/>
                     <label name="rate" string="%" xalign="0.0" xexpand="1"/>
                 </group>
             </group>
-            <label name="invoice_account"/>
-            <field name="invoice_account"/>
-            <label name="credit_note_account"/>
-            <field name="credit_note_account"/>
-            <field name="childs" colspan="4"
+            <newline/>
+            <label name="invoice_account" colspan="1"/>
+            <field name="invoice_account" colspan="1"/>
+            <label name="credit_note_account" colspan="1"/>
+            <field name="credit_note_account" colspan="1"/>
+            <field name="childs" colspan="5"
                 view_ids="account.tax_view_list"/>
         </page>
         <page name="legal_notice" col="1">
