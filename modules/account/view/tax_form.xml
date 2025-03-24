@@ -15,7 +15,7 @@ this repository contains the full copyright notices and license terms. -->
     <label name="description"/>
     <field name="description" colspan="5"/>
     <notebook colspan="6">
-        <page string="General Information" id="general" col="5"> <!-- TODO: better display -> More cols? 8? -->
+        <page string="General Information" id="general" col="5">
             <label name="group" colspan="1"/>
             <field name="group" colspan="1"/>
             <label name="sequence" colspan="2"/>
@@ -29,9 +29,9 @@ this repository contains the full copyright notices and license terms. -->
             <label name="update_unit_price" colspan="2"/>
             <field name="update_unit_price" colspan="1"/>
             <label name="type" colspan="1"/>
-            <field name="type" colspan="2" xfill="0" xalign="0"/>
+            <field name="type" colspan="2" xfill="0" xalign="0" xexpand="0"/>
             <newline/>
-            <group col="1" id="label_amount_rate" colspan="1" xexpand="0"  yfill="1" xalign="1">
+            <group col="1" id="label_amount_rate" colspan="1" xexpand="0" yfill="1" xalign="1">
                 <label name="amount"/>
                 <label name="rate"/>
             </group>
