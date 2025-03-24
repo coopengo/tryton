@@ -31,11 +31,11 @@ this repository contains the full copyright notices and license terms. -->
             <label name="type" colspan="1"/>
             <field name="type" colspan="1" xfill="0" xalign="0"/>
             <newline/>
-            <group col="1" id="label_amount_rate" colspan="1">
-                <label name="amount"/>  <!--yfill="1" xexpand="1" yexpand="1"/>--> <!-- Why? (display: none)-->
-                <label name="rate"/>  <!--yfill="1" xexpand="1" yexpand="1"/>-->
+            <group col="1" id="label_amount_rate" colspan="1" xexpand="0"  yfill="1" xalign="1">
+                <label name="amount"/>
+                <label name="rate"/>
             </group>
-            <group col="3" id="amount_rate"> <!-- badly ugly -->
+            <group col="3" id="amount_rate">
                 <field name="amount" xexpand="1"/>
                 <group col="3" id="rate">
                     <field name="rate" factor="100" colspan="2" xexpand="0" xalign="0"/>
