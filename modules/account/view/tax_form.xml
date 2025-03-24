@@ -42,10 +42,9 @@ this repository contains the full copyright notices and license terms. -->
                     <label name="rate" string="%" xalign="0.0" xexpand="1"/>
                 </group>
             </group>
-            <newline/>
-            <label name="invoice_account" colspan="1"/>
+            <label name="invoice_account" colspan="2"/>
             <field name="invoice_account" colspan="1"/>
-            <label name="credit_note_account" colspan="2"/>
+            <label name="credit_note_account" colspan="4"/>
             <field name="credit_note_account" colspan="1"/>
             <field name="childs" colspan="5"
                 view_ids="account.tax_view_list"/>
