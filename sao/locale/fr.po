@@ -354,7 +354,7 @@ msgid ""
 "This record has been modified\n"
 "do you want to save it?"
 msgstr ""
-"Cette entrée a été modifiée\n"
+"Cette entrée a été modifiée.\n"
 "Voulez-vous l'enregistrer ?"
 
 msgid "Record saved."
