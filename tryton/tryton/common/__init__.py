@@ -2,7 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from . import timedelta
 # Coopengo imports
-from .common import COLORS, COLOR_RGB, FORMAT_ERROR, Login
+from .common import Login
 from .common import (
     COLOR_RGB, COLOR_SCHEMES, COLORS, FORMAT_ERROR, MODELACCESS, MODELHISTORY,
     MODELNAME, MODELNOTIFICATION, TRYTON_ICON, VIEW_SEARCH, IconFactory,
@@ -64,6 +64,7 @@ __all__ = [
     get_credentials,
     get_gdk_backend,
     get_hostname,
+    get_monitor_size,
     get_port,
     get_sensible_widget,
     get_toplevel_window,
