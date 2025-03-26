@@ -237,6 +237,14 @@ td.editable > div.cell > span.widget > input[type="checkbox"]:before {
     border-bottom:    none;
 }
 
+// Minimum column size for binary columns editable trees
+table > colgroup > col.binary {
+    min-width:         170px;
+}
+table > thead > tr > th.binary > div {
+    min-width:         170px;
+}
+
 // the expander in the th should be set outside of the normal flow because
 // resizing the column makes the span and the div into the th to stack
 .treeview {
