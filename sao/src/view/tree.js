@@ -379,10 +379,17 @@
             var col_idx = Number(mutation.target.dataset.col) + 1;
             var width = mutation.target.style.width;
             const css_width_re = /width: ([^;]*)/i;
+            const width_re = /^([0-9.]+)px$/i;
             var old_width;
             if (mutation.oldValue) {
                 old_width = mutation.oldValue.match(css_width_re);
                 old_width = old_width ? old_width[1] : undefined;
+            }
+            // The minimum width for the column
+            var min_width = this.colgroup.find( 'col').eq(col_idx)
+                .css('min-width');
+            if (min_width) {
+                min_width = Number(min_width.match(width_re)[1]);
             }
             // The sum of the required sizes of the columns
             var total_size = 0;
@@ -405,11 +412,16 @@
                     }
                 }
             });
+            if (min_width && (width < min_width)) {
+                width = min_width;
+            }
             if (old_width && (width != old_width)) {
-                const width_re = /^([0-9.]+)px$/i;
                 var old_value = old_width.match(width_re);
                 var value = width.match(width_re);
                 old_value = old_value ? Number(old_value[1]) : undefined;
+                if (old_value && min_width && (old_value < min_width)) {
+                    old_value = min_width;
+                }
                 value = value ? Number(value[1]) : undefined;
 
                 if (old_value && value) {
@@ -452,8 +464,12 @@
                     }
                 }
             } else if (!old_width) {
+                jQuery(mutation.target).css('width', width);
                 this.colgroup.find('col').eq(col_idx).css('width', width);
                 this.table.css('min-width', total_size + "px)");
+            } else {
+                jQuery(mutation.target).css('width', width);
+                this.colgroup.find('col').eq(col_idx).css('width', width);
             }
         },
         save_width: function(tree) {
