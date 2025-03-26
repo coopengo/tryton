@@ -880,6 +880,9 @@
         get count_limit() {
             return this.limit * 100 + this.offset;
         },
+        get used_in_form() {
+            return this.windows.some((w) => w instanceof Sao.View.Form.One2Many);
+        },
         load_next_view: function() {
             if (!jQuery.isEmptyObject(this.view_to_load)) {
                 var view_id;
