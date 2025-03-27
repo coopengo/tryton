@@ -467,7 +467,9 @@ function hide_x2m_body(widget) {
             if (button.attributes.type != 'client_action') {
                 button.el.prop('disabled', true);  // state will be reset at display
             }
-            this.screen.button(button.attributes);
+            this.screen.button(button.attributes).fail(() => {
+                button.set_state(this.record);
+            });
         },
         on_scan_code: function(code) {
             var record = this.record;
@@ -5365,13 +5367,7 @@ function hide_x2m_body(widget) {
             var record = this.record;
             var field = this.field;
             this.update_selection(record, field, () => {
-                var yexpand = this.attributes.yexpand;
-                if (yexpand === undefined) {
-                    yexpand = this.expand;
-                }
-                if (!yexpand) {
-                    this.select.prop('size', this.select.children().length);
-                }
+                this.select.prop('size', this.select.children().length);
                 if (!field) {
                     return;
                 }

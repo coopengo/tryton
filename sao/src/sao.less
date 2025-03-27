@@ -1081,6 +1081,9 @@ img.icon {
 
 .form-multiselection, .dict-multiselection {
     select {
+        min-height: 150px;
+        max-height: 400px;
+
         option:before {
             content: "☐ ";
         }
@@ -1196,6 +1199,21 @@ input.column-boolean {
     }
     .close {
         float: none;
+    }
+}
+
+.filter-window {
+    select[multiple] {
+        min-height: 150px;
+        max-height: 400px;
+        --lh: @line-height-computed;
+
+        option:before {
+            content: "☐ ";
+        }
+        option:checked:before {
+            content: "☑ ";
+        }
     }
 }
 

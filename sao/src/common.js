@@ -1929,9 +1929,8 @@
                 return '%';
             }
             var escaped = value
-                .replace(escape + '%', '')
-                .replace(escape + '_', '');
-            if (escaped.contains('%') || escaped.contains('_')) {
+                .replace(escape + '%', '');
+            if (escaped.contains('%')) {
                 return value;
             } else {
                 return '%' + value + '%';
@@ -1945,9 +1944,8 @@
                 escaped = escaped.slice(1, -1);
             }
             escaped = escaped
-                .replace(escape + '%', '')
-                .replace(escape + '_', '');
-            if (escaped.contains('%') || escaped.contains('_')) {
+                .replace(escape + '%', '');
+            if (escaped.contains('%')) {
                 return false;
             }
             return value.startsWith('%') && value.endsWith('%');
@@ -1955,15 +1953,13 @@
         is_like: function(value, escape) {
             escape = escape || '\\';
             var escaped = value
-                .replace(escape + '%', '')
-                .replace(escape + '_', '');
-            return escaped.contains('%') || escaped.contains('_');
+                .replace(escape + '%', '');
+            return escaped.contains('%');
         },
         unescape: function(value, escape) {
             escape = escape || '\\';
             return value
-                .replace(escape + '%', '%')
-                .replace(escape + '_', '_');
+                .replace(escape + '%', '%');
         },
         quote: function(value) {
             if (typeof value != 'string') {
@@ -2321,12 +2317,10 @@
                 (expression.length > 2) &&
                 (typeof expression[1] == 'string'));
         },
-        constrained_leaf: function(part, boolop) {
-            if (boolop === undefined) {
-                boolop = this.and;
-            }
+        constrained_leaf: function(part) {
             var operand = part[1];
-            if ((operand === '=') & (boolop === this.and)) {
+            let value = part[2];
+            if ((operand === '=') || ((operand == 'in') && (value.length == 1))) {
                 // We should consider that other domain inversion will set a
                 // correct value to this field
                 return true;
@@ -2871,7 +2865,7 @@
         for (var i=1, len=splitted.length; i < len; i = i+2) {
             char = splitted[i];
             if (escape) {
-                if ((char == '%') || (char == '_')) {
+                if ((char == '%')) {
                     chars.push(char);
                 } else {
                     chars.push('\\', char);
@@ -2879,8 +2873,6 @@
                 escape = false;
             } else if (char == '\\') {
                 escape = true;
-            } else if (char == '_') {
-                chars.push('.');
             } else if (char == '%') {
                 chars.push('.*');
             } else {
@@ -2950,8 +2942,7 @@
                         ((field in context) &&
                             (this.domain_inversion.eval_leaf(
                                 part, context, this.domain_inversion.and) ||
-                                this.domain_inversion.constrained_leaf(
-                                    part, this.domain_inversion.and)))) {
+                                this.domain_inversion.constrained_leaf(part)))) {
                         result.push(true);
                     } else {
                         return false;
@@ -3006,9 +2997,7 @@
                     field = this.base(field);
                     if ((field in context) &&
                         (this.domain_inversion.eval_leaf(
-                            part, context, this.domain_inversion.or)) ||
-                        this.domain_inversion.constrained_leaf(
-                            part, this.domain_inversion.or)) {
+                            part, context, this.domain_inversion.or))) {
                         return true;
                     } else if ((field in context) &&
                             !this.domain_inversion.eval_leaf(part, context,
@@ -3698,7 +3687,7 @@
         el.closest('.treeview')
             .css('overflow-y', overflow)
             .css('max-height', height);
-        el.closest('.modal-body').css('overflow-y', overflow);
+        el.closest('.modal-body').css('overflow', overflow);
         el.closest('.navbar-collapse.in').css('overflow-y', overflow);
         el.closest('.content-box').css('overflow-y', overflow);
         el.parents('fieldset.form-group_').css('overflow', overflow);
