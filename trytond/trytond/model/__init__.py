@@ -6,6 +6,7 @@ from .descriptors import dualmethod
 from .dictschema import DictSchemaMixin
 from .digits import DigitsMixin
 from .match import MatchMixin
+from .materialized import MaterializedViewMixin, materialize
 from .model import Model
 from .modelsingleton import ModelSingleton
 from .modelsql import Check, Exclude, Index, ModelSQL, Unique, convert_from
@@ -23,4 +24,4 @@ __all__ = ['Model', 'ModelView', 'ModelStorage', 'ModelSingleton', 'ModelSQL',
     'Workflow', 'DictSchemaMixin', 'MatchMixin', 'UnionMixin', 'dualmethod',
     'MultiValueMixin', 'ValueMixin', 'SymbolMixin', 'DigitsMixin',
     'EvalEnvironment', 'sequence_ordered', 'sort', 'DeactivableMixin', 'tree',
-    'avatar_mixin']
+    'avatar_mixin', 'MaterializedViewMixin', 'materialize']
