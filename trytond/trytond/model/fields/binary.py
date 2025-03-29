@@ -3,6 +3,7 @@
 from sql import Column, Null
 
 from trytond.filestore import filestore
+from trytond.pool import Pool
 from trytond.tools import cached_property, grouped_slice, reduce_ids
 from trytond.transaction import Transaction
 
@@ -106,6 +107,9 @@ class Binary(Field):
         return res
 
     def set(self, Model, name, ids, value, *args):
+        pool = Pool()
+        RemovedFile = pool.get('ir.removed_file')
+
         transaction = Transaction()
         table = Model.__table__()
         cursor = transaction.connection.cursor()
@@ -114,17 +118,32 @@ class Binary(Field):
         if prefix is None:
             prefix = transaction.database.name
 
+        removed = []
         args = iter((ids, value) + args)
         for ids, value in zip(args, args):
             if self.file_id:
-                columns = [Column(table, self.file_id), Column(table, name)]
-                values = [
-                    filestore.set(value, prefix) if value else None, None]
+                new_file_id = filestore.set(value, prefix) if value else None
+                fileid_col = Column(table, self.file_id)
+                cursor.execute(*table.select(
+                        table.id, fileid_col,
+                        where=(reduce_ids(table.id, ids)
+                            & (fileid_col != Null)
+                            & (fileid_col != new_file_id))))
+                for record_id, file_id in cursor:
+                    removed.append(RemovedFile(
+                            file_id=file_id,
+                            model=Model.__name__,
+                            field=name))
+                columns = [fileid_col, Column(table, name)]
+                values = [new_file_id, None]
             else:
                 columns = [Column(table, name)]
                 values = [self.sql_format(value)]
             cursor.execute(*table.update(columns, values,
                     where=reduce_ids(table.id, ids)))
+
+        if removed:
+            RemovedFile.save(removed)
 
     def definition(self, model, language):
         definition = super().definition(model, language)
