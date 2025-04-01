@@ -1591,6 +1591,9 @@ function hide_x2m_body(widget) {
             this.json_data = '';
             this.prev_record = undefined;
             this.init_editor();
+            this.completionActive = false;
+            this.auto_complete_builtins = ['if', 'else', 'elif', 'for', 'in', 'as', 'Decimal', 'return',
+                'relativedelta', 'True', 'False']
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
@@ -1681,11 +1684,67 @@ function hide_x2m_body(widget) {
             });
             this.codeMirror.on('change', this.send_modified.bind(this));
             this.codeMirror.on('blur', this._focus_out.bind(this));
+            this.codeMirror.on('keyup', this._enable_hint.bind(this));
+            this.codeMirror.on('inputRead', this._show_hint.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
                 "Alt-R": "replace",
                 "Shift-Alt-R": "replaceAll",
                 "Ctrl-S": this._save.bind(this),
             });
+        },
+        _hint: function(cm) {
+            var cursor = this.codeMirror.getCursor();
+            var token = this.codeMirror.getTokenAt(cursor);
+            var start = token.start;
+            var end = token.end;
+            var word = token.string;
+            var list =  [...this.auto_complete_builtins]
+            CodeMirror.runMode(this.codeMirror.getValue(), 'python', function(name, kind) {
+                if (['variable', 'keyword'].includes(kind) && name != word)
+                    return list.push(name);
+              })
+            var inner = {
+                from: CodeMirror.Pos(cursor.line, start),
+                to: CodeMirror.Pos(cursor.line, end),
+                list: [...new Set(list)]
+            };
+
+            var populate_funcs = function (tree_data) {
+                if (!tree_data) { return ;}
+                var element;
+                for (var cnt in tree_data) {
+                    element = tree_data[cnt];
+                    if (!inner.list.includes(element.translated))
+                        inner.list.push(element.translated);
+                    if (element.children && element.children.length > 0) {
+                        populate_funcs(element.children);
+                    }
+                }
+            };
+
+            var to_parse = "[]";
+            if (this.json_data) { to_parse = this.json_data ;}
+            populate_funcs(JSON.parse(to_parse));
+
+            inner.list = inner.list.filter(function(fn) {
+              return fn.startsWith(word); // Filter cached functions based on the current word
+            });
+
+            return inner;
+        },
+        _show_hint: function(editor) {
+            if (this.completionActive === true) { // Trigger on space
+                editor.showHint({
+                    hint: this._hint.bind(this),
+                    completeSingle: false
+                });
+            }
+        },
+        _enable_hint: function(editor, event){
+            if (event.keyCode === 32 && event.ctrlKey) { // Trigger on space
+                this.completionActive = this.completionActive ? false : true;
+                this._show_hint(editor)
+            }
         },
         _save: function() {
             var current_tab = Sao.Tab.tabs.get_current();
