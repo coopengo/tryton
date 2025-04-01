@@ -1592,8 +1592,22 @@ function hide_x2m_body(widget) {
             this.prev_record = undefined;
             this.init_editor();
             this.completionActive = false;
-            this.auto_complete_builtins = ['if', 'else', 'elif', 'for', 'in', 'as', 'Decimal', 'return',
-                'relativedelta', 'True', 'False']
+            this.auto_complete_builtins = ["as", "assert", "break", "class", "continue",
+                        "def", "del", "elif", "else", "except", "finally",
+                        "for", "from", "global", "if", "import",
+                        "lambda", "pass", "raise", "return",
+                        "try", "while", "with", "yield", "in", "False", "True",
+                        "abs", "all", "any", "bin", "bool", "bytearray", "callable", "chr",
+                        "classmethod", "compile", "complex", "delattr", "dict", "dir", "divmod",
+                        "enumerate", "eval", "filter", "float", "format", "frozenset",
+                        "getattr", "globals", "hasattr", "hash", "help", "hex", "id",
+                        "input", "int", "isinstance", "issubclass", "iter", "len",
+                        "list", "locals", "map", "max", "memoryview", "min", "next",
+                        "object", "oct", "open", "ord", "pow", "property", "range",
+                        "repr", "reversed", "round", "set", "setattr", "slice",
+                        "sorted", "staticmethod", "str", "sum", "super", "tuple",
+                        "type", "vars", "zip", "__import__", "NotImplemented",
+                        "Ellipsis", "__debug__"];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
@@ -1743,7 +1757,7 @@ function hide_x2m_body(widget) {
         _enable_hint: function(editor, event){
             if (event.keyCode === 32 && event.ctrlKey) { // Trigger on space
                 this.completionActive = this.completionActive ? false : true;
-                this._show_hint(editor)
+                this._show_hint(editor);
             }
         },
         _save: function() {
