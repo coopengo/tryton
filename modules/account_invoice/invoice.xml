@@ -449,17 +449,6 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">credit_start_form</field>
         </record>
 
-        <record model="ir.action.wizard" id="credit">
-            <field name="name">Credit</field>
-            <field name="wiz_name">account.invoice.credit</field>
-            <field name="model">account.invoice</field>
-        </record>
-        <record model="ir.action.keyword" id="credit_keyword">
-            <field name="keyword">form_action</field>
-            <field name="model">account.invoice,-1</field>
-            <field name="action" ref="credit"/>
-        </record>
-
         <record model="ir.rule.group" id="rule_group_invoice_companies">
             <field name="name">User in companies</field>
             <field name="model">account.invoice</field>
