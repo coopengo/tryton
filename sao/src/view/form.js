@@ -1592,22 +1592,22 @@ function hide_x2m_body(widget) {
             this.prev_record = undefined;
             this.init_editor();
             this.completionActive = false;
-            this.auto_complete_builtins = ["as", "assert", "break", "class", "continue",
-                        "def", "del", "elif", "else", "except", "finally",
-                        "for", "from", "global", "if", "import",
-                        "lambda", "pass", "raise", "return",
-                        "try", "while", "with", "yield", "in", "False", "True",
-                        "abs", "all", "any", "bin", "bool", "bytearray", "callable", "chr",
-                        "classmethod", "compile", "complex", "delattr", "dict", "dir", "divmod",
-                        "enumerate", "eval", "filter", "float", "format", "frozenset",
-                        "getattr", "globals", "hasattr", "hash", "help", "hex", "id",
-                        "input", "int", "isinstance", "issubclass", "iter", "len",
-                        "list", "locals", "map", "max", "memoryview", "min", "next",
-                        "object", "oct", "open", "ord", "pow", "property", "range",
-                        "repr", "reversed", "round", "set", "setattr", "slice",
-                        "sorted", "staticmethod", "str", "sum", "super", "tuple",
-                        "type", "vars", "zip", "__import__", "NotImplemented",
-                        "Ellipsis", "__debug__"];
+            this.auto_complete_builtins = ["as", "assert", "break", "class",
+                "continue", "def", "del", "elif", "else", "except", "finally",
+                "for", "from", "global", "if", "import", "lambda", "pass",
+                "raise", "return", "try", "while", "with", "yield", "in",
+                "False", "True", "abs", "all", "any", "bin", "bool",
+                "bytearray", "callable", "chr", "classmethod", "compile",
+                "complex", "delattr", "dict", "dir", "divmod",
+                "enumerate", "eval", "filter", "float", "format", "frozenset",
+                "getattr", "globals", "hasattr", "hash", "help", "hex", "id",
+                "input", "int", "isinstance", "issubclass", "iter", "len",
+                "list", "locals", "map", "max", "memoryview", "min", "next",
+                "object", "oct", "open", "ord", "pow", "property", "range",
+                "repr", "reversed", "round", "set", "setattr", "slice",
+                "sorted", "staticmethod", "str", "sum", "super", "tuple",
+                "type", "vars", "zip", "__import__", "NotImplemented",
+                "Ellipsis", "__debug__", "Decimal"];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
@@ -1698,12 +1698,13 @@ function hide_x2m_body(widget) {
             });
             this.codeMirror.on('change', this.send_modified.bind(this));
             this.codeMirror.on('blur', this._focus_out.bind(this));
-            this.codeMirror.on('keyup', this._enable_hint.bind(this));
+            // When hint are toggled, autocomplete on input
             this.codeMirror.on('inputRead', this._show_hint.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
                 "Alt-R": "replace",
                 "Shift-Alt-R": "replaceAll",
                 "Ctrl-S": this._save.bind(this),
+                "Ctrl-Space": this._enable_hint.bind(this),
             });
         },
         _hint: function(cm) {
@@ -1712,6 +1713,7 @@ function hide_x2m_body(widget) {
             var start = token.start;
             var end = token.end;
             var word = token.string;
+            // Feed hint context with hardcoded builtins, and variable names in current rule
             var list =  [...this.auto_complete_builtins]
             CodeMirror.runMode(this.codeMirror.getValue(), 'python', function(name, kind) {
                 if (['variable', 'keyword'].includes(kind) && name != word)
@@ -1724,6 +1726,7 @@ function hide_x2m_body(widget) {
             };
 
             var populate_funcs = function (tree_data) {
+                // Feed hint context with general rule context
                 if (!tree_data) { return ;}
                 var element;
                 for (var cnt in tree_data) {
@@ -1739,15 +1742,15 @@ function hide_x2m_body(widget) {
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
             populate_funcs(JSON.parse(to_parse));
-
+            // Filter context names based on the current word
             inner.list = inner.list.filter(function(fn) {
-              return fn.startsWith(word); // Filter cached functions based on the current word
+              return fn.startsWith(word);
             });
 
             return inner;
         },
         _show_hint: function(editor) {
-            if (this.completionActive === true) { // Trigger on space
+            if (this.completionActive === true) {
                 editor.showHint({
                     hint: this._hint.bind(this),
                     completeSingle: false
@@ -1755,10 +1758,8 @@ function hide_x2m_body(widget) {
             }
         },
         _enable_hint: function(editor, event){
-            if (event.keyCode === 32 && event.ctrlKey) { // Trigger on space
-                this.completionActive = this.completionActive ? false : true;
-                this._show_hint(editor);
-            }
+            this.completionActive = this.completionActive ? false : true;
+            this._show_hint(editor);
         },
         _save: function() {
             var current_tab = Sao.Tab.tabs.get_current();
