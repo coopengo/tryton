@@ -1707,6 +1707,19 @@ function hide_x2m_body(widget) {
                 "Ctrl-Space": this._enable_hint.bind(this),
             });
         },
+        _populate_funcs: function (tree_data, func_list) {
+            // Feed hint and lint context with general rule context
+            if (!tree_data) { return ;}
+            var element;
+            for (var cnt in tree_data) {
+                element = tree_data[cnt];
+                if (!func_list.includes(element.translated))
+                    func_list.push(element.translated);
+                if (element.children && element.children.length > 0) {
+                    this._populate_funcs(element.children, func_list);
+                }
+            }
+        },
         _hint: function(cm) {
             var cursor = this.codeMirror.getCursor();
             var token = this.codeMirror.getTokenAt(cursor);
@@ -1725,23 +1738,9 @@ function hide_x2m_body(widget) {
                 list: [...new Set(list)]
             };
 
-            var populate_funcs = function (tree_data) {
-                // Feed hint context with general rule context
-                if (!tree_data) { return ;}
-                var element;
-                for (var cnt in tree_data) {
-                    element = tree_data[cnt];
-                    if (!inner.list.includes(element.translated))
-                        inner.list.push(element.translated);
-                    if (element.children && element.children.length > 0) {
-                        populate_funcs(element.children);
-                    }
-                }
-            };
-
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
-            populate_funcs(JSON.parse(to_parse));
+            this._populate_funcs(JSON.parse(to_parse), inner.list);
             // Filter context names based on the current word
             inner.list = inner.list.filter(function(fn) {
               return fn.startsWith(word);
@@ -1940,21 +1939,9 @@ function hide_x2m_body(widget) {
             var linter = new Sao.Model('linter.Linter');
             var code = editor.getValue();
 
-            var populate_funcs = function (tree_data) {
-                if (!tree_data) { return ;}
-                var element;
-                for (var cnt in tree_data) {
-                    element = tree_data[cnt];
-                    known_funcs.push(element.translated);
-                    if (element.children && element.children.length > 0) {
-                        populate_funcs(element.children);
-                    }
-                }
-            };
-
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
-            populate_funcs(JSON.parse(to_parse));
+            this._populate_funcs(JSON.parse(to_parse), known_funcs);
 
             linter.execute('lint', [code, known_funcs]).done(function(errors) {
                 var codeMirrorErrors = [];
