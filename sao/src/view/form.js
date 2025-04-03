@@ -1591,7 +1591,7 @@ function hide_x2m_body(widget) {
             this.json_data = '';
             this.prev_record = undefined;
             this.init_editor();
-            this.completionActive = false;
+            this.completionActive = true;
             this.auto_complete_builtins = ["as", "assert", "break", "class",
                 "continue", "def", "del", "elif", "else", "except", "finally",
                 "for", "from", "global", "if", "import", "lambda", "pass",
@@ -1600,14 +1600,10 @@ function hide_x2m_body(widget) {
                 "bytearray", "callable", "chr", "classmethod", "compile",
                 "complex", "delattr", "dict", "dir", "divmod",
                 "enumerate", "eval", "filter", "float", "format", "frozenset",
-                "getattr", "globals", "hasattr", "hash", "help", "hex", "id",
-                "input", "int", "isinstance", "issubclass", "iter", "len",
-                "list", "locals", "map", "max", "memoryview", "min", "next",
-                "object", "oct", "open", "ord", "pow", "property", "range",
-                "repr", "reversed", "round", "set", "setattr", "slice",
-                "sorted", "staticmethod", "str", "sum", "super", "tuple",
-                "type", "vars", "zip", "__import__", "NotImplemented",
-                "Ellipsis", "__debug__", "Decimal"];
+                "getattr", "globals", "hasattr", "hash", "hex", "id", "list",
+                "map", "max", "memoryview", "min", "next", "oct", "open",
+                "ord", "pow","range", "reversed", "set", "setattr", "slice",
+                "sorted","str", "sum", "tuple", "type","zip", "Decimal"];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
