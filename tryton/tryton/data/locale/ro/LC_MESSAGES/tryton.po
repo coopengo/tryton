@@ -587,10 +587,6 @@ msgstr "Informații despre gazdă / bază de date"
 msgid "User name:"
 msgstr "Utilizator:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "Bază de date:"
-
 msgid "Unable to complete email entry"
 msgstr "Nu se poate finaliza introducerea e-mailului"
 

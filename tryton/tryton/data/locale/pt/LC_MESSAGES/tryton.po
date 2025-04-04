@@ -601,10 +601,6 @@ msgid "User name:"
 msgstr "Nome de Usuário:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "Banco de Dados:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Não é possível apagar o assistente %s"
 

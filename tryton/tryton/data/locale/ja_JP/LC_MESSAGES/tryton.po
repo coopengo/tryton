@@ -641,10 +641,6 @@ msgstr ""
 msgid "User name:"
 msgstr "ユーザー名:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "データベース:"
-
 msgid "Unable to complete email entry"
 msgstr ""
 

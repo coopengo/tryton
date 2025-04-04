@@ -620,10 +620,6 @@ msgid "User name:"
 msgstr "Потребителско име:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "База данни:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Не може да зададе локални настройки %s"
 

@@ -599,10 +599,6 @@ msgid "User name:"
 msgstr "Naudotojas:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "Duomenų bazė:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Negalima ištrinti %s vedlio"
 

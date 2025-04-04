@@ -587,10 +587,6 @@ msgstr "主机/数据库信息"
 msgid "User name:"
 msgstr "用户名:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "数据库:"
-
 msgid "Unable to complete email entry"
 msgstr "无法完成电子邮件输入"
 

@@ -588,10 +588,6 @@ msgstr "Hostnaam / database informatie"
 msgid "User name:"
 msgstr "Gebruikersnaam:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "Database:"
-
 msgid "Unable to complete email entry"
 msgstr "E-mailinvoer kan niet worden voltooid"
 
