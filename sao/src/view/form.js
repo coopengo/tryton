@@ -1733,6 +1733,34 @@ function hide_x2m_body(widget) {
                 'class': 'tree table table-hover'
             }).appendTo(this.sc_tree);
 
+            // Search header
+            this.theader = jQuery('<thead/>', {
+                'class': 'form-char xexpand required'
+            }).appendTo(this.table);
+            this.search_div = jQuery('<div/>', {
+                'class': 'input-group input-group-sm input-icon input-icon-secondary',
+                'width': '100%'
+            }).appendTo(this.theader);
+            // Search input (it update tree automatically)
+            this.wid_text = jQuery('<input/>', {
+                'type': 'text',
+                'class': 'form-control input-sm',
+                'placeholder': Sao.i18n.gettext('Search'),
+            }).appendTo(this.search_div);
+            this.wid_text.on('keyup', this.display_tree.bind(this));
+            // Search clear button
+            this.clear_btn = jQuery('<div/>', {
+                'class': 'icon-input icon-secondary',
+                'arial-label': Sao.i18n.gettext("Clear"),
+                'title': Sao.i18n.gettext("Clear"),
+            }).append(jQuery('<span>x</span>', {
+                'aria-hidden': true,
+            })).appendTo(this.search_div);
+            // Make it show like its clickable, and do something when acting upon it
+            this.clear_btn.css('cursor', 'pointer');
+            this.clear_btn.on('click', this.clear_filter.bind(this));
+
+            // T(h)ree body problem solved
             this.tbody = jQuery('<tbody/>').appendTo(this.table);
             this.tbody.css({
                 'display': 'block',
@@ -1781,22 +1809,6 @@ function hide_x2m_body(widget) {
                 }
             }.bind(this);
 
-            var display_tree = function(){
-                var tree_data, json_data;
-                json_data = this.record.field_get_client(this.tree_data_field);
-                if (json_data){
-                    if (json_data != this.json_data){
-                        this.clear_tree();
-                        this.json_data = json_data;
-                        tree_data = JSON.parse(this.json_data);
-                        this.populate_tree(tree_data);
-                    }
-                }else {
-                    this.tree_data = [];
-                    this.clear_tree();
-                }
-            }.bind(this);
-
             if (!this.field || !this.record) {
                 this.codeMirror.setValue('');
                 this.clear_tree();
@@ -1812,7 +1824,7 @@ function hide_x2m_body(widget) {
             if (this.tree_data_field){
                 if (!this.record)
                     return prm;
-                prm = this.record.load(this.tree_data_field).then(display_tree);
+                prm = this.record.load(this.tree_data_field).then(this.display_tree());
             }
             return prm;
         },
@@ -1824,10 +1836,51 @@ function hide_x2m_body(widget) {
             }
             return null;
         },
+        clear_filter: function(){
+            this.wid_text.val('');
+            // Pass an "event" as parameter to trigger redraw
+            this.display_tree(true);
+        },
+        display_tree: function(event){
+            var tree_data, json_data;
+            var filter  = this.wid_text.val();
+            json_data = this.record.field_get_client(this.tree_data_field);
+            if (json_data){
+                if (json_data != this.json_data || event){
+                    this.clear_tree();
+                    this.json_data = json_data;
+                    tree_data = JSON.parse(this.json_data);
+                    var filter  = this.wid_text.val() ? this.normalize_string(this.wid_text.val()) : undefined;
+                    this.populate_tree(tree_data, filter);
+                }
+            } else {
+                this.tree_data = [];
+                this.clear_tree();
+            }
+        },
         clear_tree: function(){
             this.tbody.empty();
         },
-        populate_tree: function(tree_data, iter_lvl, parent){
+        normalize_string: function(str){
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        },
+        filter_element: function(element, filter){
+            if (!filter)
+                return true;
+            if (element.children && element.children.length > 0){
+                // When filtering, only shows node with unfiltered data
+                var filter_children = function(element) {
+                    return this.filter_element(element, filter);
+                }.bind(this);
+                return element.children.some(filter_children) ? true : false
+            }
+            var long_desc = element.long_description ? this.normalize_string(element.long_description) : '';
+            var translated = element.translated ? this.normalize_string(element.translated) : '';
+            if (long_desc.includes(filter) || translated.includes(filter))
+                return true;
+            return false;
+        },
+        populate_tree: function(tree_data, filter, iter_lvl, parent){
             var element, cnt;
             var desc, param_txt, good_text, new_iter;
 
@@ -1845,9 +1898,11 @@ function hide_x2m_body(widget) {
                     good_text = desc + '\n\n' + param_txt;
                 else
                     good_text = param_txt;
-                new_iter = this.append_tree_element(parent, element, good_text, iter_lvl);
-                if (element.children && element.children.length > 0)
-                    this.populate_tree(element.children, iter_lvl + 1, new_iter);
+                if (this.filter_element(element, filter)) {
+                    new_iter = this.append_tree_element(parent, element, good_text, iter_lvl);
+                    if (element.children && element.children.length > 0)
+                        this.populate_tree(element.children, filter, iter_lvl + 1, new_iter);
+                }
             }
         },
         set_value: function(){
