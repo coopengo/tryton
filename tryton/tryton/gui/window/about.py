@@ -12,7 +12,7 @@ from tryton.config import CONFIG, PIXMAPS_DIR
 
 COPYRIGHT = '''\
 Copyright (C) 2004-2024 Tryton.
-Copyright (C) 2012-2024 Coopengo.
+Copyright (C) 2012-2025 Coopengo.
 '''
 AUTHORS = [
         'Bertrand Chenal <bertrand.chenal@b2ck.com>',
