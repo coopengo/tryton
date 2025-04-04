@@ -314,15 +314,19 @@ class DictFloatEntry(DictIntegerEntry):
         return self.widget.value
 
     def set_value(self, value):
-        digits = self.digits
-        if digits:
-            self.widget.digits = digits[1]
-        else:
-            self.widget.digits = None
+        self.widget.digits = digits = self.digits
         self.widget.set_width_chars(self.width)
-        if value is not None:
-            txt_val = locale.localize(
-                '{0:.{1}f}'.format(value, digits[1]), True)
+        if isinstance(value, (int, float, Decimal)):
+            d = value
+            if not isinstance(d, Decimal):
+                d = Decimal(repr(d))
+            if digits and digits[1] is not None:
+                p = int(digits[1])
+            elif d == d.to_integral_value():
+                p = 0
+            else:
+                p = -int(d.as_tuple().exponent)
+            txt_val = locale.localize('{0:.{1}f}'.format(d, p), True)
         else:
             txt_val = ''
         self.widget.set_text(txt_val)

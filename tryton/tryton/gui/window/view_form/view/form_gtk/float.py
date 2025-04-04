@@ -20,9 +20,5 @@ class Float(Integer):
             return self.attrs.get('width', 18)
 
     def display(self):
-        digits = self.digits
-        if digits:
-            self.entry.digits = digits[1]
-        else:
-            self.entry.digits = None
+        self.entry.digits = self.digits
         super(Float, self).display()
