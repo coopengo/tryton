@@ -582,9 +582,6 @@ msgstr ""
 msgid "User name:"
 msgstr ""
 
-msgid "Date:"
-msgstr ""
-
 msgid "Unable to complete email entry"
 msgstr ""
 

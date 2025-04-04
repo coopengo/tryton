@@ -594,10 +594,6 @@ msgstr "Host-/Datenbankdetails"
 msgid "User name:"
 msgstr "Anmeldename:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "Datenbank:"
-
 msgid "Unable to complete email entry"
 msgstr "Die automatische Vervollständigung des E-Mail Eintrags ist fehlgeschlagen"
 
