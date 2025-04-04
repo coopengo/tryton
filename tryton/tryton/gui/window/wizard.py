@@ -12,6 +12,7 @@ from tryton.common.button import Button
 from tryton.common.widget_style import widget_class
 from tryton.exceptions import TrytonServerError
 from tryton.gui import Main
+from tryton.gui.window import Window
 from tryton.gui.window.nomodal import NoModal
 from tryton.gui.window.view_form.screen import Screen
 
@@ -135,7 +136,8 @@ class Wizard(InfoBar):
                     del context['active_ids']
                     del context['active_model']
                     del context['action_id']
-                    Action.execute(*action, context=context)
+                    with Window(hide_current=True):
+                        Action.execute(*action, context=context)
 
             if self.state == self.end_state:
                 self.end(lambda *a: execute_actions())
