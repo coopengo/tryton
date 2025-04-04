@@ -1591,6 +1591,19 @@ function hide_x2m_body(widget) {
             this.json_data = '';
             this.prev_record = undefined;
             this.init_editor();
+            this.completionActive = true;
+            this.auto_complete_builtins = ["as", "assert", "break", "class",
+                "continue", "def", "del", "elif", "else", "except", "finally",
+                "for", "from", "global", "if", "import", "lambda", "pass",
+                "raise", "return", "try", "while", "with", "yield", "in",
+                "False", "True", "abs", "all", "any", "bin", "bool",
+                "bytearray", "callable", "chr", "classmethod", "compile",
+                "complex", "delattr", "dict", "dir", "divmod",
+                "enumerate", "eval", "filter", "float", "format", "frozenset",
+                "getattr", "globals", "hasattr", "hash", "hex", "id", "list",
+                "map", "max", "memoryview", "min", "next", "oct", "open",
+                "ord", "pow","range", "reversed", "set", "setattr", "slice",
+                "sorted","str", "sum", "tuple", "type","zip", "Decimal"];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
@@ -1681,11 +1694,67 @@ function hide_x2m_body(widget) {
             });
             this.codeMirror.on('change', this.send_modified.bind(this));
             this.codeMirror.on('blur', this._focus_out.bind(this));
+            // When hint are toggled, autocomplete on input
+            this.codeMirror.on('inputRead', this._show_hint.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
                 "Alt-R": "replace",
                 "Shift-Alt-R": "replaceAll",
                 "Ctrl-S": this._save.bind(this),
+                "Ctrl-Space": this._enable_hint.bind(this),
             });
+        },
+        _populate_funcs: function (tree_data, func_list) {
+            // Feed hint and lint context with general rule context
+            if (!tree_data) { return ;}
+            var element;
+            for (var cnt in tree_data) {
+                element = tree_data[cnt];
+                if (!func_list.includes(element.translated))
+                    func_list.push(element.translated);
+                if (element.children && element.children.length > 0) {
+                    this._populate_funcs(element.children, func_list);
+                }
+            }
+        },
+        _hint: function(cm) {
+            var cursor = this.codeMirror.getCursor();
+            var token = this.codeMirror.getTokenAt(cursor);
+            var start = token.start;
+            var end = token.end;
+            var word = token.string;
+            // Feed hint context with hardcoded builtins, and variable names in current rule
+            var list =  [...this.auto_complete_builtins]
+            CodeMirror.runMode(this.codeMirror.getValue(), 'python', function(name, kind) {
+                if (['variable', 'keyword'].includes(kind) && name != word)
+                    return list.push(name);
+              })
+            var inner = {
+                from: CodeMirror.Pos(cursor.line, start),
+                to: CodeMirror.Pos(cursor.line, end),
+                list: [...new Set(list)]
+            };
+
+            var to_parse = "[]";
+            if (this.json_data) { to_parse = this.json_data ;}
+            this._populate_funcs(JSON.parse(to_parse), inner.list);
+            // Filter context names based on the current word
+            inner.list = inner.list.filter(function(fn) {
+              return fn.startsWith(word);
+            });
+
+            return inner;
+        },
+        _show_hint: function(editor) {
+            if (this.completionActive === true) {
+                editor.showHint({
+                    hint: this._hint.bind(this),
+                    completeSingle: false
+                });
+            }
+        },
+        _enable_hint: function(editor, event){
+            this.completionActive = this.completionActive ? false : true;
+            this._show_hint(editor);
         },
         _save: function() {
             var current_tab = Sao.Tab.tabs.get_current();
@@ -1866,21 +1935,9 @@ function hide_x2m_body(widget) {
             var linter = new Sao.Model('linter.Linter');
             var code = editor.getValue();
 
-            var populate_funcs = function (tree_data) {
-                if (!tree_data) { return ;}
-                var element;
-                for (var cnt in tree_data) {
-                    element = tree_data[cnt];
-                    known_funcs.push(element.translated);
-                    if (element.children && element.children.length > 0) {
-                        populate_funcs(element.children);
-                    }
-                }
-            };
-
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
-            populate_funcs(JSON.parse(to_parse));
+            this._populate_funcs(JSON.parse(to_parse), known_funcs);
 
             linter.execute('lint', [code, known_funcs]).done(function(errors) {
                 var codeMirrorErrors = [];
