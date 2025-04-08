@@ -1475,6 +1475,7 @@ function hide_x2m_body(widget) {
             this.childs     = [];
             this.visible    = true;
             this.is_parent  = false;
+            this.is_populated = false;
 
             if (this.parent){
                 this.parent.append_children(this);
@@ -1498,6 +1499,11 @@ function hide_x2m_body(widget) {
             }
             this.visible = visible;
         };
+        this.set_populated = function () {
+            this.is_populated = true;
+            if (this.parent)
+                this.parent.set_populated()
+        }
         this.init_tree_element = function(){
             var td, table, tbody, tr, expander, content, text;
             var tr_container, td_container;
@@ -1828,13 +1834,20 @@ function hide_x2m_body(widget) {
             }
             return prm;
         },
-        append_tree_element: function(parent, element, good_text, iter_lvl){
+        create_tree_element: function(parent, element, good_text, iter_lvl){
             var treeElem = new TreeElement();
             if (treeElem.init(parent, element, good_text, iter_lvl)){
-                treeElem.get_element().appendTo(this.tbody);
                 return treeElem;
             }
             return null;
+        },
+        append_tree_elements: function(tree_elem){
+            if (!tree_elem || !tree_elem.is_populated)
+                return;
+            tree_elem.get_element().appendTo(this.tbody);
+            for (var idx in tree_elem.childs){
+                this.append_tree_elements(tree_elem.childs[idx]);
+            }
         },
         clear_filter: function(){
             this.wid_text.val('');
@@ -1850,7 +1863,8 @@ function hide_x2m_body(widget) {
                     this.clear_tree();
                     this.json_data = json_data;
                     tree_data = JSON.parse(this.json_data);
-                    var filter  = this.wid_text.val() ? this.normalize_string(this.wid_text.val()) : undefined;
+                    var filter  = this.wid_text.val() ?
+                        this.normalize_string(this.wid_text.val()) : undefined;
                     this.populate_tree(tree_data, filter);
                 }
             } else {
@@ -1865,19 +1879,15 @@ function hide_x2m_body(widget) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         },
         filter_element: function(element, filter){
-            if (!filter)
+            if (!filter || (element.children && element.children.length > 0))
                 return true;
-            if (element.children && element.children.length > 0){
-                // When filtering, only shows node with unfiltered data
-                var filter_children = function(element) {
-                    return this.filter_element(element, filter);
-                }.bind(this);
-                return element.children.some(filter_children) ? true : false
+            var long_desc = element.long_description ?
+                this.normalize_string(element.long_description) : '';
+            var description = element.description ?
+                this.normalize_string(element.description) : '';
+            if (long_desc.includes(filter) || description.includes(filter)){
+                return true;
             }
-            var long_desc = element.long_description ? this.normalize_string(element.long_description) : '';
-            var translated = element.translated ? this.normalize_string(element.translated) : '';
-            if (long_desc.includes(filter) || translated.includes(filter))
-                return true;
             return false;
         },
         populate_tree: function(tree_data, filter, iter_lvl, parent){
@@ -1899,9 +1909,14 @@ function hide_x2m_body(widget) {
                 else
                     good_text = param_txt;
                 if (this.filter_element(element, filter)) {
-                    new_iter = this.append_tree_element(parent, element, good_text, iter_lvl);
-                    if (element.children && element.children.length > 0)
+                    new_iter = this.create_tree_element(parent, element, good_text, iter_lvl);
+                    if (element.children && element.children.length > 0) {
                         this.populate_tree(element.children, filter, iter_lvl + 1, new_iter);
+                    } else {
+                        new_iter.set_populated()
+                    }
+                if (!parent)
+                    this.append_tree_elements(new_iter);
                 }
             }
         },
