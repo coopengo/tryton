@@ -1501,7 +1501,7 @@ function hide_x2m_body(widget) {
         };
         this.set_populated = function () {
             this.is_populated = true;
-            if (this.parent)
+            if (this.parent && !this.parent.is_populated)
                 this.parent.set_populated()
         }
         this.init_tree_element = function(){
