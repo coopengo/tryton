@@ -1842,16 +1842,18 @@ function hide_x2m_body(widget) {
             return null;
         },
         append_tree_elements: function(tree_elem){
+            // Only show element if tree is populated
             if (!tree_elem || !tree_elem.is_populated)
                 return;
             tree_elem.get_element().appendTo(this.tbody);
             for (var idx in tree_elem.childs){
+                // Recursively append children nodes to the view
                 this.append_tree_elements(tree_elem.childs[idx]);
             }
         },
         clear_filter: function(){
             this.wid_text.val('');
-            // Pass an "event" as parameter to trigger redraw
+            // Pass an "event" as parameter to trigger redraw without filter
             this.display_tree(true);
         },
         display_tree: function(event){
@@ -1859,6 +1861,7 @@ function hide_x2m_body(widget) {
             var filter  = this.wid_text.val();
             json_data = this.record.field_get_client(this.tree_data_field);
             if (json_data){
+                // Trigger redraw if tree is updated OR if an event such as filter change is triggered
                 if (json_data != this.json_data || event){
                     this.clear_tree();
                     this.json_data = json_data;
@@ -1908,14 +1911,18 @@ function hide_x2m_body(widget) {
                     good_text = desc + '\n\n' + param_txt;
                 else
                     good_text = param_txt;
+                // Only treat parent node or filtered elements
                 if (this.filter_element(element, filter)) {
                     new_iter = this.create_tree_element(parent, element, good_text, iter_lvl);
                     if (element.children && element.children.length > 0) {
+                        // Populate children nodes
                         this.populate_tree(element.children, filter, iter_lvl + 1, new_iter);
                     } else {
+                        // Or set parent node as populated (At least one children node is unfiltered)
                         new_iter.set_populated()
                     }
                 if (!parent)
+                    // If treating root node, start building view tree
                     this.append_tree_elements(new_iter);
                 }
             }
