@@ -1860,9 +1860,21 @@ function hide_x2m_body(widget) {
             var linter = new Sao.Model('linter.Linter');
             var code = editor.getValue();
 
+            var populate_funcs = function (tree_data) {
+                if (!tree_data) { return ;}
+                var element;
+                for (var cnt in tree_data) {
+                    element = tree_data[cnt];
+                    known_funcs.push(element.translated);
+                    if (element.children && element.children.length > 0) {
+                        populate_funcs(element.children);
+                    }
+                }
+            };
+
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
-            this._populate_funcs(JSON.parse(to_parse), known_funcs);
+            populate_funcs(JSON.parse(to_parse));
 
             linter.execute('lint', [code, known_funcs]).done(function(errors) {
                 var codeMirrorErrors = [];
