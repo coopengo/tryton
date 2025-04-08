@@ -705,7 +705,8 @@ span.expander > img.icon {
 // Misc fields
 ///////////////////////////////////////////////////////////////////////////////
 
-div.form-many2one, div.form-selection, div.form-date, div.form-char {
+div.form-many2one, div.form-selection, div.form-date, div.form-datetime,
+div.form-char {
     padding:                0px 10px 0px 0px;
 
     .readonly {
@@ -713,11 +714,14 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
             .coog-readonly-field-mixin();
             background-image: none;
             border-right: unset;
+            > input[type=text] {
+                padding-right: 5px;
+            }
         }
     }
 }
 
-div.form-float {
+div.form-float, div.form-integer {
     padding:                0px 10px 0px 0px;
 
     .readonly {
