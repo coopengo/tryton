@@ -1592,18 +1592,15 @@ function hide_x2m_body(widget) {
             this.prev_record = undefined;
             this.init_editor();
             this.completionActive = true;
-            this.auto_complete_builtins = ["as", "assert", "break", "class",
-                "continue", "def", "del", "elif", "else", "except", "finally",
-                "for", "from", "global", "if", "import", "lambda", "pass",
-                "raise", "return", "try", "while", "with", "yield", "in",
-                "False", "True", "abs", "all", "any", "bin", "bool",
-                "bytearray", "callable", "chr", "classmethod", "compile",
-                "complex", "delattr", "dict", "dir", "divmod",
-                "enumerate", "eval", "filter", "float", "format", "frozenset",
-                "getattr", "globals", "hasattr", "hash", "hex", "id", "list",
-                "map", "max", "memoryview", "min", "next", "oct", "open",
-                "ord", "pow","range", "reversed", "set", "setattr", "slice",
-                "sorted","str", "sum", "tuple", "type","zip", "Decimal"];
+            this.auto_complete_builtins = ["break", "continue", "def", "elif",
+                "else", "for", "if", "lambda", "pass", "raise", "return",
+                "while", "with", "in", "False", "True", "abs", "all", "any",
+                "bool", "bytearray", "chr", "dict", "divmod", "enumerate",
+                "filter", "float", "format", "frozenset", "hash", "hex", "list",
+                "map", "max", "min", "next", "oct", "ord", "pow", "range",
+                "reversed", "set", "slice", "sorted", "str", "sum", "tuple",
+                "type", "zip", "Decimal", "break", "continue", "def", "elif"
+                ];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
