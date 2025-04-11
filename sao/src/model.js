@@ -2629,7 +2629,9 @@
                                     vals_to_set[key] = vals[key];
                                 }
                             }
-                            record2.set_on_change(vals_to_set);
+                            if (Object.keys(vals_to_set).length != 0) {
+                                record2.set_on_change(vals_to_set);
+                            }
                         }
                     }
                 }
@@ -2659,7 +2661,13 @@
                         }
                         const record2 = group.get(vals.id);
                         if (record2) {
-                            record2.set_on_change(vals);
+                            let to_update = Object.fromEntries(
+                                Object.entries(vals).filter(
+                                    ([k, v]) => !Object.hasOwn(vals_to_set, k)
+                                ));
+                            if (Object.keys(to_update).length != 0) {
+                                record2.set_on_change(vals);
+                            }
                         }
                     }
                 }
