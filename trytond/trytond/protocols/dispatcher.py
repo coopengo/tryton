@@ -26,8 +26,6 @@ from .wrappers import HTTPStatus, Response, abort, with_pool
 
 __all__ = ['register_authentication_service']
 
-__all__ = ['register_authentication_service']
-
 logger = logging.getLogger(__name__)
 
 # JCA: log slow RPC (> log_time_threshold)
@@ -228,7 +226,9 @@ def _dispatch(request, pool, *args, **kwargs):
     if method in obj.__rpc__:
         rpc = obj.__rpc__[method]
     else:
-        abort(HTTPStatus.FORBIDDEN)
+        abort(
+            HTTPStatus.BAD_REQUEST,
+            description=f"Method {method} is not available on {obj.__name__}")
 
     if request.authorization.type == 'session':
         session = request.authorization.get('session')
