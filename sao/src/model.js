@@ -2629,9 +2629,7 @@
                                     vals_to_set[key] = vals[key];
                                 }
                             }
-                            if (Object.keys(vals_to_set).length != 0) {
-                                record2.set_on_change(vals_to_set);
-                            }
+                            record2.set_on_change(vals_to_set);
                         }
                     }
                 }
@@ -2665,9 +2663,7 @@
                                 Object.entries(vals).filter(
                                     ([k, v]) => !Object.hasOwn(vals_to_set, k)
                                 ));
-                            if (Object.keys(to_update).length != 0) {
-                                record2.set_on_change(vals);
-                            }
+                            record2.set_on_change(to_update);
                         }
                     }
                 }
