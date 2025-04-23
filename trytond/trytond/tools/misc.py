@@ -6,6 +6,7 @@ Miscelleanous tools used by tryton
 """
 import importlib
 import io
+import ipaddress
 import os
 import re
 import types
@@ -324,3 +325,19 @@ def remove_forbidden_chars(value):
         if c in value:
             value = value.replace(c, ' ')
     return value.strip()
+
+
+def remote_address():
+    from trytond.transaction import Transaction
+    from trytond.config import config
+
+    context = Transaction().context
+    ip_address = ''
+    ip_network = ''
+    if context.get('_request') and (
+            remote_addr := context['_request'].get('remote_addr')):
+        ip_address = ipaddress.ip_address(str(remote_addr))
+        prefix = config.getint('session', f'ip_network_{ip_address.version}')
+        ip_network = ipaddress.ip_network(str(remote_addr))
+        ip_network = ip_network.supernet(new_prefix=prefix)
+    return ip_address, ip_network

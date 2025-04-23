@@ -7,6 +7,7 @@ from secrets import token_hex
 from trytond.cache import Cache
 from trytond.config import config
 from trytond.model import Index, ModelSQL, fields
+from trytond.tools import remote_address
 
 _session_timeout = datetime.timedelta(
     seconds=config.getint('session', 'timeout'))
@@ -19,6 +20,7 @@ class Session(ModelSQL):
     _rec_name = 'key'
 
     key = fields.Char("Key", required=True, strip=False)
+    ip_address = fields.Char("IP Address")
     _session_reset_cache = Cache('ir_session.session_reset', context=False)
 
     @classmethod
@@ -82,8 +84,10 @@ class Session(ModelSQL):
         now = datetime.datetime.now()
         timeout = datetime.timedelta(
             seconds=config.getint('session', 'max_age'))
+        address, _ = remote_address()
         sessions = cls.search([
                 ('create_uid', '=', user),
+                ('ip_address', '=', str(address)),
                 domain or [],
                 ])
         find, last_reset = None, None

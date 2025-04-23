@@ -19,6 +19,7 @@
         var prm = jQuery.ajax({
             headers: {
                 Authorization: 'Session ' + session.get_auth(),
+                "X-Tryton-Session": 'Session ' + session.get_auth(),
             },
             contentType: 'application/json',
             data: JSON.stringify({
