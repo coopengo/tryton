@@ -2324,7 +2324,8 @@
                             'minimumFractionDigits': 0,
                             'maximumFractionDigits': 20,
                         });
-                } else if ((typeof(val) == 'object') && (val.toString() === '[object Object]')) {
+                } else if ((typeof(val) == 'object')
+                                && (val.toString() === '[object Object]')) {
                     val = JSON.stringify(val);
                 }
             } else if (val.isDateTime) {
@@ -2333,7 +2334,8 @@
                 val = val.asSeconds();
             } else if (typeof(val) == 'boolean') {
                 val += 0;
-            } else if ((typeof(val) == 'object') && (val.toString() === '[object Object]')) {
+            } else if ((typeof(val) == 'object')
+                            && (val.toString() === '[object Object]')) {
                 val = JSON.stringify(val);
             }
             if ((i === 0) && indent && (typeof(val) == 'string')) {
