@@ -6,6 +6,7 @@ import resource
 import csv
 import time
 import faulthandler
+import datetime
 from io import StringIO
 
 MAX_RSS_MB = 1024
@@ -34,6 +35,25 @@ def on_starting(server):
             filename=server.cfg.accesslog, format=LF)
 
 
+def post_fork(server, worker):
+    if getattr(server.cfg, 'preload_app', False) is not True:
+        return
+    from trytond.transaction import Transaction
+    from trytond.cache import Cache
+
+    for db_name in db_list:
+        if (worker.pid, db_name) not in Cache._listener:
+            if not Cache._clean_last:
+                Cache._clean_last = datetime.date.min
+            with Transaction().start(db_name, 0, readonly=True):
+                # Starting a transaction will trigger `Cache.sync`, which
+                # should spawn a thread to listen for cache invalidation and
+                # pool refresh events
+                pass
+        if (worker.pid, db_name) not in Cache._listener:
+            raise AssertionError
+
+
 def post_request(worker, req, environ, resp):
     '''
     post_request() gunicorn hook called after a worker completed a request
@@ -45,7 +65,7 @@ def post_request(worker, req, environ, resp):
     pid = worker.pid
     # Only check every CHECK_INTERVAL seconds per worker
     logger.warning(f'Worker {pid} is being checked after '
-        f'{_last_checked.get(pid, 0) + CHECK_INTERVAL}')
+        f'{now - _last_checked.get(pid, 0)} seconds')
 
     if _last_checked.get(pid, 0) + CHECK_INTERVAL > now:
         return
@@ -62,7 +82,9 @@ def post_request(worker, req, environ, resp):
 
 
 def worker_int(worker):
-    """Called just before Gunicorn sends SIGQUIT or SIGINT on a failing worker"""
+    """
+    Called just before Gunicorn sends SIGQUIT or SIGINT on a failing worker
+    """
     logger.warning(f"Worker {worker.pid} killed — dumping traceback")
 
     # Dump traceback to designated file
@@ -74,7 +96,9 @@ def worker_int(worker):
 
 
 def worker_abort(worker):
-    """Called just before Gunicorn sends SIGABRT to a worker after timeout."""
+    """
+    Called just before Gunicorn sends SIGABRT to a worker after timeout.
+    """
     logger.warning(f"Worker {worker.pid} timed out — dumping traceback")
 
     # Dump traceback to designated file

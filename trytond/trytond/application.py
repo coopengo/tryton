@@ -6,7 +6,11 @@ import logging.config
 import os
 import threading
 import datetime
-import uwsgidecorators
+# uwsgdecorators are not available when using gunicorn
+try:
+    import uwsgidecorators
+except ModuleNotFoundError:
+    uwsgidecorators = None
 from io import StringIO
 
 __all__ = ['app', 'application']
@@ -75,8 +79,16 @@ application = app
 Pool.app_initialization_completed()
 assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
 
+def skip_on_gunicorn(func):
+    def wrapper(func):
+        if uwsgidecorators is None:
+            return
+        else:
+            return uwsgidecorators.postfork(func)
 
-@uwsgidecorators.postfork
+    return wrapper(func)
+
+@skip_on_gunicorn
 def preload():
     from trytond.transaction import Transaction
     from trytond.cache import Cache
