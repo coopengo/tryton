@@ -79,6 +79,7 @@ application = app
 Pool.app_initialization_completed()
 assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
 
+
 def skip_on_gunicorn(func):
     def wrapper(func):
         if uwsgidecorators is None:
@@ -87,6 +88,7 @@ def skip_on_gunicorn(func):
             return uwsgidecorators.postfork(func)
 
     return wrapper(func)
+
 
 @skip_on_gunicorn
 def preload():

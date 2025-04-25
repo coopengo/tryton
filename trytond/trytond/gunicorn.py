@@ -1,6 +1,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import os
+import signal
 import logging
 import resource
 import csv
@@ -31,8 +32,13 @@ def on_starting(server):
     Here we use it to bind out file with trytond logging
     '''
     if server.cfg.accesslog:
+        # log_format = getattr(server.cfg, 'accesslogformat', LF)
+        try:
+            open(server.cfg.accesslog, 'x')
+        except FileExistsError:
+            pass
         logging.basicConfig(level=str(server.cfg.loglevel).upper(),
-            filename=server.cfg.accesslog, format=LF)
+                filename=server.cfg.accesslog, format=LF)
 
 
 def post_fork(server, worker):
@@ -79,31 +85,3 @@ def post_request(worker, req, environ, resp):
         logger.warning(f'Worker {pid} exceeded RSS limit: '
             f'{rss_mb} MB > {MAX_RSS_MB} MB. Exiting.')
         worker.alive = False
-
-
-def worker_int(worker):
-    """
-    Called just before Gunicorn sends SIGQUIT or SIGINT on a failing worker
-    """
-    logger.warning(f"Worker {worker.pid} killed — dumping traceback")
-
-    # Dump traceback to designated file
-    try:
-        with open(f"/tmp/gunicorn-tracebacker-{worker.pid}.log", "w+")as f:
-            faulthandler.dump_traceback(file=f, all_threads=True)
-    except Exception as e:
-        logger.error(f"Failed to dump traceback: {e}")
-
-
-def worker_abort(worker):
-    """
-    Called just before Gunicorn sends SIGABRT to a worker after timeout.
-    """
-    logger.warning(f"Worker {worker.pid} timed out — dumping traceback")
-
-    # Dump traceback to designated file
-    try:
-        with open(f"/tmp/gunicorn-tracebacker-{worker.pid}.log", "w+")as f:
-            faulthandler.dump_traceback(file=f, all_threads=True)
-    except Exception as e:
-        logger.error(f"Failed to dump traceback: {e}")
