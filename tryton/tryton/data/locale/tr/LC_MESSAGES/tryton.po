@@ -584,9 +584,6 @@ msgstr ""
 msgid "User name:"
 msgstr ""
 
-msgid "Date:"
-msgstr ""
-
 #, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Lokal %s ayarlanamadı"

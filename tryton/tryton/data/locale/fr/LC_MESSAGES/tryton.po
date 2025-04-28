@@ -592,9 +592,6 @@ msgstr "Hôte / Port"
 msgid "User name:"
 msgstr "Nom d'utilisateur :"
 
-msgid "Date:"
-msgstr "Date : "
-
 msgid "Unable to complete email entry"
 msgstr "Impossible de compléter l'entrée d'e-mail"
 

@@ -602,10 +602,6 @@ msgid "User name:"
 msgstr "نام کاربر:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "پایگاه داده:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "قادر به حذف دستیار \"%s\" نیست"
 

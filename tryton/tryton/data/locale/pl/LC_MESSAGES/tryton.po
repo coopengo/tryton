@@ -588,10 +588,6 @@ msgstr "Informacje o hoście / bazie danych"
 msgid "User name:"
 msgstr "Użytkownik:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "Baza danych:"
-
 msgid "Unable to complete email entry"
 msgstr "Brak możliwości ukończenia edycji e-maila"
 

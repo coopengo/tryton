@@ -597,10 +597,6 @@ msgid "User name:"
 msgstr "Kasutaja nimi:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "Andmebaas:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Ei saa kustutada nõustajat %s"
 

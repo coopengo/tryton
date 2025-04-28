@@ -108,7 +108,7 @@
                         );
                 } else {
                     Sao.common.error.run(data.error[0], data.error[1])
-                        .always(dfd.reject);
+                        .always(() => dfd.reject(data.error));
                 }
             } else {
                 result = data.result;
@@ -147,7 +147,7 @@
                 var err_msg = `[${query.status}] ${error}`;
                 Sao.common.message.run(
                     Sao.i18n.gettext('Error: "%1". Try again later.', err_msg),
-                    'tryton-error').always(dfd.reject);
+                    'tryton-error', query.responseText).always(dfd.reject);
             }
         };
 

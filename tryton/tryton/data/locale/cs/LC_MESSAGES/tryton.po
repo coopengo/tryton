@@ -626,10 +626,6 @@ msgid "User name:"
 msgstr "Uživatelské jméno:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "Databáze:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Nemohu nastavit lokalizaci %s"
 

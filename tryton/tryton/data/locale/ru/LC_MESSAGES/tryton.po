@@ -623,10 +623,6 @@ msgid "User name:"
 msgstr "Имя пользователя:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "База данных:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Не удается установить локализацию %s"
 
