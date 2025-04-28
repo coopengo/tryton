@@ -17,11 +17,11 @@ class TestAction(ProteusTestCase):
 
     def test_act_window(self):
         IrModel = Model.get('ir.model')
-        actions = IrModel.find([
+        models = IrModel.find([
                 ('name', '=', 'ir.action'),
                 ])
         model_access = launch_action(
-            'ir.act_model_access_form_relate_model', actions)
+            'ir.act_model_access_form_relate_model', models)
         self.assertEqual(
             {m.__class__.__name__ for m in model_access},
             {'ir.model.access'})
