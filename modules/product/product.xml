@@ -6,6 +6,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="res.group" id="group_product_admin">
             <field name="name">Product Administration</field>
+            <field name="code">product_administration</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_product_admin">
             <field name="user" ref="res.user_admin"/>
