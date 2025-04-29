@@ -418,11 +418,8 @@ class Signature(Workflow, ModelSQL, ModelView):
             conf, _ = cls.get_authentification(signature.provider_credential)
             response = cls.call_provider(signature, conf, method,
                 signature.provider_id)
-            provider_status = cls.get_status_from_response(
-                    conf['provider'], response)
-            new_status = getattr(cls, conf['provider'] + '_transcode_status')()[
-                provider_status]
-            signature.update_status(new_status)
+            signature.update_status(cls.get_status_from_response(
+                conf['provider'], response))
 
     @classmethod
     @ModelView.button
