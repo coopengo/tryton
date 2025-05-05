@@ -429,12 +429,12 @@
             tab = new Sao.Tab.Board(attributes);
         }
         return tab.view_prm.then(function() {
-            Sao.Tab.add(tab);
+            Sao.Tab.add(tab, attributes.keyword);
         });
         return tab.view_prm;
     };
 
-    Sao.Tab.add = function(tab) {
+    Sao.Tab.add = function(tab, keyword) {
         var tabs = jQuery('#tabs');
         var tablist = jQuery('#tablist');
         var tabcontent = jQuery('#tabcontent');
@@ -458,13 +458,24 @@
             tab.close();
         }))
         .append(tab.name_el);
-        jQuery('<li/>', {
-            'role': 'presentation',
-            'data-placement': 'bottom',
-            id: 'nav-' + tab.id
-        }).append(tab_link)
-        .appendTo(tablist)
-        .data('tab', tab);
+        // Check if keyword is relate to trigger opening on next tab
+        if (keyword === 'form_relate') {
+            jQuery('<li/>', {
+                'role': 'presentation',
+                'data-placement': 'bottom',
+                id: 'nav-' + tab.id
+            }).append(tab_link)
+            .insertAfter(jQuery('#tablist').find('li.active'))
+            .data('tab', tab);
+        } else {
+            jQuery('<li/>', {
+                'role': 'presentation',
+                'data-placement': 'bottom',
+                id: 'nav-' + tab.id
+            }).append(tab_link)
+            .appendTo(tablist)
+            .data('tab', tab);
+        }
         jQuery('<div/>', {
             role: 'tabpanel',
             'class': 'tab-pane',
