@@ -149,10 +149,12 @@ def backup_db_cache(name):
 
 
 def _db_cache_file(path, name):
-    hash_name = name
+    hash_name = hashlib.shake_128(name.encode('utf8')).hexdigest(40 // 2)
     if DB_CACHE.startswith('postgresql://'):
         uri = parse_uri(DB_CACHE)
         prefix_len = len('test-') + len(uri.netloc) + 1
+        hash_name = hashlib.shake_128(name.encode('utf8')).hexdigest(
+            (63 - prefix_len) // 2)
         if not uri.netloc:
             return f"{DB_CACHE}/test-{hash_name}"
         else:
