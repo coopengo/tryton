@@ -63,7 +63,7 @@ class NumberEntry(Gtk.Entry, Gtk.Editable):
         if text not in ['-', self.__decimal_point, self.__thousands_sep]:
             try:
                 value = Decimal(locale.delocalize(text, self.monetary))
-            except ValueError:
+            except (ValueError, InvalidOperation):
                 return position
         if self.__digits:
             int_size, dec_size = self.__digits
