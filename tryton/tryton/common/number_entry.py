@@ -60,10 +60,10 @@ class NumberEntry(Gtk.Entry, Gtk.Editable):
         text = self.get_buffer().get_text()
         text = text[:position] + new_text + text[position:]
         value = None
-        if text not in ['', '-', self.__decimal_point, self.__thousands_sep]:
+        if text not in ['-', self.__decimal_point, self.__thousands_sep]:
             try:
                 value = Decimal(locale.delocalize(text, self.monetary))
-            except ValueError:
+            except (ValueError, InvalidOperation):
                 return position
         if self.__digits:
             int_size, dec_size = self.__digits
@@ -71,7 +71,7 @@ class NumberEntry(Gtk.Entry, Gtk.Editable):
                 if int_size is not None and value:
                     if math.ceil(math.log10(abs(value))) > int_size:
                         return position
-                if (dec_size is not None) and (value is not None):
+                if dec_size is not None:
                     if (round(value, dec_size) != value
                             or value.as_tuple().exponent < -dec_size):
                         return position
