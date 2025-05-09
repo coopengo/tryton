@@ -98,6 +98,8 @@ class Request(_Request):
         authorization = super(Request, self).authorization
         if authorization is None or authorization.type in ('token', 'bearer'):
             header = self.headers.get('Authorization')
+            if not header:
+                header = self.headers.get('X-Tryton-Session')
             return parse_authorization_header(header)
         elif authorization.type == 'session':
             # Werkzeug may parse the session as parameters

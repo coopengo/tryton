@@ -2,6 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 import datetime as dt
 import logging
+import ipaddress
 import random
 import time
 
@@ -62,9 +63,13 @@ def login(dbname, loginname, parameters, cache=True, context=None):
         if not cache:
             session = user_id
         else:
+            ip_address = ''
+            if context.get('_request') and (
+                    remote_addr := context['_request'].get('remote_addr')):
+                ip_address = str(ipaddress.ip_address(str(remote_addr)))
             with Transaction().start(dbname, user_id):
                 Session = pool.get('ir.session')
-                session = user_id, Session.new()
+                session = user_id, Session.new({'ip_address': ip_address})
         logger.info("login succeeded for '%s' from '%s' on database '%s'",
             loginname, _get_remote_addr(context), dbname)
     else:

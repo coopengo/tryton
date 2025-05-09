@@ -215,7 +215,7 @@ else:
 
 
 @app.route('/<string:database_name>/bus', methods=['POST'])
-@app.auth_required
+@app.session_valid
 def subscribe(request, database_name):
     if not _allow_subscribe:
         raise exceptions.NotImplemented
@@ -244,6 +244,11 @@ def subscribe(request, database_name):
     return Response(
         json.dumps(bus_response, cls=JSONEncoder, separators=(',', ':')),
         content_type='application/json')
+
+
+@app.route('/<string:database_name>/bus', methods=['OPTIONS'])
+def subscribe_options(request, database_name):
+    return Response('')
 
 
 def notify(title, body=None, priority=1, user=None, client=None):

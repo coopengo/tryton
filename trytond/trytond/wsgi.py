@@ -1,7 +1,9 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import base64
+import datetime
 import http.client
+import ipaddress
 import logging
 import os
 import posixpath
@@ -10,6 +12,7 @@ import traceback
 import urllib.parse
 from functools import wraps
 
+from sql import Table
 from werkzeug.routing import BaseConverter, Map, Rule
 
 try:
@@ -101,6 +104,52 @@ class TrytondWSGI(object):
                 abort(http.client.LENGTH_REQUIRED)
             elif content_length > max_size:
                 abort(http.client.REQUEST_ENTITY_TOO_LARGE)
+
+    def session_valid(self, func):
+        def abort_(request):
+            headers = {}
+            if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+                headers['WWW-Authenticate'] = 'Basic realm="Tryton"'
+            response = Response(None, http.client.UNAUTHORIZED, headers)
+            abort(http.client.UNAUTHORIZED, response=response)
+
+        timeout = datetime.timedelta(
+            seconds=config.getint('session', 'max_age'))
+        Session = Table('ir_session')
+
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            if (not request.authorization
+                    or request.authorization.type != 'session'):
+                abort_(request)
+            userid = request.authorization.get('userid')
+            session = request.authorization.get('session')
+
+            dbname = request.view_args.get('database_name')
+            database = backend.Database(dbname)
+            if not database.has_channel():
+                abort_(request)
+
+            ip_addr = ''
+            if request.remote_addr:
+                ip_addr = str(ipaddress.ip_address(str(request.remote_addr)))
+            now = datetime.datetime.now()
+            with database.get_connection(readonly=True) as conn:
+                cursor = conn.cursor()
+                cursor.execute(*Session.select(
+                        Session.create_date, Session.key,
+                        where=((Session.create_uid == userid)
+                            & (Session.ip_address == ip_addr))))
+                for session_date, session_key in cursor:
+                    if abs(session_date - now) < timeout:
+                        if session_key == session:
+                            break
+                else:
+                    abort_(request)
+
+            return func(request, *args, **kwargs)
+
+        return wrapper
 
     def dispatch_request(self, request):
         adapter = self.url_map.bind_to_environ(request.environ)
