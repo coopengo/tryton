@@ -79,7 +79,7 @@ else:
     if config.getboolean(
             'opentelemetry', 'enable_wsgi_instrumentation', default=True):
         Middleware = OpenTelemetryMiddleware
-        logger.info('Instrumented gunicorn')
+        logger.info('Instrumented wsgi')
 
     if config.getboolean(
             'opentelemetry', 'enable_psycopg2_instrumentation', default=False):

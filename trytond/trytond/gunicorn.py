@@ -10,8 +10,8 @@ import faulthandler
 import datetime
 from io import StringIO
 
-MAX_RSS_MB = 1024
-CHECK_INTERVAL = 30  # seconds
+MAX_RSS_MB = os.environ.get('MAX_RSS_MB', 1024)
+CHECK_INTERVAL = os.environ.get('CHECK_INTERVAL', 30)  # seconds
 _last_checked = {}
 LF = '%(process)s %(thread)s [%(asctime)s] %(levelname)s %(name)s %(message)s'
 
@@ -32,7 +32,6 @@ def on_starting(server):
     Here we use it to bind out file with trytond logging
     '''
     if server.cfg.accesslog:
-        # log_format = getattr(server.cfg, 'accesslogformat', LF)
         try:
             open(server.cfg.accesslog, 'x')
         except FileExistsError:
