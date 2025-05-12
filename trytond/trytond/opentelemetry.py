@@ -43,8 +43,9 @@ def configure_trace():
     # way AFAIK to detect which service is running except this.
     if sys.argv and sys.argv[0].endswith('celery'):
         service_name = base_service_name + '-celery'
-    elif sys.argv and sys.argv[0].endswith('gunicorn'):
-        service_name = base_service_name + '-gunicorn'
+    elif sys.argv and (sys.argv[0].endswith('gunicorn') or
+        sys.argv[0].endswith('uwsgi')):
+        service_name = base_service_name + '-wsgi'
     elif sys.argv and sys.argv[0].endswith('trytond-admin'):
         service_name = base_service_name + '-admin'
     else:

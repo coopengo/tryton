@@ -6,12 +6,11 @@ import logging
 import resource
 import csv
 import time
-import faulthandler
 import datetime
 from io import StringIO
 
-MAX_RSS_MB = os.environ.get('MAX_RSS_MB', 1024)
-CHECK_INTERVAL = os.environ.get('CHECK_INTERVAL', 30)  # seconds
+MAX_RSS_MB = os.environ.get('TRYTOND_MAX_RSS_MB', 1024)
+CHECK_INTERVAL = os.environ.get('TRYTOND_RSS_CHECK_INTERVAL', 30)  # seconds
 _last_checked = {}
 LF = '%(process)s %(thread)s [%(asctime)s] %(levelname)s %(name)s %(message)s'
 
@@ -41,6 +40,8 @@ def on_starting(server):
 
 
 def post_fork(server, worker):
+    # This post_fork is useful only when the app is loaded before
+    # forking. Which happen when preloa_app gunicorn config is set to True
     if getattr(server.cfg, 'preload_app', False) is not True:
         return
     from trytond.transaction import Transaction
