@@ -66,7 +66,8 @@ def post_request(worker, req, environ, resp):
     rss_mb = usage.ru_maxrss / (1024 ** 2)
     # To mimic uwsgi --reload-on-rss kill with inflated memory usage to
     # mitigate leaks
+    logger.debug(f'Worker {pid} is currently using {rss_mb} MB')
     if rss_mb > MAX_RSS_MB:
-        logger.warning(f'Worker {pid} exceeded RSS limit: '
+        logger.info(f'Worker {pid} exceeded RSS limit: '
             f'{rss_mb} MB > {MAX_RSS_MB} MB. Exiting.')
         worker.alive = False
