@@ -25,20 +25,6 @@ if db_names:
         db_list.append(name)
 
 
-def on_starting(server):
-    '''
-    on_starting() gunicorn hook called when starting server
-    Here we use it to bind out file with trytond logging
-    '''
-    if server.cfg.accesslog:
-        try:
-            open(server.cfg.accesslog, 'x')
-        except FileExistsError:
-            pass
-        logging.basicConfig(level=str(server.cfg.loglevel).upper(),
-                filename=server.cfg.accesslog, format=LF)
-
-
 def post_fork(server, worker):
     # This post_fork is useful only when the app is loaded before
     # forking. Which happen when preloa_app gunicorn config is set to True
@@ -70,12 +56,11 @@ def post_request(worker, req, environ, resp):
 
     pid = worker.pid
     # Only check every CHECK_INTERVAL seconds per worker
-    logger.warning(f'Worker {pid} is being checked after '
-        f'{now - _last_checked.get(pid, 0)} seconds')
-
     if _last_checked.get(pid, 0) + CHECK_INTERVAL > now:
         return
 
+    logger.info(f'Worker {pid} is being checked after '
+        f'{now - _last_checked.get(pid, 0)} seconds')
     _last_checked[pid] = now
     usage = resource.getrusage(resource.RUSAGE_SELF)
     rss_mb = usage.ru_maxrss / (1024 ** 2)
