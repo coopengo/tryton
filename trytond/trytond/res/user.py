@@ -55,6 +55,7 @@ from trytond.sendmail import send_message_transactional
 from trytond.tools import grouped_slice, remote_address
 from trytond.tools.email_ import (
     EmailNotValidError, normalize_email, set_from_header, validate_email)
+from trytond.tools.network import remote_address
 from trytond.transaction import Transaction, without_check_access
 from trytond.url import host, http_host
 from trytond.wizard import Button, StateTransition, StateView, Wizard
@@ -861,7 +862,7 @@ class LoginAttempt(ModelSQL):
         table = cls.__table__()
         cursor.execute(*table.delete(where=table.create_date < cls.delay()))
 
-        ip_address, ip_network = remote_address()
+        ip_address, ip_network = remote_address(Transaction().context)
         cls.create([{
                     'login': login,
                     'device_cookie': device_cookie,

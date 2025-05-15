@@ -29,7 +29,7 @@ try:
 except ImportError:
     from werkzeug.wsgi import SharedDataMiddleware
 
-from trytond import backend
+from trytond import backend, security
 from trytond.config import config
 from . import opentelemetry
 from trytond.protocols.jsonrpc import JSONProtocol
@@ -42,6 +42,14 @@ from trytond.tools import resolve, safe_join
 __all__ = ['TrytondWSGI', 'app']
 
 logger = logging.getLogger(__name__)
+
+
+def _do_basic_auth(request):
+    headers = {}
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        headers['WWW-Authenticate'] = 'Basic realm="Tryton"'
+    response = Response(None, http.client.UNAUTHORIZED, headers)
+    abort(http.client.UNAUTHORIZED, response=response)
 
 
 class Base64Converter(BaseConverter):
@@ -79,54 +87,24 @@ class TrytondWSGI(object):
             if request.user_id:
                 return func(request, *args, **kwargs)
             else:
-                headers = {}
-                if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
-                    headers['WWW-Authenticate'] = 'Basic realm="Tryton"'
-                response = Response(None, http.client.UNAUTHORIZED, headers)
-                abort(http.client.UNAUTHORIZED, response=response)
+                _do_basic_auth(request)
         return wrapper
 
     def session_valid(self, func):
-        def abort_(request):
-            headers = {}
-            if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
-                headers['WWW-Authenticate'] = 'Basic realm="Tryton"'
-            response = Response(None, http.client.UNAUTHORIZED, headers)
-            abort(http.client.UNAUTHORIZED, response=response)
-
-        timeout = datetime.timedelta(
-            seconds=config.getint('session', 'max_age'))
-        Session = Table('ir_session')
-
         @wraps(func)
         def wrapper(request, *args, **kwargs):
             if (not request.authorization
                     or request.authorization.type != 'session'):
-                abort_(request)
+                _do_basic_auth(request)
             userid = request.authorization.get('userid')
             session = request.authorization.get('session')
-
             dbname = request.view_args.get('database_name')
-            database = backend.Database(dbname)
-            if not database.has_channel():
-                abort_(request)
 
             ip_addr = ''
             if request.remote_addr:
                 ip_addr = str(ipaddress.ip_address(str(request.remote_addr)))
-            now = datetime.datetime.now()
-            with database.get_connection(readonly=True) as conn:
-                cursor = conn.cursor()
-                cursor.execute(*Session.select(
-                        Session.create_date, Session.key,
-                        where=((Session.create_uid == userid)
-                            & (Session.ip_address == ip_addr))))
-                for session_date, session_key in cursor:
-                    if abs(session_date - now) < timeout:
-                        if session_key == session:
-                            break
-                else:
-                    abort_(request)
+            if not security.check_session(dbname, userid, session, ip_addr):
+                _do_basic_auth(request)
 
             return func(request, *args, **kwargs)
 

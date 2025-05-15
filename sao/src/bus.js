@@ -12,14 +12,14 @@
     Sao.Bus.listen = function(last_message, wait) {
         wait = wait || 1;
         var session = Sao.Session.current_session;
-        if (!session) {
+        if (!session || !session.bus_url) {
             return;
         }
 
+        let url = new URL(`${session.database}/bus`, session.bus_url);
         var prm = jQuery.ajax({
             headers: {
                 Authorization: 'Session ' + session.get_auth(),
-                "X-Tryton-Session": 'Session ' + session.get_auth(),
             },
             contentType: 'application/json',
             data: JSON.stringify({
@@ -27,7 +27,7 @@
                 channels: Sao.Bus.channels
             }),
             dataType: 'json',
-            url: '/' + session.database + '/bus',
+            url: url,
             type: 'POST',
             timeout: Sao.config.bus_timeout,
         });

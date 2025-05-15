@@ -22,6 +22,9 @@ from trytond.transaction import Transaction
 from trytond.url import http_host
 from trytond.wsgi import app
 
+_bus_subscribe = config.getboolean('bus', 'allow_subscribe', default=False)
+_bus_url = config.get('bus', 'url_host', default='')
+
 logger = logging.getLogger(__name__)
 IDENTITIES = set()
 METADATA = {}
@@ -165,6 +168,7 @@ def acs(request, pool, identity):
     query.append(('login', login))
     query.append(('user_id', user_id))
     query.append(('session', session))
+    query.append(('bus_url', _bus_url if _bus_subscribe else ''))
     parts = list(parts)
     parts[3] = urllib.parse.urlencode(query)
     return redirect(urllib.parse.urlunsplit(parts))

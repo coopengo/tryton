@@ -8,6 +8,8 @@ from trytond.cache import Cache
 from trytond.config import config
 from trytond.model import Index, ModelSQL, fields
 from trytond.tools import remote_address
+from trytond.tools.network import remote_address
+from trytond.transaction import Transaction
 
 _session_timeout = datetime.timedelta(
     seconds=config.getint('session', 'timeout'))
@@ -43,6 +45,11 @@ class Session(ModelSQL):
     @classmethod
     def default_key(cls, nbytes=None):
         return token_hex(nbytes)
+
+    @classmethod
+    def default_ip_address(cls):
+        ip_address, _ = remote_address(Transaction().context)
+        return str(ip_address)
 
     @classmethod
     def write(cls, *args):
@@ -84,7 +91,7 @@ class Session(ModelSQL):
         now = datetime.datetime.now()
         timeout = datetime.timedelta(
             seconds=config.getint('session', 'max_age'))
-        address, _ = remote_address()
+        address, _ = remote_address(Transaction().context)
         sessions = cls.search([
                 ('create_uid', '=', user),
                 ('ip_address', '=', str(address)),

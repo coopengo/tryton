@@ -8,6 +8,7 @@ import threading
 import time
 import uuid
 from urllib.error import HTTPError
+from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
 from gi.repository import GLib
@@ -24,15 +25,17 @@ CHANNELS = [
     ]
 
 
-def listen(connection):
+def listen(connection, base_url):
     if not CONFIG['thread']:
         return
+    if not base_url:
+        return
     listener = threading.Thread(
-        target=_listen, args=(connection,), daemon=True)
+        target=_listen, args=(connection, base_url), daemon=True)
     listener.start()
 
 
-def _listen(connection):
+def _listen(connection, base_url):
     bus_timeout = CONFIG['client.bus_timeout']
     session = connection.session
     authorization = base64.b64encode(session.encode('utf-8'))
@@ -46,10 +49,10 @@ def _listen(connection):
     url = None
     while connection.session == session:
         if url is None:
-            if connection.url is None:
+            if connection._database is None:
                 time.sleep(1)
                 continue
-            url = connection.url + '/bus'
+            url = urljoin(base_url, f'{connection._database}/bus')
         request = Request(url,
             data=json.dumps({
                     'last_message': last_message,

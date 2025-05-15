@@ -6,6 +6,8 @@ import ipaddress
 import random
 import time
 
+from sql import Table
+
 from trytond import backend
 from trytond.config import config
 from trytond.exceptions import LoginException, RateLimitException
@@ -13,6 +15,7 @@ from trytond.pool import Pool
 from trytond.transaction import Transaction
 
 logger = logging.getLogger(__name__)
+_session_max_age = config.getint('session', 'max_age')
 
 
 def _get_pool(dbname):
@@ -63,13 +66,10 @@ def login(dbname, loginname, parameters, cache=True, context=None):
         if not cache:
             session = user_id
         else:
-            ip_address = ''
-            if context.get('_request') and (
-                    remote_addr := context['_request'].get('remote_addr')):
-                ip_address = str(ipaddress.ip_address(str(remote_addr)))
-            with Transaction().start(dbname, user_id):
+            with (Transaction().start(dbname, user_id) as t,
+                    t.set_context(_request=context.get('_request'))):
                 Session = pool.get('ir.session')
-                session = user_id, Session.new({'ip_address': ip_address})
+                session = user_id, Session.new()
         logger.info("login succeeded for '%s' from '%s' on database '%s'",
             loginname, _get_remote_addr(context), dbname)
     else:
@@ -187,6 +187,30 @@ def check_timeout(dbname, user, session, context=None):
         logger.info("session timeout for '%s' from '%s' on database '%s'",
             user, _get_remote_addr(context), dbname)
     return valid
+
+
+# This method is specifically not using the pool for performance reasons
+def check_session(dbname, userid, key, ip_addr):
+    database = backend.Database(dbname)
+    now = dt.datetime.now()
+    timeout = dt.timedelta(_session_max_age)
+    conn = database.get_connection(readonly=True)
+    try:
+        session = Table('ir_session')
+        cursor = conn.cursor()
+        cursor.execute(*session.select(
+                session.create_date, session.key,
+                where=((session.create_uid == userid)
+                    & (session.ip_address == ip_addr))))
+        for session_date, session_key in cursor:
+            if abs(session_date - now) < timeout:
+                if session_key == key:
+                    break
+        else:
+            return False
+        return True
+    finally:
+        database.put_connection(conn)
 
 
 def reset(dbname, session, context):
