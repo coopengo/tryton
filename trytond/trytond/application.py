@@ -6,7 +6,11 @@ import logging.config
 import os
 import threading
 import datetime
-import uwsgidecorators
+# uwsgdecorators are not available when using gunicorn
+try:
+    import uwsgidecorators
+except ModuleNotFoundError:
+    uwsgidecorators = None
 from io import StringIO
 
 __all__ = ['app', 'application']
@@ -65,13 +69,28 @@ if db_names:
 # be NO CACHE INVALIDATION when the pool is initialized.
 #
 # If this is not the cause, good luck
+#
+# [EDIT]
+# Now with gunicorn integration python file are imported after forking, no need
+# to implement a post_fork
+
 application = app
 
 Pool.app_initialization_completed()
 assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
 
 
-@uwsgidecorators.postfork
+def skip_on_gunicorn(func):
+    def wrapper(func):
+        if uwsgidecorators is None:
+            return
+        else:
+            return uwsgidecorators.postfork(func)
+
+    return wrapper(func)
+
+
+@skip_on_gunicorn
 def preload():
     from trytond.transaction import Transaction
     from trytond.cache import Cache
