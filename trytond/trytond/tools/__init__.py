@@ -14,7 +14,7 @@ from .misc import (
     entry_points, escape_wildcard, file_open, find_dir, find_path, firstline,
     get_smtp_server, grouped_slice, import_module, is_full_text,
     is_instance_method, likify, lstrip_wildcard, pairwise_longest,
-    reduce_domain, reduce_ids, remove_forbidden_chars, resolve,
+    reduce_domain, reduce_ids, remote_address, remove_forbidden_chars, resolve,
     rstrip_wildcard, slugify, sortable_values, sql_pairing, strip_wildcard,
     unescape_wildcard)
 
@@ -85,6 +85,7 @@ __all__ = [
     pairwise_longest,
     reduce_domain,
     reduce_ids,
+    remote_address,
     remove_forbidden_chars,
     resolve,
     rstrip_wildcard,

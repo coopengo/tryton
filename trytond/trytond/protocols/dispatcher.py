@@ -78,6 +78,10 @@ ir_lang = Table('ir_lang')
 ir_module = Table('ir_module')
 res_user = Table('res_user')
 
+_bus_subscribe = config.getboolean('bus', 'allow_subscribe', default=False)
+_bus_url = config.get('bus', 'url_host', default='')
+
+
 # JCA: log slow RPC
 def log_exception(method, *args, **kwargs):
     kwargs['exc_info'] = False
@@ -117,7 +121,7 @@ def login(request, database_name, user, parameters, language=None):
         code = HTTPStatus.TOO_MANY_REQUESTS
     if not session:
         abort(code)
-    return session
+    return (session, _bus_url if _bus_subscribe and _bus_url else None)
 
 
 @app.auth_required

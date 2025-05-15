@@ -1,7 +1,9 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import base64
+import datetime
 import http.client
+import ipaddress
 import logging
 import os
 import posixpath
@@ -10,6 +12,7 @@ import traceback
 import urllib.parse
 from functools import wraps
 
+from sql import Table
 from werkzeug.routing import BaseConverter, Map, Rule
 
 try:
@@ -26,7 +29,7 @@ try:
 except ImportError:
     from werkzeug.wsgi import SharedDataMiddleware
 
-from trytond import backend
+from trytond import backend, security
 from trytond.config import config
 from . import opentelemetry
 from trytond.protocols.jsonrpc import JSONProtocol
@@ -39,6 +42,14 @@ from trytond.tools import resolve, safe_join
 __all__ = ['TrytondWSGI', 'app']
 
 logger = logging.getLogger(__name__)
+
+
+def _do_basic_auth(request):
+    headers = {}
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        headers['WWW-Authenticate'] = 'Basic realm="Tryton"'
+    response = Response(None, http.client.UNAUTHORIZED, headers)
+    abort(http.client.UNAUTHORIZED, response=response)
 
 
 class Base64Converter(BaseConverter):
@@ -76,38 +87,40 @@ class TrytondWSGI(object):
             if request.user_id:
                 return func(request, *args, **kwargs)
             else:
-                headers = {}
-                if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
-                    headers['WWW-Authenticate'] = 'Basic realm="Tryton"'
-                response = Response(None, http.client.UNAUTHORIZED, headers)
-                abort(http.client.UNAUTHORIZED, response=response)
+                _do_basic_auth(request)
         return wrapper
 
-    def check_request_size(self, request, size=None):
-        if request.method not in {'POST', 'PUT', 'PATCH'}:
-            return
-        if size is None:
-            if request.user_id:
-                max_size = config.getint(
-                    'request', 'max_size_authenticated')
-            else:
-                max_size = config.getint(
-                    'request', 'max_size')
-        else:
-            max_size = size
-        if max_size:
-            content_length = request.content_length
-            if content_length is None:
-                abort(http.client.LENGTH_REQUIRED)
-            elif content_length > max_size:
-                abort(http.client.REQUEST_ENTITY_TOO_LARGE)
+    def session_valid(self, func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            if (not request.authorization
+                    or request.authorization.type != 'session'):
+                _do_basic_auth(request)
+            userid = request.authorization.get('userid')
+            session = request.authorization.get('session')
+            dbname = request.view_args.get('database_name')
+
+            ip_addr = ''
+            if request.remote_addr:
+                ip_addr = str(ipaddress.ip_address(str(request.remote_addr)))
+            if not security.check_session(dbname, userid, session, ip_addr):
+                _do_basic_auth(request)
+
+            return func(request, *args, **kwargs)
+
+        return wrapper
 
     def dispatch_request(self, request):
         adapter = self.url_map.bind_to_environ(request.environ)
         try:
             endpoint, request.view_args = adapter.match()
-            max_request_size = getattr(endpoint, 'max_request_size', None)
-            self.check_request_size(request, max_request_size)
+            if hasattr(endpoint, 'max_request_size'):
+                max_size = endpoint.max_request_size
+            elif request.user_id:
+                max_size = config.getint('request', 'max_size_authenticated')
+            else:
+                max_size = config.getint('request', 'max_size')
+            request.max_content_length = max_size
             return endpoint(request, **request.view_args)
         except exceptions.HTTPException as e:
             logger.debug(

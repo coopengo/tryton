@@ -19,6 +19,7 @@ from tryton.jsonrpc import Fault, ServerPool, ServerProxy
 
 logger = logging.getLogger(__name__)
 CONNECTION = None
+BUS_URL = None
 _USER = None
 _USERNAME = ''
 _HOST = ''
@@ -87,7 +88,7 @@ def authentication_services(host, port):
 
 def set_service_session(parameters):
     from tryton import common
-    global CONNECTION, _USER
+    global CONNECTION, _USER, BUS_URL
     host = CONFIG['login.host']
     hostname = common.get_hostname(host)
     port = common.get_port(host)
@@ -103,18 +104,19 @@ def set_service_session(parameters):
         if _USER != renew_id:
             raise ValueError
     _USER = user_id
+    BUS_URL = parameters.get('bus_url', [''])[0]
     session = ':'.join(map(str, [username, user_id, session]))
     if CONNECTION is not None:
         CONNECTION.close()
     CONNECTION = ServerPool(
         hostname, port, database, session=session, cache=not CONFIG['dev'])
-    bus.listen(CONNECTION)
+    bus.listen(CONNECTION, BUS_URL)
 
 
 # ABD: Add date and set_date parameters to login function (ca093423)
 def login(parameters):
     from tryton import common
-    global CONNECTION, _USER
+    global CONNECTION, _USER, BUS_URL
     host = CONFIG['login.host']
     hostname = common.get_hostname(host)
     port = common.get_port(host)
@@ -126,18 +128,19 @@ def login(parameters):
     logger.info('common.db.login(%s, %s, %s)', username, 'x' * 10, language)
     result = connection.common.db.login(username, parameters, language)
     logger.debug('%r', result)
-    _USER = result[0]
-    session = ':'.join(map(str, [username] + result))
+    _USER = result[0][0]
+    BUS_URL = result[1]
+    session = ':'.join(map(str, [username] + result[0]))
     if CONNECTION is not None:
         CONNECTION.close()
     CONNECTION = ServerPool(
         hostname, port, database, session=session, cache=not CONFIG['dev'])
     device_cookie.renew()
-    bus.listen(CONNECTION)
+    bus.listen(CONNECTION, BUS_URL)
 
 
 def logout():
-    global CONNECTION, _USER
+    global CONNECTION, _USER, BUS_URL
     if CONNECTION is not None:
         try:
             logger.info('common.db.logout()')
@@ -147,6 +150,7 @@ def logout():
             pass
         CONNECTION.close()
         CONNECTION = None
+    BUS_URL = None
     _USER = None
     _VIEW_CACHE.clear()
     _TOOLBAR_CACHE.clear()

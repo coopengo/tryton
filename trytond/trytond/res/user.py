@@ -52,9 +52,10 @@ from trytond.pyson import Bool, Eval, PYSONEncoder
 from trytond.report import Report, get_email
 from trytond.rpc import RPC
 from trytond.sendmail import send_message_transactional
-from trytond.tools import grouped_slice
+from trytond.tools import grouped_slice, remote_address
 from trytond.tools.email_ import (
     EmailNotValidError, normalize_email, set_from_header, validate_email)
+from trytond.tools.network import remote_address
 from trytond.transaction import Transaction, without_check_access
 from trytond.url import host, http_host
 from trytond.wizard import Button, StateTransition, StateView, Wizard
@@ -848,21 +849,6 @@ class LoginAttempt(ModelSQL):
         return (datetime.datetime.now()
             - datetime.timedelta(seconds=config.getint('session', 'timeout')))
 
-    @classmethod
-    def ipaddress(cls):
-        context = Transaction().context
-        ip_address = ''
-        ip_network = ''
-        if context.get('_request') and context['_request'].get('remote_addr'):
-            ip_address = ipaddress.ip_address(
-                str(context['_request']['remote_addr']))
-            prefix = config.getint(
-                'session', 'ip_network_%s' % ip_address.version)
-            ip_network = ipaddress.ip_network(
-                str(context['_request']['remote_addr']))
-            ip_network = ip_network.supernet(new_prefix=prefix)
-        return ip_address, ip_network
-
     def _login_size(func):
         @wraps(func)
         def wrapper(cls, login, *args, **kwargs):
@@ -876,7 +862,7 @@ class LoginAttempt(ModelSQL):
         table = cls.__table__()
         cursor.execute(*table.delete(where=table.create_date < cls.delay()))
 
-        ip_address, ip_network = cls.ipaddress()
+        ip_address, ip_network = remote_address(Transaction().context)
         cls.create([{
                     'login': login,
                     'device_cookie': device_cookie,
@@ -909,7 +895,7 @@ class LoginAttempt(ModelSQL):
     def count_ip(cls):
         cursor = Transaction().connection.cursor()
         table = cls.__table__()
-        _, ip_network = cls.ipaddress()
+        _, ip_network = remote_address()
         cursor.execute(*table.select(Count(Literal('*')),
                 where=(table.ip_network == str(ip_network))
                 & (table.create_date >= cls.delay())))

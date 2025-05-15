@@ -9,13 +9,11 @@ import selectors
 import threading
 import time
 import uuid
-from urllib.parse import urljoin
 
 from trytond import backend
 from trytond.config import config
 from trytond.protocols.jsonrpc import JSONDecoder, JSONEncoder
-from trytond.protocols.wrappers import (
-    HTTPStatus, Response, exceptions, redirect)
+from trytond.protocols.wrappers import HTTPStatus, Response, abort, exceptions
 from trytond.tools import resolve
 from trytond.transaction import Transaction
 from trytond.wsgi import app
@@ -100,28 +98,32 @@ class LongPollingBus:
                 return cls.create_response(channel, content)
 
         event = threading.Event()
-        for channel in channels:
-            if channel in cls._queues[pid, database]['events']:
-                event_channel = cls._queues[pid, database]['events'][channel]
-            else:
+        try:
+            for channel in channels:
                 with cls._queues_lock[pid]:
                     event_channel = cls._queues[pid, database][
                         'events'][channel]
-            event_channel.append(event)
+                    event_channel.append(event)
 
-        triggered = event.wait(_long_polling_timeout)
-        if not triggered:
-            response = cls.create_response(None, None)
-        else:
-            response = cls.create_response(
-                *cls._messages[database].get_next(channels, last_message))
-
-        with cls._queues_lock[pid]:
-            for channel in channels:
-                events = cls._queues[pid, database]['events'][channel]
-                for e in events[:]:
-                    if e.is_set():
-                        events.remove(e)
+            triggered = event.wait(_long_polling_timeout)
+            if not triggered:
+                response = cls.create_response(None, None)
+            else:
+                response = cls.create_response(
+                    *cls._messages[database].get_next(channels, last_message))
+        finally:
+            with cls._queues_lock[pid]:
+                queue_events = cls._queues[pid, database]['events']
+                for channel in channels:
+                    if channel not in queue_events:
+                        continue
+                    events = queue_events[channel]
+                    try:
+                        events.remove(event)
+                    except ValueError:
+                        pass
+                    if not events:
+                        del queue_events[channel]
 
         return response
 
@@ -215,17 +217,12 @@ else:
 
 
 @app.route('/<string:database_name>/bus', methods=['POST'])
-@app.auth_required
+@app.session_valid
 def subscribe(request, database_name):
     if not _allow_subscribe:
         raise exceptions.NotImplemented
     if _url_host and _url_host != request.host_url:
-        response = redirect(
-            urljoin(_url_host, request.path), HTTPStatus.PERMANENT_REDIRECT)
-        # Allow to change the redirection after some time
-        response.headers['Cache-Control'] = (
-            'private, max-age=%s' % _web_cache_timeout)
-        return response
+        abort(HTTPStatus.UNAUTHORIZED)
     user = request.authorization.get('userid')
     channels = request.parsed_data.get('channels', [])
     if user is None:
@@ -244,6 +241,11 @@ def subscribe(request, database_name):
     return Response(
         json.dumps(bus_response, cls=JSONEncoder, separators=(',', ':')),
         content_type='application/json')
+
+
+@app.route('/<string:database_name>/bus', methods=['OPTIONS'])
+def subscribe_options(request, database_name):
+    return Response('')
 
 
 def notify(title, body=None, priority=1, user=None, client=None):
