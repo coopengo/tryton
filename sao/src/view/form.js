@@ -1720,6 +1720,7 @@ function hide_x2m_body(widget) {
             // Feed hint and lint context with general rule context
             if (!tree_data) { return ;}
             var element;
+            var duplicate;
             for (var cnt in tree_data) {
                 element = tree_data[cnt];
                 if (element.translated) {
