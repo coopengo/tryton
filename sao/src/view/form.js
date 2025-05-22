@@ -1615,8 +1615,8 @@ function hide_x2m_body(widget) {
                 "filter", "float", "format", "frozenset", "hash", "hex", "list",
                 "map", "max", "min", "next", "oct", "ord", "pow", "range",
                 "reversed", "set", "slice", "sorted", "str", "sum", "tuple",
-                "type", "zip", "Decimal", "break", "continue", "def", "elif"
-                ];
+                "type", "zip", "Decimal", "break", "continue", "def", "elif",
+                "match", "case"];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
@@ -1722,11 +1722,13 @@ function hide_x2m_body(widget) {
             var element;
             for (var cnt in tree_data) {
                 element = tree_data[cnt];
-                if (!func_list.includes(element.translated)) {
-                    if (element.fct_args)
-                        func_list.push({text: element.translated.concat('(', element.fct_args, ')'), displayText: element.translated});
-                    else
-                        func_list.push(element.translated);
+                if (element.translated) {
+                    // Remove function duplicate from current rule to replace
+                    // them with appropriate name_of_func() completion
+                    duplicate = func_list.indexOf(element.translated)
+                    if (duplicate > -1)
+                        func_list.splice(duplicate, 1)
+                    func_list.push({text: element.translated.concat('(', element.fct_args, ')'), displayText: element.translated});
                 }
                 if (element.children && element.children.length > 0) {
                     this._populate_funcs(element.children, func_list);
@@ -1751,9 +1753,11 @@ function hide_x2m_body(widget) {
                 list: [...new Set(list)]
             };
 
+            // Feed hint context with coog context
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
             this._populate_funcs(JSON.parse(to_parse), inner.list);
+
             // Filter context names based on the current word
             inner.list = inner.list.filter(function(fn) {
                 if (fn.displayText)
