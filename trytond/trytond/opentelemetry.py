@@ -43,8 +43,9 @@ def configure_trace():
     # way AFAIK to detect which service is running except this.
     if sys.argv and sys.argv[0].endswith('celery'):
         service_name = base_service_name + '-celery'
-    elif sys.argv and sys.argv[0].endswith('uwsgi'):
-        service_name = base_service_name + '-uwsgi'
+    elif sys.argv and (sys.argv[0].endswith('gunicorn') or
+        sys.argv[0].endswith('uwsgi')):
+        service_name = base_service_name + '-wsgi'
     elif sys.argv and sys.argv[0].endswith('trytond-admin'):
         service_name = base_service_name + '-admin'
     else:
@@ -79,7 +80,7 @@ else:
     if config.getboolean(
             'opentelemetry', 'enable_wsgi_instrumentation', default=True):
         Middleware = OpenTelemetryMiddleware
-        logger.info('Instrumented uwsgi')
+        logger.info('Instrumented wsgi')
 
     if config.getboolean(
             'opentelemetry', 'enable_psycopg2_instrumentation', default=False):

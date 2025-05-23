@@ -243,7 +243,7 @@
     };
 
     Sao.common.parse_time = function(format, value) {
-        var date = moment(value, Sao.common.moment_format(format), true);
+        var date = moment(value, Sao.common.moment_format(format));
         if (date.isValid()) {
             date = Sao.Time(
                 date.hour(), date.minute(), date.second(), date.millisecond());
@@ -282,7 +282,10 @@
         if (!value) {
             return null;
         }
-        var date = moment(value, Sao.common.moment_format(date_format), true);
+        if (value && value.length <= 5) {
+            return Sao.Date(undefined, undefined, undefined, false, value);
+        }
+        var date = moment(value, Sao.common.moment_format(date_format));
         if (date.isValid()) {
             date = Sao.Date(date.year(), date.month(), date.date());
         } else {
@@ -305,7 +308,7 @@
         if (!value) {
             return null;
         }
-        var date = moment(value, Sao.common.moment_format(datetime_format), true);
+        var date = moment(value, Sao.common.moment_format(datetime_format));
         if (date.isValid()) {
             date = Sao.DateTime(date.year(), date.month(), date.date(),
                     date.hour(), date.minute(), date.second(),
