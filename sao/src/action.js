@@ -106,6 +106,7 @@
                 params.context_model = action.context_model;
                 params.show_filter = action.show_filter;
                 params.context_domain = action.context_domain;
+                params.window_name_field = action.window_name_field;
                 if ((action.limit !== undefined) && (action.limit !== null)) {
                     params.limit = action.limit;
                 }
