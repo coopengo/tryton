@@ -597,10 +597,6 @@ msgid "User name:"
 msgstr "Nome utente:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "Database:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "Impossibile impostare la localizzazione %s"
 

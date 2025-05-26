@@ -588,10 +588,6 @@ msgstr "Strežnik in podatkovna baza"
 msgid "User name:"
 msgstr "Uporabnik:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "Podatkovna baza:"
-
 msgid "Unable to complete email entry"
 msgstr "Ni mogoče samodejno dokončati e-poštnega vnosa"
 

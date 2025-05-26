@@ -467,7 +467,9 @@ function hide_x2m_body(widget) {
             if (button.attributes.type != 'client_action') {
                 button.el.prop('disabled', true);  // state will be reset at display
             }
-            this.screen.button(button.attributes);
+            this.screen.button(button.attributes).fail(() => {
+                button.set_state(this.record);
+            });
         },
         on_scan_code: function(code) {
             var record = this.record;
@@ -1473,6 +1475,7 @@ function hide_x2m_body(widget) {
             this.childs     = [];
             this.visible    = true;
             this.is_parent  = false;
+            this.is_populated = false;
 
             if (this.parent){
                 this.parent.append_children(this);
@@ -1496,6 +1499,11 @@ function hide_x2m_body(widget) {
             }
             this.visible = visible;
         };
+        this.set_populated = function () {
+            this.is_populated = true;
+            if (this.parent && !this.parent.is_populated)
+                this.parent.set_populated()
+        }
         this.init_tree_element = function(){
             var td, table, tbody, tr, expander, content, text;
             var tr_container, td_container;
@@ -1589,6 +1597,16 @@ function hide_x2m_body(widget) {
             this.json_data = '';
             this.prev_record = undefined;
             this.init_editor();
+            this.completionActive = true;
+            this.auto_complete_builtins = ["break", "continue", "def", "elif",
+                "else", "for", "if", "lambda", "pass", "raise", "return",
+                "while", "with", "in", "False", "True", "abs", "all", "any",
+                "bool", "bytearray", "chr", "dict", "divmod", "enumerate",
+                "filter", "float", "format", "frozenset", "hash", "hex", "list",
+                "map", "max", "min", "next", "oct", "ord", "pow", "range",
+                "reversed", "set", "slice", "sorted", "str", "sum", "tuple",
+                "type", "zip", "Decimal", "break", "continue", "def", "elif"
+                ];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
@@ -1679,11 +1697,67 @@ function hide_x2m_body(widget) {
             });
             this.codeMirror.on('change', this.send_modified.bind(this));
             this.codeMirror.on('blur', this._focus_out.bind(this));
+            // When hint are toggled, autocomplete on input
+            this.codeMirror.on('inputRead', this._show_hint.bind(this));
             this.codeMirror.setOption("extraKeys" ,{
                 "Alt-R": "replace",
                 "Shift-Alt-R": "replaceAll",
                 "Ctrl-S": this._save.bind(this),
+                "Ctrl-Space": this._enable_hint.bind(this),
             });
+        },
+        _populate_funcs: function (tree_data, func_list) {
+            // Feed hint and lint context with general rule context
+            if (!tree_data) { return ;}
+            var element;
+            for (var cnt in tree_data) {
+                element = tree_data[cnt];
+                if (!func_list.includes(element.translated))
+                    func_list.push(element.translated);
+                if (element.children && element.children.length > 0) {
+                    this._populate_funcs(element.children, func_list);
+                }
+            }
+        },
+        _hint: function(cm) {
+            var cursor = this.codeMirror.getCursor();
+            var token = this.codeMirror.getTokenAt(cursor);
+            var start = token.start;
+            var end = token.end;
+            var word = token.string;
+            // Feed hint context with hardcoded builtins, and variable names in current rule
+            var list =  [...this.auto_complete_builtins]
+            CodeMirror.runMode(this.codeMirror.getValue(), 'python', function(name, kind) {
+                if (['variable', 'keyword'].includes(kind) && name != word)
+                    return list.push(name);
+              })
+            var inner = {
+                from: CodeMirror.Pos(cursor.line, start),
+                to: CodeMirror.Pos(cursor.line, end),
+                list: [...new Set(list)]
+            };
+
+            var to_parse = "[]";
+            if (this.json_data) { to_parse = this.json_data ;}
+            this._populate_funcs(JSON.parse(to_parse), inner.list);
+            // Filter context names based on the current word
+            inner.list = inner.list.filter(function(fn) {
+              return fn.startsWith(word);
+            });
+
+            return inner;
+        },
+        _show_hint: function(editor) {
+            if (this.completionActive === true) {
+                editor.showHint({
+                    hint: this._hint.bind(this),
+                    completeSingle: false
+                });
+            }
+        },
+        _enable_hint: function(editor, event){
+            this.completionActive = this.completionActive ? false : true;
+            this._show_hint(editor);
         },
         _save: function() {
             var current_tab = Sao.Tab.tabs.get_current();
@@ -1731,6 +1805,34 @@ function hide_x2m_body(widget) {
                 'class': 'tree table table-hover'
             }).appendTo(this.sc_tree);
 
+            // Search header
+            this.theader = jQuery('<thead/>', {
+                'class': 'form-char xexpand required'
+            }).appendTo(this.table);
+            this.search_div = jQuery('<div/>', {
+                'class': 'input-group input-group-sm input-icon input-icon-secondary',
+                'width': '100%'
+            }).appendTo(this.theader);
+            // Search input (it update tree automatically)
+            this.wid_text = jQuery('<input/>', {
+                'type': 'text',
+                'class': 'form-control input-sm',
+                'placeholder': Sao.i18n.gettext('Search'),
+            }).appendTo(this.search_div);
+            this.wid_text.on('keyup', this.display_tree.bind(this));
+            // Search clear button
+            this.clear_btn = jQuery('<div/>', {
+                'class': 'icon-input icon-secondary',
+                'arial-label': Sao.i18n.gettext("Clear"),
+                'title': Sao.i18n.gettext("Clear"),
+            }).append(jQuery('<span>x</span>', {
+                'aria-hidden': true,
+            })).appendTo(this.search_div);
+            // Make it show like its clickable, and do something when acting upon it
+            this.clear_btn.css('cursor', 'pointer');
+            this.clear_btn.on('click', this.clear_filter.bind(this));
+
+            // T(h)ree body problem solved
             this.tbody = jQuery('<tbody/>').appendTo(this.table);
             this.tbody.css({
                 'display': 'block',
@@ -1779,22 +1881,6 @@ function hide_x2m_body(widget) {
                 }
             }.bind(this);
 
-            var display_tree = function(){
-                var tree_data, json_data;
-                json_data = this.record.field_get_client(this.tree_data_field);
-                if (json_data){
-                    if (json_data != this.json_data){
-                        this.clear_tree();
-                        this.json_data = json_data;
-                        tree_data = JSON.parse(this.json_data);
-                        this.populate_tree(tree_data);
-                    }
-                }else {
-                    this.tree_data = [];
-                    this.clear_tree();
-                }
-            }.bind(this);
-
             if (!this.field || !this.record) {
                 this.codeMirror.setValue('');
                 this.clear_tree();
@@ -1810,22 +1896,70 @@ function hide_x2m_body(widget) {
             if (this.tree_data_field){
                 if (!this.record)
                     return prm;
-                prm = this.record.load(this.tree_data_field).then(display_tree);
+                prm = this.record.load(this.tree_data_field).then(this.display_tree());
             }
             return prm;
         },
-        append_tree_element: function(parent, element, good_text, iter_lvl){
+        create_tree_element: function(parent, element, good_text, iter_lvl){
             var treeElem = new TreeElement();
             if (treeElem.init(parent, element, good_text, iter_lvl)){
-                treeElem.get_element().appendTo(this.tbody);
                 return treeElem;
             }
             return null;
         },
+        append_tree_elements: function(tree_elem){
+            // Only show element if tree is populated
+            if (!tree_elem || !tree_elem.is_populated)
+                return;
+            tree_elem.get_element().appendTo(this.tbody);
+            for (var idx in tree_elem.childs){
+                // Recursively append children nodes to the view
+                this.append_tree_elements(tree_elem.childs[idx]);
+            }
+        },
+        clear_filter: function(){
+            this.wid_text.val('');
+            // Pass an "event" as parameter to trigger redraw without filter
+            this.display_tree(true);
+        },
+        display_tree: function(event){
+            var tree_data, json_data;
+            var filter  = this.wid_text.val();
+            json_data = this.record.field_get_client(this.tree_data_field);
+            if (json_data){
+                // Trigger redraw if tree is updated OR if an event such as filter change is triggered
+                if (json_data != this.json_data || event){
+                    this.clear_tree();
+                    this.json_data = json_data;
+                    tree_data = JSON.parse(this.json_data);
+                    var filter  = this.wid_text.val() ?
+                        this.normalize_string(this.wid_text.val()) : undefined;
+                    this.populate_tree(tree_data, filter);
+                }
+            } else {
+                this.tree_data = [];
+                this.clear_tree();
+            }
+        },
         clear_tree: function(){
             this.tbody.empty();
         },
-        populate_tree: function(tree_data, iter_lvl, parent){
+        normalize_string: function(str){
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        },
+        filter_element: function(element, filter){
+            if (!filter || (element.children && element.children.length > 0))
+                return true;
+            var long_desc = element.long_description ?
+                this.normalize_string(element.long_description) : '';
+            var description = element.description ?
+                this.normalize_string(element.description) : '';
+            if (long_desc.includes(filter) || description.includes(filter)){
+                return true;
+            }
+            return false;
+        },
+        populate_tree: function(tree_data, filter, iter_lvl, parent){
             var element, cnt;
             var desc, param_txt, good_text, new_iter;
 
@@ -1843,9 +1977,20 @@ function hide_x2m_body(widget) {
                     good_text = desc + '\n\n' + param_txt;
                 else
                     good_text = param_txt;
-                new_iter = this.append_tree_element(parent, element, good_text, iter_lvl);
-                if (element.children && element.children.length > 0)
-                    this.populate_tree(element.children, iter_lvl + 1, new_iter);
+                // Only treat parent node or filtered elements
+                if (this.filter_element(element, filter)) {
+                    new_iter = this.create_tree_element(parent, element, good_text, iter_lvl);
+                    if (element.children && element.children.length > 0) {
+                        // Populate children nodes
+                        this.populate_tree(element.children, filter, iter_lvl + 1, new_iter);
+                    } else {
+                        // Or set parent node as populated (At least one children node is unfiltered)
+                        new_iter.set_populated()
+                    }
+                if (!parent)
+                    // If treating root node, start building view tree
+                    this.append_tree_elements(new_iter);
+                }
             }
         },
         set_value: function(){
@@ -1864,21 +2009,9 @@ function hide_x2m_body(widget) {
             var linter = new Sao.Model('linter.Linter');
             var code = editor.getValue();
 
-            var populate_funcs = function (tree_data) {
-                if (!tree_data) { return ;}
-                var element;
-                for (var cnt in tree_data) {
-                    element = tree_data[cnt];
-                    known_funcs.push(element.translated);
-                    if (element.children && element.children.length > 0) {
-                        populate_funcs(element.children);
-                    }
-                }
-            };
-
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
-            populate_funcs(JSON.parse(to_parse));
+            this._populate_funcs(JSON.parse(to_parse), known_funcs);
 
             linter.execute('lint', [code, known_funcs]).done(function(errors) {
                 var codeMirrorErrors = [];
@@ -5365,13 +5498,7 @@ function hide_x2m_body(widget) {
             var record = this.record;
             var field = this.field;
             this.update_selection(record, field, () => {
-                var yexpand = this.attributes.yexpand;
-                if (yexpand === undefined) {
-                    yexpand = this.expand;
-                }
-                if (!yexpand) {
-                    this.select.prop('size', this.select.children().length);
-                }
+                this.select.prop('size', this.select.children().length);
                 if (!field) {
                     return;
                 }

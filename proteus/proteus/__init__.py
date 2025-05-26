@@ -927,7 +927,7 @@ class Model(object):
                     action = config.get_proxy('ir.action').get_action_value(
                         action, context)
                 return _convert_action(
-                    action, records, context=context, config=config)
+                    action, data=records, context=context, config=config)
             return action
         else:
             record, = records
@@ -1276,8 +1276,10 @@ class Wizard(object):
 
             self.actions = []
             for action in result.get('actions', []):
+                act_def, act_data = action
                 proteus_action = _convert_action(
-                    *action, context=self._context, config=self._config)
+                    act_def, data=act_data, context=self._context,
+                    config=self._config)
                 if proteus_action is not None:
                     self.actions.append(proteus_action)
 
@@ -1321,7 +1323,30 @@ class Report(object):
         return self._proxy.execute(ids, data, self._context)
 
 
-def _convert_action(action, data=None, context=None, config=None):
+def launch_action(xml_id, records, context=None, config=None):
+    if records:
+        assert len({type(x) for x in records}) == 1
+    if context is None:
+        context = {}
+
+    if isinstance(xml_id, str):
+        ModelData = Model.get('ir.model.data')
+
+        if not config:
+            config = proteus.config.get_config()
+        context = config.context
+
+        action_id = ModelData.get_id(*xml_id.split('.'), context)
+    elif isinstance(xml_id, int):
+        action_id = xml_id
+
+    Action = Model.get('ir.action')
+    action = Action.get_action_value(action_id, context)
+    return _convert_action(
+        action, data=records, context=context, config=config)
+
+
+def _convert_action(action, *, data=None, context=None, config=None):
     if config is None:
         config = proteus.config.get_config()
     records = None

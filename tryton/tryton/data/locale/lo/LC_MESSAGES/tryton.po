@@ -616,10 +616,6 @@ msgid "User name:"
 msgstr "ຊື່ຜູ້ໃຊ້:"
 
 #, fuzzy
-msgid "Date:"
-msgstr "ຖານຂໍ້ມູນ:"
-
-#, fuzzy
 msgid "Unable to complete email entry"
 msgstr "ບໍ່ສາມາດຕັ້ງຄ່າ ທ້ອງຖິ່ນ %s ໄດ້."
 

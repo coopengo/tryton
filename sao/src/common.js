@@ -282,6 +282,9 @@
         if (!value) {
             return null;
         }
+        if (value && value.length <= 5) {
+            return Sao.Date(undefined, undefined, undefined, false, value);
+        }
         var date = moment(value, Sao.common.moment_format(date_format));
         if (date.isValid()) {
             date = Sao.Date(date.year(), date.month(), date.date());
@@ -859,6 +862,9 @@
                 });
             }
         };
+        if (this._selection_prm.state() == 'rejected') {
+            this._selection_prm = jQuery.when();
+        }
         this._selection_prm.done(_update_selection);
     };
     Sao.common.selection_mixin.filter_selection = function(
@@ -1929,9 +1935,8 @@
                 return '%';
             }
             var escaped = value
-                .replace(escape + '%', '')
-                .replace(escape + '_', '');
-            if (escaped.contains('%') || escaped.contains('_')) {
+                .replace(escape + '%', '');
+            if (escaped.contains('%')) {
                 return value;
             } else {
                 return '%' + value + '%';
@@ -1945,9 +1950,8 @@
                 escaped = escaped.slice(1, -1);
             }
             escaped = escaped
-                .replace(escape + '%', '')
-                .replace(escape + '_', '');
-            if (escaped.contains('%') || escaped.contains('_')) {
+                .replace(escape + '%', '');
+            if (escaped.contains('%')) {
                 return false;
             }
             return value.startsWith('%') && value.endsWith('%');
@@ -1955,15 +1959,13 @@
         is_like: function(value, escape) {
             escape = escape || '\\';
             var escaped = value
-                .replace(escape + '%', '')
-                .replace(escape + '_', '');
-            return escaped.contains('%') || escaped.contains('_');
+                .replace(escape + '%', '');
+            return escaped.contains('%');
         },
         unescape: function(value, escape) {
             escape = escape || '\\';
             return value
-                .replace(escape + '%', '%')
-                .replace(escape + '_', '_');
+                .replace(escape + '%', '%');
         },
         quote: function(value) {
             if (typeof value != 'string') {
@@ -2321,12 +2323,10 @@
                 (expression.length > 2) &&
                 (typeof expression[1] == 'string'));
         },
-        constrained_leaf: function(part, boolop) {
-            if (boolop === undefined) {
-                boolop = this.and;
-            }
+        constrained_leaf: function(part) {
             var operand = part[1];
-            if ((operand === '=') & (boolop === this.and)) {
+            let value = part[2];
+            if ((operand === '=') || ((operand == 'in') && (value.length == 1))) {
                 // We should consider that other domain inversion will set a
                 // correct value to this field
                 return true;
@@ -2871,7 +2871,7 @@
         for (var i=1, len=splitted.length; i < len; i = i+2) {
             char = splitted[i];
             if (escape) {
-                if ((char == '%') || (char == '_')) {
+                if ((char == '%')) {
                     chars.push(char);
                 } else {
                     chars.push('\\', char);
@@ -2879,8 +2879,6 @@
                 escape = false;
             } else if (char == '\\') {
                 escape = true;
-            } else if (char == '_') {
-                chars.push('.');
             } else if (char == '%') {
                 chars.push('.*');
             } else {
@@ -2950,8 +2948,7 @@
                         ((field in context) &&
                             (this.domain_inversion.eval_leaf(
                                 part, context, this.domain_inversion.and) ||
-                                this.domain_inversion.constrained_leaf(
-                                    part, this.domain_inversion.and)))) {
+                                this.domain_inversion.constrained_leaf(part)))) {
                         result.push(true);
                     } else {
                         return false;
@@ -3006,9 +3003,7 @@
                     field = this.base(field);
                     if ((field in context) &&
                         (this.domain_inversion.eval_leaf(
-                            part, context, this.domain_inversion.or)) ||
-                        this.domain_inversion.constrained_leaf(
-                            part, this.domain_inversion.or)) {
+                            part, context, this.domain_inversion.or))) {
                         return true;
                     } else if ((field in context) &&
                             !this.domain_inversion.eval_leaf(part, context,
@@ -3288,7 +3283,7 @@
 
     Sao.common.MessageDialog = Sao.class_(Sao.common.UniqueDialog, {
         class_: 'message-dialog',
-        build_dialog: function(message, icon, prm) {
+        build_dialog: function(message, icon, additional_info, prm) {
             var dialog = Sao.common.MessageDialog._super.build_dialog.call(
                 this);
             dialog.header.remove();
@@ -3298,6 +3293,17 @@
             }).append(jQuery('<span/>')
                 .text(message)
                 .css('white-space', 'pre-wrap')));
+            if (additional_info) {
+                let show_more = jQuery('<span/>').text(
+                    Sao.i18n.gettext("Show / Hide more"));
+                let more_info = jQuery('<div/>').html(additional_info);
+                dialog.body.append(show_more);
+                dialog.body.append(more_info);
+                more_info.hide();
+                show_more.click(() => {
+                    more_info.toggle();
+                });
+            }
             jQuery('<button/>', {
                 'class': 'btn btn-primary',
                 'type': 'button',
@@ -3308,9 +3314,9 @@
             }).appendTo(dialog.footer);
             return dialog;
         },
-        run: function(message, icon) {
+        run: function(message, icon, additional_info) {
             return Sao.common.MessageDialog._super.run.call(
-                    this, message, icon || 'tryton-info');
+                    this, message, icon || 'tryton-info', additional_info);
         }
     });
     Sao.common.message = new Sao.common.MessageDialog();
@@ -3687,7 +3693,7 @@
         el.closest('.treeview')
             .css('overflow-y', overflow)
             .css('max-height', height);
-        el.closest('.modal-body').css('overflow-y', overflow);
+        el.closest('.modal-body').css('overflow', overflow);
         el.closest('.navbar-collapse.in').css('overflow-y', overflow);
         el.closest('.content-box').css('overflow-y', overflow);
         el.parents('fieldset.form-group_').css('overflow', overflow);

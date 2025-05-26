@@ -588,10 +588,6 @@ msgstr "Información del Servidor / Base de datos"
 msgid "User name:"
 msgstr "Nombre de usuario:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "Base de datos:"
-
 msgid "Unable to complete email entry"
 msgstr "No se ha podido completar la entrada de correo electrónico"
 

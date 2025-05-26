@@ -595,10 +595,6 @@ msgstr "Сервер / База даних"
 msgid "User name:"
 msgstr "Ім'я користувача:"
 
-#, fuzzy
-msgid "Date:"
-msgstr "База даних:"
-
 msgid "Unable to complete email entry"
 msgstr "Не вдалося відправити ел.лист"
 

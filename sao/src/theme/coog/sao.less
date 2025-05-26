@@ -237,6 +237,14 @@ td.editable > div.cell > span.widget > input[type="checkbox"]:before {
     border-bottom:    none;
 }
 
+// Minimum column size for binary columns editable trees
+table > colgroup > col.binary {
+    min-width:         170px;
+}
+table > thead > tr > th.binary > div {
+    min-width:         170px;
+}
+
 // the expander in the th should be set outside of the normal flow because
 // resizing the column makes the span and the div into the th to stack
 .treeview {
@@ -564,6 +572,16 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
             }
             > div.form-container > div.form-text {
                 padding:                0px;
+
+                > div.form-text {
+                    padding:            0px;
+                    > div.input-group {
+                        margin-bottom: 0px;
+                        > textarea {
+                            margin-bottom: 0px;
+                        }
+                    }
+                }
             }
         }
         // Better space usage if there is only one xxx2many in the group
@@ -687,7 +705,8 @@ span.expander > img.icon {
 // Misc fields
 ///////////////////////////////////////////////////////////////////////////////
 
-div.form-many2one, div.form-selection, div.form-date, div.form-char {
+div.form-many2one, div.form-selection, div.form-date, div.form-datetime,
+div.form-char {
     padding:                0px 10px 0px 0px;
 
     .readonly {
@@ -695,11 +714,14 @@ div.form-many2one, div.form-selection, div.form-date, div.form-char {
             .coog-readonly-field-mixin();
             background-image: none;
             border-right: unset;
+            > input[type=text] {
+                padding-right: 5px;
+            }
         }
     }
 }
 
-div.form-float {
+div.form-float, div.form-integer {
     padding:                0px 10px 0px 0px;
 
     .readonly {
@@ -784,6 +806,10 @@ div.form-richtext.panel {
         > div.panel-body > div.input-group {
             .coog-readonly-field-mixin();
             margin:         0px;
+
+            > div.richtext {
+                user-select:       text;
+            }
         }
     }
 }

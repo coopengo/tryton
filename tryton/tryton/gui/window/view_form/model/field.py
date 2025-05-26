@@ -911,7 +911,8 @@ class O2MField(Field):
                 if record2 is not None:
                     vals_to_set = {
                         k: v for k, v in vals.items() if k not in new_fields}
-                    record2.set_on_change(vals_to_set)
+                    if vals_to_set:
+                        record2.set_on_change(vals_to_set)
 
             record.value[self.name].add_fields(new_fields)
             for index, vals in value.get('add', []):
@@ -929,7 +930,11 @@ class O2MField(Field):
                     continue
                 record2 = group.get(vals['id'])
                 if record2 is not None:
-                    record2.set_on_change(vals)
+                    to_set = {k: v
+                        for k, v in vals.items()
+                        if k not in vals_to_set}
+                    if to_set:
+                        record2.set_on_change(to_set)
 
     def validation_domains(self, record, pre_validate=None):
         screen_domain, attr_domain = self.domains_get(record, pre_validate)

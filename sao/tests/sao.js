@@ -1668,7 +1668,7 @@
             ['', '%'],
             ['foo', '%foo%'],
             ['foo%', 'foo%'],
-            ['foo_bar', 'foo_bar'],
+            ['foo_bar', '%foo_bar%'],
             ['foo\\%', '%foo\\%%'],
             ['foo\\_bar', '%foo\\_bar%'],
         ].forEach(function(test) {
@@ -2474,6 +2474,60 @@
             'domain_inversion(' + JSON.stringify(domain) + ', \'x\')');
     });
 
+    QUnit.test('DomainInversion unconstrained_inversion', function() {
+        let domain_inversion = new Sao.common.DomainInversion();
+        domain_inversion = domain_inversion.domain_inversion.bind(
+            domain_inversion);
+        let compare = Sao.common.compare;
+
+        let domain = [['x', '=', 3], ['y', 'in', ['a', 'b']]];
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x'), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x')`);
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x', {'y': 'a'}), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x', {'y': 'a'})`);
+        QUnit.strictEqual(
+            domain_inversion(domain, 'x', {'y': 'c'}), false,
+            `domain_inversion(${domain}, 'x', {'y': 'c'})`);
+    });
+
+    QUnit.test('DomainInversion constrained_equal_inversion', function() {
+        let domain_inversion = new Sao.common.DomainInversion();
+        domain_inversion = domain_inversion.domain_inversion.bind(
+            domain_inversion);
+        let compare = Sao.common.compare;
+
+        let domain = [['x', '=', 3], ['y', '=', 'a']];
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x'), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x')`);
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x', {'y': 'a'}), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x', {'y': 'a'})`);
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x', {'y': 'c'}), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x', {'y': 'c'})`);
+    });
+
+    QUnit.test('DomainInversion constrained_in_inversion', function() {
+        let domain_inversion = new Sao.common.DomainInversion();
+        domain_inversion = domain_inversion.domain_inversion.bind(
+            domain_inversion);
+        let compare = Sao.common.compare;
+
+        let domain = [['x', '=', 3], ['y', 'in', ['a']]];
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x'), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x')`);
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x', {'y': 'a'}), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x', {'y': 'a'})`);
+        QUnit.ok(
+            compare(domain_inversion(domain, 'x', {'y': 'c'}), [['x', '=', 3]]),
+            `domain_inversion(${domain}, 'x', {'y': 'c'})`);
+    });
+
     QUnit.test('DomainInversion and_inversion', function() {
         var domain_inversion = new Sao.common.DomainInversion();
         domain_inversion = domain_inversion.domain_inversion.bind(
@@ -2754,7 +2808,7 @@
             [[['x', '=', 3]], [['x', '=', 3]]],
             [[[['x', '=', 3]]], [['x', '=', 3]]],
             [
-                [[['x', '=', 3], ['y', '=', 4]]], 
+                [[['x', '=', 3], ['y', '=', 4]]],
                 [['x', '=', 3], ['y', '=', 4]]],
             [['OR', ['x', '=', 3]], [['x', '=', 3]]],
             [
