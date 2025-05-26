@@ -2,7 +2,7 @@
     'use strict';
 
     Sao.View.Form.JSON = Sao.class_(Sao.View.Form.Widget, {
-        class_: 'form-json',
+        class_: 'form-json form-text',
         expand: true,
         init: function(view, attributes) {
             Sao.View.Form.JSON._super.init.call(this, view, attributes);
