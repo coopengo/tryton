@@ -1565,6 +1565,33 @@ function hide_x2m_body(widget) {
         this.get_element = function(){
             return this.el;
         };
+        this.get_element_without_parent = function(){
+            var temp_parent = this.parent
+            var temp_lvl = this.lvl
+            this.parent = null
+            this.lvl = 0
+            var truncated_el = this.init_tree_element();
+            this.parent = temp_parent
+            this.lvl = temp_lvl
+            return truncated_el;
+        };
+        this.set_expander = function(expanded){
+            var icon = '';
+            if (expanded)
+                icon = 'minus';
+            else
+                icon = 'plus';
+
+            this.expander.empty();
+            var span = jQuery('<span/>', {
+                'class': 'glyphicon glyphicon-' + icon
+            }).appendTo(this.expander);
+            span.html('&nbsp;');
+            span.css({
+                'float': 'right'
+            });
+            this.expanded = expanded;
+        };
         this.append_children = function(children){
             this.childs.push(children);
             if (!this.is_parent){
@@ -1599,8 +1626,8 @@ function hide_x2m_body(widget) {
                 "filter", "float", "format", "frozenset", "hash", "hex", "list",
                 "map", "max", "min", "next", "oct", "ord", "pow", "range",
                 "reversed", "set", "slice", "sorted", "str", "sum", "tuple",
-                "type", "zip", "Decimal", "break", "continue", "def", "elif"
-                ];
+                "type", "zip", "Decimal", "break", "continue", "def", "elif",
+                "match", "case"];
         },
         init_editor: function(){
             var button_apply_command = function(evt) {
@@ -1704,10 +1731,17 @@ function hide_x2m_body(widget) {
             // Feed hint and lint context with general rule context
             if (!tree_data) { return ;}
             var element;
+            var duplicate;
             for (var cnt in tree_data) {
                 element = tree_data[cnt];
-                if (!func_list.includes(element.translated))
-                    func_list.push(element.translated);
+                if (element.translated) {
+                    // Remove function duplicate from current rule to replace
+                    // them with appropriate name_of_func() completion
+                    duplicate = func_list.indexOf(element.translated)
+                    if (duplicate > -1)
+                        func_list.splice(duplicate, 1)
+                    func_list.push({text: element.translated.concat('(', element.fct_args, ')'), displayText: element.translated});
+                }
                 if (element.children && element.children.length > 0) {
                     this._populate_funcs(element.children, func_list);
                 }
@@ -1731,12 +1765,16 @@ function hide_x2m_body(widget) {
                 list: [...new Set(list)]
             };
 
+            // Feed hint context with coog context
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
             this._populate_funcs(JSON.parse(to_parse), inner.list);
+
             // Filter context names based on the current word
             inner.list = inner.list.filter(function(fn) {
-              return fn.startsWith(word);
+                if (fn.displayText)
+                    return fn.displayText.startsWith(word)
+                return fn.startsWith(word);
             });
 
             return inner;
@@ -1901,14 +1939,18 @@ function hide_x2m_body(widget) {
             }
             return null;
         },
-        append_tree_elements: function(tree_elem){
+        append_tree_elements: function(tree_elem, filter){
             // Only show element if tree is populated
             if (!tree_elem || !tree_elem.is_populated)
                 return;
-            tree_elem.get_element().appendTo(this.tbody);
+            if (!filter ){
+                tree_elem.get_element().appendTo(this.tbody);
+            } else if (!tree_elem.childs || tree_elem.childs.length == 0){
+                tree_elem.get_element_without_parent().appendTo(this.tbody);
+            }
             for (var idx in tree_elem.childs){
                 // Recursively append children nodes to the view
-                this.append_tree_elements(tree_elem.childs[idx]);
+                this.append_tree_elements(tree_elem.childs[idx], filter);
             }
         },
         clear_filter: function(){
@@ -1981,9 +2023,9 @@ function hide_x2m_body(widget) {
                         // Or set parent node as populated (At least one children node is unfiltered)
                         new_iter.set_populated()
                     }
-                if (!parent)
-                    // If treating root node, start building view tree
-                    this.append_tree_elements(new_iter);
+                    if (!parent && element.children && element.children.length > 0)
+                        // If treating root node, start building view tree
+                        this.append_tree_elements(new_iter, filter);
                 }
             }
         },
