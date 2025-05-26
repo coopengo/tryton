@@ -47,10 +47,8 @@ class JSON(Widget):
     def display(self):
         super().display()
         value = self.field and self.field.get(self.record)
-        print(1, value)
         if value is None:
             value = ''
         else:
             value = json.dumps(value, indent=2)
-        print(2, value)
         self.set_buffer(value, self.textview)
