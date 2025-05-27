@@ -25,7 +25,8 @@ module.exports = function(grunt) {
       'src/bus.js',
       'src/plugins.js',
       'src/html_sanitizer.js',
-      'custom.js'
+      'custom.js',
+      'src/view/coog.js',
   ];
   var less_paths = [
       'src',
