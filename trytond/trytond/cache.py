@@ -69,9 +69,7 @@ class BaseCache(object):
     _instances = {}
     context_ignored_keys = {
         'client', '_request', '_check_access', '_skip_warnings',
-        'session', 'token',
         'screen_size', 'view_tree_width',
-        'rec_name_key',
         }
 
     def __init__(
