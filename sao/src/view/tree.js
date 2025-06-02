@@ -128,7 +128,7 @@
         xml_parser: Sao.View.TreeXMLViewParser,
         draggable: false,
         display_size: null,
-        init: function(view_id, screen, xml, children_field) {
+        init: function(view_id, screen, xml, children_field, children_definitions) {
             this.children_field = children_field;
             this.optionals = {};
             this.sum_widgets = new Map();
@@ -163,6 +163,13 @@
             this.expanded = new Set();
 
             Sao.View.Tree._super.init.call(this, view_id, screen, xml);
+            //
+            // [Coog specific]
+            //      > used for multi_mixed_view , expand_children (?)
+            this.children_definitions = children_definitions;
+            // [Coog specific]
+            //      > attribute always_expand (expand tree view)
+            this.always_expand = this.attributes.always_expand || null;
 
             // Table of records
             this.rows = [];
@@ -1487,8 +1494,8 @@
             return row;
         },
         n_children: function(row) {
-            if (!row || !this.children_field) {
-                return this.rows.length;
+            if (!row || !this.children_field || row.is_leaf()) {
+                    return this.rows.length;
             }
             if (row.record.is_loaded(this.children_field)) {
                 return row.record.field_get_client(this.children_field).length;
@@ -1645,6 +1652,8 @@
             this.record = record;
             this.parent_ = parent;
             this.children_field = tree.children_field;
+            // [Coog specific] multi_mixed_view
+            this.children_definitions = tree.children_definitions;
             this.expander = null;
             this._group_position = null;
             this._path = null;
@@ -1796,9 +1805,22 @@
             // take into account the selection and option column
             return jQuery(row.children()[column_index + 2]);
         },
+        // [Coog specific)
+        // > Used for always_expand
+        is_leaf: function(){
+            return !this.record.model.fields.hasOwnProperty(this.children_field);
+        },
         redraw: function(selected, expanded) {
             selected = selected || [];
             expanded = expanded || [];
+            var coog_update_expander = function() {
+                // [Coog Specific]  needed for multi_mixed_view
+                // MAB: not sure we still need this
+                if (this.is_leaf()  || !this.record.field_get_client(
+                    this.children_field).length) {
+                    this.expander.css('visibility', 'hidden');
+                }
+            };
 
             switch(this.tree.selection_mode) {
                 case Sao.common.SELECTION_NONE:
@@ -1827,6 +1849,16 @@
 
             if (this._drawed_record !== this.record.identity) {
                 for (var i = 0; i < this.tree.columns.length; i++) {
+                    if ((i === 0) && this.children_field) {
+                        // [Coog Specific]  needed for multi_mixed_view
+                        // MAB: not sure we still need this
+                        if (!this.is_leaf())
+                            this.record.load(this.children_field).done(
+                                coog_update_expander.bind(this));
+                        else
+                            this.record.load('*').done(
+                                coog_update_expander.bind(this));
+                    }
                     var column = this.tree.columns[i];
                     var td = this._get_column_td(i);
                     var cell = td.find('.cell');
@@ -1986,6 +2018,9 @@
                 if (this.rows.length === 0) {
                     var children = this.record.field_get_client(
                         this.children_field);
+                    // [Coog Specific]  needed for multi_mixed_view
+                    if (children.model.name != this.record.model.name)
+                        children.model.add_fields(this.children_definitions[children.model.name]);
                     children.forEach((record, pos, group) => {
                         // The rows are added to the tbody after being rendered
                         // to minimize browser reflow
@@ -2014,6 +2049,13 @@
                 }
             }
             this.tree.switch_(this.path);
+        },
+        // [Coog specific] [Bug Sao] call set_selection on child rows as well
+        set_multi_level_selection: function(value){
+            this.set_selection(value);
+            this.rows.forEach(function(row){
+                row.set_multi_level_selection(value);
+            });
         },
         select_column: function(index) {
         },

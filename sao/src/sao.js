@@ -383,15 +383,8 @@ var Sao = {
     Sao.config = {};
     Sao.config.limit = 1000;
     Sao.config.display_size = 20;
-    var doc_version = Sao.__version__.split('.').slice(0, 2);
-    if (parseInt(doc_version[1], 10) % 2) {
-        doc_version = 'latest';
-    } else {
-        doc_version = doc_version.join('.');
-    }
-    Sao.config.doc_url = `https://docs.tryton.org/${doc_version}`;
-    Sao.config.bug_url = 'https://bugs.tryton.org/';
-    Sao.config.title = 'Tryton';
+    Sao.config.bug_url = 'https://support.coopengo.com/';
+    Sao.config.title = 'Coog';
     Sao.config.icon_colors = '#267f82,#3e4950,#e78e42'.split(',');
     Sao.config.calendar_colors = '#fff,#267f82'.split(',');
     Sao.config.graph_color = '#267f82';
