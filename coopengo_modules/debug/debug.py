@@ -151,6 +151,19 @@ class ModelInfo(ModelView):
         return list([(x, x) for x in pool._pool['model'].keys()])
 
     @staticmethod
+    def get_field_module(base_model, field_name):
+        module = ''
+        for frame in base_model.__mro__[::-1]:
+            full_name = str(frame)[8:-2].split('.')
+            if len(full_name) < 2:
+                continue
+            if full_name[1] == 'modules':
+                module = full_name[2]
+            if getattr(frame, field_name, None) is not None:
+                break
+        return module
+
+    @staticmethod
     def field_translate(model_name, field_name, src):
         Translation = Pool().get('ir.translation')
         language = Transaction().language
@@ -197,6 +210,10 @@ class ModelInfo(ModelView):
         if field_domain:
             info.has_domain = True
             info.field_domain = repr(field_domain)
+
+        base_model = Pool().get(self.model_name)
+        info.module = self.get_field_module(base_model, field_name)
+
         return info
 
     @classmethod
@@ -376,15 +393,7 @@ class ModelInfo(ModelView):
         result['has_domain'] = bool(field_domain)
         if field_domain:
             result['domain'] = repr(field_domain)
-        result['module'] = ''
-        for frame in base_model.__mro__[::-1]:
-            full_name = str(frame)[8:-2].split('.')
-            if len(full_name) < 2:
-                continue
-            if full_name[1] == 'modules':
-                result['module'] = full_name[2]
-            if getattr(frame, field_name, None) is not None:
-                break
+        result['module'] = cls.get_field_module(base_model, field_name)
         return result
 
     @classmethod
