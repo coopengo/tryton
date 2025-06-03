@@ -99,6 +99,7 @@ class FieldInfo(ModelView):
     field_domain = fields.Text('Domain')
     id_to_calculate = fields.Integer('Id To Calculate')
     calculated_value = fields.Char('Calculated Value')
+    module = fields.Char('Module')
 
 
 class ModelInfo(ModelView):

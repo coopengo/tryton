@@ -6,6 +6,7 @@ this repository contains the full copyright notices and license terms. -->
     <field name="string"/>
     <field name="kind"/>
     <field name="target_model"/>
+    <field name="module"/>
     <field name="is_function"/>
     <field name="is_required"/>
     <field name="is_readonly"/>
