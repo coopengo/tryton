@@ -274,6 +274,10 @@ msgctxt "field:ir.model.debug.model_info,id_to_calculate:"
 msgid "Id To Calculate"
 msgstr "Id à calculer"
 
+msgctxt "field:ir.model.debug.model_info,initial_module:"
+msgid "Initial Module"
+msgstr "Module initial"
+
 msgctxt "field:ir.model.debug.model_info,model_name:"
 msgid "Model Name"
 msgstr "Nom du modèle"

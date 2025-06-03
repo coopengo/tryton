@@ -130,6 +130,8 @@ class ModelInfo(ModelView):
     name_filter = fields.Char('Name Filter')
     previous_models = fields.Text('Previous Models',
         states={'invisible': True})
+    initial_module = fields.Function(fields.Char('Initial Module'),
+        'getter_initial_module')
 
     @classmethod
     def __setup__(cls):
@@ -162,6 +164,9 @@ class ModelInfo(ModelView):
             if getattr(frame, field_name, None) is not None:
                 break
         return module
+
+    def getter_initial_module(self, name):
+        pass
 
     @staticmethod
     def field_translate(model_name, field_name, src):
