@@ -334,13 +334,13 @@ msgctxt "field:ir.model.debug.model_info.field_info,kind:"
 msgid "Field type"
 msgstr "Type de champ"
 
-msgctxt "field:ir.model.debug.model_info.field_info,module:"
-msgid "Module"
-msgstr "Module"
-
 msgctxt "field:ir.model.debug.model_info.field_info,name:"
 msgid "Field name"
 msgstr "Nom du champ"
+
+msgctxt "field:ir.model.debug.model_info.field_info,origin_module:"
+msgid "Origin Module"
+msgstr "Module d'origine"
 
 msgctxt "field:ir.model.debug.model_info.field_info,state_invisible:"
 msgid "State Invisible"

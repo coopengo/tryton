@@ -99,7 +99,7 @@ class FieldInfo(ModelView):
     field_domain = fields.Text('Domain')
     id_to_calculate = fields.Integer('Id To Calculate')
     calculated_value = fields.Char('Calculated Value')
-    module = fields.Char('Module')
+    origin_module = fields.Char('Origin Module')
 
 
 class ModelInfo(ModelView):
@@ -212,7 +212,7 @@ class ModelInfo(ModelView):
             info.field_domain = repr(field_domain)
 
         base_model = Pool().get(self.model_name)
-        info.module = self.get_field_module(base_model, field_name)
+        info.origin_module = self.get_field_module(base_model, field_name)
 
         return info
 
