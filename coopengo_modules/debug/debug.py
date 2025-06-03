@@ -130,9 +130,7 @@ class ModelInfo(ModelView):
     name_filter = fields.Char('Name Filter')
     previous_models = fields.Text('Previous Models',
         states={'invisible': True})
-    initial_module = fields.Function(
-        fields.Char('Initial Module'),
-        'getter_initial_module')
+    initial_module = fields.Char('Initial Module', readonly=True)
 
     @classmethod
     def __setup__(cls):
@@ -166,7 +164,7 @@ class ModelInfo(ModelView):
                 break
         return module
 
-    def getter_initial_module(self, name):
+    def get_initial_module(self):
         base_model = Pool().get(self.model_name)
         initial_model = next(
             model for model in base_model.__mro__[::-1][1:]
@@ -247,6 +245,7 @@ class ModelInfo(ModelView):
         self.to_evaluate = ''
         self.evaluation_result = ''
         self.recalculate_field_infos()
+        self.initial_module = self.get_initial_module()
 
     @fields.depends('model_name', 'hide_functions', 'filter_value',
         'field_infos', 'id_to_calculate', 'name_filter')
@@ -313,6 +312,7 @@ class ModelInfo(ModelView):
 
         self.previous_models = json.dumps(new_previous)
         self.recalculate_field_infos()
+        self.initial_module = self.get_initial_module()
 
 
     @ModelView.button_change('model_name', 'id_to_calculate', 'to_evaluate',
@@ -329,6 +329,7 @@ class ModelInfo(ModelView):
         self.name_filter = ''
         self.previous_models = json.dumps(previous_models)
         self.recalculate_field_infos()
+        self.initial_module = self.get_initial_module()
 
     def recalculate_field_infos(self):
         self.field_infos = []
