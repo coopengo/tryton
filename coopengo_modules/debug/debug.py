@@ -130,7 +130,8 @@ class ModelInfo(ModelView):
     name_filter = fields.Char('Name Filter')
     previous_models = fields.Text('Previous Models',
         states={'invisible': True})
-    initial_module = fields.Function(fields.Char('Initial Module'),
+    initial_module = fields.Function(
+        fields.Char('Initial Module'),
         'getter_initial_module')
 
     @classmethod
@@ -166,7 +167,12 @@ class ModelInfo(ModelView):
         return module
 
     def getter_initial_module(self, name):
-        pass
+        base_model = Pool().get(self.model_name)
+        initial_model = next(
+            model for model in base_model.__mro__[::-1][1:]
+            if model.__name__ == self.model_name)
+        full_name = str(initial_model)[8:-2].split('.')
+        return full_name[2]
 
     @staticmethod
     def field_translate(model_name, field_name, src):
