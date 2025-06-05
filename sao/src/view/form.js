@@ -1716,23 +1716,26 @@ function hide_x2m_body(widget) {
                 "Ctrl-Space": this._enable_hint.bind(this),
             });
         },
-        _populate_funcs: function (tree_data, func_list) {
+        _populate_funcs: function (tree_data, func_list, type) {
             // Feed hint and lint context with general rule context
             if (!tree_data) { return ;}
             var element;
             var duplicate;
             for (var cnt in tree_data) {
                 element = tree_data[cnt];
-                if (element.translated) {
+                if (!func_list.includes(element.translated) && type == 'lint')
+                    func_list.push(element.translated);
+                else if (element.translated && type == 'hint') {
                     // Remove function duplicate from current rule to replace
                     // them with appropriate name_of_func() completion
                     duplicate = func_list.indexOf(element.translated)
                     if (duplicate > -1)
                         func_list.splice(duplicate, 1)
-                    func_list.push({text: element.translated.concat('(', element.fct_args, ')'), displayText: element.translated});
+                    func_list.push({text: element.translated.concat('(', element.fct_args, ')'),
+                        displayText: element.translated});
                 }
                 if (element.children && element.children.length > 0) {
-                    this._populate_funcs(element.children, func_list);
+                    this._populate_funcs(element.children, func_list, type);
                 }
             }
         },
@@ -1757,7 +1760,7 @@ function hide_x2m_body(widget) {
             // Feed hint context with coog context
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
-            this._populate_funcs(JSON.parse(to_parse), inner.list);
+            this._populate_funcs(JSON.parse(to_parse), inner.list, 'hint');
 
             // Filter context names based on the current word
             inner.list = inner.list.filter(function(fn) {
@@ -2036,7 +2039,7 @@ function hide_x2m_body(widget) {
 
             var to_parse = "[]";
             if (this.json_data) { to_parse = this.json_data ;}
-            this._populate_funcs(JSON.parse(to_parse), known_funcs);
+            this._populate_funcs(JSON.parse(to_parse), known_funcs, 'lint');
 
             linter.execute('lint', [code, known_funcs]).done(function(errors) {
                 var codeMirrorErrors = [];
