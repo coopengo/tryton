@@ -155,6 +155,7 @@ class ModelInfo(ModelView):
     def get_field_module(base_model, field_name):
         module = ''
         for frame in base_model.__mro__[::-1]:
+            # frame format: "<class 'trytond.modules.MODULE.MODEL'>"
             full_name = str(frame)[8:-2].split('.')
             if len(full_name) < 2:
                 continue
@@ -165,10 +166,18 @@ class ModelInfo(ModelView):
         return module
 
     def get_initial_module(self):
+        # Get the module where the model is declared for the first time
         base_model = Pool().get(self.model_name)
+
+        # The initial model is the class having the name of the given model in
+        # the Method Resolution Order list (sorted from the oldest to the
+        # newest overload)
         initial_model = next(
             model for model in base_model.__mro__[::-1][1:]
             if model.__name__ == self.model_name)
+
+        # The initial module's name is included in the model's name
+        # Example: "<class 'trytond.pool.INITIAL_MODULE.MODEL'>"
         full_name = str(initial_model)[8:-2].split('.')
         return full_name[2]
 
