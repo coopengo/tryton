@@ -12,6 +12,8 @@ this repository contains the full copyright notices and license terms. -->
     <field name="kind"/>
     <label name="target_model"/>
     <field name="target_model"/>
+    <label name="origin_module"/>
+    <field name="origin_module"/>
     <newline/>
     <group id="required" colspan="2" col="2">
         <label name="is_required"/>
