@@ -392,7 +392,7 @@ def load_modules(
             if (module_in_db in modules_in_dir
                     or module_in_db in modules_to_migrate):
                 continue
-            elif AUTO_UNINSTALL:
+            elif AUTO_UNINSTALL or (module_in_db == 'tests'):
                 logger.warning(f'{module_in_db} is about to be uninstalled')
                 modules_to_migrate[module_in_db] = ('to_drop', None)
             else:
