@@ -287,7 +287,8 @@ class Record:
         path = []
         record = self
         while record:
-            path.append(record.group.index(record))
+            if record in record.group:
+                path.append(record.group.index(record))
             if record.group is group:
                 break
             record = record.parent
