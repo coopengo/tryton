@@ -4,6 +4,8 @@ this repository contains the full copyright notices and license terms. -->
 <form>
     <label name="model_name"/>
     <field name="model_name"/>
+    <label name="initial_module"/>
+    <field name="initial_module"/>
     <label name="filter_value"/>
     <field name="filter_value"/>
     <label name="hide_functions"/>
