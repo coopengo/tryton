@@ -2324,8 +2324,7 @@
                             'minimumFractionDigits': 0,
                             'maximumFractionDigits': 20,
                         });
-                } else if ((typeof(val) == 'object')
-                                && (!Array.isArray(val))) {
+                } else if (typeof(val) == 'object') {
                     val = JSON.stringify(val);
                 }
             } else if (val.isDateTime) {
