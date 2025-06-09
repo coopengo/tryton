@@ -282,6 +282,9 @@
         if (!value) {
             return null;
         }
+        if (value && value.length <= 5) {
+            return Sao.Date(undefined, undefined, undefined, false, value);
+        }
         var date = moment(value, Sao.common.moment_format(date_format));
         if (date.isValid()) {
             date = Sao.Date(date.year(), date.month(), date.date());

@@ -493,10 +493,20 @@ class FloatField(Field):
 
     def apply_factor(self, record, value, factor):
         if value is not None:
+            initial_precision = len((str(value).split('.', 2) + [''])[1])
+            initial_precision += math.ceil(math.log10(factor))
             value /= factor
             digits = self.digits(record)
             if digits:
                 value = round(value, digits[1])
+            else:
+                # The intial precision is the one used by value (before
+                # applying the factor), per the ecmascript specification
+                # it's the shortest representation of said value.
+                # Once the factor is applied the number might become even
+                # more inexact thus we should rely on the initial
+                # precision + the effect factor will have
+                value = round(value, initial_precision)
             value = self.convert(value)
         return value
 
@@ -931,7 +941,7 @@ class O2MField(Field):
                 record2 = group.get(vals['id'])
                 if record2 is not None:
                     to_set = {k: v
-                        for k, v in vals.items
+                        for k, v in vals.items()
                         if k not in vals_to_set}
                     if to_set:
                         record2.set_on_change(to_set)

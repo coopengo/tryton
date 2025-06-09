@@ -504,8 +504,14 @@
                             break;
                         case 'selection':
                         case 'multiselection':
+                            var selection = jQuery.extend([], field.selection);
+                            if (field.sort === undefined || field.sort) {
+                                selection.sort(function(a, b) {
+                                    return a[1].localeCompare(b[1]);
+                                });
+                            }
                             entry = new Sao.ScreenContainer.Selection(
-                                    field.selection, prefix + field.name);
+                                    selection, prefix + field.name);
                             input = entry.el;
                             len = field.selection.length;
                             input.prop('size', len);
@@ -940,6 +946,25 @@
                         .description.loading;
                 }
             }
+            let win_name_field;
+            let missing_name_fields = []
+            for (let window_ of this.windows) {
+                win_name_field = window_.attributes.window_name_field;
+                if (!win_name_field) {
+                    continue;
+                }
+                if (Object.hasOwn(fields, win_name_field)) {
+                    continue;
+                }
+                missing_name_fields.push(win_name_field);
+            }
+            if (missing_name_fields.length) {
+                let missing_fields = this.model.execute(
+                    'fields_get', [missing_name_fields],
+                    Sao.Session.current_session.context, false);
+                Object.assign(fields, missing_fields);
+            }
+
             this.group.add_fields(fields);
             for (field in fields) {
                 this.group.model.fields[field].views.add(view_id);
@@ -1015,7 +1040,12 @@
                             this.switch_callback();
                         }
                         const tab = Sao.Tab.tabs.get_current();
-                        Sao.Tab.set_view_type(tab ? tab.current_view_type : null);
+                        if (tab) {
+                            Sao.Tab.set_view_type(tab.current_view_type);
+                            tab.refresh_name();
+                        } else {
+                            Sao.Tab.set_view_type(null);
+                        }
                     });
                 };
                 const set_current_view = () => {
@@ -1404,14 +1434,6 @@
         },
         display: function(set_cursor) {
             var deferreds = [];
-            if (this.current_record &&
-                    ~this.current_record.group.indexOf(this.current_record)) {
-            } else if (this.group && this.group.length &&
-                (this.current_view.view_type == 'form')) {
-                this.current_record = this.group[0];
-            } else {
-                this.current_record = null;
-            }
             if (this.views && this.current_view) {
                 var search_prm = this.search_active(
                         ~['tree', 'graph', 'calendar'].indexOf(
@@ -1602,7 +1624,7 @@
                 var selected_date = this.current_view.get_selected_date();
             }
             if (this.current_view && !this.current_view.creatable) {
-                prm = this.switch_view('form', undefined, true, false);
+                prm = this.switch_view('form', undefined, true, false, false);
             }
             return prm.then(() => {
                 if (!this.current_view || !this.current_view.editable) {
@@ -1614,6 +1636,7 @@
                 } else {
                     group = this.group;
                 }
+                this.current_record = null;
                 var record = group.new_(false);
                 var prm;
                 if (default_) {
