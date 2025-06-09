@@ -2334,7 +2334,7 @@
                 val = val.asSeconds();
             } else if (typeof(val) == 'boolean') {
                 val += 0;
-            } else if ((typeof(val) == 'object') && (!Array.isArray(val))) {
+            } else if (typeof(val) == 'object') {
                 val = JSON.stringify(val);
             }
             if ((i === 0) && indent && (typeof(val) == 'string')) {
