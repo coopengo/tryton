@@ -167,6 +167,9 @@ class ModelInfo(ModelView):
 
     def get_initial_module(self):
         # Get the module where the model is declared for the first time
+
+        if not self.model_name:
+            return
         base_model = Pool().get(self.model_name)
 
         # The initial model is the class having the name of the given model in
