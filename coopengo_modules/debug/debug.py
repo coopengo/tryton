@@ -99,6 +99,7 @@ class FieldInfo(ModelView):
     field_domain = fields.Text('Domain')
     id_to_calculate = fields.Integer('Id To Calculate')
     calculated_value = fields.Char('Calculated Value')
+    origin_module = fields.Char('Origin Module')
 
 
 class ModelInfo(ModelView):
@@ -129,6 +130,7 @@ class ModelInfo(ModelView):
     name_filter = fields.Char('Name Filter')
     previous_models = fields.Text('Previous Models',
         states={'invisible': True})
+    initial_module = fields.Char('Initial Module', readonly=True)
 
     @classmethod
     def __setup__(cls):
@@ -148,6 +150,36 @@ class ModelInfo(ModelView):
     def get_possible_model_names(cls):
         pool = Pool()
         return list([(x, x) for x in pool._pool['model'].keys()])
+
+    @staticmethod
+    def get_field_module(base_model, field_name):
+        module = ''
+        for frame in base_model.__mro__[::-1]:
+            # frame format: "<class 'trytond.modules.MODULE.MODEL'>"
+            full_name = str(frame)[8:-2].split('.')
+            if len(full_name) < 2:
+                continue
+            if full_name[1] == 'modules':
+                module = full_name[2]
+            if getattr(frame, field_name, None) is not None:
+                break
+        return module
+
+    def get_initial_module(self):
+        # Get the module where the model is declared for the first time
+        base_model = Pool().get(self.model_name)
+
+        # The initial model is the class having the name of the given model in
+        # the Method Resolution Order list (sorted from the oldest to the
+        # newest overload)
+        initial_model = next(
+            model for model in base_model.__mro__[::-1][1:]
+            if model.__name__ == self.model_name)
+
+        # The initial module's name is included in the model's name
+        # Example: "<class 'trytond.pool.INITIAL_MODULE.MODEL'>"
+        full_name = str(initial_model)[8:-2].split('.')
+        return full_name[2]
 
     @staticmethod
     def field_translate(model_name, field_name, src):
@@ -196,6 +228,10 @@ class ModelInfo(ModelView):
         if field_domain:
             info.has_domain = True
             info.field_domain = repr(field_domain)
+
+        base_model = Pool().get(self.model_name)
+        info.origin_module = self.get_field_module(base_model, field_name)
+
         return info
 
     @classmethod
@@ -218,6 +254,8 @@ class ModelInfo(ModelView):
         self.to_evaluate = ''
         self.evaluation_result = ''
         self.recalculate_field_infos()
+        if self.model_name:
+            self.initial_module = self.get_initial_module()
 
     @fields.depends('model_name', 'hide_functions', 'filter_value',
         'field_infos', 'id_to_calculate', 'name_filter')
@@ -284,6 +322,7 @@ class ModelInfo(ModelView):
 
         self.previous_models = json.dumps(new_previous)
         self.recalculate_field_infos()
+        self.initial_module = self.get_initial_module()
 
 
     @ModelView.button_change('model_name', 'id_to_calculate', 'to_evaluate',
@@ -300,6 +339,7 @@ class ModelInfo(ModelView):
         self.name_filter = ''
         self.previous_models = json.dumps(previous_models)
         self.recalculate_field_infos()
+        self.initial_module = self.get_initial_module()
 
     def recalculate_field_infos(self):
         self.field_infos = []
@@ -375,15 +415,7 @@ class ModelInfo(ModelView):
         result['has_domain'] = bool(field_domain)
         if field_domain:
             result['domain'] = repr(field_domain)
-        result['module'] = ''
-        for frame in base_model.__mro__[::-1]:
-            full_name = str(frame)[8:-2].split('.')
-            if len(full_name) < 2:
-                continue
-            if full_name[1] == 'modules':
-                result['module'] = full_name[2]
-            if getattr(frame, field_name, None) is not None:
-                break
+        result['module'] = cls.get_field_module(base_model, field_name)
         return result
 
     @classmethod
