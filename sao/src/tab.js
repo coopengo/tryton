@@ -1723,13 +1723,6 @@
             var domain = this.screen.screen_container.get_text();
             this.screen._force_count(domain);
         },
-        set_name: function(name) {
-            if (name != this.attributes.name) {
-                name = `${this.attributes.name}: ${name}`;
-            };
-
-            Sao.Tab.Form._super.set_name.call(this, name);
-        },
     });
 
     Sao.Tab.Board = Sao.class_(Sao.Tab, {
