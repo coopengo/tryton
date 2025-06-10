@@ -167,9 +167,6 @@ class ModelInfo(ModelView):
 
     def get_initial_module(self):
         # Get the module where the model is declared for the first time
-
-        if not self.model_name:
-            return
         base_model = Pool().get(self.model_name)
 
         # The initial model is the class having the name of the given model in
@@ -257,7 +254,8 @@ class ModelInfo(ModelView):
         self.to_evaluate = ''
         self.evaluation_result = ''
         self.recalculate_field_infos()
-        self.initial_module = self.get_initial_module()
+        if self.model_name:
+            self.initial_module = self.get_initial_module()
 
     @fields.depends('model_name', 'hide_functions', 'filter_value',
         'field_infos', 'id_to_calculate', 'name_filter')
