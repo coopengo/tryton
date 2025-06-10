@@ -254,7 +254,8 @@ class ModelInfo(ModelView):
         self.to_evaluate = ''
         self.evaluation_result = ''
         self.recalculate_field_infos()
-        self.initial_module = self.get_initial_module()
+        if self.model_name:
+            self.initial_module = self.get_initial_module()
 
     @fields.depends('model_name', 'hide_functions', 'filter_value',
         'field_infos', 'id_to_calculate', 'name_filter')
