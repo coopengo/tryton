@@ -1214,7 +1214,7 @@ class ViewTree(View):
         if current_record and current_record not in model.group:
             current_record = None
         if (force
-                or not self.treeview.get_model()
+                or not model
                 or self.group != model.group):
             model = AdaptModelGroup(self.group, self.children_field,
                 self.children_definitions)
