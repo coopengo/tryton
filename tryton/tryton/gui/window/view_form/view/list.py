@@ -1210,6 +1210,8 @@ class ViewTree(View):
     def display(self, force=False):
         self.treeview.display_counter += 1
         current_record = self.record
+        if current_record and current_record not in self.group:
+            current_record = None
         if (force
                 or not self.treeview.get_model()
                 or self.group != self.treeview.get_model().group):
