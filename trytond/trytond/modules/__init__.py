@@ -372,7 +372,7 @@ def load_modules(
         update = []
 
     def migrate_modules(cursor):
-        modules_in_dir = get_modules()
+        modules_in_dir = get_modules(pool.test)
         modules_to_migrate = {}
         for module_dir in modules_in_dir:
             try:
@@ -392,7 +392,7 @@ def load_modules(
             if (module_in_db in modules_in_dir
                     or module_in_db in modules_to_migrate):
                 continue
-            elif AUTO_UNINSTALL or (module_in_db == 'tests'):
+            elif AUTO_UNINSTALL:
                 logger.warning(f'{module_in_db} is about to be uninstalled')
                 modules_to_migrate[module_in_db] = ('to_drop', None)
             else:
