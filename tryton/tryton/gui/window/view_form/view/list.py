@@ -1179,9 +1179,12 @@ class ViewTree(View):
     def display(self, force=False):
         self.treeview.display_counter += 1
         current_record = self.record
+        model = self.treeview.get_model()
+        if current_record and current_record not in self.group:
+            current_record = None
         if (force
-                or not self.treeview.get_model()
-                or self.group != self.treeview.get_model().group):
+                or not model
+                or self.group != model.group):
             model = AdaptModelGroup(self.group, self.children_field,
                 self.children_definitions)
             self.treeview.set_model(model)
