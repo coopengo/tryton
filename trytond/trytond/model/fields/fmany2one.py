@@ -6,6 +6,7 @@ from sql import Column, Literal
 from trytond.pool import Pool
 from trytond.tools import grouped_slice
 
+from .field import depends
 from .function import Function
 from .many2one import Many2One
 
@@ -102,10 +103,20 @@ def fmany2one(
             domain, tables=tables[name])
         return clause
 
+    @depends(name)
+    def on_change(self):
+        if value := getattr(self, name):
+            for source, target in zip(sources, target_fields):
+                setattr(self, source, getattr(value, target))
+        else:
+            for source in sources:
+                setattr(self, source, None)
+
     setattr(Mixin, name, Function(
             Many2One(target_model, string, ondelete=ondelete, **kwargs),
             f'get_{name}', setter=f'set_{name}'))
     setattr(Mixin, f'get_{name}', getter)
     setattr(Mixin, f'set_{name}', setter)
     setattr(Mixin, f'domain_{name}', searcher)
+    setattr(Mixin, f'on_change_{name}', on_change)
     return Mixin
