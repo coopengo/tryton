@@ -348,6 +348,9 @@
         _close_allowed: function() {
             return jQuery.when();
         },
+        refresh_name: function() {
+            // Overriden in Sao.Tab.Form
+        },
         set_name: function(name) {
             this.name_short_el.text(name.split(' / ').pop());
             this.name_long_el.text(name);
