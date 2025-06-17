@@ -113,6 +113,7 @@
 
                 if (action.keyword) {
                     name_prm = add_name_suffix(action.name, params.context);
+                    params.keyword = action.keyword
                 }
                 return name_prm.then(function(name) {
                     params.name = name;
