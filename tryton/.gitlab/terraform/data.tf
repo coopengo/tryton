@@ -1,7 +1,7 @@
 data "aws_security_groups" "gitlab_runner_slave" {
   filter {
     name   = "group-name"
-    values = ["gitlab_runner-slave"]
+    values = ["exp-cicd-gitlab-02-362621703412"]
   }
 
   filter {
