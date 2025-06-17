@@ -267,7 +267,7 @@ class Group(metaclass=PoolMeta):
         pool = Pool()
         Message = pool.get('account.payment.sepa.message')
         for group in groups:
-            if group.journal.process_method != 'sepa':
+            if 'sepa' not in group.journal.process_method:
                 continue
             tmpl = group.get_sepa_template()
             if not tmpl:
