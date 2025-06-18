@@ -263,6 +263,8 @@ class Group(metaclass=PoolMeta):
 
     @classmethod
     def sepa_like_methods(cls):
+        # Allow SEPA message generation for variants of the SEPA
+        # process methods
         return ['sepa']
 
     @dualmethod
