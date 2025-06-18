@@ -261,13 +261,17 @@ class Group(metaclass=PoolMeta):
         self.sepa_id = uuid.uuid4().hex
         self.sepa_generate_message(_save=False)
 
+    @classmethod
+    def sepa_like_methods(cls):
+        return ['sepa']
+
     @dualmethod
     @ModelView.button
     def sepa_generate_message(cls, groups, _save=True):
         pool = Pool()
         Message = pool.get('account.payment.sepa.message')
         for group in groups:
-            if 'sepa' not in group.journal.process_method:
+            if group.journal.process_method not in cls.sepa_like_methods():
                 continue
             tmpl = group.get_sepa_template()
             if not tmpl:
