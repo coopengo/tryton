@@ -1,3 +1,4 @@
+* Fix the csv export of dict fields
 * Don't reset date/datetime/time to None when it is invalid
 
 Version 7.2.6 - 2024-09-01
