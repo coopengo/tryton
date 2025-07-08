@@ -2183,7 +2183,10 @@
                                 Sao.Action.execute(act, {
                                     model: this.model_name,
                                     id: this.current_record.id,
-                                    ids: ids
+                                    ids: (
+                                        (ids.length == 0 && this.current_record.id)
+                                        ? [this.current_record.id]
+                                        : ids),
                                 }, null, this.context, true));
                         }
                     }
@@ -2198,7 +2201,10 @@
                         Sao.Action.execute(action, {
                             model: this.model_name,
                             id: this.current_record.id,
-                            ids: ids
+                            ids: (
+                                (ids.length == 0 && this.current_record.id)
+                                ? [this.current_record.id]
+                                : ids),
                         }, null, this.context, true));
                 }
                 return jQuery.when.apply(jQuery, prms).then(() => {
