@@ -1,4 +1,5 @@
 * Use grid layout for form container
+* Fix the csv export of dict fields
 * Don't reset date/datetime/time to None when it is invalid
 
 Version 6.8.2 - 2023-09-06

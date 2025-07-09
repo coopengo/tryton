@@ -738,7 +738,8 @@ class ModelStorage(Model):
                         value = getattr(value, field_name)
                     except AccessError:
                         value = 'UNAUTHORIZED_401'
-                if isinstance(value, (list, tuple)):
+                if (isinstance(value, (list, tuple))
+                        and not isinstance(field, fields.MultiSelection)):
                     first = True
                     child_fields_names = [(x[:i + 1] == fields_tree[:i + 1]
                             and x[i + 1:]) or [] for x in fields_names]
