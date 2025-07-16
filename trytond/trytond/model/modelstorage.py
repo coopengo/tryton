@@ -342,6 +342,14 @@ class ModelStorage(Model):
         if cls._must_log():
             cls.log(records, 'delete')
 
+        record_ids = [r.id for r in records]
+        for fname, field in cls._fields.items():
+            if not isinstance(field, fields.Binary):
+                continue
+            if not field.file_id:
+                continue
+            field.set(cls, fname, record_ids, None)
+
         # Increase transaction counter
         transaction.counter += 1
 
