@@ -55,7 +55,7 @@ __all__ = [
     'doctest_setup',
     'doctest_teardown',
     'load_doc_tests',
-    'postgres_cache_path',
+    'hash_postgres_cache_name',
     'with_transaction',
     ]
 
@@ -149,21 +149,21 @@ def backup_db_cache(name):
             _pg_dump(cache_file)
 
 
-def postgres_cache_path(name):
+def hash_postgres_cache_name(name):
     uri = parse_uri(DB_CACHE)
     prefix_len = len('test-') + len(uri.netloc) + 1
     hash_name = hashlib.shake_128(name.encode('utf8')).hexdigest(
         (63 - prefix_len) // 2)
     if not uri.netloc:
-        return f"{DB_CACHE}/test-{hash_name}"
+        return f"test-{hash_name}"
     else:
-        return f"{DB_CACHE}/{uri.netloc}-test-{hash_name}"
+        return f"{uri.netloc}-test-{hash_name}"
 
 
 def _db_cache_file(path, name):
     hash_name = hashlib.shake_128(name.encode('utf8')).hexdigest(40 // 2)
     if DB_CACHE.startswith('postgresql://'):
-        return postgres_cache_path(name)
+        return f"{DB_CACHE}/{hash_postgres_cache_name(name)}"
     else:
         return os.path.join(path, f'{hash_name}-{backend.name}.dump')
 
