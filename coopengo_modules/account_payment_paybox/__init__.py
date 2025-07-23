@@ -6,6 +6,7 @@ from . import payment
 
 def register():
     Pool.register(
+        payment.Payment,
         payment.Group,
         payment.Journal,
         module='account_payment_paybox', type_='model')

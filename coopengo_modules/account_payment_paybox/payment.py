@@ -24,9 +24,16 @@ from trytond.modules.account_payment.exceptions import (
 __all__ = [
     'Group',
     'Journal',
-    'ProcessPaymentStart',
     'ProcessPayment',
     ]
+
+
+class Payment(metaclass=PoolMeta):
+    __name__ = 'account.payment'
+
+    @classmethod
+    def process_method_with_group(cls):
+        return super().process_method_with_group() + ['paybox']
 
 
 class Group(metaclass=PoolMeta):
