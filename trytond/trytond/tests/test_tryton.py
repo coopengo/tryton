@@ -70,7 +70,7 @@ else:
     DB_NAME = 'test_' + str(uuid.uuid4().int)
 os.environ['DB_NAME'] = DB_NAME
 DB_CACHE = os.environ.get('DB_CACHE')
-CLEAR_CACHE = os.environ.get('CLEAR_CACHE').lower() in ('true', '1')
+CLEAR_DB_CACHE = os.environ.get('CLEAR_DB_CACHE', 'False').lower() in ('true', '1')
 
 
 def _cpu_count():
@@ -126,7 +126,7 @@ def activate_module(modules, lang='en', cache_name=None):
 
 def restore_db_cache(name):
     result = False
-    if DB_CACHE and not CLEAR_CACHE:
+    if DB_CACHE and not CLEAR_DB_CACHE:
         cache_file = _db_cache_file(DB_CACHE, name)
         if backend.name == 'sqlite':
             result = _sqlite_copy(cache_file, restore=True)
