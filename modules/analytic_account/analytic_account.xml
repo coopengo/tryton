@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_analytic_admin">
             <field name="name">Analytic Administration</field>
+            <field name="code">analytic_administration</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_analytic_admin">

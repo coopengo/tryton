@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_statement">
             <field name="name">Statement</field>
+            <field name="code">statement</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_statement">
             <field name="user" ref="res.user_admin"/>
