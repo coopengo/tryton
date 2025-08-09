@@ -13,6 +13,7 @@
             this.login_service = null;
             this.user_id = null;
             this.session = null;
+            this.bus_url = null;
             this.cache = new Cache();
             this.prm = jQuery.when();  // renew promise
             this.database = database;
@@ -45,14 +46,16 @@
             };
             new Sao.Login(func, this).run().then(result => {
                 this.login = login;
-                this.user_id = result[0];
-                this.session = result[1];
+                this.user_id = result[0][0];
+                this.session = result[0][1];
+                this.bus_url = result[1];
                 this.store();
                 this.renew_device_cookie();
                 dfd.resolve();
             }, () => {
                 this.user_id = null;
                 this.session = null;
+                this.bus_url = null;
                 this.store();
                 dfd.reject();
             });
