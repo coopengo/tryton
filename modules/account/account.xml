@@ -697,6 +697,11 @@ this repository contains the full copyright notices and license terms. -->
             <field name="model">account.account,-1</field>
             <field name="action" ref="act_general_ledger_account_party_form"/>
         </record>
+        <record model="ir.action.keyword" id="act_general_ledger_account_party_refresh_keyword">
+            <field name="keyword">form_action</field>
+            <field name="model">account.general_ledger.account.party,-1</field>
+            <field name="action" ref="ir.wizard_refresh_materialized_view"/>
+        </record>
 
         <record model="ir.action.wizard" id="act_general_ledger_account_party_open">
             <field name="name">Open General Ledger Account Parties</field>
