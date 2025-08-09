@@ -96,7 +96,8 @@
         view_type: 'tree',
         xml_parser: Sao.View.TreeXMLViewParser,
         draggable: false,
-        display_size: Sao.config.display_size,
+        _display_size: Sao.config.display_size,
+        _already_shown: false,
         init: function(view_id, screen, xml, children_field, children_definitions) {
             this.children_field = children_field;
             this.optionals = [];
@@ -305,6 +306,15 @@
                 Sao.common.set_overflow(th, 'show');
             });
             th.append(dropdown);
+        },
+        get display_size() {
+            if (this.screen.used_in_form && !this._already_shown) {
+                return 0;
+            }
+            return this._display_size;
+        },
+        set display_size(size) {
+            this._display_size = size;
         },
         tree_menu: function(evt) {
             const toggle = evt => {
@@ -1111,6 +1121,7 @@
                         'title': Sao.i18n.gettext("More"),
                     }).text(Sao.i18n.gettext('More')
                     ).click(() => {
+                        this._already_shown = true;
                         var height = this.table.height();
                         this.display_size += Sao.config.display_size;
                         this.display();
