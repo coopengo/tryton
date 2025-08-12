@@ -270,7 +270,7 @@ class Group(metaclass=PoolMeta):
 
     @dualmethod
     @ModelView.button
-    def sepa_generate_message(cls, groups):
+    def sepa_generate_message(cls, groups, _save=True):
         pool = Pool()
         Message = pool.get('account.payment.sepa.message')
         for group in groups:
@@ -287,7 +287,8 @@ class Group(metaclass=PoolMeta):
             message = Message(message=message, type='out', state='waiting',
                 company=group.company)
             group.sepa_messages += (message,)
-        cls.save(groups)
+        if _save:
+            cls.save(groups)
 
     @property
     def sepa_initiating_party(self):
