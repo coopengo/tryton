@@ -198,6 +198,7 @@ def load_module_graph(graph, pool, update=None, lang=None, indexes=None):
         if update:
             for module in early_modules:
                 pool.setup(early_classes[module])
+                pool.post_init(module)
             for module in early_modules:
                 if (is_module_to_install(module, update)
                         or module2state[module] in to_install_states):
