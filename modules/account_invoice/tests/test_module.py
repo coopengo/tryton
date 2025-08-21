@@ -3,6 +3,7 @@
 
 import datetime
 from decimal import Decimal
+from unittest.mock import MagicMock
 
 from trytond.modules.account_invoice.exceptions import (
     PaymentTermValidationError)
@@ -250,6 +251,108 @@ class AccountInvoiceTestCase(
                 (datetime.date(2011, 12, 1), Decimal('-4.0')),
                 (datetime.date(2012, 1, 14), Decimal('-1.0')),
                 ])
+
+    @staticmethod
+    def make_line(
+            debit, credit=0, second_currency=None,
+            amount_second_currency=Decimal("0"), party="Customer A"):
+        line = MagicMock()
+        line.debit = Decimal(debit)
+        line.credit = Decimal(credit)
+        line.second_currency = second_currency
+        line.amount_second_currency = Decimal(amount_second_currency)
+        line.reconciliation = None
+        line.party = party
+        return line
+
+    @with_transaction()
+    def test_exact_match(self):
+        Invoice = Pool().get("account.invoice")
+        invoice = MagicMock(spec=Invoice)
+
+        # Mock currencies
+        currency = MagicMock()
+        currency.is_zero.side_effect = lambda x: abs(x) < Decimal("0.0001")
+
+        company = MagicMock()
+        company.currency = currency
+
+        account = MagicMock()
+        account.party_required = False
+
+        # Attach mocked attributes to invoice
+        invoice.company = company
+        invoice.currency = currency
+        invoice.account = account
+        invoice.party = "Customer A"
+
+        # Create fake lines
+        lines = [
+            self.make_line(40),
+            self.make_line(20),
+            self.make_line(10),
+            self.make_line(30),
+            self.make_line(50),
+            self.make_line(5),
+        ]
+        invoice.payment_lines = lines[:4]
+        invoice.lines_to_pay = lines[4:]
+
+        # Call the real method with mocked self
+        result = Invoice.get_reconcile_lines_for_amount(
+            invoice, Decimal("140"), currency)
+        # Target amount is 140, so the closest combination should be
+        # 40 + 20 + 30 + 50 = 140
+        # Line 10 and Line 5 will be ignored
+        self.assertEqual(
+            set(l.debit for l in result.lines),
+            {Decimal("20"), Decimal("40"), Decimal("30"), Decimal("50")})
+        self.assertEqual(sum(
+                l.debit - l.credit for l in result.lines), Decimal("140"))
+        self.assertEqual(result.remainder, Decimal("0"))
+
+    @with_transaction()
+    def test_closest_match(self):
+        Invoice = Pool().get("account.invoice")
+        invoice = MagicMock(spec=Invoice)
+
+        currency = MagicMock()
+        currency.is_zero.side_effect = lambda x: abs(x) < Decimal("0.0001")
+
+        company = MagicMock()
+        company.currency = currency
+
+        account = MagicMock()
+        account.party_required = False
+
+        invoice.company = company
+        invoice.currency = currency
+        invoice.account = account
+        invoice.party = "Customer A"
+
+        lines = [
+            self.make_line(40),
+            self.make_line(20),
+            self.make_line(10),
+            self.make_line(30),
+            self.make_line(5),
+        ]
+
+        invoice.payment_lines = lines[:3]
+        invoice.lines_to_pay = lines[3:]
+
+        # Call the real method with mocked self
+        result = Invoice.get_reconcile_lines_for_amount(
+            invoice, Decimal("97"), currency)
+        # Target amount is 97, so the closest combination should be
+        # 40 + 20 + 30 + 5 = 95
+        # Line 10 will be ignored
+        self.assertEqual(
+            set(l.debit for l in result.lines),
+            {Decimal("20"), Decimal("40"), Decimal("30"), Decimal("5")})
+        self.assertEqual(sum(
+                l.debit - l.credit for l in result.lines), Decimal("95"))
+        self.assertEqual(result.remainder, Decimal("-2"))
 
 
 del ModuleTestCase

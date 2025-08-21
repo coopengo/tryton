@@ -1537,23 +1537,42 @@ class Invoice(Workflow, ModelSQL, ModelView, TaxableMixin, InvoiceReportMixin):
             else:
                 return 0
 
-        lines = [
-            l for l in self.payment_lines + self.lines_to_pay
+        candidate_lines = [
+            l
+            for l in self.payment_lines + self.lines_to_pay
             if not l.reconciliation
-            and (not self.account.party_required or l.party == party)]
+            and (not self.account.party_required or l.party == party)
+        ]
 
-        remainder = sum(map(balance, lines)) - amount
-        best = Result(lines, remainder)
-        if remainder:
-            for n in range(len(lines) - 1, 0, -1):
-                for comb_lines in combinations(lines, n):
-                    remainder = sum(map(balance, comb_lines)) - amount
-                    result = Result(list(comb_lines), remainder)
-                    if currency.is_zero(remainder):
-                        return result
-                    if abs(remainder) < abs(best.remainder):
-                        best = result
-        return best
+        # Sort by absolute balance descending for better pruning
+        candidate_lines.sort(key=lambda l: abs(balance(l)), reverse=True)
+
+        best_match_sum = {Decimal("0.0"): []}  # sum -> list of lines
+        best_sum = None
+
+        for line in candidate_lines:
+            val = balance(line)
+            for lines_sum, lines in list(best_match_sum.items()):
+                new_sum = lines_sum + val
+
+                # Early cutoff: skip if this path is already worse than best found
+                if best_sum is not None and abs(new_sum - amount) >= abs(
+                    best_sum - amount
+                ):
+                    continue
+
+                if new_sum not in best_match_sum:
+                    best_match_sum[new_sum] = lines + [line]
+
+                # Update best match
+                if best_sum is None or abs(new_sum - amount) < abs(best_sum - amount):
+                    best_sum = new_sum
+
+                # Exact match — stop immediately
+                if currency.is_zero(new_sum - amount):
+                    return Result(best_match_sum[new_sum], new_sum - amount)
+
+        return Result(best_match_sum[best_sum], best_sum - amount)
 
     def pay_invoice(
             self, amount, payment_method, date, description=None,
