@@ -343,6 +343,7 @@
                     Sao.set_url();
                 }
                 tabs.trigger('ready');
+                Sao.Tab.closed_tabs.push(this.attributes);
             });
         },
         _close_allowed: function() {
@@ -413,16 +414,18 @@
         tab.close();
     };
 
-    Sao.Tab.create = function(attributes) {
+    Sao.Tab.create = function(attributes, skip_duplicate_check = false) {
         var tablist = jQuery('#tablist');
         if (attributes.context === undefined) {
             attributes.context = {};
         }
-        for (const other of Sao.Tab.tabs) {
-            if (other.compare(attributes)) {
-                Sao.common.scrollIntoViewIfNeeded(
-                    tablist.find('a[href="#' + other.id + '"]').tab('show'));
-                return;
+        if (!skip_duplicate_check) {
+            for (const other of Sao.Tab.tabs) {
+                if (other.compare(attributes)) {
+                    Sao.common.scrollIntoViewIfNeeded(
+                        tablist.find('a[href="#' + other.id + '"]').tab('show'));
+                    return;
+                }
             }
         }
         var tab;
@@ -433,8 +436,8 @@
         }
         return tab.view_prm.then(function() {
             Sao.Tab.add(tab);
+            return tab;
         });
-        return tab.view_prm;
     };
 
     Sao.Tab.add = function(tab) {
@@ -450,6 +453,7 @@
             Sao.set_url(tab.get_url(), tab.name_long.split(' / ').pop());
             Sao.Tab.set_view_type(tab.current_view_type);
         })
+        .on('contextmenu', Sao.Tab.contextmenu)
         .append(jQuery('<button/>', {
             'class': 'close',
             'aria-label': Sao.i18n.gettext("Close"),
@@ -461,13 +465,35 @@
             tab.close();
         }))
         .append(tab.name_el);
-        jQuery('<li/>', {
+        let tab_element = jQuery('<li/>', {
+            'draggable': true,
             'role': 'presentation',
             'data-placement': 'bottom',
             id: 'nav-' + tab.id
         }).append(tab_link)
         .appendTo(tablist)
         .data('tab', tab);
+
+        tab_element.on('dragstart', (evt) => {
+            evt.originalEvent.dataTransfer.setData('text/plain', `nav-${tab.id}`);
+        });
+        tab_element.on('dragenter', (evt) => {
+            evt.preventDefault();
+        });
+        tab_element.on('dragover', (evt) => {
+            evt.preventDefault();
+        });
+        tab_element.on('drop', (evt) => {
+            let source_id = evt.originalEvent.dataTransfer.getData('text/plain');
+            let source = jQuery(`#${source_id}`);
+
+            let target_idx = Sao.Tab.tabs.indexOf(tab_element.data('tab'));
+            let source_idx = Sao.Tab.tabs.indexOf(source.data('tab'));
+            Sao.Tab.tabs.splice(source_idx, 1);
+            Sao.Tab.tabs.splice(target_idx, 0, source.data('tab'));
+
+            source.insertBefore(tab_element);
+        });
         jQuery('<div/>', {
             role: 'tabpanel',
             'class': 'tab-pane',
@@ -482,6 +508,87 @@
         });
         Sao.common.scrollIntoViewIfNeeded(tab_link.tab('show'));
         tabs.trigger('ready');
+    };
+
+    Sao.Tab.contextmenu = function(evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        let close_tabs = (mode) => {
+            return () => {
+                let tabs_to_close = [];
+                let current = Sao.Tab.tabs.get_current();
+                let met_current = false;
+                for (let tab of Sao.Tab.tabs) {
+                    if (tab == current) {
+                        met_current = true;
+                        continue;
+                    }
+                    if (met_current && (mode == 'left')) {
+                        break;
+                    }
+                    if ((['left', 'others'].includes(mode)) || met_current) {
+                        tabs_to_close.push(tab);
+                    }
+                }
+
+                let prm = null;
+                for (let tab of tabs_to_close) {
+                    if (prm) {
+                        prm = prm.then(() => tab._close_allowed());
+                    } else {
+                        prm = tab._close_allowed();
+                    }
+                }
+                if (prm) {
+                    prm.then(() => {
+                        for (let tab of tabs_to_close) {
+                            tab.close();
+                        }
+                    });
+                }
+            }
+        }
+
+        let actions = {
+            close_others: close_tabs('others'),
+            close_left: close_tabs('left'),
+            close_right: close_tabs('right'),
+            duplicate: () => {
+                let current = Sao.Tab.tabs.get_current();
+                Sao.Tab.create(current.attributes, true).then((t) => t.show());
+            },
+            in_new_tab: () => {
+                window.open(window.location.href, '_blank').focus();
+            },
+        };
+
+        let menu = Sao.common.PopupMenu.initialize(evt);
+        for (const [action, name] of [
+            ['close_others', Sao.i18n.gettext("Close all other tabs")],
+            ['close_left', Sao.i18n.gettext("Close tabs to the left")],
+            ['close_right', Sao.i18n.gettext("Close tabs to the right")],
+            ['duplicate', Sao.i18n.gettext("Duplicate the current tab")],
+            ['in_new_tab', Sao.i18n.gettext("Open in a new tab")],
+        ]) {
+            jQuery('<li/>', {
+                'role': 'presentation',
+            }).append(jQuery('<a/>', {
+                'role': 'menuitem',
+                'href': '#',
+                'tabindex': -1
+            }).text(name).click(actions[action])
+            ).appendTo(menu);
+        }
+    }
+
+    Sao.Tab.closed_tabs = [];
+    Sao.Tab.undo_close = function() {
+        if (Sao.Tab.closed_tabs.length == 0) {
+            return;
+        }
+        let attributes = Sao.Tab.closed_tabs.pop();
+        Sao.Tab.create(attributes, true);
     };
 
     Sao.Tab.previous_tab = function() {
@@ -913,6 +1020,7 @@
             this.screen.save_tree_state();
             this.screen.current_view.set_value();
             if (this.screen.modified()) {
+                this.show();
                 return Sao.common.sur_3b.run(
                         Sao.i18n.gettext('This record has been modified\n' +
                             'do you want to save it?'))
