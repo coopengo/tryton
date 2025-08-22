@@ -569,7 +569,7 @@
             ['close_left', Sao.i18n.gettext("Close tabs to the left")],
             ['close_right', Sao.i18n.gettext("Close tabs to the right")],
             ['duplicate', Sao.i18n.gettext("Duplicate the current tab")],
-            ['in_new_tab', Sao.i18n.gettext("Open in a new tab")],
+            ['in_new_tab', Sao.i18n.gettext("Open in a new browser tab")],
         ]) {
             jQuery('<li/>', {
                 'role': 'presentation',
