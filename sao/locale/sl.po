@@ -65,6 +65,10 @@ msgstr "Išči"
 msgid "Close Tab"
 msgstr "Zapri zavihek"
 
+#, fuzzy
+msgid "Undo close tab"
+msgstr "Zapri zavihek"
+
 msgid "Attachment"
 msgstr "Priloga"
 
@@ -196,6 +200,9 @@ msgstr "d"
 
 msgid "False"
 msgstr "Ne"
+
+msgid "Show / Hide more"
+msgstr ""
 
 msgid "Do you want to proceed?"
 msgstr "Ali želiš nadaljevati?"
@@ -472,6 +479,9 @@ msgstr ":"
 msgid "Scan"
 msgstr "Skeniraj"
 
+msgid "Clear"
+msgstr "Počisti"
+
 msgid "Translate"
 msgstr "Prevod"
 
@@ -525,9 +535,6 @@ msgstr "Izberi"
 
 msgid "Select..."
 msgstr "Izberi..."
-
-msgid "Clear"
-msgstr "Počisti"
 
 msgid "Open..."
 msgstr "Odpri..."
@@ -781,6 +788,22 @@ msgstr "Čarovnik"
 
 msgid "Translate view"
 msgstr "Prevedi pogled"
+
+msgid "Close all other tabs"
+msgstr ""
+
+msgid "Close tabs to the left"
+msgstr ""
+
+msgid "Close tabs to the right"
+msgstr ""
+
+#, fuzzy
+msgid "Duplicate the tab"
+msgstr "Podvoji"
+
+msgid "Open in a new browser tab"
+msgstr ""
 
 #~ msgid "Always ignore this warning."
 #~ msgstr "Vedno prezri to opozorilo."

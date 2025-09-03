@@ -62,6 +62,10 @@ msgstr "Zoeken"
 msgid "Close Tab"
 msgstr "Tabblad sluiten"
 
+#, fuzzy
+msgid "Undo close tab"
+msgstr "Tabblad sluiten"
+
 msgid "Attachment"
 msgstr "Bijlage"
 
@@ -194,6 +198,9 @@ msgstr "w (t)"
 
 msgid "False"
 msgstr "Onwaar"
+
+msgid "Show / Hide more"
+msgstr ""
 
 msgid "Do you want to proceed?"
 msgstr "Doorgaan?"
@@ -468,6 +475,9 @@ msgstr ":"
 msgid "Scan"
 msgstr "Scannen"
 
+msgid "Clear"
+msgstr "Wissen"
+
 msgid "Translate"
 msgstr "Vertalen"
 
@@ -521,9 +531,6 @@ msgstr "Selecteer"
 
 msgid "Select..."
 msgstr "Selecteer ..."
-
-msgid "Clear"
-msgstr "Wissen"
 
 msgid "Open..."
 msgstr "Openen..."
@@ -772,6 +779,22 @@ msgstr "Assistent"
 
 msgid "Translate view"
 msgstr "Vertaal weergave"
+
+msgid "Close all other tabs"
+msgstr ""
+
+msgid "Close tabs to the left"
+msgstr ""
+
+msgid "Close tabs to the right"
+msgstr ""
+
+#, fuzzy
+msgid "Duplicate the tab"
+msgstr "Duplicaat"
+
+msgid "Open in a new browser tab"
+msgstr ""
 
 #~ msgid "Always ignore this warning."
 #~ msgstr "Deze waarschuwing altijd negeren."
