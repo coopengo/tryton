@@ -62,8 +62,9 @@ msgstr "Rechercher"
 msgid "Close Tab"
 msgstr "Fermer l'onglet"
 
+#, fuzzy
 msgid "Undo close tab"
-msgstr "Annuler la fermeture de l'onglet"
+msgstr "Fermer l'onglet"
 
 msgid "Attachment"
 msgstr "Attachement"
@@ -785,7 +786,7 @@ msgstr "Fermer les onglets à gauche"
 msgid "Close tabs to the right"
 msgstr "Fermer les onglets à droite"
 
-msgid "Duplicate the tab"
+msgid "Duplicate the current tab"
 msgstr "Dupliquer l'onglet"
 
 msgid "Open in a new browser tab"

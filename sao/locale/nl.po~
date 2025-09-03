@@ -3,145 +3,140 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
 msgid "Are your sure to leave?"
-msgstr "Sei sicuro di voler abbandonare?"
+msgstr "Ben je zeker dat je weggaat?"
 
-#, fuzzy
 msgid "Incompatible version of the server."
-msgstr "server non raggiungibile"
+msgstr "Onjuiste versie van de server."
 
 msgid "Version mismatch"
-msgstr ""
+msgstr "Foutieve versie"
 
-#, fuzzy
 msgid "Could not connect to the server."
-msgstr "server non raggiungibile"
+msgstr "Kan geen verbinding maken met server."
 
-#, fuzzy
 msgid "Connection error"
-msgstr "Errore dell'applicazione"
+msgstr "Verbindingsfout"
 
 msgid "Favorites"
-msgstr "Preferiti"
+msgstr "Favorieten"
 
 msgid "Manage..."
-msgstr "Gestisci..."
+msgstr "Beheren..."
 
 msgid "Logout"
-msgstr "Esci"
+msgstr "Uitloggen"
 
 msgid "Close"
-msgstr "Chiudi"
+msgstr "Sluiten"
 
 msgid "Action"
-msgstr "Azione"
+msgstr "Actie"
 
 msgid "New"
-msgstr "Nuovo"
+msgstr "Nieuw"
 
 msgid "Save"
-msgstr "Salva"
+msgstr "Opslaan"
 
 msgid "Switch"
-msgstr "Cambia"
+msgstr "Omschakelen"
 
 msgid "Reload/Undo"
-msgstr "Ricarica/Ripristina"
+msgstr "Ongedaan maken / herladen"
 
 msgid "Duplicate"
-msgstr "Duplica"
+msgstr "Duplicaat"
 
 msgid "Delete"
-msgstr "Elimina"
+msgstr "Verwijderen"
 
 msgid "Previous"
-msgstr "Precedente"
+msgstr "Vorige"
 
 msgid "Next"
-msgstr "Successivo"
+msgstr "Volgende"
 
 msgid "Search"
-msgstr "Cerca"
+msgstr "Zoeken"
 
 msgid "Close Tab"
-msgstr "Chiudi la scheda"
+msgstr "Tabblad sluiten"
 
 #, fuzzy
 msgid "Undo close tab"
-msgstr "Chiudi la scheda"
+msgstr "Tabblad sluiten"
 
 msgid "Attachment"
-msgstr "Allegato"
+msgstr "Bijlage"
 
 msgid "Note"
-msgstr "nota"
+msgstr "Aantekening"
 
 msgid "Relate"
-msgstr "collega"
+msgstr "Gerelateerd"
 
 msgid "Print"
-msgstr "Stampa"
+msgstr "Afdrukken"
 
 msgid "E-Mail"
-msgstr ""
+msgstr "E-mail"
 
 msgid "Previous tab"
-msgstr "Scheda precedente"
+msgstr "Vorig tabblad"
 
 msgid "Next tab"
-msgstr "Scheda successiva"
+msgstr "Volgend tabblad"
 
 msgid "Global search"
-msgstr ""
+msgstr "Algemeen zoeken"
 
 msgid "Show this help"
-msgstr ""
+msgstr "Toon deze hulp"
 
 msgid "Show/Hide access keys"
-msgstr ""
+msgstr "Toegangssleutels tonen/verbergen"
 
 msgid "Help"
-msgstr ""
+msgstr "Help"
 
 msgid "Documentation..."
-msgstr ""
+msgstr "Documentatie..."
 
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Toetsenbord sneltoetsen"
 
 msgid "Global shortcuts"
-msgstr ""
+msgstr "algemene snelkoppeling"
 
 msgid "Tab shortcuts"
-msgstr ""
+msgstr "Tab snelkoppelingen"
 
 msgid "Unable to reach the server."
-msgstr "server non raggiungibile"
+msgstr "Kan geen verbinding maken met server."
 
-#, fuzzy
 msgid "Error: \"%1\". Try again later."
-msgstr "Troppe richieste. Riprovare più tardi."
+msgstr "Te veel aanvragen. Probeer het later nog eens."
 
 msgid "Login"
-msgstr "Login"
+msgstr "Inloggen"
 
 msgid "Database"
 msgstr "Database"
 
 msgid "User name"
-msgstr ""
+msgstr "Gebruikersnaam"
 
-#, fuzzy
 msgid "Login with"
-msgstr "Login"
+msgstr "Inloggen met"
 
 msgid "Too many requests. Try again later."
-msgstr "Troppe richieste. Riprovare più tardi."
+msgstr "Te veel verzoeken. Probeer het later nog eens."
 
 msgid "Not found."
-msgstr ""
+msgstr "Niet gevonden."
 
 msgid "Send you an email to reset your password."
-msgstr ""
+msgstr "Stuurt u een email om het wachtwoord te resetten."
 
 msgid "Reset forgotten password"
 msgstr ""
@@ -150,18 +145,20 @@ msgid ""
 "A request to reset your password has been sent.\n"
 "Please check your mailbox."
 msgstr ""
+"Een verzoek om uw wachtwoord te resetten is verstuurd.\n"
+"Controller uw mailbox."
 
 msgid "Your selection:"
-msgstr "La tua selezione:"
+msgstr "Uw selectie:"
 
 msgid "Cancel"
-msgstr "Annulla"
+msgstr "Annuleer"
 
 msgid "OK"
 msgstr "OK"
 
 msgid "Y"
-msgstr "Y"
+msgstr "J"
 
 msgid "M"
 msgstr "M"
@@ -173,7 +170,7 @@ msgid "d"
 msgstr "d"
 
 msgid "h"
-msgstr "h"
+msgstr "u"
 
 msgid "m"
 msgstr "m"
@@ -182,629 +179,606 @@ msgid "s"
 msgstr "s"
 
 msgid "By: "
-msgstr "per: "
+msgstr "Door: "
 
 msgid ", "
 msgstr ", "
 
 msgid "y"
-msgstr "y"
+msgstr "J"
 
 msgid "Yes"
-msgstr "Sì"
+msgstr "Ja"
 
 msgid "True"
-msgstr "Vero"
+msgstr "Waar"
 
 msgid "t"
-msgstr "t"
+msgstr "w (t)"
 
 msgid "False"
-msgstr "Falso"
+msgstr "Onwaar"
 
 msgid "Show / Hide more"
 msgstr ""
 
 msgid "Do you want to proceed?"
-msgstr "Continuare?"
+msgstr "Doorgaan?"
 
 msgid "No"
-msgstr "no"
+msgstr "Nee"
 
-#, fuzzy
 msgid "Concurrency Warning"
-msgstr "scrivi avviso di concorrenza: "
+msgstr "Simultaan gebruik waarschuwing"
 
 msgid "This record has been modified while you were editing it."
-msgstr "Questo record è stato modificato mentre lo stavi compilando."
+msgstr "Dit record werd gewijzigd terwijl u het aan het bewerken was."
 
 msgid "Choose:"
-msgstr "Scegli:"
+msgstr "Kiezen:"
 
 msgid "\"Cancel\" to cancel saving;"
-msgstr "\"Annulla\" per annullare il salvataggio;"
+msgstr "\"Annuleren\" om het opslaan te annuleren;"
 
 msgid "\"Compare\" to see the modified version;"
-msgstr "\"Confronta\" per vedere la versione modificata;"
+msgstr "\"Vergelijken\" om de gewijzigde versie te zien;"
 
 msgid "\"Write Anyway\" to save your current version."
-msgstr "\"Scrivi comunque\" per salvare la versione corrente"
+msgstr "\"Overschrijven\" om de huidige versie te bewaren."
 
 msgid "Compare"
-msgstr "Confronta"
+msgstr "Vergelijk"
 
 msgid "Compare: %1"
-msgstr "Confronta: %1"
+msgstr "Vergelijk:% 1"
 
 msgid "Write Anyway"
-msgstr "Scrivi comunque"
+msgstr "Overschrijven"
 
 msgid "Application Error"
-msgstr "Errore dell'applicazione"
+msgstr "Applicatiefout"
 
 msgid "Details"
-msgstr ""
+msgstr "Details"
 
 msgid "Report Bug"
-msgstr "Segnala l'errore"
+msgstr "Programmafout melden"
 
 msgid "Processing"
-msgstr ""
+msgstr "In behandeling"
 
 msgid "Search..."
-msgstr "Cerca..."
+msgstr "Zoeken..."
 
 msgid "Create..."
-msgstr "Crea..."
+msgstr "Maak ..."
 
-#, fuzzy
 msgid "Create \"%1\"..."
-msgstr "Crea..."
+msgstr "Maak \"%1\"..."
 
 msgid "Download"
-msgstr "Scarica"
+msgstr "Download"
 
 msgid "..."
 msgstr "..."
 
 msgid "Bold"
-msgstr ""
+msgstr "Vet"
 
 msgid "Italic"
-msgstr ""
+msgstr "Cursief"
 
-#, fuzzy
 msgid "Underline"
-msgstr "Annullare l'eliminazione"
+msgstr "Onderstrepen"
 
 msgid "Font"
-msgstr "Carattere"
+msgstr "lettertype"
 
 msgid "Size"
-msgstr "Dimensione"
+msgstr "Grootte"
 
 msgid "Justify Right"
-msgstr ""
+msgstr "Uitvullen rechts"
 
 msgid "Justify Left"
-msgstr ""
+msgstr "Links uitvullen"
 
 msgid "Justify Center"
-msgstr ""
+msgstr "Uitvullen centrum"
 
 msgid "Justify Full"
-msgstr ""
+msgstr "Volledig uitvullen"
 
 #, fuzzy
 msgid "Edit..."
-msgstr "Modifica"
+msgstr "Bewerken"
 
 #, fuzzy
 msgid "Relation"
-msgstr "collega"
+msgstr "Gerelateerd"
 
 #, fuzzy
 msgid "Report"
-msgstr "Segnala l'errore"
+msgstr "Rapporten"
 
 msgid "Switch view"
-msgstr "cambia visualizzazione"
+msgstr "Wissel van weergave"
 
 msgid "Previous Record"
-msgstr "Record precedente"
+msgstr "Vorig record"
 
 msgid "Next Record"
-msgstr "Record successivo"
+msgstr "Volgend record"
 
 msgid "Create a new record"
-msgstr "Crea un nuovo record"
+msgstr "Maak een nieuw record"
 
 msgid "Save this record"
-msgstr "salvare il record"
+msgstr "Record opslaan"
 
 msgid "Reload"
-msgstr "Ricarica"
+msgstr "Herladen"
 
 msgid "View Logs..."
-msgstr "vedi logs"
+msgstr "Bekijk Logboek..."
 
 msgid "Show revisions..."
-msgstr "mostra revisioni"
+msgstr "Revisies weergeven ..."
 
 msgid "Add an attachment to the record"
-msgstr "aggiungere un allegato al record"
+msgstr "Voeg een bijlage toe aan het record"
 
 msgid "Add a note to the record"
-msgstr "Aggiungi un appunto sul record"
+msgstr "Voeg een notitie toe aan het record"
 
 msgid "E-Mail..."
-msgstr ""
+msgstr "E-mail..."
 
-#, fuzzy
 msgid "Send an e-mail using the record"
-msgstr "Aggiungi un appunto sul record"
+msgstr "Stuur een e-mail met behulp van het record"
 
 msgid "Export"
-msgstr "Esporta"
+msgstr "Exporteren"
 
 msgid "Import"
-msgstr "Importa"
+msgstr "Importeren"
 
 msgid ""
 "The following action requires to close all tabs.\n"
 "Do you want to continue?"
 msgstr ""
-"L'azione seguente richiede la chiusura di tutte le finestre.\n"
-"Vuoi continuare?"
+"De volgende actie vereist het sluiten van alle tabbladen.\n"
+"Verder gaan?"
 
 msgid "Launch action"
-msgstr "lancia applicazione"
+msgstr "Actie uitvoeren"
 
 msgid "Open related records"
-msgstr "Apri record correlati"
+msgstr "Open gerelateerde records"
 
 msgid "Print report"
-msgstr "Stampa rapporto"
+msgstr "Rapport afdrukken"
 
 msgid ""
 "This record has been modified\n"
 "do you want to save it?"
 msgstr ""
-"Questo record è stato modificato\n"
-"intendi salvarlo?"
+"Dit record is aangepast.\n"
+"Wilt u de wijzigingen opslaan?"
 
 msgid "Record saved."
-msgstr "Record salvato."
+msgstr "Record opgeslagen."
 
 msgid "Working now on the duplicated record(s)."
-msgstr "Stai ora lavorando nel record duplicato."
+msgstr "Aan het werk op het(de) gekopieerde record(s)."
 
 msgid "Are you sure to remove this record?"
-msgstr "sei sicuro di rimuovere questo record?"
+msgstr "Weet u zeker dat u dit record wilt verwijderen?"
 
 msgid "Are you sure to remove those records?"
-msgstr "sei sicuro di rimuovere questi record?"
+msgstr "Weet u zeker dat u deze records wilt verwijderen?"
 
 msgid "Records removed."
-msgstr "Record rimossi."
+msgstr "Records verwijderd."
 
 msgid "Records not removed."
-msgstr "Record non rimossi."
+msgstr "Records niet verwijderd."
 
 msgid "You have to select one record."
-msgstr "Devi selezionare un record."
+msgstr "U moet één record selecteren."
 
 msgid "Add..."
-msgstr "Inserisci..."
+msgstr "Toevoegen..."
 
-#, fuzzy
 msgid "Preview"
-msgstr "Precedente"
+msgstr "Voorbeeld"
 
-#, fuzzy
 msgid "Template"
-msgstr "collega"
+msgstr "Sjabloon"
 
-#, fuzzy
 msgid "Attachment (%1)"
-msgstr "allegati (%1)"
+msgstr "Bijlage (%1)"
 
 msgid "Note (%1/%2)"
-msgstr ""
+msgstr "Opmerking (%1/%2)"
 
 msgid "Filters"
-msgstr "Filtri"
+msgstr "filters"
 
 msgid "Clear Search"
-msgstr ""
+msgstr "Wis zoeken"
 
 msgid "Bookmarks"
-msgstr "Segnalibri"
+msgstr "bladwijzers"
 
 msgid "Remove this bookmark"
-msgstr "rimuovere questo segnalibro"
+msgstr "Verwijder deze bladwijzer"
 
 msgid "Bookmark this filter"
-msgstr "contrassegnare questo filtro"
+msgstr "Maak een bladwijzer voor dit filter"
 
 msgid "Bookmark Name:"
-msgstr "Nome Segnalibro:"
+msgstr "Bladwijzer naam:"
 
 msgid "Show active records"
-msgstr ""
+msgstr "Geef actieve records weer"
 
 msgid "Show inactive records"
-msgstr ""
+msgstr "Geef niet-actieve records weer"
 
 msgid "Find"
-msgstr "Trova"
+msgstr "Zoeken"
 
 msgid "From"
-msgstr "Da"
+msgstr "Van"
 
 msgid "To"
-msgstr ""
+msgstr "Aan"
 
 msgid "Open the calendar"
-msgstr ""
+msgstr "Open kalender"
 
 msgid "ID"
 msgstr "ID"
 
 msgid "Created by"
-msgstr "Creato da"
+msgstr "Aangemaakt door"
 
 msgid "Created at"
-msgstr "Creato il"
+msgstr "Aanmaakdatum"
 
 msgid "Modified by"
-msgstr ""
+msgstr "Aangepast door"
 
 msgid "Modified at"
-msgstr "Modificato il"
+msgstr "Gewijzigd om"
 
-#, fuzzy
 msgid "\"%1\" is required."
-msgstr "\"%1\" è obbligatorio"
+msgstr "\"%1\" is vereist."
 
-#, fuzzy
 msgid "\"%1\" is not valid according to its domain."
-msgstr "\"%1\" non è valido rispetto al dominio"
+msgstr "\"%1\" is niet geldig volgens zijn domein."
 
-#, fuzzy
 msgid "The values of \"%1\" are not valid."
-msgstr "i valori di \"%1\" non sono validi"
+msgstr "De waarden van \"%1\" zijn niet geldig."
 
 #, fuzzy
 msgid "The value of \"%1\" is not valid."
-msgstr "i valori di \"%1\" non sono validi"
+msgstr "De waarden van \"%1\" zijn niet geldig."
 
 msgid "Pre-validation"
-msgstr "pre-validazione"
+msgstr "Pre-validatie"
 
 msgid ":"
 msgstr ":"
 
 msgid "Scan"
-msgstr ""
+msgstr "Scannen"
 
 msgid "Clear"
-msgstr "Cancella"
+msgstr "Wissen"
 
 msgid "Translate"
-msgstr "Traduci"
+msgstr "Vertalen"
 
 msgid "Edit"
-msgstr "Modifica"
+msgstr "Bewerken"
 
 msgid "Fuzzy"
-msgstr "fuzzy"
+msgstr "Onzeker"
 
 msgid "You need to save the record before adding translations."
-msgstr "È necessario salvare il record prima di aggiungere le traduzioni."
+msgstr "U moet de record opslaan voordat u vertalingen kunt toevoegen."
 
 msgid "No other language available."
-msgstr "Nessun altra lingua è disponibile."
+msgstr "Geen andere taal beschikbaar."
 
 msgid "Show"
-msgstr ""
+msgstr "Toon"
 
 msgid "Hide"
-msgstr ""
+msgstr "Verbergen"
 
 msgid "Open the record"
-msgstr ""
+msgstr "Open het record"
 
 msgid "Clear the field"
-msgstr ""
+msgstr "Wis het veld"
 
 msgid "Search a record"
-msgstr ""
+msgstr "Zoek een record"
 
 msgid "Add"
-msgstr "Aggiungi"
+msgstr "Toevoegen"
 
 msgid "Remove"
-msgstr "Rimuovi"
+msgstr "Verwijderen"
 
 msgid "Open"
-msgstr "Apri"
+msgstr "Openen"
 
 msgid "Undelete"
-msgstr "Annullare l'eliminazione"
+msgstr "wissen ongedaan maken"
 
 msgid "Save As"
-msgstr ""
+msgstr "Opslaan als"
 
 msgid "Save As..."
-msgstr ""
+msgstr "Opslaan als..."
 
 msgid "Select"
-msgstr "Seleziona"
+msgstr "Selecteer"
 
 msgid "Select..."
-msgstr ""
+msgstr "Selecteer ..."
 
-#, fuzzy
 msgid "Open..."
-msgstr "Apri"
+msgstr "Openen..."
 
 msgid "Choose a language"
-msgstr ""
+msgstr "Kies een taal"
 
 #, javascript-format
 msgid "%1%"
 msgstr "%1%"
 
 msgid "Menu"
-msgstr ""
+msgstr "Menu"
 
-#, fuzzy
 msgid "Copy Selected Rows"
-msgstr "Record selezionati"
+msgstr "Kopieer geselecteerde regels"
 
 msgid "#ERROR"
-msgstr ""
+msgstr "#FOUT"
 
 msgid "More"
-msgstr "più"
+msgstr "Meer"
 
-#, fuzzy
 msgid ": "
 msgstr ": "
 
 msgid "Today"
-msgstr ""
+msgstr "Vandaag"
 
 msgid "Month"
-msgstr ""
+msgstr "Maand"
 
 msgid "Week"
-msgstr ""
+msgstr "Week"
 
 msgid "Day"
-msgstr "Giorno"
+msgstr "Dag"
 
 msgid ",..."
-msgstr ""
+msgstr ",..."
 
 msgid "%1 (%2)"
 msgstr "%1 (%2)"
 
 msgid "Select your action"
-msgstr "Seleziona l'azione"
+msgstr "Selecteer een actie"
 
 msgid "No action defined."
-msgstr "Nessuna azione definita."
+msgstr "Geen actie gedefinieerd."
 
 msgid "Discard changes"
-msgstr ""
+msgstr "Wijzigingen ongedaan maken"
 
 msgid "Save and New"
-msgstr ""
+msgstr "Opslaan en nieuw"
 
-#, fuzzy
 msgid "Add and New"
-msgstr "inserire nomi campo"
+msgstr "Toevoegen en nieuw"
 
 msgid "Apply changes"
-msgstr ""
+msgstr "Wijzigingen opslaan"
 
 msgid "Attachments (%1)"
-msgstr "allegati (%1)"
+msgstr "Bijlagen (%1)"
 
 msgid "Notes (%1)"
-msgstr "note (%1)"
+msgstr "Notities (%1)"
 
-#, fuzzy
 msgid "Logs (%1)"
-msgstr "note (%1)"
+msgstr "Logboeken (%1)"
 
-#, fuzzy
 msgid "Model:"
-msgstr "Modello: "
+msgstr "Model:"
 
 msgid "ID:"
 msgstr "ID:"
 
 msgid "Module:"
-msgstr ""
+msgstr "Module:"
 
 msgid "XML ID:"
-msgstr ""
+msgstr "XML id:"
 
 msgid "Created by:"
-msgstr "Creato da:"
+msgstr "Aangemaakt door:"
 
 msgid "Created at:"
-msgstr "Creato il:"
+msgstr "Aanmaakdatum:"
 
-#, fuzzy
 msgid "Last Modified by:"
-msgstr "Modificato il"
+msgstr "Laatst aangepast door:"
 
-#, fuzzy
 msgid "Last Modified at:"
-msgstr "Modificato il"
+msgstr "Laatst gewijzigd om:"
 
 msgid "Search %1"
-msgstr "Cerca %1"
+msgstr "Zoek %1"
 
 msgid "Revision"
-msgstr "Revisione"
+msgstr "Revisie"
 
 msgid "All Fields"
-msgstr "Ogni Campo"
+msgstr "Alle velden"
 
 msgid "Fields Selected"
-msgstr "campi selezionati"
+msgstr "Geselecteerde Velden"
 
 msgid "CSV Parameters"
-msgstr "parametri CSV"
+msgstr "CSV parameters"
 
 msgid "Delimiter:"
-msgstr "Delimitatore:"
+msgstr "Scheidingsteken:"
 
 msgid "Quote Char:"
-msgstr "Carattere tra virgolette:"
+msgstr "aanhalingstekens :"
 
 msgid "CSV Import: %1"
-msgstr ""
+msgstr "CSV-Import: %1"
 
 msgid "Auto-Detect"
-msgstr "Autorilevamento"
+msgstr "Automatische detectie"
 
 msgid "File to Import"
-msgstr "file da importare"
+msgstr "Bestand om te importeren"
 
 msgid "Encoding:"
-msgstr "Codifica:"
+msgstr "Codering:"
 
 msgid "Lines to Skip:"
-msgstr "Righe da saltare:"
+msgstr "Regels overslaan:"
 
 msgid "You must select an import file first."
-msgstr "Devi prima selezionare un file da importare."
+msgstr "U moet eerst een importbestand selecteren."
 
 msgid "Detection failed"
-msgstr ""
+msgstr "Detecteren faalde"
 
 msgid "Unknown column header \"%1\""
-msgstr ""
+msgstr "Onbekende kolomkop \"%1\""
 
 msgid "Error"
-msgstr "Errore"
+msgstr "Fout"
 
-#, fuzzy
 msgid "Import failed"
-msgstr "Importa"
+msgstr "Importeren faalde"
 
 msgid "%1 record imported"
 msgid_plural "%1 records imported"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1 record geïmporteerd"
+msgstr[1] "%1 records geïmporteerd"
 
 msgid "CSV Export: %1"
-msgstr ""
+msgstr "Exporteer CSV: %1"
 
 msgid "Save Export"
-msgstr "salvare esportazione"
+msgstr "Export opslaan"
 
-#, fuzzy
 msgid "URL Export"
-msgstr "Esporta"
+msgstr "URL Exporteren"
 
 msgid "Delete Export"
-msgstr "eliminare esportazione"
+msgstr "Export verwijderen"
 
 msgid "Predefined Exports"
-msgstr "esportazioni predefinite"
+msgstr "Vooraf gedefinieerde exports"
 
 msgid "Selected Records"
-msgstr "Record selezionati"
+msgstr "Geselecteerde records"
 
 msgid "Listed Records"
-msgstr "Record elencati"
+msgstr "Weergegeven records"
 
 msgid "Export:"
-msgstr "Esporta:"
+msgstr "Exporteer:"
 
 msgid "Ignore search limit"
-msgstr "Ignora limite di ricerca"
+msgstr "Zoeklimiet negeren"
 
 msgid "Use locale format"
-msgstr "Usa il formato locale"
+msgstr "Gebruik taalinstellingen"
 
 msgid "Add Field Names"
-msgstr "inserire nomi campo"
+msgstr "Voeg veldnamen toe"
 
 msgid "%1 (string)"
-msgstr "%1 (stringa)"
+msgstr "%1 (string)"
 
 msgid "%1 (model name)"
-msgstr ""
+msgstr "%1 (model naam)"
 
-#, fuzzy
 msgid "%1/Record Name"
-msgstr "Record salvato."
+msgstr "%1/Record Naam"
 
 msgid "What is the name of this export?"
-msgstr "qual è il nome di questa esportazione?"
+msgstr "Wat is de naam voor deze export?"
 
 msgid "Override %1 definition?"
-msgstr "sovrascrivere definizione %1?"
+msgstr "Definitie van %1 overschrijven?"
 
 msgid "%1 record saved"
 msgid_plural "%1 records saved"
-msgstr[0] "%1 record salvato"
-msgstr[1] "%1 record salvati"
+msgstr[0] "%1 record opgeslagen"
+msgstr[1] "%1 records opgeslagen"
 
 msgid "E-mail %1"
-msgstr ""
+msgstr "E-mail %1"
 
 msgid "To:"
-msgstr ""
+msgstr "Aan:"
 
 msgid "Cc:"
 msgstr "Cc:"
 
 msgid "Bcc:"
-msgstr ""
+msgstr "Bcc:"
 
 msgid "Subject:"
-msgstr ""
+msgstr "Onderwerp:"
 
-#, fuzzy
 msgid "Reports"
-msgstr "Segnala l'errore"
+msgstr "Rapporten"
 
 msgid "Attachments"
-msgstr "Allegati"
+msgstr "Bijlagen"
 
 msgid "Files"
-msgstr ""
+msgstr "Bestanden"
 
 msgid "Send"
-msgstr ""
+msgstr "Verzenden"
 
-#, fuzzy
 msgid "Remove File"
-msgstr "Rimuovi"
+msgstr "Bestand verwijderen"
 
 msgid "Code Scanner"
-msgstr ""
+msgstr "Barcode scanner"
 
 msgid "Code"
-msgstr ""
+msgstr "Barcode"
 
 msgid "Toggle Sound"
-msgstr ""
+msgstr "Schakel geluid"
 
 msgid "Wizard"
-msgstr "wizard"
+msgstr "Assistent"
 
 msgid "Translate view"
-msgstr ""
+msgstr "Vertaal weergave"
 
 msgid "Close all other tabs"
 msgstr ""
@@ -815,12 +789,11 @@ msgstr ""
 msgid "Close tabs to the right"
 msgstr ""
 
-#, fuzzy
-msgid "Duplicate the tab"
-msgstr "Duplica"
+msgid "Duplicate the current tab"
+msgstr ""
 
 msgid "Open in a new browser tab"
 msgstr ""
 
 #~ msgid "Always ignore this warning."
-#~ msgstr "ignorare sempre questo avviso"
+#~ msgstr "Deze waarschuwing altijd negeren."

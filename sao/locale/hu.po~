@@ -806,9 +806,8 @@ msgstr ""
 msgid "Close tabs to the right"
 msgstr ""
 
-#, fuzzy
-msgid "Duplicate the tab"
-msgstr "Duplázás"
+msgid "Duplicate the current tab"
+msgstr ""
 
 msgid "Open in a new browser tab"
 msgstr ""

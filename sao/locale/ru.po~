@@ -12,83 +12,80 @@ msgstr ""
 msgid "Version mismatch"
 msgstr ""
 
-#, fuzzy
 msgid "Could not connect to the server."
-msgstr "Jegyzet hozzáadása a rekordhoz"
+msgstr ""
 
-#, fuzzy
 msgid "Connection error"
-msgstr "Alkalmazáshiba"
+msgstr ""
 
 msgid "Favorites"
-msgstr "Könyvjelzők"
+msgstr ""
 
 msgid "Manage..."
-msgstr "Módosítás..."
+msgstr ""
 
 msgid "Logout"
-msgstr "Kilépés"
+msgstr ""
 
 msgid "Close"
-msgstr "Bezárás"
+msgstr ""
 
 msgid "Action"
-msgstr "Művelet"
+msgstr ""
 
 msgid "New"
-msgstr "Új"
+msgstr ""
 
 msgid "Save"
-msgstr "Mentés"
+msgstr ""
 
 msgid "Switch"
-msgstr "Átvált"
+msgstr ""
 
 msgid "Reload/Undo"
-msgstr "Újratöltés / Visszavonás"
+msgstr ""
 
 msgid "Duplicate"
-msgstr "Duplázás"
+msgstr ""
 
 msgid "Delete"
-msgstr "Törlés"
+msgstr ""
 
 msgid "Previous"
-msgstr "Vissza"
+msgstr ""
 
 msgid "Next"
-msgstr "Tovább"
+msgstr ""
 
 msgid "Search"
-msgstr "Keresés"
+msgstr ""
 
 msgid "Close Tab"
-msgstr "Lap bezárása"
+msgstr ""
 
-#, fuzzy
 msgid "Undo close tab"
-msgstr "Lap bezárása"
+msgstr ""
 
 msgid "Attachment"
-msgstr "Melléklet"
+msgstr ""
 
 msgid "Note"
-msgstr "Jegyzetek"
+msgstr ""
 
 msgid "Relate"
-msgstr "Kapcsolat"
+msgstr ""
 
 msgid "Print"
-msgstr "Nyomtatás"
+msgstr ""
 
 msgid "E-Mail"
-msgstr "E-mail"
+msgstr ""
 
 msgid "Previous tab"
-msgstr "Előző lap"
+msgstr ""
 
 msgid "Next tab"
-msgstr "Következő lap"
+msgstr ""
 
 msgid "Global search"
 msgstr ""
@@ -106,7 +103,7 @@ msgid "Documentation..."
 msgstr ""
 
 msgid "Keyboard shortcuts"
-msgstr "Gyorsbillentyűk"
+msgstr ""
 
 msgid "Global shortcuts"
 msgstr ""
@@ -121,17 +118,16 @@ msgid "Error: \"%1\". Try again later."
 msgstr ""
 
 msgid "Login"
-msgstr "Bejelentkezés"
+msgstr ""
 
 msgid "Database"
-msgstr "Adatbázis"
+msgstr ""
 
 msgid "User name"
-msgstr "Felhasználónév"
+msgstr ""
 
-#, fuzzy
 msgid "Login with"
-msgstr "Bejelentkezés"
+msgstr ""
 
 msgid "Too many requests. Try again later."
 msgstr ""
@@ -151,34 +147,34 @@ msgid ""
 msgstr ""
 
 msgid "Your selection:"
-msgstr "Az ön választásai:"
+msgstr ""
 
 msgid "Cancel"
-msgstr "Mégse"
+msgstr ""
 
 msgid "OK"
-msgstr "OK"
+msgstr ""
 
 msgid "Y"
-msgstr "É"
+msgstr ""
 
 msgid "M"
-msgstr "H"
+msgstr ""
 
 msgid "w"
-msgstr "h"
+msgstr ""
 
 msgid "d"
-msgstr "t"
+msgstr ""
 
 msgid "h"
-msgstr "ó"
+msgstr ""
 
 msgid "m"
-msgstr "m"
+msgstr ""
 
 msgid "s"
-msgstr "s"
+msgstr ""
 
 msgid "By: "
 msgstr ""
@@ -188,85 +184,81 @@ msgid ", "
 msgstr ", "
 
 msgid "y"
-msgstr "J"
+msgstr ""
 
 msgid "Yes"
-msgstr "Igen"
+msgstr ""
 
 msgid "True"
-msgstr "Igaz"
+msgstr ""
 
 msgid "t"
-msgstr "w"
+msgstr ""
 
 msgid "False"
-msgstr "Hamis"
+msgstr ""
 
 msgid "Show / Hide more"
 msgstr ""
 
 msgid "Do you want to proceed?"
-msgstr "Akarja folyatni?"
+msgstr ""
 
 msgid "No"
-msgstr "Nem"
+msgstr ""
 
-#, fuzzy
 msgid "Concurrency Warning"
-msgstr "Egyidejű módosítási hiba"
+msgstr ""
 
 msgid "This record has been modified while you were editing it."
 msgstr ""
-"Ezt a rekordot valaki más módosította az idő alatt, míg Ön dolgozott rajta."
 
 msgid "Choose:"
-msgstr "Válasszon:"
+msgstr ""
 
 msgid "\"Cancel\" to cancel saving;"
-msgstr "„Mégse”, hogy ne mentse el;"
+msgstr ""
 
 msgid "\"Compare\" to see the modified version;"
 msgstr ""
-"„Összehasonlítás”, hogy megtekintse a másik felhasználó által módosított "
-"változatot;"
 
 msgid "\"Write Anyway\" to save your current version."
-msgstr "„Felülírás”, hogy a másik felhasználóét az Ön verziójával felülírja."
+msgstr ""
 
 msgid "Compare"
-msgstr "Összehasonlítás"
+msgstr ""
 
 msgid "Compare: %1"
-msgstr "Összehasonlítás: %1"
+msgstr ""
 
 msgid "Write Anyway"
-msgstr "Felülírás"
+msgstr ""
 
 msgid "Application Error"
-msgstr "Alkalmazáshiba"
+msgstr ""
 
 msgid "Details"
 msgstr ""
 
 msgid "Report Bug"
-msgstr "A hiba jelentése"
+msgstr ""
 
 msgid "Processing"
-msgstr "Folyamatban"
+msgstr ""
 
 msgid "Search..."
-msgstr "Keresés..."
+msgstr ""
 
 msgid "Create..."
-msgstr "Létrehozás..."
+msgstr ""
 
-#, fuzzy
 msgid "Create \"%1\"..."
-msgstr "Létrehozás..."
+msgstr ""
 
 msgid "Download"
-msgstr "Letöltés"
+msgstr ""
 
+#, fuzzy
 msgid "..."
 msgstr "..."
 
@@ -280,10 +272,10 @@ msgid "Underline"
 msgstr ""
 
 msgid "Font"
-msgstr "Betűtípus"
+msgstr ""
 
 msgid "Size"
-msgstr "Méret"
+msgstr ""
 
 msgid "Justify Right"
 msgstr ""
@@ -297,175 +289,168 @@ msgstr ""
 msgid "Justify Full"
 msgstr ""
 
-#, fuzzy
 msgid "Edit..."
-msgstr "Módosítás"
+msgstr ""
 
-#, fuzzy
 msgid "Relation"
-msgstr "Kapcsolat"
+msgstr ""
 
-#, fuzzy
 msgid "Report"
-msgstr "Nyomtatványok"
+msgstr ""
 
 msgid "Switch view"
-msgstr "Nézet váltása"
+msgstr ""
 
 msgid "Previous Record"
-msgstr "Előző rekord"
+msgstr ""
 
 msgid "Next Record"
-msgstr "Következő rekord"
+msgstr ""
 
 msgid "Create a new record"
-msgstr "Új rekord létrehozása"
+msgstr ""
 
 msgid "Save this record"
-msgstr "Rekord mentése"
+msgstr ""
 
 msgid "Reload"
-msgstr "Újratöltés"
+msgstr ""
 
 msgid "View Logs..."
-msgstr "Napló megtekintése..."
+msgstr ""
 
 msgid "Show revisions..."
-msgstr "Feldolgozások megtekintése"
+msgstr ""
 
 msgid "Add an attachment to the record"
-msgstr "Melléklet hozzáadása a rekordhoz"
+msgstr ""
 
 msgid "Add a note to the record"
-msgstr "Jegyzet hozzáadása a rekordhoz"
+msgstr ""
 
 msgid "E-Mail..."
 msgstr ""
 
 msgid "Send an e-mail using the record"
-msgstr "E-mail küldése a rekord adataival"
+msgstr ""
 
 msgid "Export"
-msgstr "Exportálás"
+msgstr ""
 
 msgid "Import"
-msgstr "Importálás"
+msgstr ""
 
 msgid ""
 "The following action requires to close all tabs.\n"
 "Do you want to continue?"
 msgstr ""
-"A továbblépéshez be kell zárnia minden nyitott lapot.\n"
-"Biztosan tovább akar lépni?"
 
 msgid "Launch action"
-msgstr "Művelet indítása"
+msgstr ""
 
 msgid "Open related records"
-msgstr "Kapcsolódó rekordok megnyitása"
+msgstr ""
 
 msgid "Print report"
-msgstr "Nyomtatás"
+msgstr ""
 
 msgid ""
 "This record has been modified\n"
 "do you want to save it?"
 msgstr ""
-"Módosította ezt a rekordot,\n"
-"el akarja menteni?"
 
 msgid "Record saved."
-msgstr "Rekord elmentve."
+msgstr ""
 
 msgid "Working now on the duplicated record(s)."
-msgstr "Most az új másolaton(okon) dolgozik."
+msgstr ""
 
 msgid "Are you sure to remove this record?"
-msgstr "Biztos törölni szeretné?"
+msgstr ""
 
 msgid "Are you sure to remove those records?"
-msgstr "Biztos törölni szeretné?"
+msgstr ""
 
 msgid "Records removed."
-msgstr "Rekordok törölve."
+msgstr ""
 
 msgid "Records not removed."
-msgstr "A rekordok nem lettek törölve."
+msgstr ""
 
 msgid "You have to select one record."
-msgstr "Ki kell választania egy rekordot."
+msgstr ""
 
 msgid "Add..."
-msgstr "Hozzáadás..."
+msgstr ""
 
 msgid "Preview"
-msgstr "Előnézet"
+msgstr ""
 
 msgid "Template"
-msgstr "Sablon"
+msgstr ""
 
 msgid "Attachment (%1)"
-msgstr "Melléklet (%1)"
+msgstr ""
 
 msgid "Note (%1/%2)"
-msgstr "Jegyzet (%1/%2)"
+msgstr ""
 
 msgid "Filters"
-msgstr "Szűrők"
+msgstr ""
 
 msgid "Clear Search"
 msgstr ""
 
 msgid "Bookmarks"
-msgstr "Elmentett szűrők"
+msgstr ""
 
 msgid "Remove this bookmark"
-msgstr "Ez az elmentett szűrő eltávolítása"
+msgstr ""
 
 msgid "Bookmark this filter"
-msgstr "Ez a szűrő elmentése"
+msgstr ""
 
 msgid "Bookmark Name:"
-msgstr "Könyvjelző neve:"
+msgstr ""
 
 msgid "Show active records"
-msgstr "Aktív rekordok megjelenítése"
+msgstr ""
 
 msgid "Show inactive records"
-msgstr "Inaktív rekordok megjelenítése"
+msgstr ""
 
 msgid "Find"
-msgstr "Keresés"
+msgstr ""
 
 msgid "From"
-msgstr "Küldő"
+msgstr ""
 
 msgid "To"
-msgstr "Címzett"
+msgstr ""
 
 msgid "Open the calendar"
-msgstr "Naptár megnyitása"
+msgstr ""
 
 msgid "ID"
 msgstr ""
 
 msgid "Created by"
-msgstr "Létrehozta"
+msgstr ""
 
 msgid "Created at"
-msgstr "Létrehozás dátuma"
+msgstr ""
 
 msgid "Modified by"
-msgstr "Módosította"
+msgstr ""
 
 msgid "Modified at"
-msgstr "Módosítás dátuma"
+msgstr ""
 
 msgid "\"%1\" is required."
-msgstr "A(z) „%1” mezőt meg kell adni."
+msgstr ""
 
 msgid "\"%1\" is not valid according to its domain."
-msgstr "A(z) „%1” mezőben helytelen értéket adott meg."
+msgstr ""
 
 msgid "The values of \"%1\" are not valid."
 msgstr ""
@@ -474,74 +459,73 @@ msgid "The value of \"%1\" is not valid."
 msgstr ""
 
 msgid "Pre-validation"
-msgstr "Adatkitöltés ellenőrzése"
+msgstr ""
 
 msgid ":"
-msgstr ":"
+msgstr ""
 
 msgid "Scan"
 msgstr ""
 
 msgid "Clear"
-msgstr "Törlés"
+msgstr ""
 
 msgid "Translate"
-msgstr "Fordítás"
+msgstr ""
 
 msgid "Edit"
-msgstr "Módosítás"
+msgstr ""
 
 msgid "Fuzzy"
-msgstr "Pontatlan"
+msgstr ""
 
 msgid "You need to save the record before adding translations."
-msgstr "El kell menteni a rekordot mielőtt hozzáadja a fordítást."
+msgstr ""
 
 msgid "No other language available."
-msgstr "Másik nyelv nem elérhető."
+msgstr ""
 
 msgid "Show"
 msgstr ""
 
 msgid "Hide"
-msgstr "Elrejtés"
+msgstr ""
 
 msgid "Open the record"
-msgstr "Rekord megnyitása"
+msgstr ""
 
 msgid "Clear the field"
-msgstr "A mező kiürítése"
+msgstr ""
 
 msgid "Search a record"
-msgstr "Rekord keresése"
+msgstr ""
 
 msgid "Add"
-msgstr "Hozzáad"
+msgstr ""
 
 msgid "Remove"
-msgstr "Eltávolítás"
+msgstr ""
 
 msgid "Open"
-msgstr "Megnyitás"
+msgstr ""
 
 msgid "Undelete"
 msgstr ""
 
 msgid "Save As"
-msgstr "Mentés másként"
+msgstr ""
 
 msgid "Save As..."
-msgstr "Mentés másként..."
+msgstr ""
 
 msgid "Select"
-msgstr "Kiválaszt"
+msgstr ""
 
 msgid "Select..."
 msgstr ""
 
-#, fuzzy
 msgid "Open..."
-msgstr "Megnyitás"
+msgstr ""
 
 msgid "Choose a language"
 msgstr ""
@@ -553,9 +537,8 @@ msgstr ""
 msgid "Menu"
 msgstr ""
 
-#, fuzzy
 msgid "Copy Selected Rows"
-msgstr "Csak a kiválasztott rekordokat"
+msgstr ""
 
 msgid "#ERROR"
 msgstr ""
@@ -563,20 +546,21 @@ msgstr ""
 msgid "More"
 msgstr ""
 
+#, fuzzy
 msgid ": "
 msgstr ": "
 
 msgid "Today"
-msgstr "Ma"
+msgstr ""
 
 msgid "Month"
-msgstr "Hónap"
+msgstr ""
 
 msgid "Week"
-msgstr "Hét"
+msgstr ""
 
 msgid "Day"
-msgstr "Nap"
+msgstr ""
 
 msgid ",..."
 msgstr ""
@@ -585,7 +569,7 @@ msgid "%1 (%2)"
 msgstr ""
 
 msgid "Select your action"
-msgstr "Válasszon műveletet"
+msgstr ""
 
 msgid "No action defined."
 msgstr ""
@@ -596,26 +580,23 @@ msgstr ""
 msgid "Save and New"
 msgstr ""
 
-#, fuzzy
 msgid "Add and New"
-msgstr "Mezőnevek hozzáadása"
+msgstr ""
 
 msgid "Apply changes"
 msgstr ""
 
 msgid "Attachments (%1)"
-msgstr "Mellékletek (%1)"
+msgstr ""
 
 msgid "Notes (%1)"
-msgstr "Jegyzetek (%1)"
+msgstr ""
 
-#, fuzzy
 msgid "Logs (%1)"
-msgstr "Jegyzetek (%1)"
+msgstr ""
 
-#, fuzzy
 msgid "Model:"
-msgstr "Elem: "
+msgstr ""
 
 msgid "ID:"
 msgstr ""
@@ -627,57 +608,55 @@ msgid "XML ID:"
 msgstr ""
 
 msgid "Created by:"
-msgstr "Létrehozta:"
+msgstr ""
 
 msgid "Created at:"
-msgstr "Létrehozás dátuma:"
+msgstr ""
 
-#, fuzzy
 msgid "Last Modified by:"
-msgstr "Módosította"
+msgstr ""
 
-#, fuzzy
 msgid "Last Modified at:"
-msgstr "Módosítás dátuma"
+msgstr ""
 
 msgid "Search %1"
 msgstr ""
 
 msgid "Revision"
-msgstr "Szerkesztés"
+msgstr ""
 
 msgid "All Fields"
-msgstr "Összes mező"
+msgstr ""
 
 msgid "Fields Selected"
-msgstr "Kiválasztott mezők"
+msgstr ""
 
 msgid "CSV Parameters"
-msgstr "CSV paraméterek"
+msgstr ""
 
 msgid "Delimiter:"
-msgstr "Elválasztójel:"
+msgstr ""
 
 msgid "Quote Char:"
-msgstr "Karakterlánc-elválasztó:"
+msgstr ""
 
 msgid "CSV Import: %1"
-msgstr "Importálás CSV-ből: %1"
+msgstr ""
 
 msgid "Auto-Detect"
-msgstr "Automatikus felismerés"
+msgstr ""
 
 msgid "File to Import"
-msgstr "Importadatok"
+msgstr ""
 
 msgid "Encoding:"
-msgstr "Kódolás:"
+msgstr ""
 
 msgid "Lines to Skip:"
-msgstr "Átugrandó sorok:"
+msgstr ""
 
 msgid "You must select an import file first."
-msgstr "Először adja meg a betöltendő fájlt."
+msgstr ""
 
 msgid "Detection failed"
 msgstr ""
@@ -686,49 +665,49 @@ msgid "Unknown column header \"%1\""
 msgstr ""
 
 msgid "Error"
-msgstr "Hiba"
+msgstr ""
 
-#, fuzzy
 msgid "Import failed"
-msgstr "Importálás"
+msgstr ""
 
 msgid "%1 record imported"
 msgid_plural "%1 records imported"
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 msgid "CSV Export: %1"
-msgstr "Exportálás CSV-be: %1"
+msgstr ""
 
 msgid "Save Export"
-msgstr "Oszloplista elmentése"
+msgstr ""
 
 msgid "URL Export"
-msgstr "Exportálás URL-je"
+msgstr ""
 
 msgid "Delete Export"
-msgstr "Oszloplista törlése"
+msgstr ""
 
 msgid "Predefined Exports"
-msgstr "Elmentett oszloplisták"
+msgstr ""
 
 msgid "Selected Records"
-msgstr "Csak a kiválasztott rekordokat"
+msgstr ""
 
 msgid "Listed Records"
-msgstr "A listán szereplő összes rekordot"
+msgstr ""
 
 msgid "Export:"
-msgstr "Exportálás:"
+msgstr ""
 
 msgid "Ignore search limit"
-msgstr "Keresési korlát nélkül"
+msgstr ""
 
 msgid "Use locale format"
-msgstr "A felhasználó nyelvén"
+msgstr ""
 
 msgid "Add Field Names"
-msgstr "Mezőnevek hozzáadása"
+msgstr ""
 
 msgid "%1 (string)"
 msgstr ""
@@ -736,51 +715,50 @@ msgstr ""
 msgid "%1 (model name)"
 msgstr ""
 
-#, fuzzy
 msgid "%1/Record Name"
-msgstr "Rekord elmentve."
+msgstr ""
 
 msgid "What is the name of this export?"
-msgstr "Mi legyen az oszloplista neve?"
+msgstr ""
 
 msgid "Override %1 definition?"
 msgstr ""
 
-#, fuzzy
 msgid "%1 record saved"
 msgid_plural "%1 records saved"
-msgstr[0] "Rekord elmentve."
-msgstr[1] "Rekord elmentve."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 msgid "E-mail %1"
 msgstr ""
 
 msgid "To:"
-msgstr "Címzett:"
+msgstr ""
 
 msgid "Cc:"
-msgstr "Másolatot kap:"
+msgstr ""
 
 msgid "Bcc:"
-msgstr "Rejtett másolat:"
+msgstr ""
 
 msgid "Subject:"
-msgstr "Tárgy:"
+msgstr ""
 
 msgid "Reports"
-msgstr "Nyomtatványok"
+msgstr ""
 
 msgid "Attachments"
-msgstr "Mellékletek"
+msgstr ""
 
 msgid "Files"
-msgstr "Fájlok"
+msgstr ""
 
 msgid "Send"
-msgstr "Küldés"
+msgstr ""
 
 msgid "Remove File"
-msgstr "Fájl eltávolítása"
+msgstr ""
 
 msgid "Code Scanner"
 msgstr ""
@@ -795,7 +773,7 @@ msgid "Wizard"
 msgstr ""
 
 msgid "Translate view"
-msgstr "Nézet fordítása."
+msgstr ""
 
 msgid "Close all other tabs"
 msgstr ""
@@ -806,12 +784,8 @@ msgstr ""
 msgid "Close tabs to the right"
 msgstr ""
 
-#, fuzzy
-msgid "Duplicate the tab"
-msgstr "Duplázás"
+msgid "Duplicate the current tab"
+msgstr ""
 
 msgid "Open in a new browser tab"
 msgstr ""
-
-#~ msgid "Always ignore this warning."
-#~ msgstr "Ne mutassa többet ezt a figyelmeztetést"

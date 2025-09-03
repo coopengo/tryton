@@ -3,140 +3,140 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
 msgid "Are your sure to leave?"
-msgstr "¿Está seguro que quiere salir?"
+msgstr "Esteu segur que voleu sortir?"
 
 msgid "Incompatible version of the server."
-msgstr "El cliente no es compatible con la versión del servidor."
+msgstr "El client no és compatible amb la versió del servidor."
 
 msgid "Version mismatch"
-msgstr "Versión incompatible"
+msgstr "Versió incompatible"
 
 msgid "Could not connect to the server."
-msgstr "No se ha podido conectar con el servidor."
+msgstr "No s'ha pogut connectar amb el servidor."
 
 msgid "Connection error"
-msgstr "Error de conexión"
+msgstr "Error de connexió"
 
 msgid "Favorites"
-msgstr "Favoritos"
+msgstr "Preferits"
 
 msgid "Manage..."
-msgstr "Gestionar..."
+msgstr "Gestiona..."
 
 msgid "Logout"
-msgstr "Cerrar sesión"
+msgstr "Sortir"
 
 msgid "Close"
-msgstr "Cerrar"
+msgstr "Tanca"
 
 msgid "Action"
-msgstr "Acción"
+msgstr "Acció"
 
 msgid "New"
-msgstr "Nuevo"
+msgstr "Nou"
 
 msgid "Save"
-msgstr "Guardar"
+msgstr "Desa"
 
 msgid "Switch"
-msgstr "Cambiar"
+msgstr "Canvia la vista"
 
 msgid "Reload/Undo"
-msgstr "Recargar/Deshacer"
+msgstr "Recarrega/Desfés"
 
 msgid "Duplicate"
-msgstr "Duplicar"
+msgstr "Duplica"
 
 msgid "Delete"
-msgstr "Eliminar"
+msgstr "Elimina"
 
 msgid "Previous"
 msgstr "Anterior"
 
 msgid "Next"
-msgstr "Siguiente"
+msgstr "Següent"
 
 msgid "Search"
-msgstr "Buscar"
+msgstr "Cerca"
 
 msgid "Close Tab"
-msgstr "Cerrar pestaña"
+msgstr "Tanca pestanya"
 
 #, fuzzy
 msgid "Undo close tab"
-msgstr "Cerrar pestaña"
+msgstr "Tanca pestanya"
 
 msgid "Attachment"
-msgstr "Adjunto"
+msgstr "Adjunt"
 
 msgid "Note"
 msgstr "Nota"
 
 msgid "Relate"
-msgstr "Relacionado"
+msgstr "Relacionat"
 
 msgid "Print"
-msgstr "Imprimir"
+msgstr "Imprimeix"
 
 msgid "E-Mail"
-msgstr "Correo electrónico"
+msgstr "Correu electrònic"
 
 msgid "Previous tab"
-msgstr "Pestaña anterior"
+msgstr "Pestanya anterior"
 
 msgid "Next tab"
-msgstr "Pestaña siguiente"
+msgstr "Pestanya següent"
 
 msgid "Global search"
-msgstr "Búsqueda global"
+msgstr "Cerca global"
 
 msgid "Show this help"
-msgstr "Muestra esta ayuda"
+msgstr "Mostra aquesta ajuda"
 
 msgid "Show/Hide access keys"
-msgstr "Mostrar/Esconder las teclas rápidas"
+msgstr "Mostra/Amaga les tecles ràpides"
 
 msgid "Help"
-msgstr "Ayuda"
+msgstr "Ajuda"
 
 msgid "Documentation..."
-msgstr "Documentación..."
+msgstr "Documentació..."
 
 msgid "Keyboard shortcuts"
-msgstr "Atajos de teclado"
+msgstr "Dreceres de teclat"
 
 msgid "Global shortcuts"
-msgstr "Atajos globales"
+msgstr "Dreceres globals"
 
 msgid "Tab shortcuts"
-msgstr "Atajos de las pestañas"
+msgstr "Dreceres de la pestanya"
 
 msgid "Unable to reach the server."
-msgstr "No es posible conectar con el servidor."
+msgstr "No s'ha pogut connectar amb el servidor."
 
 msgid "Error: \"%1\". Try again later."
-msgstr "Error: \"%1\". Inténtelo de nuevo más tarde."
+msgstr "Error: \"%1\". Proveu-ho de nou més tard."
 
 msgid "Login"
-msgstr "Acceder"
+msgstr "Accedeix"
 
 msgid "Database"
-msgstr "Base de datos"
+msgstr "Base de dades"
 
 msgid "User name"
-msgstr "Nombre de usuario"
+msgstr "Nom d'usuari"
 
 msgid "Login with"
-msgstr "Identificarse con"
+msgstr "Identificar-se amb"
 
 msgid "Too many requests. Try again later."
-msgstr "Demasiadas peticiones. Inténtelo de nuevo más tarde."
+msgstr "Massa peticions. Proveu-ho de nou més tard."
 
 msgid "Not found."
-msgstr "No se ha encontrado."
+msgstr "No s'han trobat."
 
 msgid "Send you an email to reset your password."
-msgstr "Recibe un correo para restablecer tu contraseña."
+msgstr "Reb un correu electrònic per restablir la teva contrasenya."
 
 msgid "Reset forgotten password"
 msgstr ""
@@ -145,17 +145,17 @@ msgid ""
 "A request to reset your password has been sent.\n"
 "Please check your mailbox."
 msgstr ""
-"Se ha mandado una solicitud para restablecer tu contraseña.\n"
-"Por favor revisa tu buzón de correo."
+"S'ha enviat una sol·licitud per restablir la contrasenya.\n"
+"Si us plau, comproveu la vostra bústia de correu."
 
 msgid "Your selection:"
-msgstr "Su selección:"
+msgstr "La vostra selecció:"
 
 msgid "Cancel"
-msgstr "Cancelar"
+msgstr "Cancel·la"
 
 msgid "OK"
-msgstr "Aceptar"
+msgstr "D'acord"
 
 msgid "Y"
 msgstr "A"
@@ -179,7 +179,7 @@ msgid "s"
 msgstr "s"
 
 msgid "By: "
-msgstr "Por: "
+msgstr "Per: "
 
 msgid ", "
 msgstr ", "
@@ -188,246 +188,246 @@ msgid "y"
 msgstr "a"
 
 msgid "Yes"
-msgstr "Sí"
+msgstr "Si"
 
 msgid "True"
-msgstr "Verdadero"
+msgstr "Verdader"
 
 msgid "t"
 msgstr "v"
 
 msgid "False"
-msgstr "Falso"
+msgstr "Fals"
 
 msgid "Show / Hide more"
 msgstr ""
 
 msgid "Do you want to proceed?"
-msgstr "¿Desea continuar?"
+msgstr "Voleu continuar?"
 
 msgid "No"
 msgstr "No"
 
 msgid "Concurrency Warning"
-msgstr "Aviso de concurrencia"
+msgstr "Avís de concurrència"
 
 msgid "This record has been modified while you were editing it."
-msgstr "Este registro ha sido modificado mientras lo editaba."
+msgstr "Aquest registre ha estat modificat mentre l'editàveu."
 
 msgid "Choose:"
-msgstr "Elija:"
+msgstr "Trieu:"
 
 msgid "\"Cancel\" to cancel saving;"
-msgstr "\"Cancelar\" para no guardar;"
+msgstr "\"Cancel·la\" per no desar;"
 
 msgid "\"Compare\" to see the modified version;"
-msgstr "\"Comparar\" para ver la versión modificada;"
+msgstr "\"Compara\" per veure la versi modificada;"
 
 msgid "\"Write Anyway\" to save your current version."
-msgstr "\"Guardar de todas formas\" para guardar sus cambios."
+msgstr "\"Desa de totes formes\" per desar els vostres canvis."
 
 msgid "Compare"
-msgstr "Comparar"
+msgstr "Compara"
 
 msgid "Compare: %1"
-msgstr "Comparar: %1"
+msgstr "Compara: %1"
 
 msgid "Write Anyway"
-msgstr "Guardar de todas formas"
+msgstr "Desa de totes formes"
 
 msgid "Application Error"
-msgstr "Error de aplicación"
+msgstr "Error d'aplicació"
 
 msgid "Details"
-msgstr "Detalles"
+msgstr "Detalls"
 
 msgid "Report Bug"
-msgstr "Informar del error"
+msgstr "Informa de l'error"
 
 msgid "Processing"
-msgstr "Procesando"
+msgstr "Processant"
 
 msgid "Search..."
-msgstr "Buscar…"
+msgstr "Cerca..."
 
 msgid "Create..."
-msgstr "Crear..."
+msgstr "Crea..."
 
 msgid "Create \"%1\"..."
-msgstr "Crear \"%1\"..."
+msgstr "Crea \"%1\"..."
 
 msgid "Download"
-msgstr "Descargar"
+msgstr "Baixa"
 
 msgid "..."
 msgstr "..."
 
 msgid "Bold"
-msgstr "Negrita"
+msgstr "Negreta"
 
 msgid "Italic"
 msgstr "Cursiva"
 
 msgid "Underline"
-msgstr "Subrayado"
+msgstr "Subratllat"
 
 msgid "Font"
-msgstr "Tipo de letra"
+msgstr "Tipus de lletra"
 
 msgid "Size"
-msgstr "Tamaño"
+msgstr "Mida"
 
 msgid "Justify Right"
-msgstr "Justificar a la derecha"
+msgstr "Justificar a la dreta"
 
 msgid "Justify Left"
-msgstr "Justificar a la izquierda"
+msgstr "Justificar a l'esquerra"
 
 msgid "Justify Center"
-msgstr "Justificar al centro"
+msgstr "Justificar al centre"
 
 msgid "Justify Full"
-msgstr "Justificar por completo"
+msgstr "Justificar per complet"
 
 #, fuzzy
 msgid "Edit..."
-msgstr "Editar"
+msgstr "Edita"
 
 #, fuzzy
 msgid "Relation"
-msgstr "Relacionado"
+msgstr "Relacionat"
 
 #, fuzzy
 msgid "Report"
 msgstr "Informes"
 
 msgid "Switch view"
-msgstr "Cambiar de vista"
+msgstr "Canvia la vista"
 
 msgid "Previous Record"
-msgstr "Registro anterior"
+msgstr "Registre anterior"
 
 msgid "Next Record"
-msgstr "Registro siguiente"
+msgstr "Registre següent"
 
 msgid "Create a new record"
-msgstr "Crear un nuevo registro"
+msgstr "Crea un nou registre"
 
 msgid "Save this record"
-msgstr "Guardar este registro"
+msgstr "Desa aquest registre"
 
 msgid "Reload"
-msgstr "Recargar"
+msgstr "Recarrega"
 
 msgid "View Logs..."
-msgstr "Ver registros..."
+msgstr "Veure registres..."
 
 msgid "Show revisions..."
-msgstr "Mostrar revisiones..."
+msgstr "Mostra revisions..."
 
 msgid "Add an attachment to the record"
-msgstr "Añadir un adjunto al registro"
+msgstr "Afegeix un adjunt al registre"
 
 msgid "Add a note to the record"
-msgstr "Añadir una nota al registro"
+msgstr "Afegeix una nota al registre"
 
 msgid "E-Mail..."
-msgstr "Correo electrónico..."
+msgstr "Correu electrònic..."
 
 msgid "Send an e-mail using the record"
-msgstr "Enviar un correo electrónico usando el registro"
+msgstr "Envia un correu electrònic utilitzant el registre"
 
 msgid "Export"
-msgstr "Exportar"
+msgstr "Exporta"
 
 msgid "Import"
-msgstr "Importar"
+msgstr "Importa"
 
 msgid ""
 "The following action requires to close all tabs.\n"
 "Do you want to continue?"
 msgstr ""
-"La acción seleccionada requiere cerrar todas las pestañas.\n"
-"¿Desea continuar?"
+"L'acció seleccionada requereix tancar totes les pestanyes.\n"
+"Voleu continuar?"
 
 msgid "Launch action"
-msgstr "Ejecutar acción"
+msgstr "Executa acció"
 
 msgid "Open related records"
-msgstr "Abrir registros relacionados"
+msgstr "Obre registres relacionats"
 
 msgid "Print report"
-msgstr "Imprimir informe"
+msgstr "Imprimeix informe"
 
 msgid ""
 "This record has been modified\n"
 "do you want to save it?"
 msgstr ""
-"Este registro ha sido modificado.\n"
-"¿Desea guardarlo?"
+"Aquest registre ha estat modificat.\n"
+"Voleu desar-lo?"
 
 msgid "Record saved."
-msgstr "Registro guardado."
+msgstr "Registre desat."
 
 msgid "Working now on the duplicated record(s)."
-msgstr "Ahora está trabajando en el/los registro(s) duplicado(s)."
+msgstr "Està treballant amb un registre(s) duplicat."
 
 msgid "Are you sure to remove this record?"
-msgstr "¿Está seguro que quiere eliminar este registro?"
+msgstr "Esteu segur que voleu eliminar aquest registre?"
 
 msgid "Are you sure to remove those records?"
-msgstr "¿Está seguro que quiere eliminar estos registros?"
+msgstr "Esteu segur que voleu eliminar aquests registres?"
 
 msgid "Records removed."
-msgstr "Registros eliminados."
+msgstr "Registres eliminats."
 
 msgid "Records not removed."
-msgstr "Los registros no se han eliminado."
+msgstr "Els registres no s'han eliminat."
 
 msgid "You have to select one record."
-msgstr "Debe elegir un registro."
+msgstr "Ha de seleccionar un registre."
 
 msgid "Add..."
-msgstr "Añadir..."
+msgstr "Afegeix..."
 
 msgid "Preview"
-msgstr "Previsualizar"
+msgstr "Previsualitza"
 
 msgid "Template"
 msgstr "Plantilla"
 
 msgid "Attachment (%1)"
-msgstr "Adjuntos (%1)"
+msgstr "Adjunts (%1)"
 
 msgid "Note (%1/%2)"
 msgstr "Nota (%1/%2)"
 
 msgid "Filters"
-msgstr "Filtros"
+msgstr "Filtres"
 
 msgid "Clear Search"
-msgstr "Limpiar la búsqueda"
+msgstr "Netejar la cerca"
 
 msgid "Bookmarks"
-msgstr "Búsquedas favoritas"
+msgstr "Cerques preferides"
 
 msgid "Remove this bookmark"
-msgstr "Eliminar de las búsquedas favoritas"
+msgstr "Elimina de les cerques preferides"
 
 msgid "Bookmark this filter"
-msgstr "Guardar como búsqueda favorita"
+msgstr "Desa com a cerca preferida"
 
 msgid "Bookmark Name:"
-msgstr "Nombre de la búsqueda favorita:"
+msgstr "Nom de la cerca preferida:"
 
 msgid "Show active records"
-msgstr "Mostrar registros activos"
+msgstr "Mostra registres actius"
 
 msgid "Show inactive records"
-msgstr "Mostrar registros inactivos"
+msgstr "Mostra registres inactius"
 
 msgid "Find"
-msgstr "Buscar"
+msgstr "Cerca"
 
 msgid "From"
 msgstr "De"
@@ -436,107 +436,107 @@ msgid "To"
 msgstr "A"
 
 msgid "Open the calendar"
-msgstr "Abrir el calendario"
+msgstr "Obre el calendari"
 
 msgid "ID"
 msgstr "ID"
 
 msgid "Created by"
-msgstr "Creado por"
+msgstr "Creat per"
 
 msgid "Created at"
-msgstr "Creado el"
+msgstr "Creat el"
 
 msgid "Modified by"
-msgstr "Modificado por"
+msgstr "Modificat per"
 
 msgid "Modified at"
-msgstr "Modificado el"
+msgstr "Modificat el"
 
 msgid "\"%1\" is required."
-msgstr "\"%1\" es obligatorio."
+msgstr "\"%1\" és obligatori."
 
 msgid "\"%1\" is not valid according to its domain."
-msgstr "\"%1\" no es válido según su dominio."
+msgstr "\"%1\" no és vàlid segons el seu domini."
 
 msgid "The values of \"%1\" are not valid."
-msgstr "Los valores de \"%1\" no son válidos."
+msgstr "Els valors de \"%1\" no són vàlids."
 
 #, fuzzy
 msgid "The value of \"%1\" is not valid."
-msgstr "Los valores de \"%1\" no son válidos."
+msgstr "Els valors de \"%1\" no són vàlids."
 
 msgid "Pre-validation"
-msgstr "Prevalidación"
+msgstr "Prevalidació"
 
 msgid ":"
 msgstr ":"
 
 msgid "Scan"
-msgstr "Escanear"
+msgstr "Escaneja"
 
 msgid "Clear"
-msgstr "Limpiar"
+msgstr "Neteja"
 
 msgid "Translate"
-msgstr "Traducir"
+msgstr "Tradueix"
 
 msgid "Edit"
-msgstr "Editar"
+msgstr "Edita"
 
 msgid "Fuzzy"
-msgstr "Dudoso"
+msgstr "Dubtosa"
 
 msgid "You need to save the record before adding translations."
-msgstr "Debe guardar el registro antes de añadir traducciones."
+msgstr "Heu de desar el registre abans d'afegir traduccions."
 
 msgid "No other language available."
-msgstr "No hay otro idioma disponible."
+msgstr "No hi ha cap altre idioma disponible."
 
 msgid "Show"
-msgstr "Mostrar"
+msgstr "Mostra"
 
 msgid "Hide"
-msgstr "Ocultar"
+msgstr "Amaga"
 
 msgid "Open the record"
-msgstr "Abrir el registro"
+msgstr "Obre el registre"
 
 msgid "Clear the field"
-msgstr "Vacíar el campo"
+msgstr "Buida el camp"
 
 msgid "Search a record"
-msgstr "Buscar un registro"
+msgstr "Cerca un registre"
 
 msgid "Add"
-msgstr "Añadir"
+msgstr "Afegeix"
 
 msgid "Remove"
-msgstr "Eliminar"
+msgstr "Elimina"
 
 msgid "Open"
-msgstr "Abrir"
+msgstr "Obre"
 
 msgid "Undelete"
-msgstr "Recuperar"
+msgstr "Recupera"
 
 msgid "Save As"
-msgstr "Guardar como"
+msgstr "Anomena i desa"
 
 msgid "Save As..."
-msgstr "Guardar como..."
+msgstr "Desa com..."
 
 msgid "Select"
-msgstr "Seleccionar"
+msgstr "Selecciona"
 
 msgid "Select..."
-msgstr "Seleccionar…"
+msgstr "Selecciona..."
 
 msgid "Open..."
-msgstr "Abrir..."
+msgstr "Obre..."
 
 msgid "Choose a language"
-msgstr "Escoja un lenguaje"
+msgstr "Escull un idioma"
 
 #, javascript-format
 msgid "%1%"
@@ -546,28 +546,28 @@ msgid "Menu"
 msgstr "Menú"
 
 msgid "Copy Selected Rows"
-msgstr "Copiar filas seleccionadas"
+msgstr "Copia files seleccionades"
 
 msgid "#ERROR"
 msgstr "#ERROR"
 
 msgid "More"
-msgstr "Más"
+msgstr "Més"
 
 msgid ": "
 msgstr ": "
 
 msgid "Today"
-msgstr "Hoy"
+msgstr "Avui"
 
 msgid "Month"
 msgstr "Mes"
 
 msgid "Week"
-msgstr "Semana"
+msgstr "Setmana"
 
 msgid "Day"
-msgstr "Día"
+msgstr "Dia"
 
 msgid ",..."
 msgstr ",..."
@@ -576,167 +576,167 @@ msgid "%1 (%2)"
 msgstr "%1 (%2)"
 
 msgid "Select your action"
-msgstr "Seleccione su acción"
+msgstr "Seleccioneu la vostra acció"
 
 msgid "No action defined."
-msgstr "No se ha definido ninguna acción."
+msgstr "No s'ha definit cap acció."
 
 msgid "Discard changes"
-msgstr "Descartar cambios"
+msgstr "Descartar els canvis"
 
 msgid "Save and New"
-msgstr "Guardar y nuevo"
+msgstr "Guarda i nou"
 
 msgid "Add and New"
-msgstr "Añadir y nuevo"
+msgstr "Afegeix i nou"
 
 msgid "Apply changes"
-msgstr "Aplicar cambios"
+msgstr "Aplica canvis"
 
 msgid "Attachments (%1)"
-msgstr "Adjuntos (%1)"
+msgstr "Adjunts (%1)"
 
 msgid "Notes (%1)"
-msgstr "Notas (%1)"
+msgstr "Notes (%1)"
 
 msgid "Logs (%1)"
-msgstr "Registros (%1)"
+msgstr "Registres (%1)"
 
 msgid "Model:"
-msgstr "Modelo:"
+msgstr "Model:"
 
 msgid "ID:"
-msgstr "ID:"
+msgstr "Identificador:"
 
 msgid "Module:"
-msgstr "Modulo:"
+msgstr "Mòdul:"
 
 msgid "XML ID:"
 msgstr "ID XML:"
 
 msgid "Created by:"
-msgstr "Creado por:"
+msgstr "Creat per:"
 
 msgid "Created at:"
-msgstr "Creado el:"
+msgstr "Creat el:"
 
 msgid "Last Modified by:"
-msgstr "Última modificación por:"
+msgstr "Última modificació per:"
 
 msgid "Last Modified at:"
-msgstr "Última modificación el:"
+msgstr "Última modificació el:"
 
 msgid "Search %1"
-msgstr "Buscar %1"
+msgstr "Cerca %1"
 
 msgid "Revision"
-msgstr "Revisión"
+msgstr "Revisió"
 
 msgid "All Fields"
-msgstr "Todos los campos"
+msgstr "Tots els camps"
 
 msgid "Fields Selected"
-msgstr "Campos selecionados"
+msgstr "Camps seleccionats"
 
 msgid "CSV Parameters"
-msgstr "Parámetros CSV"
+msgstr "Paràmetres CSV"
 
 msgid "Delimiter:"
 msgstr "Separador:"
 
 msgid "Quote Char:"
-msgstr "Delimitador del texto:"
+msgstr "Delimitador de text:"
 
 msgid "CSV Import: %1"
-msgstr "Importación CSV: %1"
+msgstr "Importació CSV: %1"
 
 msgid "Auto-Detect"
-msgstr "Detectar automáticamente"
+msgstr "Detecta automàticament"
 
 msgid "File to Import"
-msgstr "Fichero a importar"
+msgstr "Fitxer a importar"
 
 msgid "Encoding:"
-msgstr "Codificación:"
+msgstr "Codificació:"
 
 msgid "Lines to Skip:"
-msgstr "Líneas a omitir:"
+msgstr "Línies a ometre:"
 
 msgid "You must select an import file first."
-msgstr "Primero debe elegir un archivo a importar."
+msgstr "Primer heu de seleccionar un fitxer a importar."
 
 msgid "Detection failed"
-msgstr "Ha fallado la detección"
+msgstr "Ha fallat la detecció"
 
 msgid "Unknown column header \"%1\""
-msgstr "Cabecera de columna desconocida: \"%1\""
+msgstr "Capçalera de columna desconeguda: \"%1\""
 
 msgid "Error"
 msgstr "Error"
 
 msgid "Import failed"
-msgstr "Ha fallado la importación"
+msgstr "Ha fallat la importació"
 
 msgid "%1 record imported"
 msgid_plural "%1 records imported"
-msgstr[0] "%1 registro importado"
-msgstr[1] "%1 registros importados"
+msgstr[0] "%1 registre importat"
+msgstr[1] "%1 registres importats"
 
 msgid "CSV Export: %1"
-msgstr "Exportación CSV: %1"
+msgstr "Exportació CSV: %1"
 
 msgid "Save Export"
-msgstr "Guardar exportación"
+msgstr "Desa l'exportació"
 
 msgid "URL Export"
-msgstr "URL exportación"
+msgstr "URL Exportació"
 
 msgid "Delete Export"
-msgstr "Eliminar exportación"
+msgstr "Elimina l'exportació"
 
 msgid "Predefined Exports"
-msgstr "Exportaciones predefinidas"
+msgstr "Exportacions predefinides"
 
 msgid "Selected Records"
-msgstr "Registros seleccionados"
+msgstr "Registres seleccionats"
 
 msgid "Listed Records"
-msgstr "Registros listados"
+msgstr "Registres llistats"
 
 msgid "Export:"
 msgstr "Exportar:"
 
 msgid "Ignore search limit"
-msgstr "Ignorar límite de búsqueda"
+msgstr "Ignora límit de cerca"
 
 msgid "Use locale format"
-msgstr "Usar formato local"
+msgstr "Utilitza format local"
 
 msgid "Add Field Names"
-msgstr "Añadir nombres de los campos"
+msgstr "Afegeix noms dels camps"
 
 msgid "%1 (string)"
 msgstr "%1 (cadena)"
 
 msgid "%1 (model name)"
-msgstr "%1 (nombre del modelo)"
+msgstr "%1 (nom del model)"
 
 msgid "%1/Record Name"
-msgstr "%1/Nombre del registro"
+msgstr "%1/Nom del registre"
 
 msgid "What is the name of this export?"
-msgstr "¿Cuál es el nombre de esta exportación?"
+msgstr "Quin és el nom d'aquesta exportació?"
 
 msgid "Override %1 definition?"
-msgstr "Queréis sobrescribir la definición de %1?"
+msgstr "Voleu sobreescriure la definició %1?"
 
 msgid "%1 record saved"
 msgid_plural "%1 records saved"
-msgstr[0] "%1 registro guardado"
-msgstr[1] "%1 registros guardados"
+msgstr[0] "%1 registre desat"
+msgstr[1] "%1 registres desats"
 
 msgid "E-mail %1"
-msgstr "Correo electrónico %1"
+msgstr "Correu electrònic %1"
 
 msgid "To:"
 msgstr "A:"
@@ -745,40 +745,40 @@ msgid "Cc:"
 msgstr "Cc:"
 
 msgid "Bcc:"
-msgstr "CCo:"
+msgstr "Cco:"
 
 msgid "Subject:"
-msgstr "Asunto:"
+msgstr "Assumpte:"
 
 msgid "Reports"
 msgstr "Informes"
 
 msgid "Attachments"
-msgstr "Adjuntos"
+msgstr "Adjunts"
 
 msgid "Files"
-msgstr "Archivos"
+msgstr "Fitxers"
 
 msgid "Send"
-msgstr "Enviar"
+msgstr "Envia"
 
 msgid "Remove File"
-msgstr "Eliminar archivo"
+msgstr "Elimina fitxer"
 
 msgid "Code Scanner"
-msgstr "Escáner de códigos"
+msgstr "Escàner de codis"
 
 msgid "Code"
-msgstr "Código"
+msgstr "Codi"
 
 msgid "Toggle Sound"
-msgstr "Alternar sonido"
+msgstr "Alterna so"
 
 msgid "Wizard"
-msgstr "Asistente"
+msgstr "Assistent"
 
 msgid "Translate view"
-msgstr "Traducir vista"
+msgstr "Tradueix la vista"
 
 msgid "Close all other tabs"
 msgstr ""
@@ -789,12 +789,11 @@ msgstr ""
 msgid "Close tabs to the right"
 msgstr ""
 
-#, fuzzy
-msgid "Duplicate the tab"
-msgstr "Duplicar"
+msgid "Duplicate the current tab"
+msgstr ""
 
 msgid "Open in a new browser tab"
 msgstr ""
 
 #~ msgid "Always ignore this warning."
-#~ msgstr "Ignorar siempre esta advertencia."
+#~ msgstr "Ignora sempre aquest advertiment."
