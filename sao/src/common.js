@@ -3332,6 +3332,10 @@
             let copy_handler = jQuery('<div/>', {
                 'class': 'copy-content',
             }).html(copy_text).click(() => {
+                if (!navigator.clipboard) {
+                    console.log("The clipboard can only be accessed in a secure context");
+                    return
+                }
                 copy_handler.html(copy_text);
                 navigator.clipboard.writeText(title + '\n' + message).then(() => {
                     copy_handler.html(copied_text);
@@ -3628,6 +3632,10 @@
             let copy_handler = jQuery('<div/>', {
                 'class': 'copy-content',
             }).html(copy_text).click(() => {
+                if (!navigator.clipboard) {
+                    console.log("The clipboard can only be accessed in a secure context");
+                    return
+                }
                 copy_handler.html(copy_text);
                 navigator.clipboard.writeText(title + '\n' + details).then(() => {
                     copy_handler.html(copied_text);
