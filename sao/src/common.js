@@ -4556,4 +4556,7 @@
         },
     };
 
+    Sao.common.transparent_png = document.createElement('img');
+    Sao.common.transparent_png.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
 }());
