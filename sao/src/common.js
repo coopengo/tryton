@@ -19,6 +19,8 @@
     Sao.common.SELECTION_SINGLE = 2;
     Sao.common.SELECTION_MULTIPLE = 3;
 
+    Sao.common.viewportSize = [window.visualViewport.width, window.visualViewport.height];
+
     Sao.common.compare = function(arr1, arr2) {
         if (arr1.length != arr2.length) {
             return false;

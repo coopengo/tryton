@@ -2779,7 +2779,7 @@
         },
         get_visible: function() {
             // 480px is bootstrap's screen-xs-max
-            return ((window.visualViewport.width > 480) &&
+            return ((Sao.common.viewportSize[0] > 480) &&
                 !this.header.hasClass('invisible'));
         }
     });
@@ -3325,7 +3325,7 @@
             }
         },
         get_visible: function() {
-            return ((window.visualViewport.width > 480) &&
+            return ((Sao.common.viewportSize[0] > 480) &&
                 !this.header.hasClass('invisible'));
         },
         button_clicked: function(event) {
