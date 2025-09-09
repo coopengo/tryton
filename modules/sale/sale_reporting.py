@@ -225,7 +225,7 @@ class AbstractTimeseries(Abstract):
     @classmethod
     def __setup__(cls):
         super(AbstractTimeseries, cls).__setup__()
-        cls._order = [('date', 'ASC')]
+        cls._order = [('date', 'ASC'), ('id', None)]
 
     @classmethod
     def _columns(cls, tables, withs):
