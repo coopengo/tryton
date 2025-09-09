@@ -366,6 +366,13 @@ function hide_x2m_body(widget) {
             return buttons;
         },
         display: function() {
+            var parent = this.el[0].parentNode;
+            if (parent) {
+                var copy = this.el[0].cloneNode(true);
+                parent.replaceChild(copy, this.el[0]);
+                jQuery(copy).css('pointer-events', 'none');
+            }
+
             var record = this.record;
             var field;
             var promesses = [];
@@ -445,7 +452,14 @@ function hide_x2m_body(widget) {
                                 container.set_grid_template();
                             }
                         });
-                    return Promise.all([display_prm, state_prm]);
+                    let all_prom = jQuery.when.apply(jQuery, [display_prm, state_prm]);
+                    all_prom.then(() => {
+                        if (parent) {
+                            parent.replaceChild(this.el[0], copy);
+                        }
+                    });
+
+                    return all_prom
                 });
         },
         set_value: function() {

@@ -1029,7 +1029,6 @@
             };
             const _switch = () => {
                 const set_container = () => {
-                    this.screen_container.set(this.current_view.el);
                     var prm;
                     if (display) {
                         prm = this.display().done(() => {
@@ -1039,6 +1038,7 @@
                         prm = jQuery.when();
                     }
                     return prm.done(() => {
+                        this.screen_container.set(this.current_view.el);
                         if (this.switch_callback) {
                             this.switch_callback();
                         }
