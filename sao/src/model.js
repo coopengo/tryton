@@ -1183,14 +1183,15 @@
                         for (const fieldname of fieldnames) {
                             changed = jQuery.extend(
                                 changed,
-                                this.model.execute(
+                                {
+                                    field_name: this.model.execute(
                                     'on_change_with_' + fieldname,
-                                    [values], this.get_context(), false));
+                                    [values], this.get_context(), false)});
                         }
                     } else {
-                        changed = this.model.execute(
+                        changed = {field_name: this.model.execute(
                             'on_change_with',
-                            [values, fieldnames], this.get_context(), false);
+                            [values, fieldnames], this.get_context(), false)};
                     }
                 } catch (e) {
                     return;
@@ -1215,14 +1216,15 @@
                         for (const fieldname of fieldnames) {
                             changed = jQuery.extend(
                                 changed,
-                                this.model.execute(
+                                {
+                                    field_name: this.model.execute(
                                     'on_change_with_' + fieldname,
-                                    [values], this.get_context(), false));
+                                    [values], this.get_context(), false)});
                         }
                     } else {
-                        changed = this.model.execute(
+                        changed = {field_name: this.model.execute(
                             'on_change_with',
-                            [values, fieldnames], this.get_context(), false);
+                            [values, fieldnames], this.get_context(), false)};
                     }
                 } catch (e) {
                     return;
