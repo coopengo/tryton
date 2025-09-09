@@ -370,6 +370,7 @@ function hide_x2m_body(widget) {
             if (parent) {
                 var copy = this.el[0].cloneNode(true);
                 parent.replaceChild(copy, this.el[0]);
+                jQuery(copy).css('pointer-events', 'none');
             }
 
             var record = this.record;
