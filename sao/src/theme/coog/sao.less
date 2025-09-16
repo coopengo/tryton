@@ -117,7 +117,7 @@
         }
 
         > div.panel-body.coog-hidden-toolbar:has(> div.screen-container > div.content-box > div > div.treeview),
-        > div.panel-body.coog-hidden-toolbar:has(> div.screen-container > div.content-box > div > div.form-item.form-one2many) {
+        > div.panel-body.coog-hidden-toolbar:has(> div.screen-container > div.content-box > div > div.form-item:has( > div.form-one2many)) {
             box-shadow:         @coog-box-shadow;
             margin-bottom: 5px;
             margin-top: 5px;
@@ -454,7 +454,7 @@ ul.dropdown-menu > li > a {
 ///////////////////////////////////////////////////////////////////////////////
 // One2Many
 ///////////////////////////////////////////////////////////////////////////////
-div.form-item.form-one2many {
+div.form-item:has(> div.form-one2many) {
     .coog-xxx2many-mixin();
 }
 
@@ -471,7 +471,7 @@ ul.list-group.list-form {
 ///////////////////////////////////////////////////////////////////////////////
 // Many2Many
 ///////////////////////////////////////////////////////////////////////////////
-div.form-item.form-many2many {
+div.form-item:has( > div.form-many2many) {
     .coog-xxx2many-mixin();
 }
 
@@ -483,7 +483,7 @@ div.form-dict {
     margin-bottom:              @coog-card-bottom-padding;
 
     // Apply readonly value of dict field to values
-    .readonly {
+    &.readonly {
         input.form-control, select.form-control {
             .coog-readonly-field-mixin();
         }
@@ -515,7 +515,7 @@ div.form-dict {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Style group headers as dicts
-div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
+div.form-item:has(> fieldset.form-group_ > legend) {
     padding-bottom:             5px;
 
     // "legends" are special and default style is weird, transform the style to
@@ -595,8 +595,8 @@ div.form-item.form-group_:has(> fieldset.form-group_ > legend) {
 }
 
 // Improve vertical usage of groups with only one item
-div.form-item.form-group_:not(.yfill):has(> *:only-child), div.form-item.form-dict {
-    align-items:                        start;
+div.form-item:not(.yfill):has(> *:only-child), div.form-item.form-dict {
+    align-items:                        center;
     > * {
         height:                         auto;
     }
@@ -615,7 +615,7 @@ div.form-group-expandable {
 }
 
 // Remove all padding from groups without a legend
-div.form-item.form-group_:not(:has(> fieldset.form-group_ > legend)) {
+div.form-item:not(:has(> fieldset.form-group_ > legend)) {
     padding:                            0px;
 }
 
@@ -689,8 +689,8 @@ div.form-many2one, div.form-selection, div.form-date, div.form-datetime,
 div.form-char {
     padding:                0px 10px 0px 0px;
 
-    .readonly {
-        .input-group, select.form-control:disabled {
+    &.readonly {
+        > div.input-group, select.form-control:disabled {
             .coog-readonly-field-mixin();
             background-image: none;
             border-right: unset;
@@ -704,7 +704,7 @@ div.form-char {
 div.form-float, div.form-integer {
     padding:                0px 10px 0px 0px;
 
-    .readonly {
+    &.readonly {
         .input-group > input {
             .coog-readonly-field-mixin();
         }
@@ -747,7 +747,7 @@ div.form-text {
         }
     }
     // highlight readonly text contents
-    .readonly {
+    &.readonly {
         textarea.form-control {
             .coog-readonly-field-mixin();
         }
@@ -841,7 +841,7 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 
 // Use all space for XXX2Many which are the sole item in a notebook page
 .tab-pane.active > div.form-container:has(> div.form-one2many:only-child) {
-    > div.form-item.form-one2many {
+    > div.form-item:has( > div.form-one2many) {
         padding-top:               0px;
         > div.form-one2many.panel {
             margin-left:           0px;
@@ -850,7 +850,7 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
     }
 }
 .tab-pane.active > div.form-container:has(> div.form-many2many:only-child) {
-    > div.form-item.form-many2many {
+    > div.form-item:has( > div.form-many2many) {
         padding-top:               0px;
         > div.form-many2many.panel {
             margin-left:           0px;
@@ -940,6 +940,7 @@ ul.CodeMirror-hints {
 div.form-notebook > ul.nav.nav-tabs {
     margin-bottom:                  8px;
     border-color:                   @color-lighter-blue;
+    background-color:               @color-white;
     > li {
         > a {
             padding:                    8px 8px;
