@@ -811,6 +811,30 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
     border-bottom:     none;
 }
 
+//fix button padding with new form vcontainer
+.form .form-item > .btn-horizontal{
+    margin: 1px;
+}
+
+div.form-item:not(:has(> fieldset.form-group_ > legend)) {
+    padding: 1px;
+}
+
+.form .form-container, .form .form-vcontainer {
+    column-gap: 3px;
+    row-gap: 2px;
+}
+
+//override inline-block
+.treeview > table.tree > thead > tr > th > label {
+    display: inline;
+}
+
+//remove line around notebooks
+.form .form-notebook, .board .form-notebook {
+    border-color: transparent;
+}
+
 // increase minimum width of fields
 .form {
     .form-char, .form-password, .form-integer, .form-float,
@@ -836,6 +860,9 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
         div.icon-input > input {
             min-width: unset;
         }
+    }
+    .form-item > .btn-horizontal{
+        margin: 0;
     }
 }
 
