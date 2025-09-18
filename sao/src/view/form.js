@@ -378,6 +378,19 @@ function hide_x2m_body(widget) {
             return buttons;
         },
         display: function() {
+            let el_copy;
+            let el_parent = this.el[0].parentNode;
+            if (el_parent) {
+                el_copy = this.el[0].cloneNode(true);
+                Object.keys(el_copy).forEach(key => {
+                    el_copy.addEventListener(key.slice(2), (evt) => {
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                    });
+                });
+                el_parent.replaceChild(el_copy, this.el[0]);
+            }
+
             var record = this.record;
             var field;
             var promesses = [];
@@ -490,6 +503,9 @@ function hide_x2m_body(widget) {
                     code, this.attributes.scan_code_depends || []).done(() => {
                         if (this.attributes.scan_code == 'submit') {
                             this.el.parents('form').submit();
+                        }
+                        if (el_parent) {
+                            el_parent.replaceChild(this.el[0], el_copy);
                         }
                     });
             } else {
