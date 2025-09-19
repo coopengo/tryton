@@ -471,6 +471,13 @@ class ModuleActivateUpgrade(Wizard):
         pass
 
     def transition_upgrade(self):
+        # JCA: Make a dedicated classmethod to avoid having to instanciate the
+        # wizard, which could lock some parts of the database during the
+        # upgrade.
+        self.upgrade_server()
+
+    @classmethod
+    def upgrade_server(cls):
         pool = Pool()
         Module = pool.get('ir.module')
         Lang = pool.get('ir.lang')
