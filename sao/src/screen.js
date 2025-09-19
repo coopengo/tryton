@@ -2222,6 +2222,10 @@
                 this.current_view.set_value();
                 fields = this.current_view.get_fields();
             }
+            var prm = jQuery.when();
+            if (attributes.confirm) {
+                prm = Sao.common.sur.run(attributes.confirm);
+            }
             for (const record of selected_records) {
                 const domain = record.expr_eval(
                     (attributes.states || {})).pre_validate || [];
@@ -2234,12 +2238,9 @@
                             // Reset valid state with normal domain
                             record.validate(fields);
                         });
-                    return;
+                    prm.reject()
+                    return prm;
                 }
-            }
-            var prm = jQuery.when();
-            if (attributes.confirm) {
-                prm = Sao.common.sur.run(attributes.confirm);
             }
             return prm.then(() => {
                 var record = this.current_record;
@@ -2314,7 +2315,7 @@
             } else if (action.startsWith('switch')) {
                 return this.switch_view.apply(this, action.split(' ', 3).slice(1));
             } else if (action == 'reload') {
-                if (this.current_view && 
+                if (this.current_view &&
                     ~['tree', 'graph', 'calendar'].indexOf(this.current_view.view_type) &&
                     !this.group.parent) {
                     return this.search_filter();
