@@ -2223,9 +2223,6 @@
                 fields = this.current_view.get_fields();
             }
             var prm = jQuery.when();
-            if (attributes.confirm) {
-                prm = Sao.common.sur.run(attributes.confirm);
-            }
             for (const record of selected_records) {
                 const domain = record.expr_eval(
                     (attributes.states || {})).pre_validate || [];
@@ -2241,6 +2238,9 @@
                     prm.reject()
                     return prm;
                 }
+            }
+            if (attributes.confirm) {
+                prm = Sao.common.sur.run(attributes.confirm);
             }
             return prm.then(() => {
                 var record = this.current_record;
