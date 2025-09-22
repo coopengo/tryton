@@ -16,16 +16,16 @@ pack() {
         && cp -r locale dist/ \
         && cp -r images dist/ \
         && cp -r bower_components/bootstrap/dist/fonts dist/ \
-        && move_res bower_components/Sortable/Sortable.min.js \
+        && move_res bower_components/Sortable/Sortable.js \
         && move_res bower_components/bootstrap/dist/css/bootstrap.min.css \
         && move_res bower_components/bootstrap/dist/css/bootstrap-theme.min.css \
-        && move_res bower_components/bootstrap/dist/js/bootstrap.min.js \
+        && move_res bower_components/bootstrap/dist/js/bootstrap.js \
         && move_res bower_components/bootstrap-rtl-ondemand/dist/css/bootstrap-rtl-ondemand.min.css \
         && move_res bower_components/bootstrap-rtl-ondemand/dist/js/holder.js \
         && move_res bower_components/bootstrap-rtl-ondemand/dist/js/html5shiv.js \
         && move_res bower_components/bootstrap-rtl-ondemand/dist/js/respond.min.js \
-        && move_res bower_components/c3/c3.min.css \
-        && move_res bower_components/c3/c3.min.js \
+        && move_res bower_components/c3/c3.css \
+        && move_res bower_components/c3/c3.js \
         && move_res bower_components/codemirror/lib/codemirror.js \
         && move_res bower_components/codemirror/mode/python/python.js \
         && move_res bower_components/codemirror/addon/lint/lint.js \
@@ -40,17 +40,17 @@ pack() {
         && move_res bower_components/codemirror/addon/lint/lint.css \
         && move_res bower_components/codemirror/addon/hint/show-hint.css \
         && move_res bower_components/codemirror/addon/dialog/dialog.css \
-        && move_res bower_components/d3/d3.min.js \
-        && move_res bower_components/fullcalendar/dist/fullcalendar.min.css \
-        && move_res bower_components/fullcalendar/dist/fullcalendar.min.js \
+        && move_res bower_components/d3/d3.js \
+        && move_res bower_components/fullcalendar/dist/fullcalendar.css \
+        && move_res bower_components/fullcalendar/dist/fullcalendar.js \
         && move_res bower_components/fullcalendar/dist/locale-all.js \
         && move_res bower_components/gettext.js/dist/gettext.iife.js \
-        && move_res bower_components/jquery/dist/jquery.min.js \
-        && move_res bower_components/moment/min/locales.min.js \
-        && move_res bower_components/moment/min/moment.min.js \
-        && move_res bower_components/mousetrap/mousetrap.min.js \
+        && move_res bower_components/jquery/dist/jquery.js \
+        && move_res bower_components/moment/min/locales.js \
+        && move_res bower_components/moment/moment.js \
+        && move_res bower_components/mousetrap/mousetrap.js \
         && move_res bower_components/mousetrap/plugins/pause/mousetrap-pause.js \
-        && move_res bower_components/papaparse/papaparse.min.js \
+        && move_res bower_components/papaparse/papaparse.js \
         && sed -i "s;\.\./bower_components/bootstrap/fonts;fonts;g" dist/tryton-sao.css \
         && sed -i "s;dist/tryton-sao.js;tryton-sao.js;g" dist/index.html \
         && sed -i "s;dist/tryton-sao.css;tryton-sao.css;g" dist/index.html
