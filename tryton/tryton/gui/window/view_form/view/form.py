@@ -239,7 +239,7 @@ class FormXMLViewParser(XMLViewParser):
             self.container.add(None, attributes)
             return
 
-        if attributes['widget'] in {'one2many', 'many2many'}:
+        if attributes.get('widget') in {'one2many', 'many2many'}:
             if (self.field_attrs[name]['loading'] == 'lazy'
                     and self._visibility):
                 self.field_attrs[name]['loading'] = 'eager'
@@ -247,7 +247,7 @@ class FormXMLViewParser(XMLViewParser):
         # RSE Display more useful info when trying to display unexisting field
         if 'widget' not in attributes:
             raise Exception('Unknown field %s' % attributes['name'])
-        widget = self.WIDGETS[attributes['widget']](self.view, attributes)
+        widget = self.WIDGETS[attributes.get('widget')](self.view, attributes)
         self.view.widgets[name].append(widget)
 
         if attributes.get('group'):
