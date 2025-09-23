@@ -1189,9 +1189,9 @@
                                     [values], this.get_context(), false)});
                         }
                     } else {
-                        changed = {field_name: this.model.execute(
+                        changed = this.model.execute(
                             'on_change_with',
-                            [values, fieldnames], this.get_context(), false)};
+                            [values, fieldnames], this.get_context(), false);
                     }
                 } catch (e) {
                     return;
@@ -1222,9 +1222,9 @@
                                     [values], this.get_context(), false)});
                         }
                     } else {
-                        changed = {field_name: this.model.execute(
+                        changed = this.model.execute(
                             'on_change_with',
-                            [values, fieldnames], this.get_context(), false)};
+                            [values, fieldnames], this.get_context(), false);
                     }
                 } catch (e) {
                     return;
