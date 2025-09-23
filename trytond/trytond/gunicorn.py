@@ -34,7 +34,7 @@ def post_fork(server, worker):
     from trytond.cache import Cache
 
     for db_name in db_list:
-        if (worker.pid, db_name) not in Cache._listener:
+        if db_name not in Cache._local.listeners:
             if not Cache._clean_last:
                 Cache._clean_last = datetime.date.min
             with Transaction().start(db_name, 0, readonly=True):
@@ -42,7 +42,7 @@ def post_fork(server, worker):
                 # should spawn a thread to listen for cache invalidation and
                 # pool refresh events
                 pass
-        if (worker.pid, db_name) not in Cache._listener:
+        if db_name not in Cache._local.listeners:
             raise AssertionError
 
 
