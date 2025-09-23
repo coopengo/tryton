@@ -443,11 +443,11 @@ class Report(URLMixin, PoolBase):
         return data
 
     @classmethod
-    def convert(cls, report, data, timeout=5 * 60, retry=5):
+    def convert(cls, report, data, timeout=5 * 60, retry=5, form=None):
         "converts the report data to another mimetype if necessary"
         # AKE: support printing via external api
         if config.get('report', 'api', default=None):
-            return cls.convert_api(report, data, timeout)
+            return cls.convert_api(report, data, timeout, form=form)
         elif config.get('report', 'unoconv', default=True):
             return cls.convert_unoconv(report, data, timeout)
         else:
@@ -519,9 +519,11 @@ class Report(URLMixin, PoolBase):
                 pass
 
     @classmethod
-    def convert_api(cls, report, data, timeout):
+    def convert_api(cls, report, data, timeout, form=None):
         # AKE: support printing via external api
         User = Pool().get('res.user')
+        if form is None:
+            form = {}
         input_format = report.template_extension
         output_format = report.extension or report.template_extension
 
@@ -534,7 +536,7 @@ class Report(URLMixin, PoolBase):
         files = {'file': ('doc.' + input_format, data)}
         for count in range(config.getint('report', 'unoconv_retry'), -1, -1):
             try:
-                r = requests.post(url, files=files, timeout=timeout)
+                r = requests.post(url, files=files, timeout=timeout, data=form)
                 if r.status_code < 300:
                     return oext, r.content
                 else:
