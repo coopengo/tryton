@@ -519,7 +519,7 @@ class Report(URLMixin, PoolBase):
                 pass
 
     @classmethod
-    def get_extra_data(cls, report):
+    def get_conversion_options(cls, report):
         return {}
 
     @classmethod
@@ -536,10 +536,11 @@ class Report(URLMixin, PoolBase):
         url_tpl = config.get('report', 'api')
         url = url_tpl.format(oext=oext)
         files = {'file': ('doc.' + input_format, data)}
-        extra_data = cls.get_extra_data(report)
+        conversion_options = cls.get_conversion_options(report)
         for count in range(config.getint('report', 'unoconv_retry'), -1, -1):
             try:
-                r = requests.post(url, files=files, timeout=timeout, data=extra_data)
+                r = requests.post(url, files=files, timeout=timeout,
+                                  data=conversion_options)
                 if r.status_code < 300:
                     return oext, r.content
                 else:
