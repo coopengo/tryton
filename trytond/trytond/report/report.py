@@ -540,7 +540,7 @@ class Report(URLMixin, PoolBase):
         for count in range(config.getint('report', 'unoconv_retry'), -1, -1):
             try:
                 r = requests.post(url, files=files, timeout=timeout,
-                                  data=conversion_options)
+                      data=conversion_options)
                 if r.status_code < 300:
                     return oext, r.content
                 else:
