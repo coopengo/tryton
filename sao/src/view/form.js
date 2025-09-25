@@ -470,7 +470,13 @@ function hide_x2m_body(widget) {
                                 container.set_grid_template();
                             }
                         });
-                    return Promise.all([display_prm, state_prm]);
+                    return jQuery.when.apply(jQuery, [display_prm, state_prm]).done(
+                        () => {
+                            if (el_parent) {
+                                el_parent.replaceChild(this.el[0], el_copy);
+                            }
+                        }
+                    );
                 });
         },
         set_value: function() {
@@ -503,9 +509,6 @@ function hide_x2m_body(widget) {
                     code, this.attributes.scan_code_depends || []).done(() => {
                         if (this.attributes.scan_code == 'submit') {
                             this.el.parents('form').submit();
-                        }
-                        if (el_parent) {
-                            el_parent.replaceChild(this.el[0], el_copy);
                         }
                     });
             } else {
