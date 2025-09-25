@@ -510,6 +510,9 @@ function hide_x2m_body(widget) {
                         if (this.attributes.scan_code == 'submit') {
                             this.el.parents('form').submit();
                         }
+                        if (el_parent) {
+                            el_parent.replaceChild(this.el[0], el_copy);
+                        }
                     });
             } else {
                 return jQuery.when();
