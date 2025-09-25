@@ -279,8 +279,18 @@ class Rule(ModelSQL, ModelView):
             target_model = rule.rule_group.model
             if target_model in model2field:
                 target_dom = ['OR']
+                fields_to_check = set()
                 for field in model2field[target_model]:
+                    if field not in fields_to_check:
+                        cur_path = None
+                        for part in field.split('.'):
+                            cur_path = (
+                                part if cur_path is None
+                                else f'{cur_path}.{part}')
+                            fields_to_check.add(cur_path)
                     target_dom.append((field, 'where', dom))
+                for path in fields_to_check:
+                    target_dom.append((path, '=', None))
                 dom = target_dom
             if rule.rule_group.global_p:
                 clause_global[rule.rule_group].append(dom)
