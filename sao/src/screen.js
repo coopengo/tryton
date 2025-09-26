@@ -1059,16 +1059,17 @@
                     let tab = Sao.Tab.tabs.get_current();
                     Sao.Tab.set_view_type(tab ? tab.current_view_type : null);
 
-                    this.screen_container.set(this.current_view.el);
                     var prm;
                     if (display) {
-                        prm = this.display().done(() => {
-                            this.set_cursor();
-                        });
+                        prm = this.display();
                     } else {
                         prm = jQuery.when();
                     }
                     return prm.done(() => {
+                        this.screen_container.set(this.current_view.el);
+                        if (display) {
+                            this.set_cursor();
+                        }
                         if (this.switch_callback) {
                             this.switch_callback();
                         }
