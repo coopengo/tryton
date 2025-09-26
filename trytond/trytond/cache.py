@@ -445,7 +445,8 @@ class MemoryCache(BaseCache):
                         remote_id = payload[len(REFRESH_POOL_MSG) + 1:]
                         process_id = cls._local.portable_id
                         if remote_id != process_id:
-                            Pool.refresh(dbname, _get_modules(cursor))
+                            Pool.refresh(dbname, _get_modules(cursor),
+                                force=True)
                     elif isinstance(payload, str) and payload in callbacks:
                         callbacks[payload](pool)
                     elif payload:
@@ -472,30 +473,6 @@ class MemoryCache(BaseCache):
             with cls._local.listener_lock:
                 if cls._local.listeners.get(dbname) == current_thread:
                     del cls._local.listeners[dbname]
-
-    @classmethod
-    def _purge_listeners(cls, dbname):
-        '''
-        Purges all listeners for a given database
-
-        Should no longer be useful, but we may need it later so we will keep it
-        around a little longer
-        '''
-        pid = os.getpid()
-        thread_id = None
-        with cls._listener_lock[pid]:
-            if (pid, dbname) in cls._listener:
-                thread_id = cls._listener[pid, dbname].ident
-                del cls._listener[pid, dbname]
-
-        # JMO : doctest teardown remains stuck with code below
-        # TODO: fix this
-        if config.getboolean('env', 'testing'):
-            # We removed the thread from the list, but it can still be alive if
-            # it is busy clearing some cache
-            if thread_id is not None:
-                while {thread_id} & {x.ident for x in threading.enumerate()}:
-                    time.sleep(0.01)
 
 
 if config.get('cache', 'class'):

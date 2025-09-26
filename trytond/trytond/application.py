@@ -93,9 +93,8 @@ def skip_on_gunicorn(func):
 def preload():
     from trytond.transaction import Transaction
     from trytond.cache import Cache
-    pid = os.getpid()
     for db_name in db_list:
-        if (pid, db_name) not in Cache._listener:
+        if db_name not in Cache._local.listeners:
             if not Cache._clean_last:
                 Cache._clean_last = datetime.date.min
             with Transaction().start(db_name, 0, readonly=True):
@@ -103,5 +102,5 @@ def preload():
                 # should spawn a thread to listen for cache invalidation and
                 # pool refresh events
                 pass
-        if (pid, db_name) not in Cache._listener:
+        if db_name not in Cache._local.listeners:
             raise AssertionError
