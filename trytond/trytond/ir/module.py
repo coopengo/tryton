@@ -475,6 +475,7 @@ class ModuleActivateUpgrade(Wizard):
         # wizard, which could lock some parts of the database during the
         # upgrade.
         self.upgrade_server()
+        return 'done'
 
     @classmethod
     def upgrade_server(cls):
@@ -493,7 +494,6 @@ class ModuleActivateUpgrade(Wizard):
             lang = [x.code for x in langs]
         if update:
             pool.init(update=update, lang=lang)
-        return 'done'
 
     def transition_next_(self):
         pool = Pool()
