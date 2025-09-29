@@ -54,8 +54,12 @@
                                 return;
                             }
                             Sao.rpc({
-                                'method': 'model.res.user.warning.skip',
-                                'params': [name, result == 'always', {}],
+                                'method': 'model.res.user.warning.create',
+                                'params': [[{
+                                    'user': session.user_id,
+                                    'name': name,
+                                    'always': result == 'always'
+                                }], {}]
                             }, session).done(function() {
                                 if (async) {
                                     Sao.rpc(args, session).then(
