@@ -77,6 +77,7 @@ class ModelView(Model):
         cls.__rpc__['on_change'] = RPC(instantiate=0)
         cls.__rpc__['on_change_with'] = RPC(instantiate=0)
         cls.__rpc__['on_change_notify'] = RPC(instantiate=0)
+        cls.__rpc__['autocomplete'] = RPC()
         cls._buttons = {}
 
         fields_ = {}
@@ -838,6 +839,29 @@ class ModelView(Model):
         Available types are info, warning and error.
         """
         return []
+
+    @classmethod
+    def autocomplete(cls, text, domain=None, limit=None, order=None):
+        # JCA: Added for sao 7.2 compatibility
+        def likify(string, escape='\\'):
+            if not string:
+                return '%'
+            escaped = string.replace(escape + '%', '').replace(escape + '_', '')
+            if '%' in escaped or '_' in escaped:
+                return string
+            else:
+                return '%' + string + '%'
+
+        from .modelstorage import ModelStorage
+        result = []
+        if domain is None:
+            domain = []
+        domain = [domain, ('rec_name', 'ilike', likify(text))]
+        if issubclass(cls, ModelStorage):
+            result = cls.search_read(
+                domain, limit=limit, order=order, fields_names=['rec_name'])
+            result = [{'id': r['id'], 'name': r['rec_name']} for r in result]
+        return result
 
     @property
     def _changed_values(self):
