@@ -169,6 +169,31 @@ div.wizard-form {
     }
 }
 
+// Tree view title bar : align contents
+.treeview > table.tree > thead > tr > th,
+.treeview > table.tree > thead > tr > th:hover {
+    padding-top:        5px;
+    padding-bottom:     1px;
+}
+.treeview > table.tree > thead > tr > th.selection-state {
+    padding-top:        3px;
+    padding-bottom:     3px;
+}
+.treeview > table.tree > thead > tr > th.tree-menu {
+    padding-top:        1px;
+    padding-bottom:     5px;
+}
+
+// Fix to avoid list content appearing behind the header
+.treeview > table.tree {
+    border-top:         0px solid black !important;
+}
+.treeview > table.tree > thead > tr > th,
+.treeview > table.tree > thead > tr > th:hover {
+    border:             1px solid @color-lightest-grey !important;
+    border-top:         0px solid black !important;
+}
+
 // Use variable for border width
 .treeview > table.tree > tbody > tr > td {
     border-top-width:   @tree-line-border-top;
@@ -182,22 +207,22 @@ div.wizard-form {
 
 // More discrete checkboxes for selection in trees
 .treeview > table.tree,table.tree-condensed > thead,tbody > tr > td.selection-state > input {
-    & input[type="checkbox"] {
-        margin-top:     @tree-line-border-top;
-        margin-bottom:  0px;
-    }
-
-    & :before {
+    & :after {
         border-color:   @color-lightest-blue !important;
     }
 
-    & tr:hover :before {
+    & tr:hover :after {
         border-color:   @color-grey !important;
     }
 
-    & tr.selected,thead :before {
+    & tr.selected,thead :after {
         border-color:   @color-grey !important;
     }
+
+    & tr.selected :after {
+        border-color:   @color-grey !important;
+    }
+
 }
 
 // Align select all checkbox in trees headers
@@ -402,6 +427,10 @@ html[theme="default"] .btn-primary {
     }
 }
 
+.form .form-item > .btn {
+    margin:                    1px 2px 1px 2px;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Act Window list
 ///////////////////////////////////////////////////////////////////////////////
@@ -468,6 +497,11 @@ ul.list-group.list-form {
     }
 }
 
+// Make room for box-shadows
+fieldset:has(div.form-one2many,div.form-many2many) {
+    padding:               2px 4px 4px 2px;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Many2Many
 ///////////////////////////////////////////////////////////////////////////////
@@ -480,7 +514,8 @@ div.form-item:has( > div.form-many2many) {
 ///////////////////////////////////////////////////////////////////////////////
 
 div.form-dict {
-    margin-bottom:              @coog-card-bottom-padding;
+    margin:                     2px 4px 4px 2px;
+    // margin-bottom:              @coog-card-bottom-padding;
 
     // Apply readonly value of dict field to values
     &.readonly {
@@ -517,6 +552,7 @@ div.form-dict {
 // Style group headers as dicts
 div.form-item:has(> fieldset.form-group_ > legend) {
     padding-bottom:             5px;
+    padding-top:                2px;
 
     // "legends" are special and default style is weird, transform the style to
     // look like dicts
@@ -619,6 +655,15 @@ div.form-item:not(:has(> fieldset.form-group_ > legend)) {
     padding:                            0px;
 }
 
+fieldset {
+    :has(> div.form-container) {
+        padding:                2px 4px 4px 2px;
+        &:has(> legend) {
+            padding:                0px;
+            margin:                 2px 4px 4px 2px;
+        }
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////
 // Modals
 ///////////////////////////////////////////////////////////////////////////////
@@ -866,7 +911,7 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
 
 @coog-rule-engine-height:         500px;
 
-div.form-item.form-source > div.form-source {
+div.form-item > div.form-source {
     display: flex;
     gap: 5px;
 
@@ -937,6 +982,9 @@ ul.CodeMirror-hints {
 ///////////////////////////////////////////////////////////////////////////////
 // Notebooks
 ///////////////////////////////////////////////////////////////////////////////
+div.form-notebook {
+    border-width:                   0px !important;
+}
 div.form-notebook > ul.nav.nav-tabs {
     margin-bottom:                  8px;
     border-color:                   @color-lighter-blue;
