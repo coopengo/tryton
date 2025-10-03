@@ -2066,26 +2066,6 @@ function hide_x2m_body(widget) {
                 updateLint(codeMirrorErrors);
             }.bind(this));
         },
-        _populate_funcs: function (tree_data, func_list) {
-            // Feed hint and lint context with general rule context
-            if (!tree_data) { return ;}
-            var element;
-            var duplicate;
-            for (var cnt in tree_data) {
-                element = tree_data[cnt];
-                if (element.translated) {
-                    // Remove function duplicate from current rule to replace
-                    // them with appropriate name_of_func() completion
-                    duplicate = func_list.indexOf(element.translated)
-                    if (duplicate > -1)
-                        func_list.splice(duplicate, 1)
-                    func_list.push({text: element.translated.concat('(', element.fct_args, ')'), displayText: element.translated});
-                }
-                if (element.children && element.children.length > 0) {
-                    this._populate_funcs(element.children, func_list);
-                }
-            }
-        },
     });
 
     Sao.View.Form.TranslateDialog = Sao.class_(Object,  {
