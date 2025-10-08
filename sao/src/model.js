@@ -2247,7 +2247,8 @@
             var state_attrs = this.get_state_attrs(record);
             if (state_attrs.required == 1) {
                 if ((this.get(record) === null) &&
-                    (state_attrs.readonly != 1)) {
+                    (state_attrs.readonly != 1) &&
+                    !(record.group && record.group.parent_name === this.name)) {
                     return false;
                 }
             }
