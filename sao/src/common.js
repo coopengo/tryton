@@ -4544,12 +4544,21 @@
             jQuery(document).one('click', () => {
                 menu.css('display', 'none');
             });
-            menu.css({
-                'top': evt.pageY,
+            let min_height = 200;
+            var css = {
                 'left': evt.pageX,
                 'display': 'block',
-            });
-
+                'bottom': 'unset',
+                'top': 'unset',
+            };
+            if (evt.pageY + min_height > window.innerHeight) {
+                css.position = 'fixed';
+                css.bottom = 5;
+                ul.css({position: 'relative'});
+            } else {
+                css.top = evt.pageY;
+            }
+            menu.css(css);
             return ul;
         },
         populate: (menu, model_name, field_name, context, records, edit_entry) => {
@@ -4559,8 +4568,23 @@
 
             const popLocation = (e) => {
                 var menu = e.data;
-                if ((menu.offset().left + menu.width()) > window.innerWidth) {
-                    menu.css('left', (-1 * menu.width()) + 'px');
+                menu.css('position', 'fixed');
+                let parent_size = menu.get(0).parentElement.getBoundingClientRect();
+                let menu_size = menu.get(0).getBoundingClientRect();
+                if (parent_size.top + menu_size.height > window.innerHeight) {
+                    menu.css('bottom', 5)
+                    menu.css('top', 'unset')
+                    menu.css('max-height', window.innerHeight - 200);
+                } else {
+                    menu.css('top', parent_size.top);
+                    menu.css('bottom', 'unset')
+                }
+                if ((parent_size.right + menu_size.width) > window.innerWidth) {
+                    menu.css('right', parent_size.left);
+                    menu.css('left', 'unset');
+                } else {
+                    menu.css('right', 'unset');
+                    menu.css('left', parent_size.right);
                 }
             };
             const open_records = (records) => {
@@ -4631,6 +4655,9 @@
                 }).text(Sao.i18n.gettext("Edit...")).click(
                     open_records(records))
                 ).appendTo(menu);
+                if (field_name) {
+                    menu.parent().on('mouseenter', menu, popLocation);
+                }
             }
 
             for (const [action_type, action_name] of [

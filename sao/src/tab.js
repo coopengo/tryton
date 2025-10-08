@@ -760,6 +760,10 @@
                             })
                             .appendTo(menu);
                     });
+                    let menu_size = menu.get(0).getBoundingClientRect();
+                    if (menu_size.bottom > window.innerHeight) {
+                        menu.css('max-height', window.innerHeight - 5 - menu_size.top);
+                    }
                 });
 
                 toolbars[menu_action[0]].forEach(action => {

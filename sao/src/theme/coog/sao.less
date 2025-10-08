@@ -470,13 +470,17 @@ div.tab-pane {
 // Dropdowns
 ///////////////////////////////////////////////////////////////////////////////
 //
-// more compact items
-ul.dropdown-menu > li > a {
-    padding:    2px 8px;
-    > div > img {
-        margin-right: 2px;
-        width: 1.5em;
-        height: 1.5em;
+ul.dropdown-menu {
+    overflow-y:                 auto;
+    background:                 @color-white;
+    // more compact items
+    > li > a {
+        padding:    2px 8px;
+        > div > img {
+            margin-right: 2px;
+            width: 1.5em;
+            height: 1.5em;
+        }
     }
 }
 
