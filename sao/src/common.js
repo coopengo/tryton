@@ -3963,6 +3963,21 @@
                     this.menu.dropdown('toggle');
                 }
             }
+            this.menu.css('position', 'fixed');
+            this.menu.css('top', 'unset');
+            this.menu.css('bottom', 'unset');
+            let parent_size = this.menu.get(0).parentElement.getBoundingClientRect();
+            if (window.innerHeight - parent_size.bottom < 200) {
+                this.menu.css('max-height', parent_size.top - 200 - 5);
+                this.menu.css('top', parent_size.top - 5 - Math.min(
+                    this.menu.get(0).getBoundingClientRect().height,
+                    parent_size.top -200 -5));
+            } else {
+                this.menu.css('top', parent_size.bottom);
+                this.menu.css('max-height',
+                    window.innerHeight - 5 - parent_size.bottom);
+            }
+            this.menu.css('left', parent_size.left);
         }
     });
 
@@ -4568,9 +4583,9 @@
 
             const popLocation = (e) => {
                 var menu = e.data;
+                let menu_size = menu.get(0).getBoundingClientRect();
                 menu.css('position', 'fixed');
                 let parent_size = menu.get(0).parentElement.getBoundingClientRect();
-                let menu_size = menu.get(0).getBoundingClientRect();
                 if (parent_size.top + menu_size.height > window.innerHeight) {
                     menu.css('bottom', 5)
                     menu.css('top', 'unset')
