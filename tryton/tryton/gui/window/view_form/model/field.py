@@ -682,6 +682,7 @@ class O2MField(Field):
                 parent_name=parent_name,
                 child_name=self.name,
                 parent_datetime_field=self.attrs.get('datetime_field'))
+        group.exclude_field = parent_name
         if not fields and record.model_name == self.attrs['relation']:
             group.fields = record.group.fields
         record.value[self.name] = group
