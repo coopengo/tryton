@@ -1357,6 +1357,9 @@
                 if (fname == this.group.exclude_field) {
                     continue;
                 }
+                if (fname == this.group.parent_name) {
+                    continue;
+                }
                 if (!field.validate(this, softvalidation, pre_validate)) {
                     result = false;
                 }
@@ -2700,7 +2703,6 @@
             var group = Sao.Group(model, {}, []);
             group.set_parent(record);
             group.parent_name = this.description.relation_field;
-            group.exclude_field = this.description.relation_field;
             group.child_name = this.name;
             group.parent_datetime_field = this.description.datetime_field;
             record._values[this.name] = group;
