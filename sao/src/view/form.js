@@ -1507,7 +1507,7 @@ function hide_x2m_body(widget) {
                 this.el.show();
                 if (this.is_parent)
                     for (var j in this.childs)
-                        this.childs[j].set_visibility(visible);
+                        this.childs[j].set_visibility(false);
             } else{
                 this.el.hide();
                 for (var i in this.childs)
@@ -1558,6 +1558,11 @@ function hide_x2m_body(widget) {
             }.bind(this));
 
             tr_container[0].addEventListener('click', function(event){
+                if (this.is_parent)
+                    this.set_expander(!this.expanded);
+                for (var i in this.childs){
+                    this.childs[i].set_visibility(this.expanded);
+                }
             }.bind(this));
 
             return tr_container;

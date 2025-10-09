@@ -3758,6 +3758,7 @@
             }
             return window.setTimeout(() => {
                 this.queries += 1;
+                this.el.show();
                 if (this.el.is(':visible')) {
                     this.el.addClass('spinning');
                 }
