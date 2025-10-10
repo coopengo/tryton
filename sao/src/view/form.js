@@ -510,9 +510,6 @@ function hide_x2m_body(widget) {
                         if (this.attributes.scan_code == 'submit') {
                             this.el.parents('form').submit();
                         }
-                        if (el_parent) {
-                            el_parent.replaceChild(this.el[0], el_copy);
-                        }
                     });
             } else {
                 return jQuery.when();
@@ -1016,8 +1013,31 @@ function hide_x2m_body(widget) {
             Sao.View.Form.Page._super.hide.call(this);
             if (this.el.hasClass('active')) {
                 window.setTimeout(() => {
+                    let first_visible_sibling = null;
                     if (this.el.hasClass('active') && this.el.is(':hidden')) {
-                        this.el.siblings(':visible').first().find('a').tab('show');
+                        for (let sibling of this.el.siblings()) {
+                            // We can not rely on :visible anymore as the node
+                            // might be removed from the document
+                            if (sibling.style.display != 'none') {
+                                first_visible_sibling = sibling;
+                                break
+                            }
+                        }
+                    }
+                    if (first_visible_sibling) {
+                        // Mimick bootstrap's Tab.show as we're working with
+                        // nodes that might be out of the dom
+                        let link = jQuery(first_visible_sibling).find('a');
+                        let selector = link.attr('href');
+                        let tab = link.data('bs.tab');
+                        if (!tab) {
+                            link.data('bs.tab', new jQuery.fn.tab.Constructor(link));
+                            tab = link.data('bs.tab');
+                        }
+                        let activate = tab['activate'];
+                        activate(this.el, this.el.closest('ul'));
+                        let target = this.el.closest('.form-notebook').find(selector);
+                        activate(target, target.parent());
                     }
                 });
             }
