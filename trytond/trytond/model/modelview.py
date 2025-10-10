@@ -66,8 +66,7 @@ class ModelView(Model):
         context_ignored_keys=Cache.context_ignored_keys.copy() - {
             'screen_size', 'view_tree_width',
             })
-    _view_toolbar_get_cache = Cache(
-        'modelview.view_toolbar_get', context=False)
+    _view_toolbar_get_cache = Cache('modelview.view_toolbar_get')
 
     @classmethod
     def __setup__(cls):
