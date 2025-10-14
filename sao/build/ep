@@ -36,13 +36,18 @@ pack() {
         && move_res bower_components/codemirror/addon/search/searchcursor.js \
         && move_res bower_components/codemirror/addon/search/jump-to-line.js \
         && move_res bower_components/codemirror/addon/dialog/dialog.js \
+        && move_res bower_components/codemirror/addon/fold/foldcode.js \
+        && move_res bower_components/codemirror/addon/fold/foldgutter.js \
+        && move_res bower_components/codemirror/addon/fold/comment-fold.js \
+        && move_res bower_components/codemirror/addon/fold/indent-fold.js \
         && move_res bower_components/codemirror/lib/codemirror.css \
         && move_res bower_components/codemirror/addon/lint/lint.css \
         && move_res bower_components/codemirror/addon/hint/show-hint.css \
         && move_res bower_components/codemirror/addon/dialog/dialog.css \
-        && move_res bower_components/d3/d3.min.js \
-        && move_res bower_components/fullcalendar/dist/fullcalendar.min.css \
-        && move_res bower_components/fullcalendar/dist/fullcalendar.min.js \
+        && move_res bower_components/codemirror/addon/fold/foldgutter.css \
+        && move_res bower_components/d3/d3.js \
+        && move_res bower_components/fullcalendar/dist/fullcalendar.css \
+        && move_res bower_components/fullcalendar/dist/fullcalendar.js \
         && move_res bower_components/fullcalendar/dist/locale-all.js \
         && move_res bower_components/gettext.js/dist/gettext.min.js \
         && move_res bower_components/jquery/dist/jquery.min.js \
