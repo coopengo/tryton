@@ -983,6 +983,33 @@ ul.CodeMirror-hints {
     }
 }
 
+div.CodeMirror-foldgutter-open,div.CodeMirror-foldgutter-folded {
+    font-size:              x-large;
+    margin-top:             -5px;
+    margin-left:            -2px;
+
+    &.CodeMirror-foldgutter-open {
+        color:                  @color-lighter-grey;
+    }
+    &.CodeMirror-foldgutter-folded {
+        color:                  @color-blue;
+    }
+    &:hover {
+        color:                  @color-light-blue;
+        text-shadow:            @color-lighter-blue 1px 1px 2px, @color-lighter-blue -1px -1px 2px, @color-lighter-blue 1px -1px 2px, @color-lighter-blue -1px 1px 2px;
+    }
+}
+
+span.CodeMirror-foldmarker {
+    font-size:              xx-large;
+    color:                  @color-median-grey;
+    text-shadow:            @color-lighter-grey 1px 1px 2px, @color-lighter-grey -1px -1px 2px, @color-lighter-grey 1px -1px 2px, @color-lighter-grey -1px 1px 2px;
+    &:hover {
+        color:                  @color-light-blue;
+        text-shadow:            @color-lighter-blue 1px 1px 2px, @color-lighter-blue -1px -1px 2px, @color-lighter-blue 1px -1px 2px, @color-lighter-blue -1px 1px 2px;
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Notebooks
 ///////////////////////////////////////////////////////////////////////////////
