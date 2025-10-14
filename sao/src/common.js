@@ -3964,6 +3964,21 @@
                     this.menu.dropdown('toggle');
                 }
             }
+            this.menu.css('position', 'fixed');
+            this.menu.css('top', 'unset');
+            this.menu.css('bottom', 'unset');
+            let parent_size = this.menu.get(0).parentElement.getBoundingClientRect();
+            if (window.innerHeight - parent_size.bottom < 200) {
+                this.menu.css('max-height', parent_size.top - 200 - 5);
+                this.menu.css('top', parent_size.top - 5 - Math.min(
+                    this.menu.get(0).getBoundingClientRect().height,
+                    parent_size.top -200 -5));
+            } else {
+                this.menu.css('top', parent_size.bottom);
+                this.menu.css('max-height',
+                    window.innerHeight - 5 - parent_size.bottom);
+            }
+            this.menu.css('left', parent_size.left);
         }
     });
 
@@ -4545,12 +4560,21 @@
             jQuery(document).one('click', () => {
                 menu.css('display', 'none');
             });
-            menu.css({
-                'top': evt.pageY,
+            let min_height = 200;
+            var css = {
                 'left': evt.pageX,
                 'display': 'block',
-            });
-
+                'bottom': 'unset',
+                'top': 'unset',
+            };
+            if (evt.pageY + min_height > window.innerHeight) {
+                css.position = 'fixed';
+                css.bottom = 5;
+                ul.css({position: 'relative'});
+            } else {
+                css.top = evt.pageY;
+            }
+            menu.css(css);
             return ul;
         },
         populate: (menu, model_name, field_name, context, records, edit_entry) => {
@@ -4560,8 +4584,23 @@
 
             const popLocation = (e) => {
                 var menu = e.data;
-                if ((menu.offset().left + menu.width()) > window.innerWidth) {
-                    menu.css('left', (-1 * menu.width()) + 'px');
+                let menu_size = menu.get(0).getBoundingClientRect();
+                menu.css('position', 'fixed');
+                let parent_size = menu.get(0).parentElement.getBoundingClientRect();
+                if (parent_size.top + menu_size.height > window.innerHeight) {
+                    menu.css('bottom', 5)
+                    menu.css('top', 'unset')
+                    menu.css('max-height', window.innerHeight - 200);
+                } else {
+                    menu.css('top', parent_size.top);
+                    menu.css('bottom', 'unset')
+                }
+                if ((parent_size.right + menu_size.width) > window.innerWidth) {
+                    menu.css('right', parent_size.left);
+                    menu.css('left', 'unset');
+                } else {
+                    menu.css('right', 'unset');
+                    menu.css('left', parent_size.right);
                 }
             };
             const open_records = (records) => {
@@ -4632,6 +4671,9 @@
                 }).text(Sao.i18n.gettext("Edit...")).click(
                     open_records(records))
                 ).appendTo(menu);
+                if (field_name) {
+                    menu.parent().on('mouseenter', menu, popLocation);
+                }
             }
 
             for (const [action_type, action_name] of [
