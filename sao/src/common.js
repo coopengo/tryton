@@ -3734,8 +3734,8 @@
         timeout: 200,
         spinner_start: Date.now(),
         spinner_end: Date.now(),
-        spinner_hysteresis: 400,    // make minimum spinner duration 350ms to
-                                    // avoid flashing effects
+        spinner_hysteresis: 350,    // Add minimum running / delay for spinner
+                                    // to avoid flashing effect
         init: function() {
             this.el = jQuery('<div/>', {
                 'id': 'processing',
