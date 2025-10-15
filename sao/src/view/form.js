@@ -1549,7 +1549,7 @@ function hide_x2m_body(widget) {
                 this.el.show();
                 if (this.is_parent)
                     for (var j in this.childs)
-                        this.childs[j].set_visibility(visible);
+                        this.childs[j].set_visibility(false);
             } else{
                 this.el.hide();
                 for (var i in this.childs)
@@ -1600,6 +1600,11 @@ function hide_x2m_body(widget) {
             }.bind(this));
 
             tr_container[0].addEventListener('click', function(event){
+                if (this.is_parent)
+                    this.set_expander(!this.expanded);
+                for (var i in this.childs){
+                    this.childs[i].set_visibility(this.expanded);
+                }
             }.bind(this));
 
             return tr_container;
@@ -1751,7 +1756,12 @@ function hide_x2m_body(widget) {
                 indentWithTabs: false,
                 matchBrackets: true,
                 autoRefresh: true,
-                gutters: ["CodeMirror-lint-markers"],
+                foldGutter: {
+                    rangeFinder: new CodeMirror.fold.combine(
+                        CodeMirror.fold.indent, CodeMirror.fold.comment)
+                },
+                gutters: ["CodeMirror-lint-markers", "CodeMirror-linenumbers",
+                    "CodeMirror-foldgutter"],
                 lint: {
                     lintOnChange: true,
                     getAnnotations: this.pythonLinter.bind(this),
@@ -1767,6 +1777,9 @@ function hide_x2m_body(widget) {
                 "Shift-Alt-R": "replaceAll",
                 "Ctrl-S": this._save.bind(this),
                 "Ctrl-Space": this._enable_hint.bind(this),
+                "Ctrl-Q": cm => cm.foldCode(cm.getCursor()),
+                "Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
+                "Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm),
             });
         },
         _populate_funcs: function (tree_data, func_list, type) {
@@ -1955,6 +1968,7 @@ function hide_x2m_body(widget) {
                 if (this.record !== this.prev_record) {
                     this.prev_record = this.record;
                     this.codeMirror.clearHistory();
+                    CodeMirror.commands.foldAll(this.codeMirror)
                 }
             }.bind(this);
 
@@ -2107,26 +2121,6 @@ function hide_x2m_body(widget) {
                 }
                 updateLint(codeMirrorErrors);
             }.bind(this));
-        },
-        _populate_funcs: function (tree_data, func_list) {
-            // Feed hint and lint context with general rule context
-            if (!tree_data) { return ;}
-            var element;
-            var duplicate;
-            for (var cnt in tree_data) {
-                element = tree_data[cnt];
-                if (element.translated) {
-                    // Remove function duplicate from current rule to replace
-                    // them with appropriate name_of_func() completion
-                    duplicate = func_list.indexOf(element.translated)
-                    if (duplicate > -1)
-                        func_list.splice(duplicate, 1)
-                    func_list.push({text: element.translated.concat('(', element.fct_args, ')'), displayText: element.translated});
-                }
-                if (element.children && element.children.length > 0) {
-                    this._populate_funcs(element.children, func_list);
-                }
-            }
         },
     });
 
