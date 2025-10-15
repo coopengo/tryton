@@ -1184,7 +1184,7 @@
                             changed = jQuery.extend(
                                 changed,
                                 {
-                                    field_name: this.model.execute(
+                                    fieldname: this.model.execute(
                                     'on_change_with_' + fieldname,
                                     [values], this.get_context(), false)});
                         }
@@ -1217,7 +1217,7 @@
                             changed = jQuery.extend(
                                 changed,
                                 {
-                                    field_name: this.model.execute(
+                                    fieldname: this.model.execute(
                                     'on_change_with_' + fieldname,
                                     [values], this.get_context(), false)});
                         }
