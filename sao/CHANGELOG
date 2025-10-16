@@ -1,3 +1,4 @@
+* Use sandboxed iframe to display document (issue14290)
 * Display the number of selected records
 * Humanize the count result
 * Add limit to search_count

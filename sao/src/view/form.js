@@ -4737,15 +4737,42 @@ function eval_pyson(value){
                 'class': this.class_,
             });
 
-            this.object = jQuery('<object/>', {
+            this.content = this._create_content().appendTo(this.el);
+        },
+        _create_content: function(mimetype, url) {
+            let tag_name = 'iframe';
+            if (mimetype) {
+                if (mimetype.startsWith('image/')) {
+                    tag_name = 'img';
+                } else if (mimetype == 'application/pdf') {
+                    tag_name = 'object';
+                }
+            }
+            let content = jQuery(`<${tag_name}/>`, {
                 'class': 'center-block',
-            }).appendTo(this.el);
-            if (attributes.height) {
-                this.object.css('height', parseInt(attributes.height, 10));
+            });
+            if (tag_name == 'iframe') {
+                content.attr('sandbox', '');
             }
-            if (attributes.width) {
-                this.object.css('width', parseInt(attributes.width, 10));
+            if (this.attributes.height) {
+                content.css('height', parseInt(this.attributes.height, 10));
             }
+            if (this.attributes.width) {
+                content.css('width', parseInt(this.attributes.width, 10));
+            }
+            if (url) {
+                // set onload before data/src to be always called
+                content.get().onload = function() {
+                    this.onload = null;
+                    window.URL.revokeObjectURL(url);
+                };
+                if (tag_name== 'object') {
+                    content.attr('data', url);
+                } else {
+                    content.attr('src', url);
+                }
+            }
+            return content;
         },
         display: function() {
             Sao.View.Form.Document._super.display.call(this);
@@ -4760,11 +4787,14 @@ function eval_pyson(value){
             if (filename_field) {
                 filename = filename_field.get_client(record);
             }
-            data.done(function(data) {
-                var url, blob;
+            data.done(data => {
                 if (record !== this.record) {
                     return;
                 }
+                // in case onload was not yet triggered
+                let url = this.content.attr('data') ||
+                    this.content.attr('src');
+                window.URL.revokeObjectURL(url);
                 if (!data) {
                     url = null;
                 } else {
@@ -4772,16 +4802,17 @@ function eval_pyson(value){
                     if (mimetype == 'application/octet-binary') {
                         mimetype = null;
                     }
-                    blob = new Blob([data], {
+                    let blob = new Blob([data], {
                         'type': mimetype,
                     });
                     url = window.URL.createObjectURL(blob);
                 }
-                this.object.attr('data', url);
-                this.object.get(0).onload = function() {
-                    window.URL.revokeObjectURL(url);
-                };
-            }.bind(this));
+                // duplicate object to force refresh on buggy browsers
+                let content = this._create_content(mimetype, url);
+                this.content.replaceWith(content);
+                this.content = content;
+            });
+            return Promise.all([prm, data]);
         },
     });
 
