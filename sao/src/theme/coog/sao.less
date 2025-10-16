@@ -774,6 +774,11 @@ div.form-text {
     }
 }
 
+//Don't allow overflow on richtext resizing
+form-text, .form-richtext, textarea, .richtext {
+    max-height: 500px;
+}
+
 // Hide richtext selection if field is readonly
 div.form-richtext.readonly {
     > div.panel-heading {
