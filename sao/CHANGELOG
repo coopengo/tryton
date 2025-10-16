@@ -1,3 +1,4 @@
+* Use sandboxed iframe to display document (issue14290)
 * Fix the csv export of dict fields
 * Don't reset date/datetime/time to None when it is invalid
 
