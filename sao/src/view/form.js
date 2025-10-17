@@ -4776,10 +4776,10 @@ function eval_pyson(value){
                 let url = this.content.attr('data') ||
                     this.content.attr('src');
                 window.URL.revokeObjectURL(url);
+                let mimetype = Sao.common.guess_mimetype(filename);
                 if (!data) {
                     url = null;
                 } else {
-                    var mimetype = Sao.common.guess_mimetype(filename);
                     if (mimetype == 'application/octet-binary') {
                         mimetype = null;
                     }
