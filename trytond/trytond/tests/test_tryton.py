@@ -920,7 +920,7 @@ class ModuleTestCase(_DBTestCase):
     @with_transaction()
     def test_modelstorage_copy(self):
         "Test copied default values"
-        copy = unittest.mock.Mock()
+        copy = unittest.mock.MagicMock(return_value=[])
         with unittest.mock.patch(
                 'trytond.model.modelstorage.ModelStorage.copy',
                 classmethod(copy)):
