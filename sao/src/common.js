@@ -3739,6 +3739,10 @@
     Sao.common.Processing = Sao.class_(Object, {
         queries: 0,
         timeout: 200,
+        spinner_start: Date.now(),
+        spinner_end: Date.now(),
+        spinner_hysteresis: 350,    // Add minimum running / delay for spinner
+                                    // to avoid flashing effect
         init: function() {
             this.el = jQuery('<div/>', {
                 'id': 'processing',
@@ -3763,13 +3767,17 @@
             if (timeout === null) {
                 timeout = this.timeout;
             }
+            this.el.show();
             return window.setTimeout(() => {
                 this.queries += 1;
                 this.el.show();
-                if (this.el.is(':visible')) {
-                    this.el.addClass('spinning');
+                let delta = Date.now() - this.spinner_end;
+                if (delta < this.spinner_hysteresis) {
+                    return window.setTimeout(() => this.start_spinner(),
+                        this.spinner_hysteresis - delta);
                 }
-            }, this.timeout);
+                this.start_spinner();
+            }, timeout);
         },
         hide: function(timeoutID) {
             window.clearTimeout(timeoutID);
@@ -3778,9 +3786,28 @@
             }
             if (this.queries <= 0) {
                 this.queries = 0;
-                this.el.removeClass('spinning');
-                this.el.hide();
+                let delta = Date.now() - this.spinner_start;
+                if (delta < this.spinner_hysteresis) {
+                    return window.setTimeout(() => this.stop_spinner(),
+                        this.spinner_hysteresis - delta);
+                }
+                this.stop_spinner();
             }
+        },
+        start_spinner: function() {
+            // Start spinner only if there is still a running query
+            if (this.el.is(':visible') && (this.queries > 0)
+                    && !this.el.hasClass('spinning')) {
+                this.el.addClass('spinning');
+                this.spinner_start = Date.now();
+            }
+        },
+        stop_spinner: function() {
+            if (this.el.hasClass('spinning')) {
+                this.el.removeClass('spinning');
+                this.spinner_end = Date.now();
+            }
+            this.el.hide();
         }
     });
     Sao.common.processing = new Sao.common.Processing();
