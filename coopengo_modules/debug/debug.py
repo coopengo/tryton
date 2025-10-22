@@ -586,11 +586,7 @@ class ModelInfo(ModelView):
         model_data_cache = {(x.module, x.db_id): x.fs_id for x in model_data}
         for model_name in models:
             Model = pool.get(model_name)
-            try:
-                string = Model._get_name()
-            except AssertionError:
-                # None type has no attribute splitlines
-                string = Model.__name__
+            string = Model.__string__
             mro, methods = cls.extract_mro(Model, model_name)
             infos[model_name] = {
                 'string': string,
