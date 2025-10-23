@@ -4594,22 +4594,32 @@
             jQuery(document).one('click', () => {
                 menu.css('display', 'none');
             });
-            let min_height = 200;
-            var css = {
+            menu.css({
+                'top': evt.pageY,
                 'left': evt.pageX,
                 'display': 'block',
-                'bottom': 'unset',
-                'top': 'unset',
-            };
-            if (evt.pageY + min_height > window.innerHeight) {
-                css.position = 'fixed';
-                css.bottom = 5;
-                ul.css({position: 'relative'});
-            } else {
-                css.top = evt.pageY;
-            }
-            menu.css(css);
+            });
             return ul;
+        },
+        updateLocation: menu => {
+            let menu_size = menu.get(0).getBoundingClientRect();
+            menu.css('position', 'fixed');
+            let parent_size = menu.get(0).parentElement.getBoundingClientRect();
+            if (parent_size.top + menu_size.height > window.innerHeight) {
+                menu.css('bottom', 5)
+                menu.css('top', 'unset')
+                menu.css('max-height', window.innerHeight - 200);
+            } else {
+                menu.css('top', parent_size.top);
+                menu.css('bottom', 'unset')
+            }
+            if ((parent_size.right + menu_size.width) > window.innerWidth) {
+                menu.css('right', 'unset');
+                menu.css('left', parent_size.left - menu_size.width);
+            } else {
+                menu.css('right', 'unset');
+                menu.css('left', parent_size.right);
+            }
         },
         populate: (menu, model_name, field_name, context, records, edit_entry) => {
             var model = new Sao.Model(model_name);
@@ -4617,25 +4627,7 @@
                 'view_toolbar_get', [], context, false);
 
             const popLocation = (e) => {
-                var menu = e.data;
-                let menu_size = menu.get(0).getBoundingClientRect();
-                menu.css('position', 'fixed');
-                let parent_size = menu.get(0).parentElement.getBoundingClientRect();
-                if (parent_size.top + menu_size.height > window.innerHeight) {
-                    menu.css('bottom', 5)
-                    menu.css('top', 'unset')
-                    menu.css('max-height', window.innerHeight - 200);
-                } else {
-                    menu.css('top', parent_size.top);
-                    menu.css('bottom', 'unset')
-                }
-                if ((parent_size.right + menu_size.width) > window.innerWidth) {
-                    menu.css('right', parent_size.left);
-                    menu.css('left', 'unset');
-                } else {
-                    menu.css('right', 'unset');
-                    menu.css('left', parent_size.right);
-                }
+                Sao.common.PopupMenu.updateLocation(e.data);
             };
             const open_records = (records) => {
                 return (evt) => {
