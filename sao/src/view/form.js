@@ -3844,6 +3844,7 @@ function hide_x2m_body(widget) {
             let m2o_record = new Sao.Record(new Sao.Model(model_name), value);
             Sao.common.PopupMenu.populate(
                 ul, model_name, null, context, [m2o_record], true);
+            Sao.common.PopupMenu.updateLocation(ul);
         },
     });
 
