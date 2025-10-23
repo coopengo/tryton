@@ -20,11 +20,11 @@ msgstr "Erreur de connexion"
 msgid "Logout"
 msgstr "Déconnexion"
 
-msgid "Favorites"
-msgstr "Favoris"
-
 msgid "Close"
 msgstr "Fermer"
+
+msgid "Favorites"
+msgstr "Favoris"
 
 msgid "Action"
 msgstr "Action"
@@ -196,7 +196,13 @@ msgid "False"
 msgstr "Faux"
 
 msgid "Show / Hide more"
-msgstr ""
+msgstr "Afficher / Masquer la suite"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Copied!"
+msgstr "Copié !"
 
 msgid "Do you want to proceed?"
 msgstr "Souhaitez-vous continuer ?"

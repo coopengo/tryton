@@ -19,6 +19,13 @@
     Sao.common.SELECTION_SINGLE = 2;
     Sao.common.SELECTION_MULTIPLE = 3;
 
+    Sao.common.vp_width = window.visualViewport.width;
+    Sao.common.vp_height = window.visualViewport.height;
+    window.addEventListener('resize', () => {
+        Sao.common.vp_width = window.visualViewport.width;
+        Sao.common.vp_height = window.visualViewport.height;
+    });
+
     Sao.common.compare = function(arr1, arr2) {
         if (arr1.length != arr2.length) {
             return false;
@@ -3732,6 +3739,10 @@
     Sao.common.Processing = Sao.class_(Object, {
         queries: 0,
         timeout: 200,
+        spinner_start: Date.now(),
+        spinner_end: Date.now(),
+        spinner_hysteresis: 350,    // Add minimum running / delay for spinner
+                                    // to avoid flashing effect
         init: function() {
             this.el = jQuery('<div/>', {
                 'id': 'processing',
@@ -3756,13 +3767,17 @@
             if (timeout === null) {
                 timeout = this.timeout;
             }
+            this.el.show();
             return window.setTimeout(() => {
                 this.queries += 1;
                 this.el.show();
-                if (this.el.is(':visible')) {
-                    this.el.addClass('spinning');
+                let delta = Date.now() - this.spinner_end;
+                if (delta < this.spinner_hysteresis) {
+                    return window.setTimeout(() => this.start_spinner(),
+                        this.spinner_hysteresis - delta);
                 }
-            }, this.timeout);
+                this.start_spinner();
+            }, timeout);
         },
         hide: function(timeoutID) {
             window.clearTimeout(timeoutID);
@@ -3771,9 +3786,28 @@
             }
             if (this.queries <= 0) {
                 this.queries = 0;
-                this.el.removeClass('spinning');
-                this.el.hide();
+                let delta = Date.now() - this.spinner_start;
+                if (delta < this.spinner_hysteresis) {
+                    return window.setTimeout(() => this.stop_spinner(),
+                        this.spinner_hysteresis - delta);
+                }
+                this.stop_spinner();
             }
+        },
+        start_spinner: function() {
+            // Start spinner only if there is still a running query
+            if (this.el.is(':visible') && (this.queries > 0)
+                    && !this.el.hasClass('spinning')) {
+                this.el.addClass('spinning');
+                this.spinner_start = Date.now();
+            }
+        },
+        stop_spinner: function() {
+            if (this.el.hasClass('spinning')) {
+                this.el.removeClass('spinning');
+                this.spinner_end = Date.now();
+            }
+            this.el.hide();
         }
     });
     Sao.common.processing = new Sao.common.Processing();
@@ -3964,6 +3998,21 @@
                     this.menu.dropdown('toggle');
                 }
             }
+            this.menu.css('position', 'fixed');
+            this.menu.css('top', 'unset');
+            this.menu.css('bottom', 'unset');
+            let parent_size = this.menu.get(0).parentElement.getBoundingClientRect();
+            if (window.innerHeight - parent_size.bottom < 200) {
+                this.menu.css('max-height', parent_size.top - 200 - 5);
+                this.menu.css('top', parent_size.top - 5 - Math.min(
+                    this.menu.get(0).getBoundingClientRect().height,
+                    parent_size.top -200 -5));
+            } else {
+                this.menu.css('top', parent_size.bottom);
+                this.menu.css('max-height',
+                    window.innerHeight - 5 - parent_size.bottom);
+            }
+            this.menu.css('left', parent_size.left);
         }
     });
 
@@ -4550,8 +4599,27 @@
                 'left': evt.pageX,
                 'display': 'block',
             });
-
             return ul;
+        },
+        updateLocation: menu => {
+            let menu_size = menu.get(0).getBoundingClientRect();
+            menu.css('position', 'fixed');
+            let parent_size = menu.get(0).parentElement.getBoundingClientRect();
+            if (parent_size.top + menu_size.height > window.innerHeight) {
+                menu.css('bottom', 5)
+                menu.css('top', 'unset')
+                menu.css('max-height', window.innerHeight - 200);
+            } else {
+                menu.css('top', parent_size.top);
+                menu.css('bottom', 'unset')
+            }
+            if ((parent_size.right + menu_size.width) > window.innerWidth) {
+                menu.css('right', 'unset');
+                menu.css('left', parent_size.left - menu_size.width);
+            } else {
+                menu.css('right', 'unset');
+                menu.css('left', parent_size.right);
+            }
         },
         populate: (menu, model_name, field_name, context, records, edit_entry) => {
             var model = new Sao.Model(model_name);
@@ -4559,10 +4627,7 @@
                 'view_toolbar_get', [], context, false);
 
             const popLocation = (e) => {
-                var menu = e.data;
-                if ((menu.offset().left + menu.width()) > window.innerWidth) {
-                    menu.css('left', (-1 * menu.width()) + 'px');
-                }
+                Sao.common.PopupMenu.updateLocation(e.data);
             };
             const open_records = (records) => {
                 return (evt) => {
@@ -4632,6 +4697,9 @@
                 }).text(Sao.i18n.gettext("Edit...")).click(
                     open_records(records))
                 ).appendTo(menu);
+                if (field_name) {
+                    menu.parent().on('mouseenter', menu, popLocation);
+                }
             }
 
             for (const [action_type, action_name] of [

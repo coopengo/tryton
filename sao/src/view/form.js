@@ -378,6 +378,19 @@ function hide_x2m_body(widget) {
             return buttons;
         },
         display: function() {
+            let el_copy;
+            let el_parent = this.el[0].parentNode;
+            if (el_parent) {
+                el_copy = this.el[0].cloneNode(true);
+                Object.keys(el_copy).forEach(key => {
+                    el_copy.addEventListener(key.slice(2), (evt) => {
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                    });
+                });
+                el_parent.replaceChild(el_copy, this.el[0]);
+            }
+
             var record = this.record;
             var field;
             var promesses = [];
@@ -457,7 +470,13 @@ function hide_x2m_body(widget) {
                                 container.set_grid_template();
                             }
                         });
-                    return Promise.all([display_prm, state_prm]);
+                    return jQuery.when.apply(jQuery, [display_prm, state_prm]).done(
+                        () => {
+                            if (el_parent) {
+                                el_parent.replaceChild(this.el[0], el_copy);
+                            }
+                        }
+                    );
                 });
         },
         set_value: function() {
@@ -994,8 +1013,31 @@ function hide_x2m_body(widget) {
             Sao.View.Form.Page._super.hide.call(this);
             if (this.el.hasClass('active')) {
                 window.setTimeout(() => {
+                    let first_visible_sibling = null;
                     if (this.el.hasClass('active') && this.el.is(':hidden')) {
-                        this.el.siblings(':visible').first().find('a').tab('show');
+                        for (let sibling of this.el.siblings()) {
+                            // We can not rely on :visible anymore as the node
+                            // might be removed from the document
+                            if (sibling.style.display != 'none') {
+                                first_visible_sibling = sibling;
+                                break
+                            }
+                        }
+                    }
+                    if (first_visible_sibling) {
+                        // Mimick bootstrap's Tab.show as we're working with
+                        // nodes that might be out of the dom
+                        let link = jQuery(first_visible_sibling).find('a');
+                        let selector = link.attr('href');
+                        let tab = link.data('bs.tab');
+                        if (!tab) {
+                            link.data('bs.tab', new jQuery.fn.tab.Constructor(link));
+                            tab = link.data('bs.tab');
+                        }
+                        let activate = tab['activate'];
+                        activate(this.el, this.el.closest('ul'));
+                        let target = this.el.closest('.form-notebook').find(selector);
+                        activate(target, target.parent());
                     }
                 });
             }
@@ -1714,7 +1756,12 @@ function hide_x2m_body(widget) {
                 indentWithTabs: false,
                 matchBrackets: true,
                 autoRefresh: true,
-                gutters: ["CodeMirror-lint-markers"],
+                foldGutter: {
+                    rangeFinder: new CodeMirror.fold.combine(
+                        CodeMirror.fold.indent, CodeMirror.fold.comment)
+                },
+                gutters: ["CodeMirror-lint-markers", "CodeMirror-linenumbers",
+                    "CodeMirror-foldgutter"],
                 lint: {
                     lintOnChange: true,
                     getAnnotations: this.pythonLinter.bind(this),
@@ -1730,6 +1777,9 @@ function hide_x2m_body(widget) {
                 "Shift-Alt-R": "replaceAll",
                 "Ctrl-S": this._save.bind(this),
                 "Ctrl-Space": this._enable_hint.bind(this),
+                "Ctrl-Q": cm => cm.foldCode(cm.getCursor()),
+                "Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
+                "Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm),
             });
         },
         _populate_funcs: function (tree_data, func_list, type) {
@@ -1918,6 +1968,7 @@ function hide_x2m_body(widget) {
                 if (this.record !== this.prev_record) {
                     this.prev_record = this.record;
                     this.codeMirror.clearHistory();
+                    CodeMirror.commands.foldAll(this.codeMirror)
                 }
             }.bind(this);
 
@@ -3793,6 +3844,7 @@ function hide_x2m_body(widget) {
             let m2o_record = new Sao.Record(new Sao.Model(model_name), value);
             Sao.common.PopupMenu.populate(
                 ul, model_name, null, context, [m2o_record], true);
+            Sao.common.PopupMenu.updateLocation(ul);
         },
     });
 
@@ -5913,15 +5965,42 @@ function hide_x2m_body(widget) {
                 'class': this.class_,
             });
 
-            this.object = jQuery('<object/>', {
+            this.content = this._create_content().appendTo(this.el);
+        },
+        _create_content: function(mimetype, url) {
+            let tag_name = 'iframe';
+            if (mimetype) {
+                if (mimetype.startsWith('image/')) {
+                    tag_name = 'img';
+                } else if (mimetype == 'application/pdf') {
+                    tag_name = 'object';
+                }
+            }
+            let content = jQuery(`<${tag_name}/>`, {
                 'class': 'center-block',
-            }).appendTo(this.el);
-            if (attributes.height) {
-                this.object.css('height', parseInt(attributes.height, 10));
+            });
+            if (tag_name == 'iframe') {
+                content.attr('sandbox', '');
             }
-            if (attributes.width) {
-                this.object.css('width', parseInt(attributes.width, 10));
+            if (this.attributes.height) {
+                content.css('height', parseInt(this.attributes.height, 10));
             }
+            if (this.attributes.width) {
+                content.css('width', parseInt(this.attributes.width, 10));
+            }
+            if (url) {
+                // set onload before data/src to be always called
+                content.get().onload = function() {
+                    this.onload = null;
+                    window.URL.revokeObjectURL(url);
+                };
+                if (tag_name== 'object') {
+                    content.attr('data', url);
+                } else {
+                    content.attr('src', url);
+                }
+            }
+            return content;
         },
         display: function() {
             let prm = Sao.View.Form.Document._super.display.call(this);
@@ -5937,34 +6016,29 @@ function hide_x2m_body(widget) {
                 filename = filename_field.get_client(record);
             }
             data.done(data => {
-                var url, blob;
                 if (record !== this.record) {
                     return;
                 }
                 // in case onload was not yet triggered
-                window.URL.revokeObjectURL(this.object.attr('data'));
+                let url = this.content.attr('data') ||
+                    this.content.attr('src');
+                window.URL.revokeObjectURL(url);
+                let mimetype = Sao.common.guess_mimetype(filename);
                 if (!data) {
                     url = null;
                 } else {
-                    var mimetype = Sao.common.guess_mimetype(filename);
                     if (mimetype == 'application/octet-binary') {
                         mimetype = null;
                     }
-                    blob = new Blob([data], {
+                    let blob = new Blob([data], {
                         'type': mimetype,
                     });
                     url = window.URL.createObjectURL(blob);
                 }
                 // duplicate object to force refresh on buggy browsers
-                const object = this.object.clone();
-                // set onload before data to be always called
-                object.get(0).onload = function() {
-                    this.onload = null;
-                    window.URL.revokeObjectURL(url);
-                };
-                object.attr('data', url);
-                this.object.replaceWith(object);
-                this.object = object;
+                let content = this._create_content(mimetype, url);
+                this.content.replaceWith(content);
+                this.content = content;
             });
             return Promise.all([prm, data]);
         },

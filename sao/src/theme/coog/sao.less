@@ -470,13 +470,17 @@ div.tab-pane {
 // Dropdowns
 ///////////////////////////////////////////////////////////////////////////////
 //
-// more compact items
-ul.dropdown-menu > li > a {
-    padding:    2px 8px;
-    > div > img {
-        margin-right: 2px;
-        width: 1.5em;
-        height: 1.5em;
+ul.dropdown-menu {
+    overflow-y:                 auto;
+    background:                 @color-white;
+    // more compact items
+    > li > a {
+        padding:                2px 8px;
+        > div > img {
+            margin-right:       2px;
+            width:              1.5em;
+            height:             1.5em;
+        }
     }
 }
 
@@ -799,6 +803,11 @@ div.form-text {
     }
 }
 
+//Don't allow overflow on richtext resizing
+form-text, .form-richtext, textarea, .richtext {
+    max-height: 500px;
+}
+
 // Hide richtext selection if field is readonly
 div.form-richtext.readonly {
     > div.panel-heading {
@@ -976,6 +985,33 @@ ul.CodeMirror-hints {
     > li.CodeMirror-hint-active {
         background-color:   @color-lightest-blue;
         color:              @color-black;
+    }
+}
+
+div.CodeMirror-foldgutter-open,div.CodeMirror-foldgutter-folded {
+    font-size:              x-large;
+    margin-top:             -5px;
+    margin-left:            -2px;
+
+    &.CodeMirror-foldgutter-open {
+        color:                  @color-lighter-grey;
+    }
+    &.CodeMirror-foldgutter-folded {
+        color:                  @color-blue;
+    }
+    &:hover {
+        color:                  @color-light-blue;
+        text-shadow:            @color-lighter-blue 1px 1px 2px, @color-lighter-blue -1px -1px 2px, @color-lighter-blue 1px -1px 2px, @color-lighter-blue -1px 1px 2px;
+    }
+}
+
+span.CodeMirror-foldmarker {
+    font-size:              xx-large;
+    color:                  @color-median-grey;
+    text-shadow:            @color-lighter-grey 1px 1px 2px, @color-lighter-grey -1px -1px 2px, @color-lighter-grey 1px -1px 2px, @color-lighter-grey -1px 1px 2px;
+    &:hover {
+        color:                  @color-light-blue;
+        text-shadow:            @color-lighter-blue 1px 1px 2px, @color-lighter-blue -1px -1px 2px, @color-lighter-blue 1px -1px 2px, @color-lighter-blue -1px 1px 2px;
     }
 }
 
