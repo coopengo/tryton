@@ -13,7 +13,8 @@ import uuid
 from trytond import backend
 from trytond.config import config
 from trytond.protocols.jsonrpc import JSONDecoder, JSONEncoder
-from trytond.protocols.wrappers import HTTPStatus, Response, abort, exceptions
+from trytond.protocols.wrappers import (HTTPStatus, Response, abort,
+    exceptions, set_max_request_size)
 from trytond.tools import resolve
 from trytond.transaction import Transaction
 from trytond.wsgi import app
@@ -224,6 +225,7 @@ else:
 
 
 @app.route('/<string:database_name>/bus', methods=['POST'])
+@set_max_request_size(1024)
 @app.session_valid
 def subscribe(request, database_name):
     if not _allow_subscribe:
