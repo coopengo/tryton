@@ -206,8 +206,8 @@ def check_session(dbname, user, session, remote_addr=None):
         for session_date, session_key in cursor:
             if abs(session_date - now) < timeout:
                 if compare_digest(session_key, session):
-                    return True
-        return False
+                    return user
+        return None
     finally:
         database.put_connection(conn)
 
