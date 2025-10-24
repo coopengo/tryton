@@ -1066,7 +1066,9 @@
                         prm = jQuery.when();
                     }
                     return prm.done(() => {
+                        this.current_view.pre_attach();
                         this.screen_container.set(this.current_view.el);
+                        this.current_view.post_attach();
                         if (display) {
                             this.set_cursor();
                         }
