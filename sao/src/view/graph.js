@@ -210,12 +210,12 @@
                         type: 'category',
                     }
                 };
+                c3_config.axis.y = {
+                    tick: {
+                        format: d => Number.isInteger(d) ? d : null,
+                    }
+                };
             }
-            c3_config.axis.y = {
-                tick: {
-                    format: d => Number.isInteger(d) ? d : null,
-                }
-            };
             var color = this.view.attributes.color || Sao.config.graph_color;
             var rgb = Sao.common.hex2rgb(
                 Sao.common.COLOR_SCHEMES[color] || color);
