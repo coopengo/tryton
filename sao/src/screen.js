@@ -1527,7 +1527,9 @@
                     // It can not be done only when switching view because the
                     // first display of a view might not be a switch and still
                     // need to trigger children views.
-                    this._trigger_children_views();
+                    if (document.body.contains(this.current_view.el[0])) {
+                        this._trigger_children_views();
+                    }
                     return this.set_tree_state().then(() => {
                         var record = this.current_record
                         this.current_record = record;
