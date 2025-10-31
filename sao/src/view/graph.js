@@ -58,7 +58,12 @@
         },
         display: function() {
             return this.widgets.root.display(this.group);
-        }
+        },
+        post_attach: function() {
+            // Trigger a resize as the graph has been rendered in a detached
+            // node
+            this.widgets.root.chart.resize();
+        },
     });
 
     Sao.View.Graph.Chart = Sao.class_(Object, {
@@ -70,6 +75,7 @@
             this.yfields = yfields;
             this.el = jQuery('<div/>');
             this.el.uniqueId();
+            this.chart = null;
         },
         update_data: function(group) {
             var data = {};
@@ -162,16 +168,17 @@
             this.ids[key].push(id);
         },
         display: function(group) {
+            this.chart = null;
             var update_prm = this.update_data(group);
             update_prm.done(data => {
-                c3.generate(this._c3_config(data));
+                this.chart = c3.generate(this._c3_config(data));
             });
             return update_prm;
         },
         _c3_config: function(data) {
             var c3_config = {};
 
-            c3_config.bindto = '#' + this.el.attr('id');
+            c3_config.bindto = this.el[0];
             c3_config.data = data;
             c3_config.data.type = this._chart_type;
             c3_config.data.x = 'labels';
