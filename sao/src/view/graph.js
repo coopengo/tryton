@@ -243,7 +243,7 @@
         },
         action: function(data, element) {
             var ids = this.ids[this._action_key(data)];
-            var ctx = jQuery.extend({}, this.view.screen.group._context);
+            var ctx = jQuery.extend({}, this.view.screen.group.local_context);
             delete ctx.active_ids;
             delete ctx.active_id;
             Sao.Action.exec_keyword('graph_open', {
@@ -356,7 +356,7 @@
             Sao.View.Graph.Pie._super._add_id.call(this, key, id);
         },
         _action_key: function(data) {
-            return data.id;
+            return data.name;
         }
     });
 
