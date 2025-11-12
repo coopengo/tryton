@@ -720,7 +720,8 @@ class ModelSQL(ModelStorage):
     def _insert_history(cls, ids, deleted=False):
         transaction = Transaction()
         cursor = transaction.connection.cursor()
-        if not cls._history:
+        if not cls._history or not backend.TableHandler.table_exist(
+                cls._table + "__history"):
             return
         user = transaction.user
         table = cls.__table__()
