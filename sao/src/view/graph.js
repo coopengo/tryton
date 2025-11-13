@@ -62,7 +62,9 @@
         post_attach: function() {
             // Trigger a resize as the graph has been rendered in a detached
             // node
-            this.widgets.root.chart.resize();
+            if (this.widgets.root.chart) {
+                this.widgets.root.chart.resize();
+            }
         },
     });
 
