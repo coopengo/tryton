@@ -913,6 +913,15 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
     }
 }
 
+// Attachment preview
+
+div.attachment-preview {
+    div.content-box > div.form > div.form-container {
+        // coopengo's sao do not take into account the yexpand value set on any
+        // widget. In this specific case we override it.
+        grid-template-rows: minmax(min-content, 1fr) !important;
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rule engine
