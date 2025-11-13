@@ -249,7 +249,7 @@
             Sao.Action.exec_keyword('graph_open', {
                 model: this.view.screen.model_name,
                 id: ids[0],
-                ids: ids
+                "ids": ids
             }, ctx, false);
         },
         _action_key: function(data) {
