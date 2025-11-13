@@ -120,11 +120,7 @@ class Request(_Request):
         if auth.type == 'session':
             user_id = security.check(
                 database_name, auth.get('userid'), auth.get('session'),
-                {
-                    '_request': {
-                        'remote_addr': self.remote_addr,
-                        }
-                    })
+                context=context)
         elif auth.type == 'token':
             user_id, __ = security.check_token(
                 database_name, auth.get('token'))
