@@ -701,6 +701,9 @@ var Sao = {
                                 Sao.user_menu(preferences);
                                 Sao.open_url(url);
                                 Sao.Bus.listen();
+                                Sao.Bus.register(
+                                    `user:${Sao.Session.current_session.user_id}`,
+                                    Sao.Bus.popup_notification);
                             });
                     }
                 }, function() {
@@ -1257,6 +1260,7 @@ var Sao = {
                 login: url.searchParams.get('login'),
                 user_id: parseInt(url.searchParams.get('user_id'), 10),
                 session: url.searchParams.get('session'),
+                bus_url_host: url.searchParams.get('bus_url_host'),
             };
             if (url.searchParams.has('renew')) {
                 var renew_id = parseInt(url.searchParams.get('renew'), 10);

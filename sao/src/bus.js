@@ -16,12 +16,13 @@
         wait = wait || 1;
         last_message = last_message || Sao.Bus.last_message;
         var session = Sao.Session.current_session;
-        if (!session) {
+        if (!session || !session.bus_url_host) {
             return;
         }
         Sao.Bus.listening = true;
 
         let channels = Object.keys(Sao.Bus.channel_actions);
+        let url = new URL(`${session.database}/bus`, session.bus_url_host);
         Sao.Bus.last_message = last_message;
         Sao.Bus.request = jQuery.ajax({
             headers: {
@@ -33,7 +34,7 @@
                 channels: channels,
             }),
             dataType: 'json',
-            url: '/' + session.database + '/bus',
+            url: url,
             type: 'POST',
             timeout: Sao.config.bus_timeout,
         });
@@ -107,7 +108,7 @@
         }
     }
 
-    let popup_notification = function(message) {
+    Sao.Bus.popup_notification = function(message) {
         if (message.type != 'notification') {
             return;
         }
@@ -125,6 +126,6 @@
             body: message.body || '',
         });
     }
-    Sao.Bus.register(`client:${Sao.Bus.id}`, popup_notification);
+    Sao.Bus.register(`client:${Sao.Bus.id}`, Sao.Bus.popup_notification);
 
 }());

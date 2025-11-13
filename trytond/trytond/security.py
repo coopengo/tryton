@@ -1,15 +1,19 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import datetime as dt
+import ipaddress
 import logging
 import random
 import time
+from secrets import compare_digest
 
 try:
     from http import HTTPStatus
 except ImportError:
     from http import client as HTTPStatus
 
+from sql import Table
+from sql.conditionals import Coalesce
 from werkzeug.exceptions import abort
 
 from trytond import backend
@@ -59,7 +63,7 @@ def login(dbname, loginname, parameters, cache=True, context=None):
         if not cache:
             session = user_id
         else:
-            with Transaction().start(dbname, user_id):
+            with Transaction().start(dbname, user_id, context=context):
                 Session = pool.get('ir.session')
                 session = user_id, Session.new()
         logger.info("login succeeded for '%s' from '%s' on database '%s'",
@@ -121,30 +125,67 @@ def reset_password(dbname, user, context=None):
 
 
 def check(dbname, user, session, context=None):
-    for count in range(config.getint('database', 'retry'), -1, -1):
-        with Transaction().start(dbname, user, context=context) as transaction:
-            pool = _get_pool(dbname)
-            Session = pool.get('ir.session')
-            try:
-                find = Session.check(user, session)
-                break
-            except backend.DatabaseOperationalError:
-                if count:
-                    continue
-                raise
-            finally:
-                transaction.commit()
+    remote_addr = _get_remote_addr(context)
+
+    database_list = Pool.database_list()
+    if dbname in database_list:
+        for count in range(config.getint('database', 'retry'), -1, -1):
+            with Transaction().start(dbname, user, context=context) as t:
+                pool = Pool(dbname)
+                Session = pool.get('ir.session')
+                try:
+                    find = Session.check(user, session)
+                    break
+                except backend.DatabaseOperationalError:
+                    if count:
+                        continue
+                    raise
+                finally:
+                    t.commit()
+    else:
+        database = backend.Database(dbname)
+        now = dt.datetime.now()
+        timeout = dt.timedelta(config.getint('session', 'max_age'))
+        conn = database.get_connection(readonly=True)
+        if remote_addr:
+            ip_addr = str(ipaddress.ip_address(remote_addr))
+        else:
+            ip_addr = None
+        try:
+            ir_session = Table('ir_session')
+            cursor = conn.cursor()
+            session_query = ir_session.select(
+                Coalesce(
+                    ir_session.write_date, ir_session.create_date).as_('date'),
+                ir_session.key,
+                where=((ir_session.create_uid == user)
+                    & (ir_session.ip_address == ip_addr)))
+            sqlite_apply_types(session_query, ['DATETIME', None])
+            cursor.execute(*session_query)
+            bad_session = False
+            for session_date, session_key in cursor:
+                if abs(session_date - now) < timeout:
+                    if compare_digest(session_key, session):
+                        find = session
+                        break
+                    else:
+                        bad_session = True
+            else:
+                find = None if bad_session else ''
+        finally:
+            database.put_connection(conn)
+
     if find is None:
         logger.error("session failed for '%s' from '%s' on database '%s'",
-            user, _get_remote_addr(context), dbname)
+            user, remote_addr, dbname)
         return
     elif not find:
         logger.info("session expired for '%s' from '%s' on database '%s'",
-            user, _get_remote_addr(context), dbname)
+            user, remote_addr, dbname)
         return
     else:
         logger.debug("session valid for '%s' from '%s' on database '%s'",
-            user, _get_remote_addr(context), dbname)
+            user, remote_addr, dbname)
         return user
 
 
