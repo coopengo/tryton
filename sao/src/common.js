@@ -3984,6 +3984,7 @@
                     if (this.match_selected) {
                         this.match_selected(value);
                     }
+                    this.menu.css('display', 'none');
                     this.input.focus();
                 }).prependTo(this.menu);
             }, this);
@@ -3998,6 +3999,7 @@
                     this.menu.dropdown('toggle');
                 }
             }
+            this.menu.css('display', 'block');
             this.menu.css('position', 'fixed');
             this.menu.css('top', 'unset');
             this.menu.css('bottom', 'unset');
