@@ -21,6 +21,7 @@ from trytond.config import config
 from trytond.exceptions import LoginException, RateLimitException
 from trytond.pool import Pool
 from trytond.transaction import Transaction
+from trytond.tools import sqlite_apply_types
 
 logger = logging.getLogger(__name__)
 
