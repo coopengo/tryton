@@ -183,20 +183,13 @@ class MemoryCache(BaseCache):
         transaction = Transaction()
         dbname = transaction.database.name
         lower = self._transaction_lower.get(dbname, self._default_lower)
-        if (transaction.current_savepoint
-                or self._name in {n
-                    for sp_resets in self._reset.get(transaction, {}).values()
-                    for n in sp_resets}
+        if (self._name in self._reset.get(transaction, set())
                 or transaction.started_at < lower):
             try:
-                t_cache = self._transaction_cache[transaction]
-                return t_cache.setdefault(
-                    transaction.current_savepoint,
-                    self._database_cache.default_factory())
+                return self._transaction_cache[transaction]
             except KeyError:
                 cache = self._database_cache.default_factory()
-                self._transaction_cache[transaction] = t_cache = {}
-                t_cache[transaction.current_savepoint] = cache
+                self._transaction_cache[transaction] = cache
                 return cache
         else:
             return self._database_cache[dbname]
@@ -242,8 +235,7 @@ class MemoryCache(BaseCache):
 
     def clear(self):
         transaction = Transaction()
-        sp_resets = self._reset.setdefault(transaction, defaultdict(set))
-        sp_resets[transaction.current_savepoint].add(self._name)
+        self._reset.setdefault(transaction, set()).add(self._name)
         self._transaction_cache.pop(transaction, None)
 
     def _clear(self, dbname, timestamp=None):
@@ -307,9 +299,7 @@ class MemoryCache(BaseCache):
     @classmethod
     def commit(cls, transaction):
         table = Table(cls._table)
-        reset = {n
-            for sp_reset in cls._reset.pop(transaction, {}).values()
-            for n in sp_reset}
+        reset = cls._reset.pop(transaction, None)
         if not reset:
             return
         database = transaction.database
@@ -525,13 +515,6 @@ class LRUDict(OrderedDict):
             value = self.default_factory()
         self[key] = value
         return value
-
-    def __deepcopy__(self, memo):
-        new = LRUDict(
-            self.size_limit, self.default_factory,
-            self.default_factory_with_key)
-        new.update(deepcopy(dict(self)))
-        return new
 
     def update(self, *args, **kwargs):
         super().update(*args, **kwargs)
