@@ -506,6 +506,21 @@ class Database(DatabaseInterface):
             cursor.close()
 
     @classmethod
+    def savepoint(cls, connection, name):
+        cursor = connection.cursor()
+        cursor.execute(f"SAVEPOINT '{name}'")
+
+    @classmethod
+    def savepoint_release(cls, connection, name):
+        cursor = connection.cursor()
+        cursor.execute(f"RELEASE SAVEPOINT '{name}'")
+
+    @classmethod
+    def savepoint_rollback(cls, connection, name):
+        cursor = connection.cursor()
+        cursor.execute(f"ROLLBACK TO SAVEPOINT '{name}'")
+
+    @classmethod
     def drop(cls, connection, database_name):
         if database_name == ':memory:':
             cls._local.memory_database._conn = None
