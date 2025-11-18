@@ -3229,6 +3229,7 @@
         'tryton-format-italic',
         'tryton-format-underline',
         'tryton-forward',
+        'tryton-go-next',
         'tryton-history',
         'tryton-import',
         'tryton-info',
