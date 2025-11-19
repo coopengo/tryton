@@ -359,7 +359,7 @@ class One2Many(Field):
                         # Use an empty filter to apply the active test
                         filter_ = self.filter if self.filter else []
                         query = Target.search(filter_, order=[], query=True)
-                        where &= origin.in_(query)
+                        where &= target.id.in_(query)
                     query = target.select(origin, where=where)
                     expression = ~table.id.in_(query)
                 else:
