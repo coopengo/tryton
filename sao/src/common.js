@@ -4022,7 +4022,7 @@
     Sao.common.get_completion = function(el, source,
             match_selected, action_activated, search=true, create=true) {
         var format = function(content) {
-            return content.name;
+            return jQuery('<span/>').text(content.name);
         };
         var completion = new Sao.common.InputCompletion(
                 el, source, match_selected, format);
