@@ -3940,7 +3940,7 @@
         },
         _format: function(content) {
             if (this.format) {
-                content = this.format(content);
+                return this.format(content);
             }
             return jQuery('<span/>').text(content);
         },
