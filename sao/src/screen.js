@@ -1059,19 +1059,16 @@
                     let tab = Sao.Tab.tabs.get_current();
                     Sao.Tab.set_view_type(tab ? tab.current_view_type : null);
 
+                    this.screen_container.set(this.current_view.el);
                     var prm;
                     if (display) {
-                        prm = this.display();
+                        prm = this.display().done(() => {
+                            this.set_cursor();
+                        });
                     } else {
                         prm = jQuery.when();
                     }
                     return prm.done(() => {
-                        this.current_view.pre_attach();
-                        this.screen_container.set(this.current_view.el);
-                        this.current_view.post_attach();
-                        if (display) {
-                            this.set_cursor();
-                        }
                         if (this.switch_callback) {
                             this.switch_callback();
                         }
@@ -1519,47 +1516,15 @@
                 }
             }
             return jQuery.when.apply(jQuery, deferreds).then(
-                () => {
-                    // We need to trigger the children view post_attach method
-                    // when displaying a screen because graph and treeview
-                    // interact badly with the trick to make the rendering in a
-                    // detached node.
-                    // It can not be done only when switching view because the
-                    // first display of a view might not be a switch and still
-                    // need to trigger children views.
-                    if (document.body.contains(this.current_view.el[0])) {
-                        this._trigger_children_views();
+                () => this.set_tree_state().then(() => {
+                    var record = this.current_record
+                    this.current_record = record;
+                    // set_cursor must be called after set_tree_state because
+                    // set_tree_state redraws the tree
+                    if (set_cursor) {
+                        this.set_cursor(false, false);
                     }
-                    return this.set_tree_state().then(() => {
-                        var record = this.current_record
-                        this.current_record = record;
-                        // set_cursor must be called after set_tree_state because
-                        // set_tree_state redraws the tree
-                        if (set_cursor) {
-                            this.set_cursor(false, false);
-                        }
-                    })
-                });
-        },
-        _trigger_children_views: function() {
-            if (this.current_view.view_type != 'form') {
-                return
-            }
-            for (let [name, widgets] of Object.entries(
-                    this.current_view.widgets)) {
-                let field = this.group.model.fields[name];
-                if (!((field instanceof Sao.field.One2Many) ||
-                    (field instanceof Sao.field.Many2Many))) {
-                    continue;
-                }
-                for (let widget of widgets) {
-                    if (!widget.screen) {
-                        continue;
-                    }
-                    widget.screen.current_view.post_attach();
-                    widget.screen._trigger_children_views();
-                }
-            }
+                }));
         },
         _get_next_record: function() {
             var view = this.current_view;

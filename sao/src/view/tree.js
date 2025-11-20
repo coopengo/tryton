@@ -1092,7 +1092,8 @@
                     column.col.show();
                 }
             }
-            this._display_resizers(true);
+            this.table.find('thead > tr > th .resizer').show();
+            this.table.find('thead > tr > th:visible:last .resizer').hide();
             if (this.children_field) {
                 this.columns.every(column => {
                     if (column.col.hasClass('draggable-handle') ||
@@ -1177,20 +1178,6 @@
                 }
                 Sao.common.debounce(this.update_sum.bind(this), 250)();
             });
-        },
-        _display_resizers: function(show) {
-            if (show) {
-                this.table.find('thead > tr > th .resizer').show();
-                this.table.find('thead > tr > th:visible:last .resizer').hide();
-            } else {
-                this.table.find('thead > tr > th .resizer').hide();
-            }
-        },
-        pre_attach: function() {
-            this._display_resizers(false);
-        },
-        post_attach: function() {
-            this._display_resizers(true);
         },
         construct: function(extend) {
             if (!extend) {
