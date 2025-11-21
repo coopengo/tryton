@@ -935,9 +935,9 @@
             expanded = expanded || this.get_expanded_paths();
 
             if (this.selection_mode == Sao.common.SELECTION_MULTIPLE) {
-                this.selection.show();
+                Sao.common.show(this.selection);
             } else {
-                this.selection.hide();
+                Sao.common.hide(this.selection);
             }
 
             const group_records = (group, root) => {
@@ -1050,7 +1050,7 @@
 
                 if (!column.get_visible()) {
                     column.col.css('width', 0);
-                    column.col.hide();
+                    Sao.common.hide(column.col);
                 } else if (!column.col.hasClass('draggable-handle') &&
                     !column.col.hasClass('optional') &&
                     !column.col.hasClass('selection-state') &&
@@ -1089,11 +1089,11 @@
                         min_width.push(`${default_width}em`);
                     }
                     column.col.css('width', c_width);
-                    column.col.show();
+                    Sao.common.show(column.col);
                 }
             }
-            this.table.find('thead > tr > th .resizer').show();
-            this.table.find('thead > tr > th:visible:last .resizer').hide();
+            Sao.common.show(this.table.find('thead > tr > th .resizer'));
+            Sao.common.hide(this.table.find('thead > tr > th:visible:last .resizer'));
             if (this.children_field) {
                 this.columns.every(column => {
                     if (column.col.hasClass('draggable-handle') ||
@@ -1238,8 +1238,10 @@
                 }
             }
 
-            to_hide.addClass('invisible').hide();
-            to_show.removeClass('invisible').show();
+            to_hide.addClass('invisible');
+            Sao.common.hide(to_hide);
+            to_show.removeClass('invisible');
+            Sao.common.show(to_show);
         },
         update_sum: function() {
             for (const [column, sum_widget] of this.sum_widgets) {
@@ -1916,11 +1918,11 @@
                     break;
                 case Sao.common.SELECTION_SINGLE:
                     this.selection.attr('type', 'radio');
-                    this.selection.show();
+                    Sao.common.show(this.selection);
                     break;
                 case Sao.common.SELECTION_MULTIPLE:
                     this.selection.attr('type', 'checkbox');
-                    this.selection.show();
+                    Sao.common.show(this.selection);
                     break;
             }
 
@@ -2370,12 +2372,12 @@
             this.tree.columns.forEach((col, idx) => {
                 var td = this._get_column_td(idx);
                 var static_el = this.get_static_el(td);
-                static_el.empty().append(col.render(this.record)).show();
-                this.get_editable_el(td)
-                    .empty()
-                    .data('widget', null)
-                    .hide()
+                static_el.empty().append(col.render(this.record));
+                Sao.common.show(static_el);
+                let editable_el = this.get_editable_el(td);
+                editable_el.empty().data('widget', null)
                     .parents('.treeview td').addBack().removeClass('edited');
+                Sao.common.hide(editable_el);
             });
         },
         set_editable: function() {
@@ -2409,8 +2411,8 @@
                     display_prms.push(widget.display(this.record, col.field));
 
                     var static_el = this.get_static_el(td);
-                    static_el.hide();
-                    editable_el.show();
+                    Sao.common.hide(static_el);
+                    Sao.common.show(editable_el);
                     editable_el.parents('.treeview td').addBack()
                         .addClass('edited');
 
@@ -2546,7 +2548,9 @@
                     }
                 } else if (event_.which == Sao.common.ESC_KEYCODE) {
                     this.tree.edit_row(null);
-                    this.get_static_el().show().find('[tabindex=0]').focus();
+                    let static_el = this.get_static_el();
+                    Sao.common.show(static_el);
+                    static_el.find('[tabindex=0]').focus();
                 }
             } else {
                 widget.display(this.record, column.field);
@@ -2591,9 +2595,9 @@
                 field.set_state(record, ['invisible']);
                 var invisible = field.get_state_attrs(record).invisible;
                 if (invisible) {
-                    cell.hide();
+                    Sao.common.hide(cell);
                 } else {
-                    cell.show();
+                    Sao.common.show(cell);
                 }
                 if (this.protocol) {
                     value = field.get(record);
@@ -2643,7 +2647,7 @@
                         // clean previous color if the new one is not valid
                         img_tag.css('background-color', '');
                         img_tag.css('background-color', value);
-                        img_tag.toggle(Boolean(value));
+                        Sao.common.toggle(img_tag, Boolean(value));
                     } else {
                         Sao.common.ICONFACTORY.get_icon_url(value)
                             .done(url => {
@@ -2709,7 +2713,7 @@
                 var invisible = field.get_state_attrs(record).invisible;
                 if (invisible) {
                     cell.text('');
-                    cell.hide();
+                    Sao.common.hide(cell);
                     return;
                 }
                 var result = field.get_symbol(record, this.attributes.symbol);
@@ -2717,10 +2721,10 @@
                     position = result[1];
                 if (Math.round(position) === this.position) {
                     cell.text(symbol);
-                    cell.show();
+                    Sao.common.show(cell);
                 } else {
                     cell.text('');
-                    cell.hide();
+                    Sao.common.hide(cell);
                 }
             };
             if (!record.is_loaded(this.attributes.name)) {
@@ -2776,9 +2780,9 @@
                 this.field.set_state(record);
                 var state_attrs = this.field.get_state_attrs(record);
                 if (state_attrs.invisible) {
-                    cell.hide();
+                    Sao.common.hide(cell);
                 } else {
-                    cell.show();
+                    Sao.common.show(cell);
                 }
             };
             const render_error = () => {
@@ -2804,10 +2808,10 @@
             cells.push(this.header);
             for (const cell of cells) {
                 if (visible) {
-                    cell.show();
+                    Sao.common.show(cell);
                     cell.removeClass('invisible');
                 } else {
-                    cell.hide();
+                    Sao.common.hide(cell);
                     cell.addClass('invisible');
                 }
             }
@@ -3194,9 +3198,9 @@
                     });
             }
             if (!text) {
-                button.hide();
+                Sao.common.hide(button);
             } else {
-                button.show();
+                Sao.common.show(button);
             }
         },
         save_as: function(record) {
@@ -3278,9 +3282,9 @@
             this.field.set_state(record);
             var state_attrs = this.field.get_state_attrs(record);
             if (state_attrs.readonly) {
-                cell.hide();
+                Sao.common.hide(cell);
             } else {
-                cell.show();
+                Sao.common.show(cell);
             }
             return cell;
         }
@@ -3351,10 +3355,10 @@
             cells.push(this.header);
             for (const cell of cells) {
                 if (visible) {
-                    cell.show();
+                    Sao.common.show(cell);
                     cell.removeClass('invisible');
                 } else {
-                    cell.hide();
+                    Sao.common.hide(cell);
                     cell.addClass('invisible');
                 }
             }
@@ -3442,9 +3446,9 @@
         set_readonly: function(readonly) {
             Sao.View.EditableTree.URL._super.set_readonly.call(this, readonly);
             if (readonly) {
-                this.input.hide();
+                Sao.common.hide(this.input);
             } else {
-                this.input.show();
+                Sao.common.show(this.input);
             }
         },
     });
