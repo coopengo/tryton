@@ -3547,18 +3547,23 @@ function hide_x2m_body(widget) {
             } else {
                 this._popup = true;
             }
+            let view_ids = (this.attributes.view_ids || '').split(',');
             if (this.has_target(value)) {
                 var m2o_id =
                     this.id_from_value(record.field_get(this.field_name));
                 var body;
                 body = jQuery(document.body);
                 if (evt && !(evt.ctrlKey || evt.metaKey || body.hasClass('modal-open'))) {
+                    if (!jQuery.isEmptyObject(view_ids)) {
+                        // Remove the first tree view as mode is form only
+                        view_ids.shift();
+                    }
                     var params = {};
                     params.model = this.get_model();
                     params.res_id = m2o_id;
-                    // JMO merge_60 , here we add 'tree' after 'form'
                     params.mode = ['form'];
                     params.name = this.attributes.string;
+                    params.view_ids = view_ids;
                     params.context = this.field.get_context(this.record);
                     Sao.Tab.create(params);
                     this._popup = false;
@@ -3607,8 +3612,7 @@ function hide_x2m_body(widget) {
                             context: context,
                             domain: domain,
                             order: order,
-                            view_ids: (this.attributes.view_ids ||
-                                '').split(','),
+                            view_ids: view_ids,
                             views_preload: (this.attributes.views || {}),
                             new_: this.create_access,
                             search_filter: parser.quote(text),
@@ -3800,8 +3804,14 @@ function hide_x2m_body(widget) {
             let context = this.field.get_context(this.record);
             let model_name = this.get_model();
             let m2o_record = new Sao.Record(new Sao.Model(model_name), value);
+            let view_ids = (this.attributes.view_ids || '').split(',');
+            if (!jQuery.isEmptyObject(view_ids)) {
+                // Remove the first tree view as mode is form only
+                view_ids.shift();
+            }
             Sao.common.PopupMenu.populate(
-                ul, model_name, null, context, [m2o_record], true);
+                ul, model_name, null, context, [m2o_record], true,
+                view_ids);
             Sao.common.PopupMenu.updateLocation(ul);
         },
     });
