@@ -7,30 +7,34 @@ from trytond.transaction import with_savepoint
 
 
 class Savepoint(ModelSQL):
+    'Savepoint'
     __name__ = 'test.savepoint'
 
     value = fields.Integer("Value")
 
 
 class SavepointLogging(ModelSQL):
+    'Savepoint Logging'
     __name__ = 'test.savepoint.logging'
 
     value = fields.Integer("Value")
 
     @classmethod
     def new(cls, value):
-        sp = Savepoint(value=value)
+        sp = Pool().get('test.savepoint')(value=value)
         sp.save()
         sp.log('write', f'{value}')
 
 
 class SavepointCacheRead(ModelSQL):
+    'Savepoint Cache Read'
     __name__ = 'test.savepoint.cache_read'
 
     value = fields.Integer("Value")
 
 
 class SavepointDecorator(ModelSQL):
+    'Savepoint Decorator'
     __name__ = 'test.savepoint.decorator'
 
     value = fields.Integer("Value")
