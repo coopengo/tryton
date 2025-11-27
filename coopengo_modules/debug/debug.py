@@ -298,12 +298,6 @@ class ModelInfo(ModelView):
         self.refresh()
 
     def evaluate(self):
-        def pretty_sql(*args):
-            list_args = list(*args) if len(args) == 1 else list(args)
-            str_values = list_args[1] if len(
-                list_args[1:]) == 1 else tuple(list_args[1:])
-            return list_args[0] % str_values
-
         context_cls = Pool().get(self.model_name)
         context_instance = context_cls(self.id_to_calculate)
         context = {
@@ -312,7 +306,7 @@ class ModelInfo(ModelView):
             'cls': context_cls,
             'datetime': datetime,
             'decimal': decimal,
-            'pretty_sql': pretty_sql,
+            'pretty_sql': (lambda x: list(x)[0] % list(x)[1]),
             }
         return eval(self.to_evaluate, context)
 
