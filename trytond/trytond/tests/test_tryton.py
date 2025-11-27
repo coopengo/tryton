@@ -143,7 +143,7 @@ def clear_db_cache(cache_path):
 
 def restore_db_cache(name):
     result = False
-    if DB_CACHE and not CLEAR_DB_CACHE:
+    if DB_CACHE:
         cache_file = _db_cache_file(DB_CACHE, name)
         if CLEAR_DB_CACHE:
             clear_db_cache(cache_file)
