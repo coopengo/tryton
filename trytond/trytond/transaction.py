@@ -232,7 +232,7 @@ class Transaction(object):
     create_records = SavepointAwareProperty(partial(defaultdict, set))
     delete_records = SavepointAwareProperty(partial(defaultdict, set))
     trigger_records = SavepointAwareProperty(partial(defaultdict, set))
-    check_warnings = SavepointAwareProperty(partial(defaultdict, set))
+    check_warnings = SavepointAwareProperty(set)
     _atexit = SavepointAwareProperty(list)
     _datamanagers = SavepointAwareProperty(list)
 
