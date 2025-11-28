@@ -3276,12 +3276,6 @@
             cell = Sao.View.Tree.URLColumn._super.render.call(
                     this, record, cell);
             this.field.set_state(record);
-            var state_attrs = this.field.get_state_attrs(record);
-            if (state_attrs.readonly) {
-                cell.hide();
-            } else {
-                cell.show();
-            }
             return cell;
         }
     });
@@ -3439,14 +3433,6 @@
 
     Sao.View.EditableTree.URL = Sao.class_(Sao.View.EditableTree.Char, {
         class_: 'editable-url',
-        set_readonly: function(readonly) {
-            Sao.View.EditableTree.URL._super.set_readonly.call(this, readonly);
-            if (readonly) {
-                this.input.hide();
-            } else {
-                this.input.show();
-            }
-        },
     });
 
     Sao.View.EditableTree.Date = Sao.class_(Sao.View.Form.Date, {
