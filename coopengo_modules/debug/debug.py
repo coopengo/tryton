@@ -7,6 +7,8 @@ import pprint
 import logging
 import unicodedata
 import json
+import datetime
+import decimal
 
 from trytond.wizard import Wizard, StateTransition, StateView, Button
 from trytond.config import config
@@ -296,8 +298,15 @@ class ModelInfo(ModelView):
         self.refresh()
 
     def evaluate(self):
+        context_cls = Pool().get(self.model_name)
+        context_instance = context_cls(self.id_to_calculate)
         context = {
-            'instance': Pool().get(self.model_name)(self.id_to_calculate),
+            'instance': context_instance,
+            'self': context_instance,
+            'cls': context_cls,
+            'datetime': datetime,
+            'decimal': decimal,
+            'pretty_sql': (lambda x: list(x)[0] % list(x)[1]),
             }
         return eval(self.to_evaluate, context)
 
