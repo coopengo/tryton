@@ -1,4 +1,4 @@
-* Use JSONB to store MultiSelection field on PostgreSQL
+* Enforce access check in export_data (issue14366)
 * Add autocomplete method on ModelView
 * Use multiple jobs to dump and restore a test database
 * Support database cache as template for tests
