@@ -1,3 +1,4 @@
+* Include the traceback only in RPC responses in development mode (issue14354)
 * Enforce access check in export_data (issue14366)
 * Use JSONB to store MultiSelection field on PostgreSQL
 * Use multiple jobs to dump and restore a test database
