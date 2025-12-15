@@ -1,3 +1,5 @@
+* Enforce access check in export_data (issue14366)
+* Handle URL host of the bus on login
 * Add option to skip tests that require network
 * Use JSONB to store MultiSelection field on PostgreSQL
 * Use multiple jobs to dump and restore a test database
