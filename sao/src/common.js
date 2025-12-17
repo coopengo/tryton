@@ -4624,7 +4624,7 @@
                 menu.css('left', parent_size.right);
             }
         },
-        populate: (menu, model_name, field_name, context, records, edit_entry) => {
+        populate: (menu, model_name, field_name, context, records, edit_entry, view_ids) => {
             var model = new Sao.Model(model_name);
             var toolbar = model.execute(
                 'view_toolbar_get', [], context, false);
@@ -4657,6 +4657,7 @@
                     Sao.Tab.create({
                         'model': model_name,
                         'mode': ['form'],
+                        'view_ids': view_ids || [],
                         'context': context,
                         'res_id': ids,
                         'name': Sao.common.MODELNAME.get(model_name),
