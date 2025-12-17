@@ -11,7 +11,10 @@ class UIMenu(metaclass=PoolMeta):
     __name__ = 'ir.ui.menu'
 
     groups = fields.Many2Many(
-        'ir.ui.menu-res.group', 'menu', 'group', "Groups")
+        'ir.ui.menu-res.group', 'menu', 'group', "Groups",
+        filter=[
+            ('active', '=', True),
+            ])
 
 
 class UIMenuGroup(ModelSQL):
@@ -87,7 +90,10 @@ class Action(metaclass=PoolMeta):
     __name__ = 'ir.action'
 
     groups = fields.Many2Many(
-        'ir.action-res.group', 'action', 'group', "Groups")
+        'ir.action-res.group', 'action', 'group', "Groups",
+        filter=[
+            ('active', '=', True),
+            ])
 
 
 class ActionMixin(metaclass=PoolMeta):
@@ -139,7 +145,10 @@ class ModelButton(metaclass=PoolMeta):
     __name__ = 'ir.model.button'
 
     groups = fields.Many2Many(
-        'ir.model.button-res.group', 'button', 'group', "Groups")
+        'ir.model.button-res.group', 'button', 'group', "Groups",
+        filter=[
+            ('active', '=', True),
+            ])
     _groups_cache = Cache('ir.model.button.groups')
 
     @classmethod
@@ -241,6 +250,9 @@ class SequenceType(metaclass=PoolMeta):
     __name__ = 'ir.sequence.type'
     groups = fields.Many2Many('ir.sequence.type-res.group', 'sequence_type',
             'group', 'User Groups',
+            filter=[
+                ('active', '=', True),
+                ],
             help='Groups allowed to edit the sequences of this type.')
 
 
@@ -280,6 +292,9 @@ class Export(metaclass=PoolMeta):
 
     groups = fields.Many2Many(
         'ir.export-res.group', 'export', 'group', "Groups",
+        filter=[
+            ('active', '=', True),
+            ],
         help="The user groups that can use the export.")
     write_groups = fields.Many2Many(
         'ir.export-write-res.group', 'export', 'group',
