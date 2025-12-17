@@ -2364,10 +2364,12 @@ function hide_x2m_body(widget) {
             // Set size
             var length = '';
             var width = '100%';
+            this.input.removeClass('with-size');
             if (record) {
                 length = record.expr_eval(this.attributes.size);
                 if (length > 0) {
-                    width = (length + 5) + 'ch';
+                    width = (length + 3) + 'ch';
+                    this.input.addClass('with-size');
                 }
             }
             this.input.val(this.get_client_value());
@@ -2844,10 +2846,14 @@ function hide_x2m_body(widget) {
             var field = this.field,
                 record = this.record;
             var value = '';
+            this.input.removeClass('with-size');
+            this.input_text.removeClass('with-size');
             if (this.width !== null){
-                this.input_text.css('width', (this.width + 5) + 'ch');
-                this.input.css('width', (this.width + 5) + 'ch');
-                this.group.css('width', (this.width + 5) + 'ch');
+                this.input_text.css('width', (this.width + 3) + 'ch');
+                this.input.css('width', (this.width + 3) + 'ch');
+                this.group.css('width', (this.width + 3) + 'ch');
+                this.input.addClass('with-size');
+                this.input_text.addClass('with-size');
             }
             if (field) {
                 value = field.get_client(record, this.factor, this.grouping);
