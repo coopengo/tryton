@@ -1,7 +1,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 
-from trytond.model import ModelSQL, fields
+from trytond.model import DeactivableMixin, ModelSQL, fields
 from trytond.pool import Pool
 from trytond.transaction import Transaction
 
@@ -203,6 +203,74 @@ class Many2ManyContextTarget(ModelSQL):
         return context.get('test')
 
 
+class Many2ManyOrder(ModelSQL):
+    "Many2Many Order"
+    __name__ = 'test.many2many_order'
+    targets = fields.Many2Many(
+        'test.many2many_order.relation', 'origin', 'target', "Targets")
+    reversed_targets = fields.Many2Many(
+        'test.many2many_order.relation', 'origin', 'target',
+        "Reversed Targets",
+        order=[('target', 'DESC')])
+
+
+class Many2ManyOrderRelation(ModelSQL):
+    "Many2Many Order Relation"
+    __name__ = 'test.many2many_order.relation'
+    origin = fields.Many2One('test.many2many_order', "Origin")
+    target = fields.Many2One('test.many2many_order.target', "Target")
+
+
+class Many2ManyOrderTarget(ModelSQL):
+    "Many2Many Order Target"
+    __name__ = 'test.many2many_order.target'
+
+
+class Many2ManyActive(ModelSQL):
+    "Many2Many Active"
+    __name__ = 'test.many2many_active'
+    targets = fields.Many2Many(
+        'test.many2many_active.relation', 'origin', 'target', 'Targets')
+
+
+class Many2ManyTargetActive(DeactivableMixin, ModelSQL):
+    "Many2Many Active Target"
+    __name__ = 'test.many2many_active.target'
+    name = fields.Char('Name')
+
+
+class Many2ManyRelationActive(ModelSQL):
+    "Many2Many Active Relation"
+    __name__ = 'test.many2many_active.relation'
+    origin = fields.Many2One('test.many2many_active', 'Origin')
+    target = fields.Many2One('test.many2many_active.target', 'Target')
+
+
+class Many2ManyReferenceActive(ModelSQL):
+    "Many2Many Reference Active"
+    __name__ = 'test.many2many_reference.active'
+    targets = fields.Many2Many(
+        'test.many2many_reference.active.relation', 'origin', 'target',
+        "Targets")
+
+
+class Many2ManyReferenceActiveTarget(DeactivableMixin, ModelSQL):
+    "Many2Many Reference Active Target"
+    __name__ = 'test.many2many_reference.active.target'
+    name = fields.Char('Name')
+
+
+class Many2ManyReferenceActiveRelation(ModelSQL):
+    "Many2Many Reference Active Relation"
+    __name__ = 'test.many2many_reference.active.relation'
+    origin = fields.Reference('Origin', [
+            (None, ''),
+            ('test.many2many_reference.active', 'Many2Many Reference'),
+            ])
+    target = fields.Many2One('test.many2many_reference.active.target',
+        'Reference Target')
+
+
 def register(module):
     Pool.register(
         Many2Many,
@@ -231,4 +299,13 @@ def register(module):
         Many2ManyContext,
         Many2ManyContextTarget,
         Many2ManyContextRelation,
+        Many2ManyOrder,
+        Many2ManyOrderRelation,
+        Many2ManyOrderTarget,
+        Many2ManyActive,
+        Many2ManyTargetActive,
+        Many2ManyRelationActive,
+        Many2ManyReferenceActive,
+        Many2ManyReferenceActiveRelation,
+        Many2ManyReferenceActiveTarget,
         module=module, type_='model')
