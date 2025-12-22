@@ -339,20 +339,23 @@
 
             config.data.columns = pie_columns;
             config.data.names = pie_names;
-            config.pie = {
-                label: {
-                    format: function (value, ratio, id) {
-                        return value;
+
+            if (this.view.attributes.percentage && (this.view.attributes.percentage == '0')) {
+                config.pie = {
+                    label: {
+                        format: function (value, ratio, id) {
+                            return value;
+                        }
                     }
-                }
-            };
-            config.tooltip = {
-                format: {
-                    value: function (value, ratio, id) {
-                        return value;
+                };
+                config.tooltip = {
+                    format: {
+                        value: function (value, ratio, id) {
+                            return value;
+                        }
                     }
-                }
-            };
+                };
+            }
             return config;
         },
         _add_id: function(key, id) {
