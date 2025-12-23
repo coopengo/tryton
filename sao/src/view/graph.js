@@ -340,7 +340,7 @@
             config.data.columns = pie_columns;
             config.data.names = pie_names;
 
-            if (this.view.attributes.percentage && (this.view.attributes.percentage == '0')) {
+            if (this.view.attributes.mode && (this.view.attributes.mode == 'number')) {
                 config.pie = {
                     label: {
                         format: function (value, ratio, id) {
