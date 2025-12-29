@@ -88,11 +88,10 @@ class Group(metaclass=PoolMeta):
         return hmac.new(binary_key, url.encode('utf-8'),
             hashlib.sha512).hexdigest().upper()
 
-    def paybox_url_builder(self):
-        config = self.journal.get_paybox_config()
-        main_url = config.get('payment_url')
+    def get_paybox_parameters(self, config):
         Company = Pool().get('company.company')
         company = Company(Transaction().context.get('company'))
+
         parameters = OrderedDict()
         for required_paybox_param in ('PBX_SITE', 'PBX_RANG', 'secret',
                 'PBX_IDENTIFIANT', 'PBX_RETOUR', 'payment_url'):
@@ -122,6 +121,13 @@ class Group(metaclass=PoolMeta):
             parameters['PBX_REFUSE'] = config.get('PBX_REFUSE')
         if config.get('PBX_ANNULE'):
             parameters['PBX_ANNULE'] = config.get('PBX_ANNULE')
+
+        return parameters
+
+    def paybox_url_builder(self):
+        config = self.journal.get_paybox_config()
+        main_url = config.get('payment_url')
+        parameters = self.get_paybox_parameters(config)
 
         valid_values = [(key, value) for key, value in parameters.items()
             if value is not None]
