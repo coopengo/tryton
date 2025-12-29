@@ -661,7 +661,9 @@ class ModelStorage(Model):
         return new_records
 
     @classmethod
-    def search(cls, domain, offset=0, limit=None, order=None, count=False):
+    def search(
+            cls, domain, offset=0, limit=None, order=None, count=False,
+            query=True):
         '''
         Return a list of records that match the domain.
         '''
@@ -718,9 +720,9 @@ class ModelStorage(Model):
             for name, fields_names in to_check.items():
                 ModelAccess.check(name, 'read')
                 ModelFieldAccess.check(name, fields_names, 'read')
-        if count:
-            return 0
-        return []
+        return super().search(
+            domain, offset=offset, limit=limit, order=order, count=count,
+            query=query)
 
     @classmethod
     def search_count(cls, domain, offset=0, limit=None):
