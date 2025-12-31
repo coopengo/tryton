@@ -872,7 +872,9 @@ div.form-boolean > input[type=checkbox].input-checkbox.form-control[readonly] {
     .form-multiselection, .form-url, .form-email, .form-callto, .form-sip,
     .form-pyson {
         input, select {
-            min-width: 17ch;
+            & :not( .with-size ) {
+                min-width: 17ch;
+            }
         }
     }
     .form-many2one, .form-one2one, .form-reference, form-binary {
