@@ -239,6 +239,11 @@
                 var key = column.id || column;
                 return colors[key] || color;
             };
+            c3_config.grid = {
+                focus: {
+                    show: false
+                }
+            }
             return c3_config;
         },
         action: function(data, element) {
