@@ -5,6 +5,52 @@
 
     Sao.common = {};
 
+    Sao.common.show = function(elements) {
+        let els;
+        if (elements instanceof jQuery) {
+            els = elements.toArray();
+        } else {
+            els = elements;
+        }
+        Sao.common.showHide(els, true);
+    }
+
+    Sao.common.hide = function(elements) {
+        let els;
+        if (elements instanceof jQuery) {
+            els = elements.toArray();
+        } else {
+            els = elements;
+        }
+        Sao.common.showHide(els, false);
+    }
+
+    Sao.common.toggle = function(elements, bool) {
+        let els;
+        if (elements instanceof jQuery) {
+            els = elements.toArray();
+        } else {
+            els = elements;
+        }
+        Sao.common.showHide(els, bool);
+    }
+
+    Sao.common.showHide = function(elements, show) {
+        for (let element of elements) {
+            let display = element.style.display;
+            if (show) {
+                if (display === 'none') {
+                    element.style.display = 'revert';
+                }
+            } else {
+                if (display !== 'none') {
+                    element.style.display = 'none';
+                }
+            }
+        }
+    }
+
+
     Sao.common.BACKSPACE_KEYCODE = 8;
     Sao.common.TAB_KEYCODE = 9;
     Sao.common.RETURN_KEYCODE = 13;
@@ -1003,9 +1049,9 @@
                 states = {};
             }
             if (states.invisible) {
-                this.el.hide();
+                Sao.common.hide(this.el);
             } else {
-                this.el.show();
+                Sao.common.show(this.el);
             }
             this.el.prop('disabled', Boolean(states.readonly));
             this.set_icon(states.icon || this.attributes.icon);
@@ -3372,7 +3418,7 @@
                 let more_info = jQuery('<div/>').html(additional_info);
                 dialog.body.append(show_more);
                 dialog.body.append(more_info);
-                more_info.hide();
+                Sao.common.hide(more_info);
                 show_more.click(() => {
                     more_info.toggle();
                 });
@@ -3759,7 +3805,7 @@
                     'text': '.',
                 }));
             }
-            this.el.hide();
+            Sao.common.hide(this.el);
             jQuery(() => {
                 this.el.appendTo('body');
             });
@@ -3768,10 +3814,10 @@
             if (timeout === null) {
                 timeout = this.timeout;
             }
-            this.el.show();
+            Sao.common.show(this.el);
             return window.setTimeout(() => {
                 this.queries += 1;
-                this.el.show();
+                Sao.common.show(this.el);
                 let delta = Date.now() - this.spinner_end;
                 if (delta < this.spinner_hysteresis) {
                     return window.setTimeout(() => this.start_spinner(),
@@ -3808,7 +3854,7 @@
                 this.el.removeClass('spinning');
                 this.spinner_end = Date.now();
             }
-            this.el.hide();
+            Sao.common.hide(this.el);
         }
     });
     Sao.common.processing = new Sao.common.Processing();
@@ -3860,7 +3906,7 @@
                 'role': 'separator',
                 'class': 'divider'
             }).appendTo(this.menu);
-            this.separator.hide();
+            Sao.common.hide(this.separator);
 
             this.source = source;
             this.match_selected = match_selected;
@@ -3916,10 +3962,10 @@
             }
             this.menu.find('li.action').remove();
             if (jQuery.isEmptyObject(actions)) {
-                this.separator.hide();
+                Sao.common.hide(this.separator);
                 return;
             }
-            this.separator.show();
+            Sao.common.show(this.separator);
             actions.forEach(function(action) {
                 var action_id = action[0];
                 var content = action[1];
