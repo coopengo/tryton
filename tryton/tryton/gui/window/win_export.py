@@ -163,6 +163,10 @@ class WinExport(WinCSV, InfoBar):
         box.pack_start(
             self.add_field_names, expand=False, fill=True, padding=0)
 
+        self.technical_names = Gtk.CheckButton(label=_("Use technical names"))
+        box.pack_start(
+            self.technical_names, expand=False, fill=True, padding=0)
+
     def model_populate(self, fields, parent_node=None, prefix_field='',
             prefix_name=''):
 
@@ -280,6 +284,7 @@ class WinExport(WinCSV, InfoBar):
         try:
             values = {
                 'header': self.add_field_names.get_active(),
+                'technical_names': self.technical_names.get_active(),
                 'records': (
                     'selected' if self.selected_records.get_active()
                     else 'listed'),
@@ -350,6 +355,7 @@ class WinExport(WinCSV, InfoBar):
             self.sel_field(name)
 
         self.add_field_names.set_active(values.get('header'))
+        self.technical_names.set_active(values.get('technical_names'))
         self.selected_records.set_active(
             int(values.get('records') == 'selected'))
         self.ignore_search_limit.set_active(
@@ -370,6 +376,7 @@ class WinExport(WinCSV, InfoBar):
                 fields.append(self.model2.get_value(iter, 1))
                 iter = self.model2.iter_next(iter)
             header = self.add_field_names.get_active()
+            technical_names = self.technical_names.get_active()
 
             if self.selected_records.get_active():
                 ids = [r.id for r in self.screen.selected_records]
@@ -377,7 +384,7 @@ class WinExport(WinCSV, InfoBar):
                 try:
                     data = RPCExecute(
                         'model', self.model, 'export_data',
-                        ids, fields, header,
+                        ids, fields, header, technical_names,
                         context=self.context)
                 except RPCException:
                     data = []
@@ -387,7 +394,7 @@ class WinExport(WinCSV, InfoBar):
                 try:
                     data = RPCExecute(
                         'model', self.model, 'export_data',
-                        ids, fields, header,
+                        ids, fields, header, technical_names,
                         context=self.context)
                 except RPCException:
                     data = []
@@ -403,7 +410,7 @@ class WinExport(WinCSV, InfoBar):
                     data = RPCExecute(
                         'model', self.model, 'export_data_domain',
                         domain, fields, offset, limit, self.screen.order,
-                        header, context=self.context)
+                        header, technical_names, context=self.context)
                 except RPCException:
                     data = []
 
@@ -540,6 +547,8 @@ class WinExport(WinCSV, InfoBar):
         query_string.append(('qc', self.get_quotechar()))
         if not self.add_field_names.get_active():
             query_string.append(('h', '0'))
+        if self.technical_names.get_active():
+            query_string.append(('tn', '1'))
         if self.csv_locale.get_active():
             query_string.append(('loc', '1'))
 

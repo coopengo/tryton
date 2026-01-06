@@ -451,7 +451,7 @@ class Form(TabContent):
         fields = [f['name'] for f in export['export_fields.']]
         data = RPCExecute(
             'model', self.model, 'export_data', ids, fields, export['header'],
-            context=self.screen.context)
+            export['technical_names'], context=self.screen.context)
         delimiter = ','
         if os.name == 'nt' and ',' == locale.localeconv()['decimal_point']:
             delimiter = ';'

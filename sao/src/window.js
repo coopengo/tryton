@@ -1958,12 +1958,20 @@
                 'type': 'checkbox',
                 'checked': 'checked'
             });
+            this.el_technical_names = jQuery('<input/>', {
+                'type': 'checkbox',
+            });
 
             jQuery('<div/>', {
                 'class': 'checkbox',
             }).append(jQuery('<label/>', {
                 'text': ' '+Sao.i18n.gettext('Add Field Names')
             }).prepend(this.el_add_field_names)).appendTo(this.expander_csv);
+            jQuery('<div/>', {
+                'class': 'checkbox',
+            }).append(jQuery('<label/>', {
+                'text': Sao.i18n.gettext('Use technical names')
+            }).prepend(this.el_technical_names)).appendTo(this.expander_csv);
             this.expander_csv.append(' ');
 
             this.set_url();
@@ -2118,8 +2126,8 @@
                 'method': 'model.ir.export.get',
                 'params': [
                     this.screen.model_name, [
-                        'name', 'header', 'records', 'ignore_search_limit',
-                        'export_fields.name'],
+                        'name', 'header', 'technical_names', 'records',
+                        'ignore_search_limit', 'export_fields.name'],
                     this.context,
                 ],
             }, this.session).done(exports => {
@@ -2168,6 +2176,7 @@
                 var prm;
                 var values = {
                     'header': this.el_add_field_names.is(':checked'),
+                    'technical_names': this.el_technical_names.is(':checked'),
                     'records': (
                         JSON.parse(this.selected_records.val()) ?
                         'selected' : 'listed'),
@@ -2298,6 +2307,7 @@
                     fields.push(field.getAttribute('path'));
                 });
                 var header = this.el_add_field_names.is(':checked');
+                let technical_names = this.el_technical_names.is(':checked');
                 var prm, ids, paths;
                 if (JSON.parse(this.selected_records.val())) {
                     ids = this.screen.selected_records.map(function(r) {
@@ -2308,7 +2318,7 @@
                         'method': (
                             'model.' + this.screen.model_name +
                             '.export_data'),
-                        'params': [ids, fields, header, this.context]
+                        'params': [ids, fields, header, technical_names, this.context]
                     }, this.session);
                 } else if (this.screen_is_tree) {
                     ids = this.screen.listed_records.map(function(r) {
@@ -2319,7 +2329,7 @@
                         'method': (
                             'model.' + this.screen.model_name +
                             '.export_data'),
-                        'params': [ids, fields, header, this.context]
+                        'params': [ids, fields, header, technical_names, this.context]
                     }, this.session);
                 } else {
                     var domain = this.screen.search_domain(
@@ -2338,7 +2348,7 @@
                             '.export_data_domain'),
                         'params': [
                             domain, fields, offset, limit, this.screen.order,
-                            header, this.context],
+                            header, technical_names, this.context],
                     }, this.session);
                 }
                 prm.then(data => {
@@ -2417,6 +2427,9 @@
 
             if (!this.el_add_field_names.is(':checked')) {
                 query_string.push(['h', '0']);
+            }
+            if (this.el_technical_names.is(':checked')) {
+                query_string.push(['tn', '1']);
             }
             if (this.el_csv_locale.prop('checked')) {
                 query_string.push(['loc', '1']);
