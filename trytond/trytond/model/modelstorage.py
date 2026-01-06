@@ -720,9 +720,9 @@ class ModelStorage(Model):
             for name, fields_names in to_check.items():
                 ModelAccess.check(name, 'read')
                 ModelFieldAccess.check(name, fields_names, 'read')
-        return super().search(
-            domain, offset=offset, limit=limit, order=order, count=count,
-            query=query)
+        if count:
+            return 0
+        return []
 
     @classmethod
     def search_count(cls, domain, offset=0, limit=None):
