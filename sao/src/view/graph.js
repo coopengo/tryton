@@ -239,6 +239,11 @@
                 var key = column.id || column;
                 return colors[key] || color;
             };
+            c3_config.grid = {
+                focus: {
+                    show: false
+                }
+            }
             return c3_config;
         },
         action: function(data, element) {
@@ -339,6 +344,23 @@
 
             config.data.columns = pie_columns;
             config.data.names = pie_names;
+
+            if (this.view.attributes.mode && (this.view.attributes.mode == 'number')) {
+                config.pie = {
+                    label: {
+                        format: function (value, ratio, id) {
+                            return value;
+                        }
+                    }
+                };
+                config.tooltip = {
+                    format: {
+                        value: function (value, ratio, id) {
+                            return value;
+                        }
+                    }
+                };
+            }
             return config;
         },
         _add_id: function(key, id) {
