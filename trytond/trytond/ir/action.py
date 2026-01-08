@@ -12,8 +12,8 @@ from trytond.cache import Cache, MemoryCache
 from trytond.config import config
 from trytond.i18n import gettext
 from trytond.model import (
-    DeactivableMixin, Index, ModelSingleton, ModelSQL, ModelStorage, ModelView,
-    fields, sequence_ordered)
+    DeactivableMixin, Index, MaterializedViewMixin, ModelSingleton, ModelSQL,
+    ModelStorage, ModelView, fields, sequence_ordered)
 from trytond.model.exceptions import ValidationError
 from trytond.pool import Pool
 from trytond.pyson import PYSON, Eval, PYSONDecoder, PYSONEncoder
@@ -250,6 +250,7 @@ class ActionKeyword(ModelSQL, ModelView):
         pool = Pool()
         Action = pool.get('ir.action')
         Menu = pool.get('ir.ui.menu')
+        ModelData = pool.get('ir.model.data')
         ModelAccess = pool.get('ir.model.access')
         key = (keyword, tuple(value))
         keywords = cls._get_keyword_cache.get(key)
@@ -257,6 +258,7 @@ class ActionKeyword(ModelSQL, ModelView):
             return keywords
         keywords = []
         model, model_id = value
+        Model = pool.get(model)
 
         clause = [
             ('keyword', '=', keyword),
@@ -279,6 +281,11 @@ class ActionKeyword(ModelSQL, ModelView):
         for action_keyword in action_keywords:
             type_ = action_keyword.action.type
             types[type_].append(action_keyword.action.id)
+        if (keyword == 'form_action'
+                and issubclass(Model, MaterializedViewMixin)):
+            refresh_action = ModelData.get_id(
+                'ir', 'wizard_refresh_materialized_view')
+            types['ir.action.wizard'].append(refresh_action)
         for type_, action_ids in types.items():
             for value in Action.get_action_values(type_, action_ids):
                 if (type_ == 'ir.action.act_window'

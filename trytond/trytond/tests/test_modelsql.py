@@ -1266,6 +1266,53 @@ class TranslationTestCase(unittest.TestCase):
 
         Transaction().commit()
 
+    @unittest.skipUnless(
+        backend.Database.has_materialized_views,
+        "Database backend does not support materialized views")
+    @with_transaction()
+    def test_materialized_view_update(self):
+        "Check that a materialized views is updated"
+        pool = Pool()
+        Data = pool.get('test.modelsql.materialized.data')
+        MaterializedView = pool.get('test.modelsql.materialized')
+
+        Data.create([{
+                    'name': "Foo",
+                    }, {
+                    'name': "Foo",
+                    }, {
+                    'name': "Bar",
+                    }])
+        self.assertEqual(
+            MaterializedView.search([]),
+            [])
+
+        MaterializedView.refresh_view()
+        stats = [(s.name, s.count) for s in MaterializedView.search([])]
+        self.assertEqual(stats, [("Foo", 2), ("Bar", 1)])
+
+    @unittest.skipIf(
+        backend.Database.has_materialized_views,
+        "Database backend does support materialized views")
+    @with_transaction()
+    def test_materialize_noop(self):
+        "Check that a materialize does not implement anything"
+        pool = Pool()
+        Data = pool.get('test.modelsql.materialized.data')
+        MaterializedView = pool.get('test.modelsql.materialized')
+
+        Data.create([{
+                    'name': "Foo",
+                    }, {
+                    'name': "Foo",
+                    }, {
+                    'name': "Bar",
+                    }])
+        stats = [(s.name, s.count) for s in MaterializedView.search([])]
+        self.assertEqual(stats, [("Foo", 2), ("Bar", 1)])
+
+        self.assertFalse(hasattr(MaterializedView, 'refresh_view'))
+
 
 class ModelSQLTranslationTestCase(TranslationTestCase):
     "Test ModelSQL translation"

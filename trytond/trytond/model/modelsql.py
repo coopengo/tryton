@@ -28,6 +28,7 @@ from trytond.transaction import (
 
 from . import fields
 from .descriptors import dualmethod
+from .materialized import MaterializedViewMixin
 from .modelstorage import (
     AccessError, ModelStorage, RequiredValidationError, SizeValidationError,
     ValidationError, is_leaf)
@@ -529,7 +530,8 @@ class ModelSQL(ModelStorage):
 
     @classmethod
     def _update_sql_indexes(cls, concurrently):
-        if not callable(cls.table_query):
+        if (not callable(cls.table_query)
+                or issubclass(cls, MaterializedViewMixin)):
             table_h = cls.__table_handler__()
             # TODO: remove overlapping indexes
             table_h.set_indexes(cls._sql_indexes, concurrently)
