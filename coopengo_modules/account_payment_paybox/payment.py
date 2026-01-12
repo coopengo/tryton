@@ -95,11 +95,10 @@ class Group(metaclass=PoolMeta):
         return hmac.new(binary_key, url.encode('utf-8'),
             hashlib.sha512).hexdigest().upper()
 
-    def paybox_url_builder(self):
-        config = self.journal.get_paybox_config()
-        main_url = config.get('payment_url')
+    def get_paybox_parameters(self, config):
         Company = Pool().get('company.company')
         company = Company(Transaction().context.get('company'))
+
         parameters = OrderedDict()
         for required_paybox_param in ('PBX_SITE', 'PBX_RANG', 'secret',
                 'PBX_IDENTIFIANT', 'PBX_RETOUR', 'payment_url'):
@@ -130,13 +129,27 @@ class Group(metaclass=PoolMeta):
         if config.get('PBX_ANNULE'):
             parameters['PBX_ANNULE'] = config.get('PBX_ANNULE')
 
+        return parameters
+
+    def encode_paybox_url_parameters(self, parameters):
+        return parameters
+
+    def paybox_url_builder(self):
+        config = self.journal.get_paybox_config()
+        main_url = config.get('payment_url')
+        parameters = self.get_paybox_parameters(config)
+
         valid_values = [(key, value) for key, value in parameters.items()
             if value is not None]
         get_url_part = '&'.join(['%s=%s' % (var_name, value) for
                 var_name, value in valid_values])
-        final_url = '%s?%s' % (main_url, get_url_part)
-        final_url += ('&PBX_HMAC=%s' % self.generate_hmac(get_url_part,
+        pbx_hmac = ('PBX_HMAC=%s' % self.generate_hmac(get_url_part,
                 config))
+
+        encoded_params = self.encode_paybox_url_parameters(OrderedDict(valid_values))
+        url_encoded_params = '&'.join(['%s=%s' % name_var for
+                name_var in encoded_params.items()])
+        final_url = '%s?%s&%s' % (main_url, url_encoded_params, pbx_hmac)
         return final_url
 
     def get_payments(self, state=None):
