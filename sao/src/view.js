@@ -58,6 +58,10 @@
         },
         reset: function() {
         },
+        pre_attach: function() {
+        },
+        post_attach: function() {
+        },
     });
 
     Sao.View.idpath2path = function(tree, idpath) {
