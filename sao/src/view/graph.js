@@ -251,6 +251,9 @@
             var ctx = jQuery.extend({}, this.view.screen.group.local_context);
             delete ctx.active_ids;
             delete ctx.active_id;
+            if (ctx.task_extra_filter && typeof data.id == "string") {
+                ctx.task_extra_filter.sub_filter = data.id;
+            }
             Sao.Action.exec_keyword('graph_open', {
                 model: this.view.screen.model_name,
                 id: ids[0],
@@ -271,7 +274,14 @@
     });
 
     Sao.View.Graph.VerticalBar = Sao.class_(Sao.View.Graph.Chart, {
-        _chart_type: 'bar'
+        _chart_type: 'bar',
+        _action_key: function(data) {
+            var x = Sao.View.Graph.VerticalBar._super._action_key.call(this, data);
+            if (typeof x == "number" && !(x in this.ids)) {
+                x = this.view.group[x]._values.name;
+            }
+            return x;
+        },
     });
 
     Sao.View.Graph.HorizontalBar = Sao.class_(Sao.View.Graph.Chart, {
