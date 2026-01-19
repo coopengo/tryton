@@ -1200,7 +1200,7 @@ var Sao = {
                 id: 'action',
             }, {
                 // Copied from index.html
-                shortcut: 'ctrl+shift+h',
+                shortcut: 'alt+t',
                 label: Sao.i18n.gettext('Toggle Menu'),
                 callback: function() {
                     jQuery('#menu').toggleClass('hidden');
