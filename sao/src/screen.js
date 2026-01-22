@@ -989,8 +989,13 @@
             for (field in fields) {
                 this.group.model.fields[field].views.add(view_id);
             }
-            var view_widget = Sao.View.parse(
-                this, view_id, view.type, xml_view, view.field_childs);
+            // [Coog specific] multi_mixed_view
+            try {
+                var view_widget = Sao.View.parse(
+                    this, view_id, view.type, xml_view, view.field_childs);
+            } catch (e) {
+                return null;
+            }
             this.views.push(view_widget);
             // JMO: report https://github.com/coopengo/tryton/pull/13
             var fkeys = {};
