@@ -378,19 +378,6 @@ function hide_x2m_body(widget) {
             return buttons;
         },
         display: function() {
-            let el_copy;
-            let el_parent = this.el[0].parentNode;
-            if (el_parent) {
-                el_copy = this.el[0].cloneNode(true);
-                Object.keys(el_copy).forEach(key => {
-                    el_copy.addEventListener(key.slice(2), (evt) => {
-                        evt.preventDefault();
-                        evt.stopPropagation();
-                    });
-                });
-                el_parent.replaceChild(el_copy, this.el[0]);
-            }
-
             var record = this.record;
             var field;
             var promesses = [];
@@ -470,13 +457,7 @@ function hide_x2m_body(widget) {
                                 container.set_grid_template();
                             }
                         });
-                    return jQuery.when.apply(jQuery, [display_prm, state_prm]).done(
-                        () => {
-                            if (el_parent) {
-                                el_parent.replaceChild(this.el[0], el_copy);
-                            }
-                        }
-                    );
+                    return Promise.all([display_prm, state_prm]);
                 });
         },
         set_value: function() {
@@ -1013,31 +994,8 @@ function hide_x2m_body(widget) {
             Sao.View.Form.Page._super.hide.call(this);
             if (this.el.hasClass('active')) {
                 window.setTimeout(() => {
-                    let first_visible_sibling = null;
                     if (this.el.hasClass('active') && this.el.is(':hidden')) {
-                        for (let sibling of this.el.siblings()) {
-                            // We can not rely on :visible anymore as the node
-                            // might be removed from the document
-                            if (sibling.style.display != 'none') {
-                                first_visible_sibling = sibling;
-                                break
-                            }
-                        }
-                    }
-                    if (first_visible_sibling) {
-                        // Mimick bootstrap's Tab.show as we're working with
-                        // nodes that might be out of the dom
-                        let link = jQuery(first_visible_sibling).find('a');
-                        let selector = link.attr('href');
-                        let tab = link.data('bs.tab');
-                        if (!tab) {
-                            link.data('bs.tab', new jQuery.fn.tab.Constructor(link));
-                            tab = link.data('bs.tab');
-                        }
-                        let activate = tab['activate'];
-                        activate(this.el, this.el.closest('ul'));
-                        let target = this.el.closest('.form-notebook').find(selector);
-                        activate(target, target.parent());
+                        this.el.siblings(':visible').first().find('a').tab('show');
                     }
                 });
             }
@@ -2406,10 +2364,12 @@ function hide_x2m_body(widget) {
             // Set size
             var length = '';
             var width = '100%';
+            this.input.removeClass('with-size');
             if (record) {
                 length = record.expr_eval(this.attributes.size);
                 if (length > 0) {
-                    width = (length + 5) + 'ch';
+                    width = (length + 3) + 'ch';
+                    this.input.addClass('with-size');
                 }
             }
             this.input.val(this.get_client_value());
@@ -2886,10 +2846,14 @@ function hide_x2m_body(widget) {
             var field = this.field,
                 record = this.record;
             var value = '';
+            this.input.removeClass('with-size');
+            this.input_text.removeClass('with-size');
             if (this.width !== null){
-                this.input_text.css('width', (this.width + 5) + 'ch');
-                this.input.css('width', (this.width + 5) + 'ch');
-                this.group.css('width', (this.width + 5) + 'ch');
+                this.input_text.css('width', (this.width + 3) + 'ch');
+                this.input.css('width', (this.width + 3) + 'ch');
+                this.group.css('width', (this.width + 3) + 'ch');
+                this.input.addClass('with-size');
+                this.input_text.addClass('with-size');
             }
             if (field) {
                 value = field.get_client(record, this.factor, this.grouping);
@@ -3589,18 +3553,23 @@ function hide_x2m_body(widget) {
             } else {
                 this._popup = true;
             }
+            let view_ids = (this.attributes.view_ids || '').split(',');
             if (this.has_target(value)) {
                 var m2o_id =
                     this.id_from_value(record.field_get(this.field_name));
                 var body;
                 body = jQuery(document.body);
                 if (evt && !(evt.ctrlKey || evt.metaKey || body.hasClass('modal-open'))) {
+                    if (!jQuery.isEmptyObject(view_ids)) {
+                        // Remove the first tree view as mode is form only
+                        view_ids.shift();
+                    }
                     var params = {};
                     params.model = this.get_model();
                     params.res_id = m2o_id;
-                    // JMO merge_60 , here we add 'tree' after 'form'
                     params.mode = ['form'];
                     params.name = this.attributes.string;
+                    params.view_ids = view_ids;
                     params.context = this.field.get_context(this.record);
                     Sao.Tab.create(params);
                     this._popup = false;
@@ -3649,8 +3618,7 @@ function hide_x2m_body(widget) {
                             context: context,
                             domain: domain,
                             order: order,
-                            view_ids: (this.attributes.view_ids ||
-                                '').split(','),
+                            view_ids: view_ids,
                             views_preload: (this.attributes.views || {}),
                             new_: this.create_access,
                             search_filter: parser.quote(text),
@@ -3842,8 +3810,14 @@ function hide_x2m_body(widget) {
             let context = this.field.get_context(this.record);
             let model_name = this.get_model();
             let m2o_record = new Sao.Record(new Sao.Model(model_name), value);
+            let view_ids = (this.attributes.view_ids || '').split(',');
+            if (!jQuery.isEmptyObject(view_ids)) {
+                // Remove the first tree view as mode is form only
+                view_ids.shift();
+            }
             Sao.common.PopupMenu.populate(
-                ul, model_name, null, context, [m2o_record], true);
+                ul, model_name, null, context, [m2o_record], true,
+                view_ids);
             Sao.common.PopupMenu.updateLocation(ul);
         },
     });

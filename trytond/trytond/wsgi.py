@@ -67,6 +67,7 @@ class TrytondWSGI(object):
                 })
         self.protocols = [JSONProtocol, XMLProtocol]
         self.error_handlers = []
+        self.dev = False
 
     def route(self, string, methods=None, defaults=None):
         def decorator(func):
@@ -98,8 +99,12 @@ class TrytondWSGI(object):
             session = request.authorization.get('session')
             dbname = request.view_args.get('database_name')
 
-            session_check = security.check_session(
-                dbname, userid, session, request.remote_addr)
+            session_check = security.check(
+                dbname, userid, session, {
+                    '_request': {
+                        'remote_addr': request.remote_addr,
+                        },
+                    })
             if session_check is None:
                 _do_basic_auth(request)
 
@@ -130,10 +135,11 @@ class TrytondWSGI(object):
         except Exception as e:
             logger.debug(
                 "Exception when processing %s", request, exc_info=True)
-            tb_s = ''.join(traceback.format_exception(*sys.exc_info()))
-            for path in sys.path:
-                tb_s = tb_s.replace(path, '')
-            e.__format_traceback__ = tb_s
+            if self.dev:
+                tb_s = ''.join(traceback.format_exception(*sys.exc_info()))
+                for path in sys.path:
+                    tb_s = tb_s.replace(path, '')
+                e.__format_traceback__ = tb_s
             response = e
             for error_handler in self.error_handlers:
                 rv = error_handler(self, request, e)

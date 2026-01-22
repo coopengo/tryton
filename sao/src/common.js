@@ -3168,6 +3168,7 @@
         'tryton-format-italic',
         'tryton-format-underline',
         'tryton-forward',
+        'tryton-go-next',
         'tryton-history',
         'tryton-import',
         'tryton-info',
@@ -3984,6 +3985,7 @@
                     if (this.match_selected) {
                         this.match_selected(value);
                     }
+                    this.menu.css('display', 'none');
                     this.input.focus();
                 }).prependTo(this.menu);
             }, this);
@@ -3998,6 +4000,7 @@
                     this.menu.dropdown('toggle');
                 }
             }
+            this.menu.css('display', 'block');
             this.menu.css('position', 'fixed');
             this.menu.css('top', 'unset');
             this.menu.css('bottom', 'unset');
@@ -4019,7 +4022,7 @@
     Sao.common.get_completion = function(el, source,
             match_selected, action_activated, search=true, create=true) {
         var format = function(content) {
-            return content.name;
+            return jQuery('<span/>').text(content.name);
         };
         var completion = new Sao.common.InputCompletion(
                 el, source, match_selected, format);
@@ -4621,7 +4624,7 @@
                 menu.css('left', parent_size.right);
             }
         },
-        populate: (menu, model_name, field_name, context, records, edit_entry) => {
+        populate: (menu, model_name, field_name, context, records, edit_entry, view_ids) => {
             var model = new Sao.Model(model_name);
             var toolbar = model.execute(
                 'view_toolbar_get', [], context, false);
@@ -4654,6 +4657,7 @@
                     Sao.Tab.create({
                         'model': model_name,
                         'mode': ['form'],
+                        'view_ids': view_ids || [],
                         'context': context,
                         'res_id': ids,
                         'name': Sao.common.MODELNAME.get(model_name),

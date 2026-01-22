@@ -239,17 +239,22 @@
                 var key = column.id || column;
                 return colors[key] || color;
             };
+            c3_config.grid = {
+                focus: {
+                    show: false
+                }
+            }
             return c3_config;
         },
         action: function(data, element) {
             var ids = this.ids[this._action_key(data)];
-            var ctx = jQuery.extend({}, this.view.screen.group._context);
+            var ctx = jQuery.extend({}, this.view.screen.group.local_context);
             delete ctx.active_ids;
             delete ctx.active_id;
             Sao.Action.exec_keyword('graph_open', {
                 model: this.view.screen.model_name,
                 id: ids[0],
-                ids: ids
+                "ids": ids
             }, ctx, false);
         },
         _action_key: function(data) {
@@ -339,6 +344,23 @@
 
             config.data.columns = pie_columns;
             config.data.names = pie_names;
+
+            if (this.view.attributes.mode && (this.view.attributes.mode == 'number')) {
+                config.pie = {
+                    label: {
+                        format: function (value, ratio, id) {
+                            return value;
+                        }
+                    }
+                };
+                config.tooltip = {
+                    format: {
+                        value: function (value, ratio, id) {
+                            return value;
+                        }
+                    }
+                };
+            }
             return config;
         },
         _add_id: function(key, id) {
@@ -356,7 +378,7 @@
             Sao.View.Graph.Pie._super._add_id.call(this, key, id);
         },
         _action_key: function(data) {
-            return data.id;
+            return data.name;
         }
     });
 
