@@ -208,6 +208,16 @@
                     }
                 }
             }
+
+            if (['field', 'label'].includes(node.tagName) &&
+                jQuery.isEmptyObject(field)) {
+                Sao.common.error.run(
+                    "View Error",
+                    `Field '${node_attrs.name}' is not defined ` +
+                    `on model '${this.view.screen.model.name}'`);
+                throw new Error("Field Undefined");
+            }
+
             return node_attrs;
         },
         parse: function(node) {
