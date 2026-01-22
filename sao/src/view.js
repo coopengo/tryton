@@ -212,9 +212,9 @@
             if (['field', 'label'].includes(node.tagName) &&
                 jQuery.isEmptyObject(field)) {
                 Sao.common.error.run(
-                    "Error",
-                    `Field '${node_attrs.name}' not defined ` +
-                    `in '${this.view.screen.model.name}'`);
+                    "View Error",
+                    `Field '${node_attrs.name}' is not defined ` +
+                    `on model '${this.view.screen.model.name}'`);
                 throw new Error("Field Undefined");
             }
 
