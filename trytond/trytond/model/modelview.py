@@ -642,7 +642,7 @@ class ModelView(Model):
                         break
             return views
 
-        for attr in ('name', 'icon', 'symbol'):
+        for attr in ('name', 'icon', 'symbol', 'graph_config'):
             if not element.get(attr):
                 continue
             fields_attrs.setdefault(element.get(attr), {})

@@ -4654,11 +4654,14 @@ function hide_x2m_body(widget) {
                     }
                 }
 
+                let graph_config = {};
                 var domain = [];
                 var size_limit = null;
                 if (record) {
                     domain = field.get_domain(record);
                     size_limit = record.expr_eval(this.attributes.size);
+                    graph_config = field.get_graph_config(
+                        record, this.attributes.graph_config);
                 }
                 if (this._readonly || !this.create_access) {
                     if ((size_limit === null) || (size_limit === undefined)) {
@@ -4671,6 +4674,7 @@ function hide_x2m_body(widget) {
                 if (!Sao.common.compare(this.screen.domain, domain)) {
                     this.screen.domain = domain;
                 }
+                this.screen.graph_config = graph_config;
                 this.screen.size_limit = size_limit;
                 let prm = this.screen.display();
                 if (this.attributes.height !== undefined) {

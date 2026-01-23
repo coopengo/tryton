@@ -2745,6 +2745,14 @@
             }
             return result;
         },
+        get_graph_config: function(record, config_name) {
+            if (!(record && (config_name in record.model.fields))) {
+                return {};
+            }
+
+            let config_field = record.model.fields[config_name];
+            return config_field.get(record);
+        },
         get_removed_ids: function(record) {
             return record._values[this.name].record_removed.map(function(r) {
                 return r.id;

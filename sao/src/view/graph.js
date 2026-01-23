@@ -3,6 +3,22 @@
 (function() {
     'use strict';
 
+    function override_config(config, override) {
+        for (let [k, v] of Object.entries(override)) {
+            if (!(k in config)) {
+                config[k] = v;
+                continue;
+            }
+            if (v instanceof Array) {
+                config[k] = v;
+            } else if (v instanceof Object) {
+                override_config(config[k], v);
+            } else {
+                config[k] = v;
+            }
+        }
+    }
+
     Sao.View.GraphXMLViewParser = Sao.class_(Sao.View.XMLViewParser, {
         init: function(view, exclude_field, fields) {
             Sao.View.GraphXMLViewParser._super.init.call(
@@ -164,7 +180,10 @@
         display: function(group) {
             var update_prm = this.update_data(group);
             update_prm.done(data => {
-                bb.generate(this._bb_config(data));
+                let bb_data = this._bb_config(data);
+                override_config(
+                    bb_data, structuredClone(this.view.screen.graph_config || {}));
+                bb.generate(bb_data);
             });
             return update_prm;
         },

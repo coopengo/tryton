@@ -880,6 +880,7 @@
             // [Coog specific] used for group_sync
             this.parent = null;
             // end
+            this.graph_config = {};
             this.switch_callback = null;
         },
         get readonly() {
