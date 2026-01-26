@@ -5825,7 +5825,7 @@ function hide_x2m_body(widget) {
             var record = this.record;
             var field = this.field;
             this.update_selection(record, field, () => {
-                this.select.prop('size', this.select.children().length);
+                this.select.prop('size', Math.max(2, this.select.children().length));
                 if (!field) {
                     return;
                 }
