@@ -209,7 +209,8 @@
                 }
             }
 
-            if (['field', 'label'].includes(node.tagName) &&
+            if (['field', 'label', 'separator', 'page'].includes(node.tagName) &&
+                node.attributes && node.attributes.name &&
                 jQuery.isEmptyObject(field)) {
                 Sao.common.error.run(
                     "View Error",
