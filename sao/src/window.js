@@ -1961,6 +1961,7 @@
             this.el_technical_names = jQuery('<input/>', {
                 'type': 'checkbox',
             });
+            this.el_technical_names.on('change', this.toggle_technical_names.bind(this));
 
             jQuery('<div/>', {
                 'class': 'checkbox',
@@ -2003,10 +2004,18 @@
             }).reverse();
 
             names.forEach(name => {
+                let field_name;
+                if (this.el_technical_names && this.el_technical_names.is(':checked')) {
+                    field_name = name;
+                } else {
+                    field_name = parent_node[name].string;
+                }
                 var path = parent_node[name].path;
                 var node = jQuery('<li/>', {
-                    'path': path
-                }).text(parent_node[name].string).click(e => {
+                    'path': path,
+                    'name': name,
+                    'long_string': parent_node[name].string,
+                }).click(e => {
                     if (e.ctrlKey || e.metaKey) {
                         node.toggleClass('bg-primary');
                     } else {
@@ -2015,6 +2024,7 @@
                         node.addClass('bg-primary');
                     }
                 }).appendTo(parent_view);
+                node.append(jQuery('<span/>').text(field_name));
                 parent_node[name].view = node;
 
                 var expander_icon = Sao.common.ICONFACTORY
@@ -2120,6 +2130,21 @@
             el_field = jQuery(el_field);
             var name = el_field.attr('path');
             this.sel_field(name);
+        },
+        toggle_technical_names: function() {
+            let is_checked = this.el_technical_names.is(':checked');
+            let switch_name = (i, elem) => {
+                if (elem.tagName == 'LI') {
+                    let span = elem.querySelector('span');
+                    span.textContent = (!is_checked
+                        ? elem.attributes.long_string.value 
+                        : elem.attributes.name.value);
+                } else {
+                    jQuery(elem).children().each(switch_name);
+                }
+            };
+            this.fields_all.children().each(switch_name);
+            this.fields_selected.children().each(switch_name);
         },
         fill_predefwin: function() {
             Sao.rpc({
@@ -2258,6 +2283,11 @@
                 this.sel_field(name);
             }
             this.el_add_field_names.prop('checked', export_.values.header);
+            this.el_technical_names.prop('checked', export_.values.technical_names);
+            // setting the value through .prop() does not trigger the callback
+            if (export_.values.technical_names) {
+                this.toggle_technical_names();
+            }
             this.selected_records.val(
                 JSON.stringify(export_.values.records == 'selected'));
             this.selected_records.change();
@@ -2285,10 +2315,18 @@
             if (relation) {
                 name += '/rec_name';
             }
+            let node_name;
+            if (this.el_technical_names && this.el_technical_names.is(':checked')) {
+                node_name = name;
+            } else {
+                node_name = long_string;
+            }
             var node = jQuery('<li/>', {
                 'path': name,
+                'name': name,
+                'long_string': long_string,
                 'class': 'draggable-handle',
-            }).text(long_string).click(function(e) {
+            }).click(function(e) {
                 if (e.ctrlKey || e.metaKey) {
                     node.toggleClass('bg-primary');
                 } else {
@@ -2298,6 +2336,7 @@
             }).prepend(
                 Sao.common.ICONFACTORY.get_icon_img('tryton-drag')
             ).appendTo(this.fields_selected);
+            node.append(jQuery('<span/>').text(node_name));
         },
         response: function(response_id) {
             this.info_bar.clear();
