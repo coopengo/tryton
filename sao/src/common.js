@@ -4027,7 +4027,6 @@
                     this.menu.dropdown('toggle');
                 }
             }
-            this.menu.css('display', 'block');
             this.menu.css('position', 'fixed');
             this.menu.css('top', 'unset');
             this.menu.css('bottom', 'unset');
