@@ -382,7 +382,7 @@ function hide_x2m_body(widget) {
             var field;
             var promesses = [];
             if (this.scan_code_btn) {
-                this.scan_code_btn.el.toggle(Boolean(record));
+                Sao.common.toggle(this.scan_code_btn.el, Boolean(record));
             }
             if (record) {
                 // Force to set fields in record
@@ -769,13 +769,14 @@ function hide_x2m_body(widget) {
                 rows.push([]);
             }
             var col_start, col_end, row_start, row_end;
+            let style;
             for (var child of this.el.children()) {
+                style = child.style;
                 child = jQuery(child);
-                col_start = parseInt(
-                    child.css('grid-column-start'), 10);
-                col_end = parseInt(child.css('grid-column-end'), 10);
-                row_start = parseInt(child.css('grid-row-start'), 10);
-                row_end = parseInt(child.css('grid-row-end'), 10);
+                col_start = parseInt(style.gridColumnStart, 10);
+                col_end = parseInt(style.gridColumnEnd, 10);
+                row_start = parseInt(style.gridRowStart, 10);
+                row_end = parseInt(style.gridRowEnd, 10);
 
                 for (i = col_start; i < col_end; i++) {
                     cols[i - 1].push(child);
@@ -788,7 +789,7 @@ function hide_x2m_body(widget) {
             var is_empty = function(e) {
                 var empty = true;
                 for (const child of e.children(':not(.tooltip)')) {
-                    if (jQuery(child).css('display') != 'none') {
+                    if (child.style.display != 'none') {
                         empty = false;
                         break;
                     }
@@ -837,10 +838,10 @@ function hide_x2m_body(widget) {
             }
         },
         show: function() {
-            this.el.show();
+            Sao.common.show(this.el);
         },
         hide: function() {
-            this.el.hide();
+            Sao.common.hide(this.el);
         }
     });
 
@@ -1026,7 +1027,7 @@ function hide_x2m_body(widget) {
                     .find('> .form-container > .form-item')
                     .children(':not(.tooltip)');
                 for (const child of children) {
-                    if (jQuery(child).css('display') != 'none') {
+                    if (child.style.display !== 'none') {
                         to_collapse = false;
                         break;
                     }
@@ -1248,9 +1249,9 @@ function hide_x2m_body(widget) {
                     return number != 0;
                 });
                 if (non_empty.length) {
-                    this.el.show();
+                    Sao.common.show(this.el);
                 } else {
-                    this.el.hide();
+                    Sao.common.hide(this.el);
                 }
             }
         },
@@ -1467,9 +1468,9 @@ function hide_x2m_body(widget) {
         set_invisible: function(invisible) {
             this.visible = !invisible;
             if (invisible) {
-                this.el.hide();
+                Sao.common.hide(this.el);
             } else {
-                this.el.show();
+                Sao.common.show(this.el);
             }
         },
         focus: function() {
@@ -2634,9 +2635,9 @@ function hide_x2m_body(widget) {
             this.el.find('input').prop('readonly', readonly);
             if (this.icon){
                 if (readonly) {
-                    this.icon.hide();
+                    Sao.common.hide(this.icon);
                 } else {
-                    this.icon.show();
+                    Sao.common.show(this.icon);
                 }
             }
         },
@@ -2760,18 +2761,19 @@ function hide_x2m_body(widget) {
         input.attr('step', 1);
         input.attr('lang', Sao.i18n.getlang());
 
-        input.hide().on('focusout', function() {
+        Sao.common.hide(input);
+        input.on('focusout', function() {
             if (input[0].checkValidity()) {
                 switch_id(input, input_text);
-                input.hide();
-                input_text.show();
+                Sao.common.hide(input);
+                Sao.common.show(input_text);
             }
         });
         input_text.on('focusin', function() {
             if (!input.prop('readonly')) {
                 switch_id(input, input_text);
-                input_text.hide();
-                input.show();
+                Sao.common.hide(input_text);
+                Sao.common.show(input);
                 window.setTimeout(function() {
                     input.focus();
                 });
@@ -2838,10 +2840,10 @@ function hide_x2m_body(widget) {
             var set_symbol = function(el, text) {
                 if (text) {
                     el.text(text);
-                    el.show();
+                    Sao.common.show(el);
                 } else {
                     el.text('');
-                    el.hide();
+                    Sao.common.hide(el);
                 }
             };
             let prm = Sao.View.Form.Integer._super.display.call(this);
@@ -2884,8 +2886,9 @@ function hide_x2m_body(widget) {
         },
         focus: function() {
             if (!this.input.prop('readonly')) {
-                this.input_text.hide();
-                this.input.show().focus();
+                Sao.common.hide(this.input_text);
+                Sao.common.show(this.input);
+                this.input.focus();
             } else {
                 this.input_text.focus();
             }
@@ -3469,7 +3472,7 @@ function hide_x2m_body(widget) {
                     icon_input.hide();
                     icon_input.parent().removeClass(type);
                 } else {
-                    icon_input.show();
+                    Sao.common.show(icon_input);
                     icon_input.parent().addClass(type);
                     Sao.common.ICONFACTORY.get_icon_url(icon_name).then(function(url) {
                         button.find('img').attr('src', url);
@@ -5588,13 +5591,13 @@ function hide_x2m_body(widget) {
         },
         update_buttons: function(value) {
             if (value) {
-                this.but_save_as.show();
-                this.but_select.hide();
-                this.but_clear.show();
+                Sao.common.show(this.but_save_as);
+                Sao.common.hide(this.but_select);
+                Sao.common.show(this.but_clear);
             } else {
-                this.but_save_as.hide();
-                this.but_select.show();
-                this.but_clear.hide();
+                Sao.common.hide(this.but_save_as);
+                Sao.common.show(this.but_select);
+                Sao.common.hide(this.but_clear);
             }
         },
         select: function() {
@@ -5740,9 +5743,9 @@ function hide_x2m_body(widget) {
             if (this.text) {
                 this.text.val(this.filename_field.get(record) || '');
                 if (size) {
-                    this.but_open.parent().show();
+                    Sao.common.show(this.but_open.parent());
                 } else {
-                    this.but_open.parent().hide();
+                    Sao.common.hide(this.but_open.parent());
                 }
             }
             this.update_buttons(Boolean(size));
@@ -5772,7 +5775,7 @@ function hide_x2m_body(widget) {
             Sao.View.Form.Binary._super.set_readonly.call(this, readonly);
             var record = this.record;
             this.but_select.toggleClass('disabled', readonly || !record);
-            this.input_select.toggle(!readonly && Boolean(record));
+            Sao.common.toggle(this.input_select, !readonly && Boolean(record));
             this.but_clear.prop('disabled', readonly || !record);
             if (this.text) {
                 this.text.prop('readonly', readonly);
@@ -6064,7 +6067,7 @@ function hide_x2m_body(widget) {
         },
         set_url: function(value) {
             this.button.attr('href', value);
-            this.button.toggle(Boolean(value));
+            Sao.common.toggle(this.button, Boolean(value));
         },
         set_invisible: function(invisible) {
             Sao.View.Form.URL._super.set_invisible.call(this, invisible);
@@ -6143,9 +6146,9 @@ function hide_x2m_body(widget) {
             Sao.View.Form.HTML._super.set_readonly.call(this, readonly);
             this.el.find('button').prop('disabled', readonly || !this.record);
             if (readonly) {
-                this.el.find('a').hide();
+                Sao.common.hide(this.el.find('a'));
             } else {
-                this.el.find('a').show();
+                Sao.common.show(this.el.find('a'));
             }
         },
         translate_dialog: function(languages) {
