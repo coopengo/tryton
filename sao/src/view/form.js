@@ -2905,7 +2905,7 @@ function hide_x2m_body(widget) {
             var digits = this.digits;
             if (digits) {
                 return digits.reduce(function(acc, cur) {
-                    return acc + cur;
+                    return (acc ? acc : 16) + cur;
                 });
             } else {
                 return this.attributes.width || 18;
