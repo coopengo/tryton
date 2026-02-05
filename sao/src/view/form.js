@@ -2902,14 +2902,14 @@ function hide_x2m_body(widget) {
             }
         },
         get width() {
-            var digits = this.digits;
-            if (digits) {
-                return digits.reduce(function(acc, cur) {
-                    return acc + cur;
-                });
-            } else {
-                return this.attributes.width || 18;
-            }
+            let default_ = [16, 2];
+            let digits = this.digits || [null, null];
+            return digits.reduce((acc, cur, i) => {
+                if (cur === null) {
+                    cur = default_[i];
+                }
+                return acc + cur;
+            }, 0);
         },
         display: function() {
             var record = this.record;
