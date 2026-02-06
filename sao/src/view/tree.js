@@ -75,11 +75,12 @@
                 this.view.optionals.push(column);
             }
 
-            if (parseInt(attributes.sum || '0', 10)) {
+            if (attributes.sum) {
+                var label = attributes.sum + Sao.i18n.gettext(': ');
                 var sum = jQuery('<label/>', {
-                    'text': attributes.string,
+                    'text': label,
                 });
-                var aggregate = jQuery('<div/>', {
+                var aggregate = jQuery('<span/>', {
                     'class': 'value',
                 });
                 this.view.sum_widgets.set(column, [sum, aggregate]);
@@ -1277,17 +1278,12 @@
                             Sao.i18n.BC47(Sao.i18n.getlang()), options);
                         sum_ = (sum_ || 0).toLocaleString(
                             Sao.i18n.BC47(Sao.i18n.getlang()), options);
-                    } else {
-                        selected_sum = (selected_sum || 0).toLocaleString(
-                            Sao.i18n.BC47(Sao.i18n.getlang()));
-                        sum_ = (sum_ || 0).toLocaleString(
-                            Sao.i18n.BC47(Sao.i18n.getlang()));
                     }
-                    aggregate = selected_sum + '\n' + sum_;
+                    aggregate = selected_sum + ' / ' + sum_;
                 }
                 sum_value.text(aggregate);
                 sum_value.parent().attr(
-                    'title', sum_label.text() + '\n' + sum_value.text());
+                    'title', sum_label.text() + ' ' + sum_value.text());
             }
         },
         get selected_records() {
