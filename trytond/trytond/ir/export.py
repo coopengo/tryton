@@ -41,6 +41,12 @@ class Export(_ClearCache, ModelSQL, ModelView):
     header = fields.Boolean(
         "Header",
         help="Check to include field names on the export.")
+    technical_names = fields.Boolean(
+        "Technical Names",
+        states={
+            'invisible': ~Eval('header'),
+            },
+        help="Check to use technical name in the header.")
     records = fields.Selection([
             ('selected', "Selected"),
             ('listed', "Listed"),
@@ -80,6 +86,10 @@ class Export(_ClearCache, ModelSQL, ModelView):
 
     @classmethod
     def default_header(cls):
+        return False
+
+    @classmethod
+    def default_technical_names(cls):
         return False
 
     @classmethod

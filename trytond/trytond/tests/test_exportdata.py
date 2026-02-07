@@ -531,6 +531,56 @@ class ExportDataTestCase(TestCase):
                 [('boolean', '=', True)], ['boolean'], header=True),
             [["Boolean"], [True]])
 
+    @with_transaction()
+    def test_header_technical_names(self):
+        "Test export data with header using technical names"
+        pool = Pool()
+        ExportData = pool.get('test.export_data')
+
+        export1, = ExportData.create([{
+                    'char': "Test",
+                    "char_translated": "Test 2",
+                    'integer': 2,
+                    }])
+        self.assertEqual(
+            ExportData.export_data(
+                [export1],
+                ['char', 'char_translated:lang=en', 'integer'],
+                header=True, technical_names=True),
+            [["char", "char_translated:lang=en", "integer"],
+                ["Test", "Test 2", 2]])
+
+    @with_transaction()
+    def test_nested_header_technical_names(self):
+        "Test export data with header and nested fields using technical names"
+        pool = Pool()
+        ExportData = pool.get('test.export_data')
+
+        fields_names = [
+            'many2one/name', 'many2one/rec_name', 'selection',
+            'selection.translated', 'reference.translated',
+            'reference/rec_name']
+        self.assertEqual(
+            ExportData.export_data([], fields_names, True, True),
+            [fields_names])
+
+    @with_transaction()
+    def test_header_domain_technical_names(self):
+        "Test export data with header and domain using technical names"
+        pool = Pool()
+        ExportData = pool.get('test.export_data')
+        ExportData.create([{
+                    'boolean': True,
+                    }, {
+                    'boolean': False,
+                    }])
+
+        self.assertEqual(
+            ExportData.export_data_domain(
+                [('boolean', '=', True)], ['boolean'],
+                header=True, technical_names=True),
+            [["boolean"], [True]])
+
     @with_transaction(context={'_check_access': True})
     def test_model_access(self):
         "Test export without model access"

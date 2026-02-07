@@ -237,6 +237,7 @@ def data(request, pool, model):
     quotechar = request.args.get('qc', '"')
     try:
         header = bool(int(request.args.get('h', True)))
+        technical_names = bool(int(request.args.get('tn', False)))
         locale_format = bool(int(request.args.get('loc', False)))
     except ValueError:
         abort(HTTPStatus.BAD_REQUEST)
@@ -259,11 +260,13 @@ def data(request, pool, model):
         try:
             if domain and isinstance(domain[0], (int, float)):
                 rows = Model.export_data(
-                    Model.browse(domain), fields_names, header)
+                    Model.browse(domain), fields_names, header,
+                    technical_names)
             else:
                 rows = Model.export_data_domain(
                     domain, fields_names,
-                    limit=limit, offset=offset, order=order, header=header)
+                    limit=limit, offset=offset, order=order, header=header,
+                    technical_names=technical_names)
         except (ValueError, KeyError):
             abort(HTTPStatus.BAD_REQUEST)
         data = io.StringIO(newline='')

@@ -189,16 +189,18 @@ class WinCSV(NoModal):
         self.view1.set_headers_visible(False)
         self.view2.set_headers_visible(False)
 
-        cell = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn(_('Field name'), cell, text=0)
-        self.view1.append_column(column)
+        self.cell1 = Gtk.CellRendererText()
+        self.column1 = Gtk.TreeViewColumn(_('Field name'), self.cell1, text=0)
+        self.view1.append_column(self.column1)
 
-        cell = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn(_('Field name'), cell, text=0)
-        self.view2.append_column(column)
+        self.cell2 = Gtk.CellRendererText()
+        self.column2 = Gtk.TreeViewColumn(_('Field name'), self.cell2, text=0)
+        self.view2.append_column(self.column2)
 
-        self.model1 = Gtk.TreeStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
-        self.model2 = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
+        self.model1 = Gtk.TreeStore(
+            GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING)
+        self.model2 = Gtk.ListStore(
+            GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING)
 
         self.model_populate(self._get_fields(self.model))
 
