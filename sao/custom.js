@@ -89,5 +89,4 @@
         Sao.Tab.create(attributes, true);
     };
 
-
 }());
