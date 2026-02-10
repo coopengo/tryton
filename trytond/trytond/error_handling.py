@@ -67,7 +67,7 @@ class ErrorHandler(object):
         something with it.
         '''
         Handler = ErrorHandler._get_handling_class()
-        if Handler is None:
+        if Handler is None or isinstance(error, HandledError):
             if reraise:
                 raise error
             return error
