@@ -62,7 +62,6 @@ class Binary(Field):
             '%s.%s' % (model.__name__, name), '')
         if format_ == 'size':
             converter = len
-            default = 0
 
         if self.file_id:
             table = model.__table__()
@@ -94,7 +93,7 @@ class Binary(Field):
             if i['id'] in res:
                 continue
             value = i[name]
-            if value:
+            if value is not None:
                 value = converter(value)
             else:
                 value = default
@@ -117,7 +116,9 @@ class Binary(Field):
             if self.file_id:
                 columns = [Column(table, self.file_id), Column(table, name)]
                 values = [
-                    filestore.set(value, prefix) if value else None, None]
+                    (filestore.set(value, prefix) if value is not None
+                        else None),
+                    None]
             else:
                 columns = [Column(table, name)]
                 values = [self.sql_format(value)]

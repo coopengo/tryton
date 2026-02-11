@@ -5735,17 +5735,22 @@ function hide_x2m_body(widget) {
             } else {
                 size = field.get(record).length;
             }
-            this.size.val(Sao.common.humanize(size, 'B'));
+            let file_exist = !((size === undefined) || (size === null));
+            if (file_exist) {
+                this.size.val(Sao.common.humanize(size, 'B'));
+            } else {
+                this.size.val('');
+            }
 
             if (this.text) {
                 this.text.val(this.filename_field.get(record) || '');
-                if (size) {
+                if (file_exist) {
                     this.but_open.parent().show();
                 } else {
                     this.but_open.parent().hide();
                 }
             }
-            this.update_buttons(Boolean(size));
+            this.update_buttons(file_exist);
             return prm;
         },
         key_press: function(evt) {
