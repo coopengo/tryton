@@ -308,8 +308,8 @@ class ModelView(Model):
                 xml = '''<?xml version="1.0"?>''' \
                     '''<form col="4">'''
                 for i in res:
-                    if i in ('create_uid', 'create_date',
-                            'write_uid', 'write_date', 'id', 'rec_name'):
+                    if i in ('create_uid', 'create_date', 'write_uid',
+                             'write_date', 'id', 'rec_name', 'xml_id'):
                         continue
                     if res[i]['type'] not in ('one2many', 'many2many'):
                         xml += '<label name="%s"/>' % (i,)
