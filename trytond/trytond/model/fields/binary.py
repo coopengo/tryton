@@ -1,9 +1,5 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
-import logging as tmp_logging;import pprint as tmp_pprint  # NVAUTOLOG
-def _print(*x):  # NVAUTOLOG
-    for _line in tmp_pprint.pformat(x, indent=1, width=130).split('\n'):  # NVAUTOLOG
-        tmp_logging.getLogger('root').critical(_line)  # NVAUTOLOG
 import logging
 import shlex
 import subprocess
@@ -33,7 +29,6 @@ def caster(d):
 def check_content(field_name, *binaries):
     from trytond.model.modelstorage import BinaryScanError
 
-    _print(list(binaries))  # NVAUTOLOG
     scanner = config.get('database', 'binary_scanner')
     scanner_dir = config.get(
         'database', 'binary_scanner_directory', default=tempfile.gettempdir())
