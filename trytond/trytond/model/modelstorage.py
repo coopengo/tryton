@@ -1005,11 +1005,15 @@ class ModelStorage(Model):
         return result
 
     @classmethod
-    def export_data(cls, records, fields_names, header=False):
+    def export_data(
+            cls, records, fields_names, header=False, technical_names=False):
         fields_names = [x.split('/') for x in fields_names]
         data = []
         if header:
-            data.append(cls._convert_field_names(fields_names))
+            if not technical_names:
+                data.append(cls._convert_field_names(fields_names))
+            else:
+                data.append(['/'.join(f) for f in fields_names])
         for record in records:
             data += record.__export_row(fields_names)
         return data
@@ -1017,9 +1021,11 @@ class ModelStorage(Model):
     @classmethod
     def export_data_domain(
             cls, domain, fields_names, offset=0, limit=None, order=None,
-            header=False):
+            header=False, technical_names=False):
         records = cls.search(domain, limit=limit, offset=offset, order=order)
-        return cls.export_data(records, fields_names, header=header)
+        return cls.export_data(
+            records, fields_names, header=header,
+            technical_names=technical_names)
 
     @classmethod
     def import_data(cls, fields_names, data):
