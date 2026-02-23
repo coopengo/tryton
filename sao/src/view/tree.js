@@ -143,6 +143,9 @@
             this.expanded = new Set();
 
             Sao.View.Tree._super.init.call(this, view_id, screen, xml);
+            // [Coog specific]
+            //      > attribute always_expand (expand tree view)
+            this.always_expand = this.attributes.always_expand || null;
 
             // Table of records
             this.rows = [];
@@ -1536,8 +1539,10 @@
             return row;
         },
         n_children: function(row) {
-            if (!row || !this.children_field) {
-                return this.rows.length;
+            // [Coog specific]
+            //      > used for multi_mixed_view
+            if (!row || !this.children_field || !row.record._values[this.children_field] ) {
+                    return this.rows.length;
             }
             if (row.record.is_loaded(this.children_field)) {
                 return row.record.field_get_client(this.children_field).length;
@@ -2070,6 +2075,13 @@
                 }
             }
             this.tree.switch_(this.path);
+        },
+        // [Coog specific] [Bug Sao] call set_selection on child rows as well
+        set_multi_level_selection: function(value){
+            this.set_selection(value);
+            this.rows.forEach(function(row){
+                row.set_multi_level_selection(value);
+            });
         },
         select_column: function(index) {
         },
