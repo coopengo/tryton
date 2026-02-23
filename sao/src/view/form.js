@@ -304,6 +304,7 @@ function eval_pyson(value){
             });
             this.notebooks = [];
             this.expandables = [];
+            this.widget_groups = {};
             this.containers = [];
             this.widget_id = 0;
             Sao.View.Form._super.init.call(this, view_id, screen, xml);
@@ -3518,6 +3519,25 @@ function eval_pyson(value){
             this.screen.windows.push(this);
             this.prm = this.screen.switch_view().done(() => {
                 this.content.append(this.screen.screen_container.el);
+                // [Coog specific]
+                // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
+                if (attributes.group) {
+                    this.screen._multiview_form = view;
+                    this.screen._multiview_group = attributes.group;
+                    if (!Object.hasOwn(view.widget_groups, attributes.group)) {
+                        view.widget_groups[attributes.group] = [];
+                    }
+                    var wgroup = view.widget_groups[attributes.group];
+                    if (this.screen.current_view.view_type == 'tree') {
+                        if ((wgroup.length > 0) &&
+                            (wgroup[0].screen.current_view.view_type == 'tree')) {
+                            throw new Error("Wrong definition");
+                        }
+                        wgroup.unshift(this);
+                    } else {
+                        wgroup.push(this);
+                    }
+                }
             });
 
             if (attributes.add_remove) {
@@ -3689,7 +3709,8 @@ function eval_pyson(value){
                 }
 
                 var new_group = record.field_get_client(this.field_name);
-                if (new_group != this.screen.group) {
+
+                if (new_group && new_group != this.screen.group) {
                     this.screen.set_group(new_group);
                     if ((this.screen.current_view.view_type == 'form') &&
                         this.screen.group.length) {
@@ -3710,6 +3731,14 @@ function eval_pyson(value){
                     this.empty_el.sao_show();
                 } else {
                     this.empty_el.sao_hide();
+                }
+                //
+                // [Coog specific]
+                // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
+                if (this.attributes.group && this.attributes.mode == 'form') {
+                    if (!this.screen.current_record) {
+                        this.set_invisible(this.visible);
+                    }
                 }
 
                 var domain = [];
@@ -4049,6 +4078,9 @@ function eval_pyson(value){
         },
         set_value: function() {
             this.screen.current_view.set_value();
+            if (this.screen.modified()) {  // TODO check if required
+                this.view.screen.record_modified(false);
+            }
         },
         _update_completion: function(text) {
             if (!this.record) {
