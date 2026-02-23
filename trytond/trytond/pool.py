@@ -8,6 +8,7 @@ from weakref import WeakSet
 
 from trytond.modules import load_modules, register_classes
 from trytond.tools import resolve
+from trytond.server_context import ServerContext
 from trytond.transaction import Transaction
 
 __all__ = ['Pool', 'PoolMeta', 'PoolBase', 'isregisteredby']
@@ -244,9 +245,10 @@ class Pool(object):
             self._modules = []
             self._hooks.pop(self.database_name, None)
             try:
-                restart = not load_modules(
-                    self.database_name, self, update=update, lang=lang,
-                    activatedeps=activatedeps, indexes=indexes)
+                with ServerContext().set_context(disable_auto_cache=True):
+                    restart = not load_modules(
+                        self.database_name, self, update=update, lang=lang,
+                        activatedeps=activatedeps, indexes=indexes)
             except Exception:
                 self._modules = None
                 raise
