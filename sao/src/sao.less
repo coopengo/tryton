@@ -3,12 +3,9 @@
 @import "bootstrap";
 @import "bootstrap-rtl";
 @import "sao-variables";
-html {
-    .user-select(none);
-}
-
 html[theme="default"] {
     @import "theme";
+    user-select: none;
 }
 
 .body {
@@ -747,6 +744,10 @@ html.accesskey {
 
     .navbar-btn {
         .badge {
+            /*  [Coog specific] remove padding to not increase size of navbar-btn
+            margin-top: -3px;
+            margin-bottom: -3px;
+            */
             position: absolute;
             top: -5px;
             right: -5px;
@@ -927,6 +928,14 @@ img.icon {
         }
     }
 
+    .empty-overlay {
+        justify-content: flex-start;
+
+        p {
+            margin-top: 2em;
+        }
+    }
+
     @media screen and (max-width: @screen-xs-max) {
         .tree-footer {
             flex-direction: column;
@@ -935,6 +944,7 @@ img.icon {
 }
 
 .empty-overlay {
+    --top-offset: 35px;
     position: absolute;
     height: calc(100% - var(--top-offset) - 5px);
     top: var(--top-offset);
@@ -950,6 +960,10 @@ img.icon {
     p {
         font-size: x-large;
     }
+    &.coog-hidden-toolbar {
+        --top-offset: 0px;
+    }
+
 }
 
 .wizard-form {
@@ -1385,7 +1399,7 @@ img.icon {
         .treeview, .list-form {
             height: auto;
             min-height: 150px;
-            max-height: 300px;
+            max-height: 400px;
         }
     }
     .form-text, .form-richtext {

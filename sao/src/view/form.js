@@ -706,12 +706,7 @@ function eval_pyson(value){
 
             if (this._yexpand.size) {
                 for (i = 1; i <= this._row; i++) {
-                    if (this._yexpand.has(i)) {
-                        this._grid_rows.push(
-                            `minmax(min-content, ${this._row}fr)`);
-                    } else {
-                        this._grid_rows.push('min-content');
-                    }
+                    this._grid_rows.push('min-content');
                 }
             } else {
                 for (i = 1; i <= this._row; i++) {
@@ -1658,7 +1653,9 @@ function eval_pyson(value){
             }).appendTo(jQuery('<div/>', {
                 'class': 'panel-heading'
             }).appendTo(this.sc_editor));
-            this.toolbar.css('width', '100%');
+            this.toolbar.css({
+                width: '100%',
+            });
 
             var buttons = [];
             if (this.container) {
@@ -2365,10 +2362,12 @@ function eval_pyson(value){
             // Set size
             var length = '';
             var width = '100%';
+            this.input.removeClass('with-size');
             if (record) {
                 length = record.expr_eval(this.attributes.size);
                 if (length > 0) {
-                    width = (length + 5) + 'ch';
+                    width = (length + 3) + 'ch';
+                    this.input.addClass('with-size');
                 }
             }
             this.input.val(this.get_client_value());
@@ -2490,7 +2489,7 @@ function eval_pyson(value){
             }).appendTo(this.el);
             this.date = this.labelled = jQuery('<input/>', {
                 'type': 'text',
-                'class': 'form-control input-sm mousetrap',
+                'class': 'form-control input-sm mousetrap input-date',
                 'name': attributes.name,
             }).appendTo(group);
             this.date.uniqueId();
@@ -2826,10 +2825,14 @@ function eval_pyson(value){
             var field = this.field,
                 record = this.record;
             var value = '';
+            this.input.removeClass('with-size');
+            this.input_text.removeClass('with-size');
             if (this.width !== null){
-                this.input_text.css('width', this.width + 'ch');
-                this.input.css('width', (this.width + 5) + 'ch');
-                this.group.css('width', (this.width + 5) + 'ch');
+                this.input_text.css('width', (this.width + 3) + 'ch');
+                this.input.css('width', (this.width + 3) + 'ch');
+                this.group.css('width', (this.width + 3) + 'ch');
+                this.input.addClass('with-size');
+                this.input_text.addClass('with-size');
             }
             if (field) {
                 value = field.get_client(record, this.factor, this.grouping);
@@ -3041,7 +3044,7 @@ function eval_pyson(value){
             }).css('width', '100%').appendTo(this.el);
             this.input = this.labelled = jQuery('<input/>', {
                 'type': 'checkbox',
-                'class': 'form-control input-sm mousetrap',
+                'class': 'form-control input-sm mousetrap input-checkbox',
                 'name': attributes.name,
             }).appendTo(this.group);
             this.input.change(this.focus_out.bind(this));
@@ -3117,6 +3120,9 @@ function eval_pyson(value){
                         Sao.i18n.BC47(record.expr_eval(this.attributes.spell)));
                     this.input.attr('spellcheck', 'true');
                 }
+                if (this.attributes.yexpand) {
+                    this.input.css('height', value.split('\n').length * 2.5 + 2 + "ex");
+                }
             } else {
                 this.input.val('');
             }
@@ -3160,6 +3166,7 @@ function eval_pyson(value){
                     'readonly': 'readonly',
                 });
             widget.css('min-height', this.el.height());
+            widget.css('max-height', this.el.height());
             return widget;
         }
     });
@@ -4023,8 +4030,10 @@ function eval_pyson(value){
                 'tabindex': -1,
                 'aria-label': Sao.i18n.gettext("Switch"),
                 'title': Sao.i18n.gettext("Switch"),
-            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-switch')
-            ).appendTo(buttons);
+            }).append(jQuery('<span/>', {
+                // Coog Override Icon
+                'class': 'glyphicon glyphicon-resize-full'
+            })).appendTo(buttons);
             this.but_switch.click(disable_during(this.switch_.bind(this)));
 
             this.but_previous = jQuery('<button/>', {
@@ -4081,8 +4090,10 @@ function eval_pyson(value){
                     'tabindex': -1,
                     'aria-label': Sao.i18n.gettext("Add"),
                     'title': Sao.i18n.gettext("Add"),
-                }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-add')
-                ).appendTo(buttons);
+                }).append(jQuery('<span/>', {
+                    // Coog Override Icon
+                    'class': 'glyphicon glyphicon-search'
+                })).appendTo(buttons);
                 this.but_add.click(disable_during(this.add.bind(this)));
 
                 this.but_remove = jQuery('<button/>', {
@@ -4091,8 +4102,10 @@ function eval_pyson(value){
                     'tabindex': -1,
                     'aria-label': Sao.i18n.gettext("Remove"),
                     'title': Sao.i18n.gettext("Remove"),
-                }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-remove')
-                ).appendTo(buttons);
+                }).append(jQuery('<span/>', {
+                    // Coog Override Icon
+                    'class': 'glyphicon glyphicon-remove'
+                })).appendTo(buttons);
                 this.but_remove.click(disable_during(this.remove.bind(this)));
             }
 
@@ -4102,8 +4115,10 @@ function eval_pyson(value){
                 'tabindex': -1,
                 'aria-label': Sao.i18n.gettext("New"),
                 'title': Sao.i18n.gettext("New"),
-            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
-            ).appendTo(buttons);
+            }).append(jQuery('<span/>', {
+                // Coog Override Icon
+                'class': 'glyphicon glyphicon-plus'
+            })).appendTo(buttons);
             this.but_new.click(disable_during(() => this.new_()));
 
             this.but_open = jQuery('<button/>', {
@@ -4112,8 +4127,10 @@ function eval_pyson(value){
                 'tabindex': -1,
                 'aria-label': Sao.i18n.gettext("Open"),
                 'title': Sao.i18n.gettext("Open"),
-            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-open')
-            ).appendTo(buttons);
+            }).append(jQuery('<span/>', {
+                // Coog Override Icon
+                'class': 'glyphicon glyphicon-pencil'
+            })).appendTo(buttons);
             this.but_open.click(disable_during(this.open.bind(this)));
 
             this.but_del = jQuery('<button/>', {
@@ -4142,6 +4159,7 @@ function eval_pyson(value){
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -4377,10 +4395,6 @@ function eval_pyson(value){
                     } else {
                         this.empty_but_new.sao_hide();
                     }
-                    let containerPos = this.el[0].getBoundingClientRect();
-                    let contentPos = this.content[0].getBoundingClientRect();
-                    let top_offset = contentPos.top - containerPos.top;
-                    this.empty_el.css('--top-offset', `${top_offset}px`);
                     this.empty_el.sao_show();
                 } else {
                     this.empty_el.sao_hide();
@@ -4851,8 +4865,10 @@ function eval_pyson(value){
                 'tabindex': -1,
                 'aria-label': Sao.i18n.gettext("Add"),
                 'title': Sao.i18n.gettext("Add"),
-            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-add')
-            ).appendTo(buttons);
+            }).append(jQuery('<span/>', {
+                // Coog Override Icon
+                'class': 'glyphicon glyphicon-search'
+            })).appendTo(buttons);
             this.but_add.click(this.add.bind(this));
 
             this.badge = jQuery('<span/>', {
@@ -4868,8 +4884,10 @@ function eval_pyson(value){
                 'tabindex': -1,
                 'aria-label': Sao.i18n.gettext("Remove"),
                 'title': Sao.i18n.gettext("Remove"),
-            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-remove')
-            ).appendTo(buttons);
+            }).append(jQuery('<span/>', {
+                // Coog Override Icon
+                'class': 'glyphicon glyphicon-remove'
+            })).appendTo(buttons);
             this.but_remove.click(this.remove.bind(this));
 
             this.but_unremove = jQuery('<button/>', {
@@ -4888,6 +4906,7 @@ function eval_pyson(value){
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -5011,10 +5030,6 @@ function eval_pyson(value){
                     } else {
                         this.empty_but_new.sao_hide();
                     }
-                    let containerPos = this.el[0].getBoundingClientRect();
-                    let contentPos = this.content[0].getBoundingClientRect();
-                    let top_offset = contentPos.top - containerPos.top;
-                    this.empty_el.css('--top-offset', `${top_offset}px`);
                     this.empty_el.sao_show();
                 } else {
                     this.empty_el.sao_hide();
@@ -5270,9 +5285,9 @@ function eval_pyson(value){
                 'type': 'button',
                 'aria-label': Sao.i18n.gettext("Select"),
                 'title': Sao.i18n.gettext("Select..."),
-            }).append(this.input_select
-            ).append(Sao.common.ICONFACTORY.get_icon_img('tryton-search')
-            ).appendTo(group);
+            }).append(jQuery('<span/>', {
+                'class': 'glyphicon glyphicon-search'
+            })).append(this.input_select).appendTo(group);
             this.but_select
                 .on('dragover', false)
                 .on('drop', this.select_drop.bind(this));
@@ -5282,8 +5297,10 @@ function eval_pyson(value){
                 'type': 'button',
                 'aria-label': Sao.i18n.gettext("Clear"),
                 'title': Sao.i18n.gettext("Clear"),
-            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-clear')
-            ).appendTo(group);
+            }).append(jQuery('<span/>', {
+                // Coog Override Icon
+                'class': 'glyphicon glyphicon-trash'
+            })).appendTo(group);
             this.but_clear.click(this.clear.bind(this));
 
             return group;
@@ -5417,8 +5434,10 @@ function eval_pyson(value){
                     'type': 'button',
                     'aria-label': Sao.i18n.gettext("Open..."),
                     'title': Sao.i18n.gettext("Open..."),
-                }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-open')
-                ).appendTo(jQuery('<span/>', {
+                }).append(jQuery('<span/>', {
+                    // Coog Override Icon
+                    'class': 'glyphicon glyphicon-pencil'
+                })).appendTo(jQuery('<span/>', {
                     'class': 'input-group-btn',
                 }).prependTo(group));
                 this.but_open.click(this.open.bind(this));
@@ -5911,7 +5930,7 @@ function eval_pyson(value){
 
     Sao.View.Form.Dict = Sao.class_(Sao.View.Form.Widget, {
         class_: 'form-dict',
-        expand: true,
+        expand: false,
         init: function(view, attributes) {
             Sao.View.Form.Dict._super.init.call(this, view, attributes);
 
@@ -5949,8 +5968,8 @@ function eval_pyson(value){
                 var group = jQuery('<div/>', {
                     'class': 'input-group input-group-sm'
                 }).appendTo(jQuery('<div>', {
-                    'class': 'dict-row'
-                }).appendTo(body)));
+                    'class': 'dict-row',
+                }).appendTo(body));
                 this.wid_text = jQuery('<input/>', {
                     'type': 'text',
                     'class': 'form-control input-sm',
