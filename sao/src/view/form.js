@@ -1328,7 +1328,7 @@ function eval_pyson(value){
                 this.set_readonly(readonly);
                 this.set_invisible(invisible);
                 this.set_required(required);
-                return;
+                return jQuery.when();
             }
             var state_attrs = field.get_state_attrs(record);
             if (readonly === undefined) {
@@ -1373,6 +1373,7 @@ function eval_pyson(value){
                 Sao.common.apply_label_attributes(
                     this.label, readonly, required);
             }
+            return jQuery.when();
         },
         get _styled_el() {
             return this.el;
@@ -1909,7 +1910,7 @@ function eval_pyson(value){
             return this.codeMirror.getValue();
         },
         display: function(){
-            Sao.View.Form.Source._super.display.call(this);
+            let prm = Sao.View.Form.Source._super.display.call(this);
 
             var display_code = function(str){
                 // Resetting the same value will reset the view at the top,
@@ -1936,7 +1937,7 @@ function eval_pyson(value){
             if (!this.field || !this.record) {
                 this.codeMirror.setValue('');
                 this.clear_tree();
-                return;
+                return prm;
             }
 
             var value = this.field.get_client(this.record);
@@ -1950,6 +1951,7 @@ function eval_pyson(value){
                     return prm;
                 prm = this.record.load(this.tree_data_field).then(this.display_tree());
             }
+            return prm;
         },
         create_tree_element: function(parent, element, good_text, iter_lvl){
             var treeElem = new TreeElement();
@@ -2346,7 +2348,7 @@ function eval_pyson(value){
             return value;
         },
         display: function() {
-            Sao.View.Form.Char._super.display.call(this);
+            let prm = Sao.View.Form.Char._super.display.call(this);
 
             var record = this.record;
             if (this.datalist) {
@@ -2382,6 +2384,7 @@ function eval_pyson(value){
             this.input.attr('maxlength', length);
             this.input.attr('size', length);
             this.group.css('width', width);
+            return prm;
         },
         get modified() {
             if (this.record && this.field) {
@@ -2587,12 +2590,13 @@ function eval_pyson(value){
         display: function() {
             var record = this.record;
             var field = this.field;
-            Sao.View.Form.Date._super.display.call(this);
+            let prm = Sao.View.Form.Date._super.display.call(this);
             var value;
             if (record) {
                 value = field.get_client(record);
             }
             this.date.val(this._format(this.get_format(), value));
+            return prm;
         },
         focus: function() {
             this.date.focus();
@@ -2714,7 +2718,7 @@ function eval_pyson(value){
             this.el.on('keydown', this.send_modified.bind(this));
         },
         display: function() {
-            Sao.View.Form.TimeDelta._super.display.call(this);
+            let prm = Sao.View.Form.TimeDelta._super.display.call(this);
             var record = this.record;
             if (record) {
                 var value = record.field_get_client(this.field_name);
@@ -2722,6 +2726,7 @@ function eval_pyson(value){
             } else {
                 this.input.val('');
             }
+            return prm;
         },
         focus: function() {
             this.input.focus();
@@ -2845,7 +2850,7 @@ function eval_pyson(value){
                     el.sao_hide();
                 }
             };
-            Sao.View.Form.Integer._super.display.call(this);
+            let prm = Sao.View.Form.Integer._super.display.call(this);
             var field = this.field,
                 record = this.record;
             var value = '';
@@ -2876,6 +2881,7 @@ function eval_pyson(value){
             this.input_text.val(value);
             this.input_text.attr('maxlength', this.input.attr('maxlength'));
             this.input_text.attr('size', this.input.attr('size'));
+            return prm;
         },
         set_readonly: function(readonly) {
             Sao.View.Form.Integer._super.set_readonly.call(this, readonly);
@@ -2937,7 +2943,7 @@ function eval_pyson(value){
             this.input.attr('step', step);
             this.input.attr('max', max);
             this.input.attr('min', min);
-            Sao.View.Form.Float._super.display.call(this);
+            return Sao.View.Form.Float._super.display.call(this);
         }
     });
 
@@ -3026,8 +3032,9 @@ function eval_pyson(value){
             });
         },
         display: function() {
-            Sao.View.Form.Selection._super.display.call(this);
+            let prm = Sao.View.Form.Selection._super.display.call(this);
             this.display_update_selection();
+            return prm;
         },
         focus: function() {
             this.select.focus();
@@ -3074,13 +3081,14 @@ function eval_pyson(value){
             });
         },
         display: function() {
-            Sao.View.Form.Boolean._super.display.call(this);
+            let prm = Sao.View.Form.Boolean._super.display.call(this);
             var record = this.record;
             if (record) {
                 this.input.prop('checked', record.field_get(this.field_name));
             } else {
                 this.input.prop('checked', false);
             }
+            return prm;
         },
         focus: function() {
             this.input.focus();
@@ -3129,7 +3137,7 @@ function eval_pyson(value){
             }
         },
         display: function() {
-            Sao.View.Form.Text._super.display.call(this);
+            let prm = Sao.View.Form.Text._super.display.call(this);
             var record = this.record;
             if (record) {
                 var value = record.field_get_client(this.field_name);
@@ -3145,6 +3153,7 @@ function eval_pyson(value){
             } else {
                 this.input.val('');
             }
+            return prm;
         },
         focus: function() {
             this.input.focus();
@@ -3228,7 +3237,7 @@ function eval_pyson(value){
             }, 0);
         },
         display: function() {
-            Sao.View.Form.RichText._super.display.call(this);
+            let prm = Sao.View.Form.RichText._super.display.call(this);
             var value = '';
             var record = this.record;
             if (record) {
@@ -3240,6 +3249,7 @@ function eval_pyson(value){
                 }
             }
             this.input.html(Sao.HtmlSanitizer.sanitize(value || ''));
+            return prm;
         },
         focus: function() {
             this.input.focus();
@@ -3429,7 +3439,7 @@ function eval_pyson(value){
             var record = this.record;
             var field = this.field;
             var value;
-            Sao.View.Form.Many2One._super.display.call(this);
+            let prm = Sao.View.Form.Many2One._super.display.call(this);
 
             this._set_button_sensitive();
             this._set_completion();
@@ -3479,6 +3489,7 @@ function eval_pyson(value){
                 button.attr('aria-label', tooltip);
                 button.attr('title', tooltip);
             });
+            return prm;
         },
         focus: function() {
             this.entry.focus();
@@ -3976,9 +3987,13 @@ function eval_pyson(value){
             }
         },
         display: function() {
+            let prm = jQuery.Deferred();
             this.update_selection(this.record, this.field, () => {
-                Sao.View.Form.Reference._super.display.call(this);
+                Sao.View.Form.Reference._super.display.call(this).then(() => {
+                    prm.resolve();
+                });
             });
+            return prm;
         },
         set_readonly: function(readonly) {
             Sao.View.Form.Reference._super.set_readonly.call(this, readonly);
@@ -4267,7 +4282,7 @@ function eval_pyson(value){
             return delete_ && this.get_access('delete');
         },
         get modified() {
-            return this.screen.current_view.modified;
+            return Boolean(this.screen.current_view && this.screen.current_view.modified);
         },
         set_readonly: function(readonly) {
             Sao.View.Form.One2Many._super.set_readonly.call(this, readonly);
@@ -4377,7 +4392,7 @@ function eval_pyson(value){
             }
         },
         display: function() {
-            Sao.View.Form.One2Many._super.display.call(this);
+            let prm = Sao.View.Form.One2Many._super.display.call(this);
 
             let display = function() {
                 this._set_button_sensitive();
@@ -4443,8 +4458,9 @@ function eval_pyson(value){
             if (this.prm.state() == 'pending') {
                 return this.prm.then(() => display());
             } else {
-                return display();
+                this.prm = display();
             }
+            return Promise.all([prm, this.prm]);
         },
         focus: function() {
             if (this.attributes.add_remove) {
@@ -4992,7 +5008,7 @@ function eval_pyson(value){
             this._set_button_sensitive();
         },
         display: function() {
-            Sao.View.Form.Many2Many._super.display.call(this);
+            let prm = Sao.View.Form.Many2Many._super.display.call(this);
 
             let display = function() {
                 var record = this.record;
@@ -5025,8 +5041,9 @@ function eval_pyson(value){
             if (this.prm.state() == 'pending') {
                 return this.prm.then(() => display());
             } else {
-                return display();
+                this.prm = display();
             }
+            return Promise.all([prm, this.prm]);
         },
         focus: function() {
             this.entry.focus();
@@ -5418,7 +5435,7 @@ function eval_pyson(value){
             this.toolbar('input-group-btn').appendTo(group);
         },
         display: function() {
-            Sao.View.Form.Binary._super.display.call(this);
+            let prm = Sao.View.Form.Binary._super.display.call(this);
 
             var record = this.record, field = this.field;
             if (!field) {
@@ -5446,6 +5463,7 @@ function eval_pyson(value){
                 }
             }
             this.update_buttons(Boolean(size));
+            return prm;
         },
         key_press: function(evt) {
             var editable = !this.text.prop('readonly');
@@ -5626,8 +5644,9 @@ function eval_pyson(value){
             });
         },
         display: function() {
-            Sao.View.Form.Image._super.display.call(this);
+            let prm = Sao.View.Form.Image._super.display.call(this);
             this.update_img();
+            return prm;
         }
     });
 
@@ -5680,7 +5699,7 @@ function eval_pyson(value){
             return content;
         },
         display: function() {
-            Sao.View.Form.Document._super.display.call(this);
+            let prm = Sao.View.Form.Document._super.display.call(this);
             var data, filename;
             var record = this.record;
             if (record) {
@@ -5718,6 +5737,7 @@ function eval_pyson(value){
                 this.content.replaceWith(content);
                 this.content = content;
             });
+            return Promise.all([prm, data]);
         },
     });
 
@@ -5738,7 +5758,7 @@ function eval_pyson(value){
             this.set_icon();
         },
         display: function() {
-            Sao.View.Form.URL._super.display.call(this);
+            let prm = Sao.View.Form.URL._super.display.call(this);
             var url = '';
             var record = this.record;
             if (record) {
@@ -5755,6 +5775,7 @@ function eval_pyson(value){
                 }
                 this.set_icon(value);
             }
+            return prm;
         },
         set_icon: function(value) {
             value = value || 'tryton-public';
@@ -5833,10 +5854,11 @@ function eval_pyson(value){
             return uri;
         },
         display: function() {
-            Sao.View.Form.HTML._super.display.call(this);
+            let prm = Sao.View.Form.HTML._super.display.call(this);
             if (!this.attributes.translate) {
                 this.button.attr('href', this.uri());
             }
+            return prm;
         },
         set_readonly: function(readonly) {
             Sao.View.Form.HTML._super.set_readonly.call(this, readonly);
@@ -5878,7 +5900,7 @@ function eval_pyson(value){
             this.progressbar.css('min-width: 2em');
         },
         display: function() {
-            Sao.View.Form.ProgressBar._super.display.call(this);
+            let prm = Sao.View.Form.ProgressBar._super.display.call(this);
             var value, text;
             var record = this.record;
             var field = this.field;
@@ -5895,6 +5917,7 @@ function eval_pyson(value){
             this.progressbar.attr('aria-valuenow', value * 100);
             this.progressbar.css('width', value * 100 + '%');
             this.progressbar.text(text);
+            return prm;
         }
     });
 
@@ -6136,7 +6159,7 @@ function eval_pyson(value){
             }
         },
         display: function() {
-            this._display();
+            return this._display();
         },
         _display: function() {
             Sao.View.Form.Dict._super.display.call(this);
@@ -6671,8 +6694,9 @@ function eval_pyson(value){
             this.group.addClass('has-feedback');
         },
         display: function() {
-            Sao.View.Form.PYSON._super.display.call(this);
+            let prm = Sao.View.Form.PYSON._super.display.call(this);
             this.validate_pyson();
+            return prm;
         },
         get_encoded_value: function() {
             var value = this.input.val();
