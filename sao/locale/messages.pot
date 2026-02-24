@@ -94,9 +94,6 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-msgid "Close"
-msgstr ""
-
 msgid "Documentation..."
 msgstr ""
 
@@ -297,6 +294,15 @@ msgstr ""
 msgid "Justify Full"
 msgstr ""
 
+msgid "Edit..."
+msgstr ""
+
+msgid "Relation"
+msgstr ""
+
+msgid "Report"
+msgstr ""
+
 msgid "Switch view"
 msgstr ""
 
@@ -461,6 +467,9 @@ msgid "\"%1\" is not valid according to its domain."
 msgstr ""
 
 msgid "The values of \"%1\" are not valid."
+msgstr ""
+
+msgid "The value of \"%1\" is not valid."
 msgstr ""
 
 msgid "Pre-validation"
