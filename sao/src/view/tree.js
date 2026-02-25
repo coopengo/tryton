@@ -1792,6 +1792,7 @@
                         this.screen.selected_records, is_m2m);
                 }
             }
+            Sao.common.PopupMenu.updateLocation(ul);
         }
     });
 
