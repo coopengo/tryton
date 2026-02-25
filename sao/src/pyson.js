@@ -22,6 +22,69 @@
             return JSON.stringify(value);
         }
     };
+    // Human-readable notation for developer tools: unlike toString, the
+    // result can not be parsed back as PYSON.
+    Sao.PYSON.format = function(value) {
+        const format = Sao.PYSON.format;
+        if (value instanceof Sao.PYSON.Eval) {
+            if (value._default === '') {
+                return `rec.${value._value}`;
+            }
+            return `Eval(${format(value._value)}, ${format(value._default)})`;
+        } else if (value instanceof Sao.PYSON.Not) {
+            const operand = value._value;
+            if (operand instanceof Sao.PYSON.Not) {
+                return format(operand._value);
+            } else if (operand instanceof Sao.PYSON.Equal) {
+                return `(${format(operand._statement1)} ≠ ` +
+                    `${format(operand._statement2)})`;
+            } else if (operand instanceof Sao.PYSON.In) {
+                return `(${format(operand._key)} not in ` +
+                    `${format(operand._obj)})`;
+            }
+            return `!(${format(operand)})`;
+        } else if (value instanceof Sao.PYSON.Bool) {
+            return format(value._value);
+        } else if (value instanceof Sao.PYSON.And) {
+            const operator = (value instanceof Sao.PYSON.Or) ? ' | ' : ' & ';
+            return '(' + value._statements.map(format).join(operator) + ')';
+        } else if (value instanceof Sao.PYSON.Equal) {
+            return `(${format(value._statement1)} = ` +
+                `${format(value._statement2)})`;
+        } else if (value instanceof Sao.PYSON.Greater) {
+            let operator;
+            if (value instanceof Sao.PYSON.Less) {
+                operator = value._equal ? '≤' : '<';
+            } else {
+                operator = value._equal ? '≥' : '>';
+            }
+            return `(${format(value._statement1)} ${operator} ` +
+                `${format(value._statement2)})`;
+        } else if (value instanceof Sao.PYSON.In) {
+            return `(${format(value._key)} in ${format(value._obj)})`;
+        } else if (value instanceof Sao.PYSON.PYSON) {
+            const params = value.__string_params__();
+            if (value._operator && (params[0] instanceof Sao.PYSON.PYSON)) {
+                return `${format(params[0])}.${value._operator}(` +
+                    params.slice(1).map(format).join(', ') + ')';
+            }
+            return value.pyson().__class__ + '(' +
+                params.map(format).join(', ') + ')';
+        } else if (value instanceof Array) {
+            return '[' + value.map(format).join(', ') + ']';
+        } else if (value instanceof Object) {
+            return '{' + Object.keys(value).map(key => {
+                return format(key) + ': ' + format(value[key]);
+            }).join(', ') + '}';
+        } else {
+            return JSON.stringify(value);
+        }
+    };
+    // Return true when value may evaluate to a type outside allowed_types,
+    // like the issubset assertions of trytond
+    Sao.PYSON.checkTypes = function(value, allowed_types) {
+        return value.types().some(type => !allowed_types.includes(type));
+    };
 
     Sao.PYSON.PYSON = class PYSON {
         constructor() {
@@ -431,8 +494,7 @@
                     if ( (!(statement instanceof Sao.PYSON.DateTime ||
                         statement instanceof Sao.PYSON.Date ||
                         statement instanceof Sao.PYSON.TimeDelta)) &&
-                        (jQuery(statement.types()).not(
-                            ['number', 'object']).length) ) {
+                        (Sao.PYSON.checkTypes(statement, ['number', 'object'])) ) {
                         throw 'statement must be an integer, float, ' +
                             'date, datetime or timedelta';
                     }
@@ -948,8 +1010,7 @@
         constructor(value) {
             super();
             if (value instanceof Sao.PYSON.PYSON) {
-                if (jQuery(value.types()).not(['object', 'string']).length ||
-                    jQuery(['object', 'string']).not(value.types()).length) {
+                if (Sao.PYSON.checkTypes(value, ['object', 'string'])) {
                     throw 'value must be an object or a string';
                 }
             } else {
@@ -966,7 +1027,7 @@
             };
         }
         types() {
-            return ['integer'];
+            return ['number'];
         }
         __string_params__() {
             return [this._value];
