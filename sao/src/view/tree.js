@@ -1199,8 +1199,12 @@
                             () => moreObserver.observe(more_button[0]));
                     }
                 }
-            }).done(
-                Sao.common.debounce(this.update_with_selection.bind(this), 250));
+            }).done(() => {
+                if (!this.record && this.rows.length) {
+                    this.rows[0].select_row({});
+                }
+                Sao.common.debounce(this.update_with_selection.bind(this), 250)();
+            });
         },
         construct: function(extend) {
             if (!extend) {
