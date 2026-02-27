@@ -43,7 +43,9 @@ pack() {
         && move_res bower_components/codemirror/addon/hint/show-hint.css \
         && move_res bower_components/codemirror/addon/dialog/dialog.css \
         && move_res bower_components/codemirror/addon/fold/foldgutter.css \
-        && move_res bower_components/d3/d3.js \
+        && move_res node_modules/d3/dist/d3.js \
+        && move_res node_modules/billboard.js/dist/billboard.js \
+        && move_res node_modules/billboard.js/dist/billboard.css \
         && move_res bower_components/fullcalendar/dist/fullcalendar.css \
         && move_res bower_components/fullcalendar/dist/fullcalendar.js \
         && move_res bower_components/fullcalendar/dist/locale-all.js \
