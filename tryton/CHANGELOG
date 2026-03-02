@@ -1,3 +1,4 @@
+* Use label or field names for CSV exports header
 * Don't reset date/datetime/time to None when it is invalid
 
 Version 7.6.3 - 2025-09-03
