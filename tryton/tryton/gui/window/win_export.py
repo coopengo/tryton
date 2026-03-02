@@ -158,10 +158,24 @@ class WinExport(WinCSV, InfoBar):
                 not w.get_active() and not self.screen_is_tree))
 
     def add_csv_header_param(self, box):
-        self.add_field_names = Gtk.CheckButton(label=_("Add field names"))
-        self.add_field_names.set_active(True)
+        self.add_headers = Gtk.CheckButton(label=_("Add headers"))
+        self.add_headers.set_active(True)
         box.pack_start(
-            self.add_field_names, expand=False, fill=True, padding=0)
+            self.add_headers, expand=False, fill=True, padding=0)
+
+        self.use_field_names = Gtk.CheckButton(
+            label=_("Use field names instead of labels"))
+        self.use_field_names.connect('toggled', self.toggle_field_names)
+        box.pack_start(
+            self.use_field_names, expand=False, fill=True, padding=0)
+
+        def headers_toggled(button):
+            if button.get_active():
+                self.use_field_names.show_all()
+            else:
+                self.use_field_names.hide()
+
+        self.add_headers.connect('toggled', headers_toggled)
 
     def model_populate(self, fields, parent_node=None, prefix_field='',
             prefix_name=''):
@@ -171,6 +185,7 @@ class WinExport(WinCSV, InfoBar):
         for name, field in sorted(list(fields.items()), key=key, reverse=True):
 
             string_ = field['string'] or name
+            fname = name
 
             items = [(name, field, string_)]
             if field['type'] == 'selection':
@@ -184,21 +199,22 @@ class WinExport(WinCSV, InfoBar):
 
             for name, field, string_ in items:
                 path = prefix_field + name
-                node = self.model1.insert(parent_node, 0,
-                    [string_, path])
+                node = self.model1.insert(
+                    parent_node, 0, [string_, fname, path])
                 string_ = prefix_name + string_
 
                 self.fields[path] = (string_, field.get('relation'))
                 # Insert relation only to real field
                 if '.' not in name:
                     if field.get('relation'):
-                        self.model1.insert(node, 0, [None, ''])
+                        self.model1.insert(node, 0, [None, None, ''])
                     elif field.get('translate', False):
                         for language in self.languages:
                             l_path = f"{path}:lang={language['code']}"
                             l_string = f"{string_} ({language['name']})"
                             self.model1.insert(
-                                node, 0, [language['name'], l_path])
+                                node, 0,
+                                [language['name'], language['code'], l_path])
                             self.fields[l_path] = (l_string, None)
 
     def _get_fields(self, model):
@@ -211,7 +227,7 @@ class WinExport(WinCSV, InfoBar):
     def on_row_expanded(self, treeview, iter, path):
         child = self.model1.iter_children(iter)
         if child and self.model1.get_value(child, 0) is None:
-            prefix_field = self.model1.get_value(iter, 1)
+            prefix_field = self.model1.get_value(iter, 2)
             string_, relation = self.fields[prefix_field]
             self.model_populate(self._get_fields(relation), iter,
                 prefix_field + '/', string_ + '/')
@@ -222,7 +238,7 @@ class WinExport(WinCSV, InfoBar):
         sel.selected_foreach(self._sig_sel_add)
 
     def _sig_sel_add(self, store, path, iter):
-        name = store.get_value(iter, 1)
+        name = store.get_value(iter, 2)
         self.sel_field(name)
 
     def sig_unsel(self, *args):
@@ -234,6 +250,19 @@ class WinExport(WinCSV, InfoBar):
 
     def sig_unsel_all(self, *args):
         self.model2.clear()
+
+    def toggle_field_names(self, button):
+        position = 1 if button.get_active() else 0
+
+        def cell_data_func(column, cell, model, iter_, data):
+            cell.set_property('text', model[iter_][position])
+
+        self.column1.set_cell_data_func(self.cell1, cell_data_func)
+        self.model1.set_sort_column_id(position, Gtk.SortType.ASCENDING)
+        self.view1.queue_draw()
+        self.column2.set_cell_data_func(self.cell2, cell_data_func)
+        self.model2.set_sort_column_id(position, Gtk.SortType.ASCENDING)
+        self.view2.queue_draw()
 
     def fill_predefwin(self):
         try:
@@ -256,7 +285,7 @@ class WinExport(WinCSV, InfoBar):
         iter = self.model2.get_iter_first()
         fields = []
         while iter:
-            field_name = self.model2.get_value(iter, 1)
+            field_name = self.model2.get_value(iter, 2)
             fields.append(field_name)
             iter = self.model2.iter_next(iter)
         if not fields:
@@ -273,18 +302,24 @@ class WinExport(WinCSV, InfoBar):
                 return
         else:
             pref_id = model.get_value(iter_, 0)
-            name = model.get_value(iter_, 1)
+            name = model.get_value(iter_, 2)
             override = common.sur(_("Override '%s' definition?") % name)
             if not override:
                 return
         try:
             values = {
-                'header': self.add_field_names.get_active(),
                 'records': (
                     'selected' if self.selected_records.get_active()
                     else 'listed'),
                 'ignore_search_limit': self.ignore_search_limit.get_active(),
                 }
+            if self.use_field_names.get_active():
+                values['header'] = 'field'
+            elif self.add_headers.get_active():
+                values['header'] = 'label'
+            else:
+                values['header'] = ''
+
             if not pref_id:
                 values.update({
                         'name': name,
@@ -335,7 +370,7 @@ class WinExport(WinCSV, InfoBar):
                 prefix = ''
                 for parent in name.split('/')[:-1]:
                     while iter:
-                        if self.model1.get_value(iter, 1) == \
+                        if self.model1.get_value(iter, 2) == \
                                 (prefix + parent):
                             self.on_row_expanded(self.view1, iter,
                                     self.model1.get_path(iter))
@@ -349,7 +384,8 @@ class WinExport(WinCSV, InfoBar):
                 continue
             self.sel_field(name)
 
-        self.add_field_names.set_active(values.get('header'))
+        self.add_headers.set_active(values.get('header'))
+        self.use_field_names.set_active(values.get('header') == 'field')
         self.selected_records.set_active(
             int(values.get('records') == 'selected'))
         self.ignore_search_limit.set_active(
@@ -359,7 +395,8 @@ class WinExport(WinCSV, InfoBar):
         string_, relation = self.fields[name]
         if relation:
             name += '/rec_name'
-        self.model2.append((string_, name))
+        self.model2.append(
+            (string_, f'{name}/rec_name' if relation else name, name))
 
     def response(self, dialog, response):
         self.info_bar_clear()
@@ -367,9 +404,10 @@ class WinExport(WinCSV, InfoBar):
             fields = []
             iter = self.model2.get_iter_first()
             while iter:
-                fields.append(self.model2.get_value(iter, 1))
+                fields.append(self.model2.get_value(iter, 2))
                 iter = self.model2.iter_next(iter)
-            header = self.add_field_names.get_active()
+            header = ('field' if self.use_field_names.get_active()
+                else ('label' if self.add_headers.get_active() else None))
 
             if self.selected_records.get_active():
                 ids = [r.id for r in self.screen.selected_records]
@@ -529,7 +567,7 @@ class WinExport(WinCSV, InfoBar):
 
         iter_ = self.model2.get_iter_first()
         while iter_:
-            query_string.append(('f', self.model2.get_value(iter_, 1)))
+            query_string.append(('f', self.model2.get_value(iter_, 2)))
             iter_ = self.model2.iter_next(iter_)
 
         encoding = self.csv_enc.get_active_text()
@@ -538,8 +576,10 @@ class WinExport(WinCSV, InfoBar):
 
         query_string.append(('dl', self.get_delimiter()))
         query_string.append(('qc', self.get_quotechar()))
-        if not self.add_field_names.get_active():
-            query_string.append(('h', '0'))
+        if self.use_field_names.get_active():
+            query_string.append(('h', 'field'))
+        elif self.add_headers.get_active():
+            query_string.append(('h', 'label'))
         if self.csv_locale.get_active():
             query_string.append(('loc', '1'))
 

@@ -1443,7 +1443,7 @@
         },
         on_row_expanded: function(node) {
             var container_view = jQuery('<ul/>').css('list-style', 'none')
-                .insertAfter(node.view);
+                .appendTo(node.view);
             this.children_expand(node);
             this.view_populate(node.children, container_view);
         },
@@ -1553,6 +1553,21 @@
                 'value': '0'
             });
 
+            let field_names = jQuery('<label/>', {
+                'text': Sao.i18n.gettext('Use field names'),
+                'class': 'control-label',
+                'for': 'input-field-names',
+            })
+            this.el_field_names = jQuery('<input/>', {
+                'type': 'checkbox',
+                'id': 'input-field-names',
+            });
+            this.el_field_names.on('change', this.toggle_field_names.bind(this));
+            let field_panel = this.fields_all.parents('.col-md-5').first();
+            field_panel.append(jQuery('<div/>', {
+                'class': 'form-group'
+            }).append(field_names).append(this.el_field_names));
+
             jQuery('<div/>', {
                 'class': 'form-group'
             }).append(skip_label)
@@ -1569,10 +1584,19 @@
             this._add_node(el_field.attr('field'), el_field.attr('name'));
         },
         _add_node: function(field, name) {
-            jQuery('<li/>', {
+            let long_string = this.fields[field].name;
+            let node_name;
+            if (this.el_field_names && this.el_field_names.is(':checked')) {
+                node_name = field;
+            } else {
+                node_name = long_string;
+            }
+            let node = jQuery('<li/>', {
                 'field': field,
+                'name': field,
+                'long_string': long_string,
                 'class': 'draggable-handle',
-            }).text(name).prepend(
+            }).prepend(
                 Sao.common.ICONFACTORY.get_icon_img('tryton-drag')
             ).click(function(evt) {
                 const node = jQuery(evt.target);
@@ -1583,6 +1607,7 @@
                     node.siblings().removeClass('bg-primary');
                 }
             }).appendTo(this.fields_selected);
+            node.append(jQuery('<span/>').text(node_name));
         },
         view_populate: function (parent_node, parent_view) {
             var fields_order = Object.keys(parent_node).sort(function(a,b) {
@@ -1595,11 +1620,18 @@
             }).reverse();
 
             fields_order.forEach(field => {
-                var name = parent_node[field].string || field;
+                let field_name;
+                if (this.el_field_names && this.el_field_names.is(':checked')) {
+                    field_name = field;
+                } else {
+                    field_name = parent_node[field].string;
+                }
                 var node = jQuery('<li/>', {
                     'field': parent_node[field].field,
-                    'name': parent_node[field].name
-                }).text(name).click(e => {
+                    'name': field,
+                    'long_string': parent_node[field].string,
+                }).click(e => {
+                    e.stopPropagation();
                     if (e.ctrlKey || e.metaKey) {
                         node.toggleClass('bg-primary');
                     } else {
@@ -1607,6 +1639,7 @@
                         node.addClass('bg-primary');
                     }
                 }).appendTo(parent_view);
+                node.append(jQuery('<span/>').text(field_name));
                 parent_node[field].view = node;
                 var expander_icon = Sao.common.ICONFACTORY
                     .get_icon_img('tryton-arrow-right')
@@ -1618,7 +1651,7 @@
                         expander_icon.data('expanded', !expanded);
                         if (expanded) {
                             icon = 'tryton-arrow-right';
-                            node.next('ul').remove();
+                            node.children('ul').remove();
                         } else {
                             icon = 'tryton-arrow-down';
                             this.on_row_expanded(parent_node[field]);
@@ -1690,6 +1723,38 @@
                     this._get_fields(node.relation), node.children,
                     node.field + '/', node.name + '/');
             }
+        },
+        toggle_field_names: function() {
+            let is_checked = this.el_field_names.is(':checked');
+            let switch_name = (i, elem) => {
+                let span = elem.querySelector('span');
+                span.textContent = (!is_checked
+                    ? elem.attributes.long_string.value
+                    : elem.attributes.name.value);
+                let submenu = elem.querySelector('ul');
+                if (submenu) {
+                    [...submenu.children].forEach(c => switch_name(undefined, c));
+                }
+            };
+            let sort_node = (node) => {
+                let sorted_children = [...node.children];
+                sorted_children.sort((a, b) => {
+                    let a_span = a.querySelector('span');
+                    let b_span = b.querySelector('span');
+                    return (a_span.textContent > b_span.textContent ? 1 : -1);
+                });
+                sorted_children.forEach((n) => {
+                    node.appendChild(n);
+                    let submenu = n.querySelector('ul');
+                    if (submenu) {
+                        sort_node(submenu);
+                    }
+                });
+            }
+
+            this.fields_all.children().each(switch_name);
+            sort_node(this.fields_all[0]);
+            this.fields_selected.children().each(switch_name);
         },
         autodetect: function() {
             var fname = this.file_input.val();
@@ -1954,17 +2019,33 @@
             }).prepend(this.el_csv_locale)).appendTo(this.expander_csv);
             this.expander_csv.append(' ');
 
-            this.el_add_field_names = jQuery('<input/>', {
+            this.el_add_headers = jQuery('<input/>', {
                 'type': 'checkbox',
                 'checked': 'checked'
             });
+            this.el_use_field_names = jQuery('<input/>', {
+                'type': 'checkbox',
+            });
+            this.el_use_field_names.on('change', this.toggle_field_names.bind(this));
 
             jQuery('<div/>', {
                 'class': 'checkbox',
             }).append(jQuery('<label/>', {
-                'text': ' '+Sao.i18n.gettext('Add Field Names')
-            }).prepend(this.el_add_field_names)).appendTo(this.expander_csv);
+                'text': ' '+Sao.i18n.gettext('Add headers')
+            }).prepend(this.el_add_headers)).appendTo(this.expander_csv);
+            let field_div = jQuery('<div/>', {
+                'class': 'checkbox',
+            }).append(jQuery('<label/>', {
+                'text': Sao.i18n.gettext('Use field names instead of labels')
+            }).prepend(this.el_use_field_names)).appendTo(this.expander_csv);
             this.expander_csv.append(' ');
+            this.el_add_headers.on('change', (evt) => {
+                if (this.el_add_headers.is(':checked')) {
+                    field_div.show();
+                } else {
+                    field_div.hide();
+                }
+            });
 
             this.set_url();
             Sortable.create(this.fields_selected.get(0), {
@@ -1995,10 +2076,19 @@
             }).reverse();
 
             names.forEach(name => {
+                let field_name;
+                if (this.el_use_field_names && this.el_use_field_names.is(':checked')) {
+                    field_name = name;
+                } else {
+                    field_name = parent_node[name].string;
+                }
                 var path = parent_node[name].path;
                 var node = jQuery('<li/>', {
-                    'path': path
-                }).text(parent_node[name].string).click(e => {
+                    'path': path,
+                    'name': name,
+                    'long_string': parent_node[name].string,
+                }).click(e => {
+                    e.stopPropagation();
                     if (e.ctrlKey || e.metaKey) {
                         node.toggleClass('bg-primary');
                     } else {
@@ -2007,6 +2097,7 @@
                         node.addClass('bg-primary');
                     }
                 }).appendTo(parent_view);
+                node.append(jQuery('<span/>').text(field_name));
                 parent_node[name].view = node;
 
                 var expander_icon = Sao.common.ICONFACTORY
@@ -2019,7 +2110,7 @@
                         expander_icon.data('expanded', !expanded);
                         if (expanded) {
                             icon = 'tryton-arrow-right';
-                            node.next('ul').remove();
+                            node.children('ul').remove();
                         } else {
                             icon = 'tryton-arrow-down';
                             this.on_row_expanded(parent_node[name]);
@@ -2113,6 +2204,38 @@
             var name = el_field.attr('path');
             this.sel_field(name);
         },
+        toggle_field_names: function() {
+            let is_checked = this.el_use_field_names.is(':checked');
+            let switch_name = (i, elem) => {
+                let span = elem.querySelector('span');
+                span.textContent = (!is_checked
+                    ? elem.attributes.long_string.value
+                    : elem.attributes.name.value);
+                let submenu = elem.querySelector('ul');
+                if (submenu) {
+                    [...submenu.children].forEach(c => switch_name(undefined, c));
+                }
+            };
+            let sort_node = (node) => {
+                let sorted_children = [...node.children];
+                sorted_children.sort((a, b) => {
+                    let a_span = a.querySelector('span');
+                    let b_span = b.querySelector('span');
+                    return (a_span.textContent > b_span.textContent ? 1 : -1);
+                });
+                sorted_children.forEach((n) => {
+                    node.appendChild(n);
+                    let submenu = n.querySelector('ul');
+                    if (submenu) {
+                        sort_node(submenu);
+                    }
+                });
+            }
+
+            this.fields_all.children().each(switch_name);
+            sort_node(this.fields_all[0]);
+            this.fields_selected.children().each(switch_name);
+        },
         fill_predefwin: function() {
             Sao.rpc({
                 'method': 'model.ir.export.get',
@@ -2167,7 +2290,7 @@
             const save = name => {
                 var prm;
                 var values = {
-                    'header': this.el_add_field_names.is(':checked'),
+                    'header': this.el_add_headers.is(':checked') ? (this.el_use_field_names.is(':checked') ? 'field' : 'label') : null,
                     'records': (
                         JSON.parse(this.selected_records.val()) ?
                         'selected' : 'listed'),
@@ -2249,6 +2372,11 @@
                 this.sel_field(name);
             }
             this.el_add_field_names.prop('checked', export_.values.header);
+            this.el_use_field_names.prop('checked', export_.values.header == 'field');
+            // setting the value through .prop() does not trigger the callback
+            if (export_.values.header == 'field') {
+                this.toggle_field_names();
+            }
             this.selected_records.val(
                 JSON.stringify(export_.values.records == 'selected'));
             this.selected_records.change();
@@ -2276,10 +2404,18 @@
             if (relation) {
                 name += '/rec_name';
             }
+            let node_name;
+            if (this.el_use_field_names && this.el_use_field_names.is(':checked')) {
+                node_name = name;
+            } else {
+                node_name = long_string;
+            }
             var node = jQuery('<li/>', {
                 'path': name,
+                'name': name,
+                'long_string': long_string,
                 'class': 'draggable-handle',
-            }).text(long_string).click(function(e) {
+            }).click(function(e) {
                 if (e.ctrlKey || e.metaKey) {
                     node.toggleClass('bg-primary');
                 } else {
@@ -2289,6 +2425,7 @@
             }).prepend(
                 Sao.common.ICONFACTORY.get_icon_img('tryton-drag')
             ).appendTo(this.fields_selected);
+            node.append(jQuery('<span/>').text(node_name));
         },
         response: function(response_id) {
             this.info_bar.clear();
@@ -2297,7 +2434,7 @@
                 this.fields_selected.children('li').each(function(i, field) {
                     fields.push(field.getAttribute('path'));
                 });
-                var header = this.el_add_field_names.is(':checked');
+                var header = this.el_add_headers.is(':checked') ? (this.el_use_field_names.is(':checked') ? 'field' : 'label') : null;
                 var prm, ids, paths;
                 if (JSON.parse(this.selected_records.val())) {
                     ids = this.screen.selected_records.map(function(r) {
@@ -2415,8 +2552,12 @@
             query_string.push(['dl', this.el_csv_delimiter.val()]);
             query_string.push(['qc', this.el_csv_quotechar.val()]);
 
-            if (!this.el_add_field_names.is(':checked')) {
-                query_string.push(['h', '0']);
+            if (this.el_add_headers.is(':checked')) {
+                if (this.el_use_field_names.is(':checked')) {
+                    query_string.push(['h', 'label']);
+                } else {
+                    query_string.push(['h', 'field']);
+                }
             }
             if (this.el_csv_locale.prop('checked')) {
                 query_string.push(['loc', '1']);
