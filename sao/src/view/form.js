@@ -1752,6 +1752,7 @@ function hide_x2m_body(widget) {
                     mode: {
                         name: 'xml'
                     },
+                    gutters: ["CodeMirror-linenumbers"],
                 }
             };
             if (cm_mode) {
