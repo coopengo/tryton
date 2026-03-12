@@ -381,10 +381,12 @@
             if (new_.length && added.length) {
                 this.model.execute('default_get', [added, this.context])
                     .then(values => {
-                        for (const record of new_) {
-                            record.set_default(values, true, false);
+                        if (!jQuery.isEmptyObject(values)) {
+                            for (const record of new_) {
+                                record.set_default(values, true, false);
+                            }
+                            this.record_modified();
                         }
-                        this.record_modified();
                     });
             }
         };
@@ -1245,16 +1247,6 @@
         },
         set_on_change: function(values) {
             var fieldname, value;
-            let missing_keys = new Set(Object.keys(values)).difference(
-                new Set(Object.keys(this.model.fields)));
-            if (missing_keys.size > 0) {
-                let args = {
-                    method: `model.${this.model.name}.fields_get`,
-                    params: [missing_keys.keys(), this.get_context()],
-                };
-                let new_fields = Sao.rpc(args, this.model.session, false);
-                this.group.add_fields(new_fields);
-            }
             for (fieldname in values) {
                 value = values[fieldname];
                 if (!(fieldname in this.model.fields)) {
