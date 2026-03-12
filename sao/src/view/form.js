@@ -1184,7 +1184,7 @@ function hide_x2m_body(widget) {
                     tab_domains.map(function(d, i) {
                         let tab_domain = ['AND', domain, d[1]];
                         let context_vars = Sao.common.domain_context_vars(tab_domain);
-                        if ((record.id >= 0) || !context_vars.has('active_id')) {
+                        if ((record && record.id >= 0) || !context_vars.has('active_id')) {
                             const prm = Sao.rpc({
                                 'method': `model.${action.res_model}.search_count`,
                                 'params': [tab_domain, 0, 100, context],
@@ -1199,7 +1199,7 @@ function hide_x2m_body(widget) {
                     }, this);
                 } else {
                     let context_vars = Sao.common.domain_context_vars(domain);
-                    if ((record.id >= 0) || !context_vars.has('active_id')) {
+                    if ((record && record.id >= 0) || !context_vars.has('active_id')) {
                         const prm = Sao.rpc({
                             'method': `model.${action.res_model}.search_count`,
                             'params': [domain, 0, 100, context],
