@@ -1,0 +1,63 @@
+#!/bin/sh
+
+move_res() {
+    local base
+    base=$(basename "$1")
+    echo "$1" -> "$base"
+    cp -r "$1" dist/ && sed -i "s;$1;$base;g" dist/index.html
+}
+
+# pick the files needed to run and flatten them on dist folder
+# in dev mode, these files are referenced from their original path
+pack() {
+    cp index.html dist/ \
+        && cp custom.js dist/ \
+        && cp custom.css dist/ \
+        && cp -r locale dist/ \
+        && cp -r images dist/ \
+        && cp -r node_modules/bootstrap/dist/fonts dist/ \
+        && move_res node_modules/sortablejs/Sortable.js \
+        && move_res node_modules/bootstrap/dist/css/bootstrap.min.css \
+        && move_res node_modules/bootstrap/dist/css/bootstrap-theme.min.css \
+        && move_res node_modules/bootstrap/dist/js/bootstrap.js \
+        && move_res node_modules/codemirror/lib/codemirror.js \
+        && move_res node_modules/codemirror/mode/python/python.js \
+        && move_res node_modules/codemirror/mode/xml/xml.js \
+        && move_res node_modules/codemirror/addon/lint/lint.js \
+        && move_res node_modules/codemirror/addon/hint/show-hint.js \
+        && move_res node_modules/codemirror/addon/runmode/runmode.js \
+        && move_res node_modules/codemirror/addon/display/autorefresh.js \
+        && move_res node_modules/codemirror/addon/search/search.js \
+        && move_res node_modules/codemirror/addon/search/searchcursor.js \
+        && move_res node_modules/codemirror/addon/search/jump-to-line.js \
+        && move_res node_modules/codemirror/addon/dialog/dialog.js \
+        && move_res node_modules/codemirror/addon/fold/foldcode.js \
+        && move_res node_modules/codemirror/addon/fold/foldgutter.js \
+        && move_res node_modules/codemirror/addon/fold/comment-fold.js \
+        && move_res node_modules/codemirror/addon/fold/indent-fold.js \
+        && move_res node_modules/codemirror/addon/selection/active-line.js \
+        && move_res node_modules/codemirror/lib/codemirror.css \
+        && move_res node_modules/codemirror/addon/lint/lint.css \
+        && move_res node_modules/codemirror/addon/hint/show-hint.css \
+        && move_res node_modules/codemirror/addon/dialog/dialog.css \
+        && move_res node_modules/codemirror/addon/fold/foldgutter.css \
+        && move_res node_modules/d3/dist/d3.js \
+        && move_res node_modules/billboard.js/dist/billboard.js \
+        && move_res node_modules/billboard.js/dist/billboard.css \
+        && move_res node_modules/fullcalendar/dist/fullcalendar.css \
+        && move_res node_modules/fullcalendar/dist/fullcalendar.js \
+        && move_res node_modules/fullcalendar/dist/locale-all.js \
+        && move_res node_modules/gettext.js/dist/gettext.iife.js \
+        && move_res node_modules/jquery/dist/jquery.js \
+        && move_res node_modules/moment/min/locales.js \
+        && move_res node_modules/moment/moment.js \
+        && move_res node_modules/mousetrap/mousetrap.js \
+        && move_res node_modules/mousetrap/plugins/pause/mousetrap-pause.js \
+        && move_res node_modules/papaparse/papaparse.js \
+        && sed -i "s;\.\./node_modules/bootstrap/fonts;fonts;g" dist/tryton-sao.css \
+        && sed -i "s;dist/tiptap-bundle.js;tiptap-bundle.js;g" dist/index.html \
+        && sed -i "s;dist/tryton-sao.js;tryton-sao.js;g" dist/index.html \
+        && sed -i "s;dist/tryton-sao.css;tryton-sao.css;g" dist/index.html
+}
+
+npm install --production --legacy-peer-deps && npx grunt && pack
