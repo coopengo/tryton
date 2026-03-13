@@ -1,0 +1,8 @@
+/node_modules
+/bower_components
+/package-lock.json
+/yarn.lock
+/locale/*.json
+/dist
+/_build
+!/dist/folder-keeper
