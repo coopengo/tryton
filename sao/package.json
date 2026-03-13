@@ -41,30 +41,42 @@
     "grunt-contrib-nodeunit": "^5.0",
     "grunt-contrib-qunit": "^10.1",
     "grunt-contrib-watch": "^1.1",
-    "grunt-po2json": "^0.3",
     "grunt-qunit-junit": "^0.3.1",
-    "grunt-shell": "^4.0",
     "qunit": "^2.24.1"
   },
   "keywords": [
     "tryton"
   ],
   "dependencies": {
+    "@tiptap/core": "^3.22",
+    "@tiptap/extension-code-block-lowlight": "^3.22.3",
+    "@tiptap/extension-table": "^3.22.3",
+    "@tiptap/extension-table-cell": "^3.22.3",
+    "@tiptap/extension-table-header": "^3.22.3",
+    "@tiptap/extension-table-row": "^3.22.3",
+    "@tiptap/extension-task-item": "^3.22.3",
+    "@tiptap/extension-task-list": "^3.22.3",
+    "@tiptap/markdown": "^3.22",
+    "@tiptap/starter-kit": "^3.22",
+    "d3": "^7.9",
     "billboard.js": "^3.17",
     "codemirror": "^5.38",
-    "d3": "^7.9",
+    "esbuild": "^0.25",
     "jquery": "^3",
     "bootstrap": "^3.3.7",
     "moment": "^2.10",
     "gettext.js": "^2",
     "papaparse": "^5.0",
-    "fullcalendar": "^3.10.2",
+    "fullcalendar": "3.10.2",
     "mousetrap": "^1.6",
     "bootstrap-rtl-ondemand": "^3.3.4-ondemand",
     "sortablejs": "^1.8.4",
     "grunt": "^1.6",
     "grunt-cli": "^1.5",
     "grunt-contrib-concat": "^2.1",
-    "grunt-contrib-less": "^3.0"
+    "grunt-contrib-less": "^3.0",
+    "grunt-po2json": "^0.3",
+    "grunt-shell": "^4.0",
+    "lowlight": "^3.3.0"
   }
 }
