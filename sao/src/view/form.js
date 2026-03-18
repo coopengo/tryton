@@ -1459,7 +1459,7 @@ function hide_x2m_body(widget) {
         },
     });
 
-    // [Coog] widget Source (engine)
+    // [Coog] widget Source
     function TreeElement(){
         this.init = function(parent, element, good_text, lvl){
             if (!element || !element.description)
@@ -1590,7 +1590,7 @@ function hide_x2m_body(widget) {
         };
     }
 
-    // [Coog] widget Source (engine)
+    // [Coog] widget Source
     Sao.View.Form.Source = Sao.class_(Sao.View.Form.Widget, {
         class_: 'form-source',
         init: function(view, attributes) {
@@ -1599,26 +1599,39 @@ function hide_x2m_body(widget) {
                 'class': this.class_
             });
             this.tree_data_field = attributes.context_tree || null;
-
-            this.init_tree();
+            if (this.tree_data_field) {
+                this.init_tree();
+            }
             this.tree_data = [];
             this.tree_elements = [];
             this.value = '';
             this.json_data = '';
             this.prev_record = undefined;
-            this.init_editor();
-            this.completionActive = true;
-            this.auto_complete_builtins = ["break", "continue", "def", "elif",
-                "else", "for", "if", "lambda", "pass", "raise", "return",
-                "while", "with", "in", "False", "True", "abs", "all", "any",
-                "bool", "bytearray", "chr", "dict", "divmod", "enumerate",
-                "filter", "float", "format", "frozenset", "hash", "hex", "list",
-                "map", "max", "min", "next", "oct", "ord", "pow", "range",
-                "reversed", "set", "slice", "sorted", "str", "sum", "tuple",
-                "type", "zip", "Decimal", "break", "continue", "def", "elif",
-                "match", "case"];
+            this.init_editor(attributes.source_cm_mode);
+            this.completionActive = false;
+            if (attributes.source_cm_mode === "python") {
+                this.completionActive = true;
+                this.auto_complete_builtins = ["break", "continue", "def", "elif",
+                    "else", "for", "if", "lambda", "pass", "raise", "return",
+                    "while", "with", "in", "False", "True", "abs", "all", "any",
+                    "bool", "bytearray", "chr", "dict", "divmod", "enumerate",
+                    "filter", "float", "format", "frozenset", "hash", "hex", "list",
+                    "map", "max", "min", "next", "oct", "ord", "pow", "range",
+                    "reversed", "set", "slice", "sorted", "str", "sum", "tuple",
+                    "type", "zip", "Decimal", "break", "continue", "def", "elif",
+                    "match", "case"];
+            } else if (attributes.source_cm_mode === "tryton-view") {
+                this.completionActive = true;
+                this.auto_complete_builtins = ["form", "label", "field", "image",
+                    "separator", "newline", "button", "link", "notebook", "page",
+                    "group", "hpaned", "vpaned", "child", "tree", "prefix", "suffix",
+                    "string", "name", "widget", "help", "height", "width", "readonly",
+                    "mode", "view_ids", "invisible", "tree_invisible", "toolbar",
+                    "tree_invisible", "icon", "keyword", "expandable", "editable",
+                    "col", "colspan"];
+            }
         },
-        init_editor: function(){
+        init_editor: function(cm_mode) {
             var button_apply_command = function(evt) {
                 var cmDoc = this.codeMirror.getDoc();
                 switch (evt.data) {
@@ -1668,11 +1681,14 @@ function hide_x2m_body(widget) {
                 width: '100%',
             });
 
-            add_buttons([
-                    {
-                        'icon': 'menu-hamburger',
-                        'command': 'toggle_menu'
-                    }, {
+            var buttons = [];
+            if (this.container) {
+                buttons.push({
+                    'icon': 'menu-hamburger',
+                    'command': 'toggle_menu'
+                });
+            }
+            add_buttons(buttons.concat([{
                         'icon': 'arrow-left',
                         'command': 'undo'
                     }, {
@@ -1681,30 +1697,44 @@ function hide_x2m_body(widget) {
                     }, {
                         'icon': 'ok',
                         'command': 'check'
-                    }]);
+                    }]));
 
             var input = jQuery('<textarea/>', {
             }).appendTo(jQuery('<div/>', {
                 'class': 'panel-body'
             }).appendTo(this.sc_editor).css('min-height', '490px'));
-            this.codeMirror = CodeMirror.fromTextArea(input[0], {
-                mode: {
-                    name: 'python',
-                    version: 3,
-                    singleLineStringErrors: false
-                },
+            var options = {
                 lineNumbers: true,
                 indentUnit: 4,
                 indentWithTabs: false,
                 matchBrackets: true,
                 autoRefresh: true,
-                gutters: ["CodeMirror-lint-markers"],
-                lint: {
-                    lintOnChange: true,
-                    getAnnotations: this.pythonLinter.bind(this),
-                    async: true
+                styleActiveLine: true
+            };
+            var modes = {
+                "python": {
+                    mode: {
+                        name: 'python',
+                        version: 3,
+                        singleLineStringErrors: false
+                    },
+                    gutters: ["CodeMirror-lint-markers"],
+                    lint: {
+                        lintOnChange: true,
+                        getAnnotations: this.pythonLinter.bind(this),
+                        async: true
+                    }
+                },
+                "tryton-view": {
+                    mode: {
+                        name: 'xml'
+                    }
                 }
-            });
+            };
+            if (cm_mode) {
+                options = {...options, ...(modes[cm_mode] || {mode: cm_mode})};
+            }
+            this.codeMirror = CodeMirror.fromTextArea(input[0], options);
             this.codeMirror.on('change', this.send_modified.bind(this));
             this.codeMirror.on('blur', this._focus_out.bind(this));
             // When hint are toggled, autocomplete on input
@@ -1795,6 +1825,9 @@ function hide_x2m_body(widget) {
             this.focus_out();
         },
         toggle_menu: function() {
+            if (!this.container) {
+                return;
+            }
             if (this.container.data('collapsed') === true) {
                 this.container.data('collapsed', false)
                 this.container.css(
