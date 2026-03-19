@@ -2031,7 +2031,9 @@ function hide_x2m_body(widget) {
             }
         },
         clear_tree: function(){
-            this.tbody.empty();
+            if (this.tbody) {
+                this.tbody.empty();
+            }
         },
         normalize_string: function(str){
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
