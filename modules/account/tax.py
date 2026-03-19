@@ -1842,6 +1842,7 @@ class TaxRuleLine(sequence_ordered(), ModelSQL, ModelView, MatchMixin):
 class OpenTaxCode(Wizard):
     __name__ = 'account.tax.open_code'
     start_state = 'open_'
+    _readonly = True
     open_ = StateAction('account.act_tax_line_form')
 
     def do_open_(self, action):
