@@ -39,6 +39,15 @@ this repository contains the full copyright notices and license terms. -->
             <field name="model" eval="None"/>
             <field name="action" ref="act_model_debug"/>
         </record>
+        <record model="ir.action.wizard" id="act_model_developper_view">
+            <field name="name">Developper View</field>
+            <field name="wiz_name">ir.model.developper_view</field>
+        </record>
+        <record model="ir.action.keyword" id="act_model_developper_view_keyword">
+            <field name="keyword">form_action</field>
+            <field name="model" eval="None"/>
+            <field name="action" ref="act_model_developper_view"/>
+        </record>
         <!-- Entry Point -->
         <menuitem parent="menu_debug" name="Debug Instance" id="menu_model_debug" sequence="3" action="act_model_debug"/>
         <!-- ################### -->
