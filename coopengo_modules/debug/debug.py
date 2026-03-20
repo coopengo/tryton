@@ -10,13 +10,13 @@ import json
 import datetime
 import decimal
 
-from trytond.wizard import Wizard, StateTransition, StateView, Button
-from trytond.config import config
+from trytond.wizard import Wizard, StateTransition, StateView, Button,  \
+    StateAction
 from trytond.rpc import RPC
 from trytond.model import ModelSQL, ModelView, fields
 from trytond.transaction import Transaction
 from trytond.pool import Pool
-from trytond.pyson import Eval, Bool
+from trytond.pyson import Eval, Bool, PYSONEncoder
 from trytond.i18n import gettext
 
 logger = logging.getLogger(__name__)
@@ -1190,3 +1190,38 @@ class OpenInitialFrame(Wizard):
         instance = Model(Transaction().context.get('active_id'))
         instance.initial_frame.open_file([instance.initial_frame])
         return 'end'
+
+
+class DevelopperView(Wizard):
+    'Developper View'
+    __name__ = 'ir.model.developper_view'
+
+    class VoidStateAction(StateAction):
+        def __init__(self):
+            StateAction.__init__(self, None)
+
+        def get_action(self):
+            return None
+
+    start_state = 'open_record'
+    open_record = VoidStateAction()
+
+    def do_open_record(self, name):
+        action = {}
+        action['pyson_domain'] = PYSONEncoder().encode(
+            [('id', '=', self.record.id)])
+        action['id'] = None
+        action['keyword'] = 'form_relate'
+        action['type'] = 'ir.action.act_window'
+        action['pyson_order'] = '[]'
+        action['pyson_search_value'] = '[]'
+        action['domains'] = []
+        action['context_model'] = None
+        action['pyson_context'] = '{"developper_view": true}'
+        action['rec_name'] = (f'Developper View for {self.record.rec_name} '
+            f'[{self.record.__class__.__name__}({self.record.id})]')
+        action['name'] = action['rec_name']
+        action['res_model'] = self.record.__class__.__name__
+        action['res_id'] = self.record.id
+        action['views'] = [(None, 'form')]
+        return action, {'developper_view': True}

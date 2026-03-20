@@ -38,6 +38,7 @@ def register():
         debug.DebugModel,
         debug.Debug,
         debug.RefreshDebugData,
+        debug.DevelopperView,
         debug.OpenInitialFrame,
         module='debug', type_='wizard')
 
@@ -398,7 +399,7 @@ def enable_debug_views(pool, update):
         fnames = []
         if view_type == 'tree':
             xml += '<tree>'
-            xml += '<field name="id"/>'
+            xml += '<field name="id" expand="0"/>'
             xml += '<field name="rec_name" expand="1"/>'
             xml += '</tree>'
             fnames += ['rec_name', 'id']
@@ -413,15 +414,20 @@ def enable_debug_views(pool, update):
                     Target = Pool().get(relation)
                     if not issubclass(Target, ModelView):
                         continue
-                if res[fname]['type'] in (
-                        'one2many', 'many2many', 'text', 'dict'):
-                    xml += '<separator name="%s" colspan="2"/>' % fname
+                field_type = res[fname]['type']
+                if field_type == 'dict':
+                    xml += f'<field name="{fname}" colspan="2" height="200"/>'
+                elif field_type in ('one2many', 'many2many', 'text'):
+                    xml += f'<group name="{fname}" colspan="2" height="200">'
                     xml += '<field name="%s" colspan="2"' % fname
+                    if field_type == 'one2many':
+                        xml += ' widget="many2many"'
                     if expand_toolbar:
                         # expand_toolbar is available
-                        xml += ' height="200" expand_toolbar="0"/>'
+                        xml += ' expand_toolbar="0"/>'
                     else:
-                        xml += ' height="200"/>'
+                        xml += '/>'
+                    xml += "</group>"
                 else:
                     xml += '<label name="%s"/><field name="%s"/>' % (
                         fname, fname)
@@ -435,7 +441,7 @@ def enable_debug_views(pool, update):
                 name += ' [Function]'
             result['fields'][fname].update({
                     'string': name,
-                    'states': {'readonly': True},
+                    'states': '{"readonly": true}',
                     'on_change': [],
                     'on_change_with': [],
                     })
