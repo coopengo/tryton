@@ -1962,6 +1962,7 @@ function hide_x2m_body(widget) {
                 if (this.record !== this.prev_record) {
                     this.prev_record = this.record;
                     this.codeMirror.clearHistory();
+                    this.clear_filter();
                     CodeMirror.commands.foldAll(this.codeMirror)
                 }
             }.bind(this);
