@@ -162,10 +162,14 @@
             this.ids[key].push(id);
         },
         display: function(group) {
-            var update_prm = this.update_data(group);
-            update_prm.done(data => {
-                bb.generate(this._bb_config(data));
-            });
+            let update_prm = jQuery.when();
+            let bb_node = document.getElementById(this.el.attr('id'));
+            if (bb_node) {
+                update_prm = this.update_data(group);
+                update_prm.done(data => {
+                    bb.generate(this._bb_config(data));
+                });
+            }
             return update_prm;
         },
         _bb_config: function(data) {
