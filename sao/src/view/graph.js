@@ -162,14 +162,17 @@
             this.ids[key].push(id);
         },
         display: function(group) {
-            let update_prm = jQuery.when();
-            let bb_node = document.getElementById(this.el.attr('id'));
-            if (bb_node) {
-                update_prm = this.update_data(group);
-                update_prm.done(data => {
-                    bb.generate(this._bb_config(data));
-                });
-            }
+            let update_prm = this.update_data(group);
+            let attr_id = this.el.attr('id');
+            update_prm.done(data => {
+                let config = this._bb_config(data);
+                setTimeout(
+                _ => {
+                    if (document.getElementById(attr_id)) {
+                        bb.generate(config);
+                    }
+                }, 100);
+            });
             return update_prm;
         },
         _bb_config: function(data) {
