@@ -162,6 +162,10 @@
             this.ids[key].push(id);
         },
         display: function(group) {
+            // JCA: Temporary, use setTimeout to make sure that the node id we
+            // attach to exists after all promises are resolved.
+            // Check when closing a wizard in a tab with graphs
+            // Should be fixed upstream at one point
             let update_prm = this.update_data(group);
             let attr_id = this.el.attr('id');
             update_prm.done(data => {
