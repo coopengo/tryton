@@ -387,6 +387,19 @@ For example::
     account.invoice.line = acc_inv_line
     account.invoice.tax = acc_inv_tax
 
+materialized
+------------
+
+This section allow to define the interval at which the materialized views
+should be refreshed by the cron job.
+
+The values are expressed in minutes.
+
+For example::
+
+    [materialized]
+    account.account.party = 1440
+
 ssl
 ---
 
