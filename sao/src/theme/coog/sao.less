@@ -94,8 +94,7 @@
             }
 
             // Remove padding from panel-body so trees are more compact
-            padding-left:                0px;
-            padding-right:                0px;
+            padding:                0px;
 
             // Hide selection column of non-act window trees
             * > col.selection-state {
@@ -111,6 +110,13 @@
                 margin:             0px 15px 0px 15px;
                 background-color:   rgba(@coog-background-color, @coog-panel-opacity);
             }
+        }
+
+        > div.panel-body:has(div.form) {
+            // When displaying a form inside a XXX2Many we want to keep the top/bottom
+            // padding so the fields of the enclosed form are not displayed slightly
+            // over the panel-heading
+            padding:            5px 0px 5px 0px;
         }
 
         > div.panel-body.coog-hidden-toolbar {
