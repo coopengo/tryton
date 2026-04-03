@@ -64,6 +64,9 @@ msgstr ""
 msgid "Note"
 msgstr ""
 
+msgid "Toggle Menu"
+msgstr ""
+
 msgid "Relate"
 msgstr ""
 
@@ -793,19 +796,4 @@ msgid "Make this an internal message"
 msgstr ""
 
 msgid "Translate view"
-msgstr ""
-
-msgid "Close all other tabs"
-msgstr ""
-
-msgid "Close tabs to the left"
-msgstr ""
-
-msgid "Close tabs to the right"
-msgstr ""
-
-msgid "Duplicate the tab"
-msgstr ""
-
-msgid "Open in a new browser tab"
 msgstr ""
