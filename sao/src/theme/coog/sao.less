@@ -1177,11 +1177,12 @@ div.infobar {
 }
 
 #processing.spinning {
+    background-color: #b5b5b510;
     .label-info {
         background-color: @gray-light;
         display: inline-block;
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         color: @color-white;
     }
     .label-info:after {
@@ -1194,8 +1195,8 @@ div.infobar {
         border: 6px solid #fff;
         border-color: @color-white transparent @color-white transparent;
         animation: label-info 1.2s linear infinite;
-        position: relative;
-        left: 3px;
+        margin-top: 15%;
+        margin-left: 15%;
     }
     @keyframes label-info {
         0% {
