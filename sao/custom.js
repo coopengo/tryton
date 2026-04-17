@@ -64,8 +64,9 @@
             this._editor = new Tiptap.Editor({
                 element: this._mount[0],
                 extensions: [
-                    Tiptap.StarterKit,
+                    Tiptap.StarterKit.configure({codeBlock: false, link: false}),
                     Tiptap.Markdown,
+                    Tiptap.CodeBlockLowlight.configure({lowlight: Tiptap.lowlight}),
                     Tiptap.Link.configure({openOnClick: false}),
                     Tiptap.MarkdownTable.configure({resizable: false}),
                     Tiptap.MarkdownTableRow,
@@ -84,6 +85,23 @@
                 },
                 onBlur: () => {
                     Sao.View.Form.Markdown._super.focus_out.call(this);
+                },
+                editorProps: {
+                    handleKeyDown: (view, event) => {
+                        if (event.ctrlKey && event.shiftKey && event.key === 'V') {
+                            event.preventDefault();
+                            if (navigator.clipboard && navigator.clipboard.readText) {
+                                navigator.clipboard.readText().then(text => {
+                                    if (text) {
+                                        const { state, dispatch } = view;
+                                        dispatch(state.tr.insertText(text));
+                                    }
+                                }).catch(() => {});
+                            }
+                            return true;
+                        }
+                        return false;
+                    },
                 },
             });
         },

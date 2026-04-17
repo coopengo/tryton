@@ -1,5 +1,17 @@
-import { Editor, InputRule } from '@tiptap/core';
+import { Editor, InputRule, renderNestedMarkdownContent } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
+import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
+import { createLowlight } from 'lowlight';
+import python from 'highlight.js/lib/languages/python';
+import javascript from 'highlight.js/lib/languages/javascript';
+import sql from 'highlight.js/lib/languages/sql';
+import xml from 'highlight.js/lib/languages/xml';
+
+const lowlight = createLowlight();
+lowlight.register('python', python);
+lowlight.register('javascript', javascript);
+lowlight.register('sql', sql);
+lowlight.register('xml', xml);
 import { Markdown } from '@tiptap/markdown';
 import { Link } from '@tiptap/extension-link';
 import { Table } from '@tiptap/extension-table';
@@ -76,11 +88,15 @@ const MarkdownTaskList = TaskList.extend({
         return helpers.createNode(
             'taskList',
             {},
-            token.items.map(item =>
-                helpers.createNode('taskItem', { checked: item.checked || false }, [
+            token.items.map(item => {
+                const content = [
                     helpers.createNode('paragraph', {}, helpers.parseInline(item.tokens)),
-                ])
-            )
+                ];
+                if (item.nestedTokens && item.nestedTokens.length > 0) {
+                    content.push(...helpers.parseChildren(item.nestedTokens));
+                }
+                return helpers.createNode('taskItem', { checked: item.checked || false }, content);
+            })
         );
     },
 
@@ -92,7 +108,8 @@ const MarkdownTaskList = TaskList.extend({
 const MarkdownTaskItem = TaskItem.extend({
     renderMarkdown(node, helpers) {
         const checked = node.attrs && node.attrs.checked;
-        return (checked ? '- [x] ' : '- [ ] ') + helpers.renderChildren(node.content).trim();
+        const prefix = checked ? '- [x] ' : '- [ ] ';
+        return renderNestedMarkdownContent(node, helpers, prefix);
     },
 });
 
@@ -120,6 +137,8 @@ export {
     Editor,
     StarterKit,
     Markdown,
+    CodeBlockLowlight,
+    lowlight,
     LinkWithInputRule as Link,
     MarkdownTable,
     MarkdownTableRow,

@@ -53,6 +53,7 @@
   ],
   "dependencies": {
     "@tiptap/core": "^3.22",
+    "@tiptap/extension-code-block-lowlight": "^3.22.3",
     "@tiptap/extension-table": "^3.22.3",
     "@tiptap/extension-table-cell": "^3.22.3",
     "@tiptap/extension-table-header": "^3.22.3",
@@ -68,6 +69,7 @@
     "grunt": "^1.6",
     "grunt-cli": "^1.5",
     "grunt-contrib-concat": "^2.1",
-    "grunt-contrib-less": "^3.0"
+    "grunt-contrib-less": "^3.0",
+    "lowlight": "^3.3.0"
   }
 }
