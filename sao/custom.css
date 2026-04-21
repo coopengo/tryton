@@ -22,6 +22,10 @@ ul.contextual > li:hover > ul.contextual-submenu {
     top: 0;
 }
 
+div.panel-body:has( > .markdown-source ) {
+    padding: 0px
+}
+
 .form-markdown .panel-heading {
     padding: 0;
     background-color: #f8f9fa;
@@ -81,7 +85,7 @@ ul.contextual > li:hover > ul.contextual-submenu {
 }
 
 .form-markdown .markdown-editor {
-    max-width: 800px;
+    padding: 15px;
     margin: 0 auto;
 }
 
@@ -142,10 +146,14 @@ ul.contextual > li:hover > ul.contextual-submenu {
     flex-shrink: 0;
 }
 
-.markdown-source {
+div.panel-body:has( > div.markdown-source ) {
+    padding: 0px
+}
+
+textarea.markdown-source {
     display: block;
     width: 100%;
-    max-width: 800px;
+    padding: 15px;
     margin: 0 auto;
     min-height: 150px;
     padding: 8px 12px;
