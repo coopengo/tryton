@@ -1229,6 +1229,10 @@ div.infobar {
     h4, h5, h6 { font-size: 1em; }
 }
 
+div.panel:has( > div.panel-body > .markdown-source ) {
+    margin: 0px;
+}
+
 div.panel-body:has( > .markdown-source ) {
     padding: 0px
 }
@@ -1257,11 +1261,11 @@ div.panel-body:has( > .markdown-source ) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     border: none;
-    background: @color-lightest-grey;
+    background: @color-white;
     border-radius: 4px;
     color: #444;
     cursor: pointer;
@@ -1311,11 +1315,11 @@ div.panel-body:has( > .markdown-source ) {
 }
 
 div.panel-body:has(> div.markdown-editor > div.tiptap[contenteditable="false"]) {
-    background-color: @color-lightest-grey;
+    background-color: #d4e4f14f;
 }
 
 .form-markdown .markdown-editor .tiptap[contenteditable="false"] {
-    background-color: @color-lightest-grey;
+    user-select: text
 }
 
 .form-markdown .tiptap table {

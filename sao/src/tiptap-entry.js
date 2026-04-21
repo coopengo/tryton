@@ -13,6 +13,7 @@ lowlight.register('javascript', javascript);
 lowlight.register('sql', sql);
 lowlight.register('xml', xml);
 import { Markdown } from '@tiptap/markdown';
+import { history } from '@tiptap/pm/history';
 import { Link } from '@tiptap/extension-link';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -20,6 +21,8 @@ import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TaskList } from '@tiptap/extension-task-list';
 import { TaskItem } from '@tiptap/extension-task-item';
+
+const History = history;
 
 const MarkdownTable = Table.extend({
     markdownTokenName: 'table',
@@ -146,4 +149,5 @@ export {
     MarkdownTableHeader,
     MarkdownTaskList,
     MarkdownTaskItem,
+    History,
 };
