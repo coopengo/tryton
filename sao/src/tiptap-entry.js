@@ -1,4 +1,4 @@
-import { Editor, InputRule, renderNestedMarkdownContent } from '@tiptap/core';
+import { Editor, InputRule, Node, renderNestedMarkdownContent } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import { createLowlight } from 'lowlight';
@@ -138,6 +138,7 @@ const LinkWithInputRule = Link.extend({
 
 export {
     Editor,
+    Node,
     StarterKit,
     Markdown,
     CodeBlockLowlight,

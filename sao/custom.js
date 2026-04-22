@@ -27,7 +27,114 @@
         hr: _md_svg('<line x1="5" x2="19" y1="12" y2="12"/>'),
         link: _md_svg('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'),
         source: _md_svg('<path d="M9 9L4 12l5 3"/><path d="M15 9l5 3-5 3"/><line x1="12" x2="12" y1="6" y2="18"/>'),
+        image: _md_svg('<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>'),
     };
+
+    var MD_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+    var MD_ALLOWED_IMAGE_MIMES = [
+        'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+    var MD_RES_RE = /^md-res:([0-9a-f]{32})$/;
+
+    var _md_bytes_to_data_url = function(bytes, mime) {
+        if (!bytes) { return null; }
+        if (typeof bytes === 'string') {
+            return 'data:' + (mime || 'image/png') + ';base64,' + bytes;
+        }
+        var binary = '';
+        var chunk = 0x8000;
+        for (var i = 0; i < bytes.length; i += chunk) {
+            binary += String.fromCharCode.apply(null,
+                bytes.subarray(i, Math.min(i + chunk, bytes.length)));
+        }
+        return 'data:' + (mime || 'image/png') + ';base64,' + btoa(binary);
+    };
+
+    var _md_sniff_mime = function(bytes) {
+        if (!(bytes instanceof Uint8Array)) { return null; }
+        if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 &&
+            bytes[2] === 0x4e && bytes[3] === 0x47) {
+            return 'image/png';
+        }
+        if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 &&
+            bytes[2] === 0xff) {
+            return 'image/jpeg';
+        }
+        if (bytes.length >= 6 && bytes[0] === 0x47 && bytes[1] === 0x49 &&
+            bytes[2] === 0x46 && bytes[3] === 0x38) {
+            return 'image/gif';
+        }
+        if (bytes.length >= 12 &&
+            bytes[0] === 0x52 && bytes[1] === 0x49 &&
+            bytes[2] === 0x46 && bytes[3] === 0x46 &&
+            bytes[8] === 0x57 && bytes[9] === 0x45 &&
+            bytes[10] === 0x42 && bytes[11] === 0x50) {
+            return 'image/webp';
+        }
+        return null;
+    };
+
+    var _md_new_uuid = function() {
+        var bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+        var hex = '';
+        for (var i = 0; i < bytes.length; i++) {
+            hex += ('0' + bytes[i].toString(16)).slice(-2);
+        }
+        return hex;
+    };
+
+    var MD_IMAGE_NODE = Tiptap.Node.create({
+        name: 'image',
+        group: 'inline',
+        inline: true,
+        atom: true,
+        selectable: true,
+        draggable: true,
+        addOptions: function() {
+            return {widget: null};
+        },
+        addAttributes: function() {
+            return {
+                src: {default: null},
+                alt: {default: null},
+                title: {default: null},
+            };
+        },
+        parseHTML: function() {
+            return [{tag: 'img[src]'}];
+        },
+        renderHTML: function(props) {
+            var attrs = props.HTMLAttributes || {};
+            var widget = this.options.widget;
+            var src = attrs.src || '';
+            var display_src = src;
+            var match = MD_RES_RE.exec(src);
+            if (match && widget && widget._image_cache) {
+                var cached = widget._image_cache.get(match[1]);
+                display_src = cached || '';
+            }
+            var out = jQuery.extend({}, attrs, {src: display_src});
+            if (match) {
+                out['data-md-res'] = match[1];
+            }
+            return ['img', out];
+        },
+        markdownTokenName: 'image',
+        parseMarkdown: function(token, helpers) {
+            return helpers.createNode('image', {
+                src: token.href,
+                alt: token.text,
+                title: token.title || null,
+            });
+        },
+        renderMarkdown: function(node) {
+            var attrs = node.attrs || {};
+            var alt = attrs.alt || '';
+            var src = attrs.src || '';
+            var title = attrs.title ? ' "' + attrs.title + '"' : '';
+            return '![' + alt + '](' + src + title + ')';
+        },
+    });
 
     Sao.View.Form.Markdown = Sao.class_(Sao.View.Form.Widget, {
         class_: 'form-markdown',
@@ -36,9 +143,26 @@
             Sao.View.Form.Markdown._super.init.call(this, view, attributes);
             this._show_toolbar = parseInt(attributes.toolbar || '1', 10) !== 0;
             this._source_mode = false;
+            this._image_cache = new Map();
+            this._file_input = jQuery('<input/>', {
+                'type': 'file',
+                'accept': MD_ALLOWED_IMAGE_MIMES.join(','),
+            }).css('display', 'none').on('change', (ev) => {
+                var pos = this._pending_insert_pos;
+                this._pending_insert_pos = undefined;
+                var files = ev.target.files;
+                if (files && files.length) {
+                    for (var i = 0; i < files.length; i++) {
+                        this._insert_image_from_file(files[i], pos);
+                        pos = null;
+                    }
+                }
+                ev.target.value = '';
+            });
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default',
             });
+            this.el.append(this._file_input);
             this.prev_record = undefined;
             this._toolbar_heading = jQuery('<div/>', {
                 'class': 'panel-heading',
@@ -76,6 +200,7 @@
                     Tiptap.MarkdownTableHeader,
                     Tiptap.MarkdownTaskList,
                     Tiptap.MarkdownTaskItem.configure({nested: true}),
+                    MD_IMAGE_NODE.configure({widget: this}),
                 ],
                 content: '',
                 marked: {
@@ -94,6 +219,49 @@
                     Sao.View.Form.Markdown._super.focus_out.call(this);
                 },
                 editorProps: {
+                    handleDrop: (view, event, slice, moved) => {
+                        if (moved) { return false; }
+                        var files = event.dataTransfer &&
+                            event.dataTransfer.files;
+                        if (!files || !files.length) { return false; }
+                        var image_files = [];
+                        for (var i = 0; i < files.length; i++) {
+                            if (files[i].type &&
+                                    files[i].type.indexOf('image/') === 0) {
+                                image_files.push(files[i]);
+                            }
+                        }
+                        if (!image_files.length) { return false; }
+                        event.preventDefault();
+                        var coords = view.posAtCoords({
+                            left: event.clientX, top: event.clientY});
+                        var pos = coords ? coords.pos : null;
+                        for (var f = 0; f < image_files.length; f++) {
+                            this._insert_image_from_file(image_files[f], pos);
+                            pos = null;
+                        }
+                        return true;
+                    },
+                    handlePaste: (view, event) => {
+                        var items = event.clipboardData &&
+                            event.clipboardData.items;
+                        if (!items) { return false; }
+                        var image_files = [];
+                        for (var i = 0; i < items.length; i++) {
+                            if (items[i].kind !== 'file') { continue; }
+                            var f = items[i].getAsFile();
+                            if (f && f.type &&
+                                    f.type.indexOf('image/') === 0) {
+                                image_files.push(f);
+                            }
+                        }
+                        if (!image_files.length) { return false; }
+                        event.preventDefault();
+                        for (var k = 0; k < image_files.length; k++) {
+                            this._insert_image_from_file(image_files[k]);
+                        }
+                        return true;
+                    },
                     handleKeyDown: (view, event) => {
                         if (event.ctrlKey && event.shiftKey && event.key === 'V') {
                             event.preventDefault();
@@ -169,6 +337,16 @@
                     {rows: 3, cols: 3, withHeaderRow: true}).run());
             add_btn('hr', MD_ICONS.hr, Sao.i18n.gettext("Horizontal rule"),
                 (e) => e.chain().focus().setHorizontalRule().run());
+            add_btn('image', MD_ICONS.image, Sao.i18n.gettext("Insert image"),
+                () => {
+                    try {
+                        this._pending_insert_pos =
+                            this._editor.state.selection.from;
+                    } catch (e) {
+                        this._pending_insert_pos = undefined;
+                    }
+                    this._file_input.trigger('click');
+                });
             add_btn('link', MD_ICONS.link, Sao.i18n.gettext("Link"),
                 (e) => {
                     if (e.isActive('link')) {
@@ -306,20 +484,217 @@
             if (record) {
                 value = record.field_get_client(this.field_name) || '';
             }
-            this._editor.commands.setContent(
-                value, {contentType: 'markdown', emitUpdate: false});
-            if (this._source_mode) {
-                this._source_textarea.val(value);
+            var record_changed = (this.record !== this.prev_record);
+            if (record_changed) {
+                this._image_cache.clear();
             }
-            // When switching record (or loading the first record), clear the
-            // history. Simplest way to do so is to unregister / re-register
-            // the history plugin
-            if (this.record !== this.prev_record) {
-                this.prev_record = this.record;
-                this._editor.unregisterPlugin('history');
-                this._editor.registerPlugin(Tiptap.History({}));
-            }
+            var cache_prm = this._sync_image_cache();
+            jQuery.when(cache_prm).then(() => {
+                this._editor.commands.setContent(
+                    value, {contentType: 'markdown', emitUpdate: false});
+                if (this._source_mode) {
+                    this._source_textarea.val(value);
+                }
+                if (record_changed) {
+                    this.prev_record = this.record;
+                    this._editor.unregisterPlugin('history');
+                    this._editor.registerPlugin(Tiptap.History({}));
+                }
+            });
             return prm;
+        },
+        _get_markdown_resources_group: function() {
+            if (!this.record) { return null; }
+            try {
+                return this.record.field_get_client('markdown_resources');
+            } catch (e) {
+                return null;
+            }
+        },
+        _live_resources: function(group) {
+            var removed = group.record_removed || [];
+            var deleted = group.record_deleted || [];
+            var all = [];
+            for (var i = 0; i < group.length; i++) {
+                var r = group[i];
+                if (removed.indexOf(r) >= 0 || deleted.indexOf(r) >= 0) {
+                    continue;
+                }
+                all.push(r);
+            }
+            return all;
+        },
+        _sync_image_cache: function() {
+            var group = this._get_markdown_resources_group();
+            if (!group) { return jQuery.when(); }
+            return jQuery.when(this._ensure_resource_fields(group)).then(
+                () => {
+                    var all = this._live_resources(group);
+                    if (!all.length) { return; }
+                    return this._load_resources_meta(group, all).then(() => {
+                        var matches = all.filter((r) => {
+                            try {
+                                return r.field_get_client('field') ===
+                                    this.field_name;
+                            } catch (e) { return false; }
+                        });
+                        var promises = matches.map(
+                            (r) => this._cache_resource(r));
+                        return jQuery.when.apply(jQuery, promises);
+                    });
+                });
+        },
+        _load_resources_meta: function(group, resources) {
+            var to_load = resources.filter(
+                (r) => r.id >= 0 && !r.is_loaded('uuid'));
+            if (!to_load.length) { return jQuery.when(); }
+            var ids = to_load.map((r) => r.id);
+            return jQuery.when(group.model.execute(
+                'read', [ids, ['uuid', 'field']])).then((rows) => {
+                    var by_id = {};
+                    rows.forEach((row) => { by_id[row.id] = row; });
+                    to_load.forEach((r) => {
+                        var row = by_id[r.id];
+                        if (!row) { return; }
+                        r._values.uuid = row.uuid;
+                        r._values.field = row.field;
+                        r._loaded.uuid = true;
+                        r._loaded.field = true;
+                    });
+                });
+        },
+        _cache_resource: function(resource) {
+            var uuid;
+            try {
+                uuid = resource.field_get_client('uuid');
+            } catch (e) { return jQuery.when(); }
+            if (!uuid || this._image_cache.has(uuid)) {
+                return jQuery.when();
+            }
+            var image_field = resource.model.fields.image;
+            if (!image_field) { return jQuery.when(); }
+            var data_prm = image_field.get_data(resource);
+            return jQuery.when(data_prm).then((data) => {
+                if (!data) { return; }
+                var mime;
+                if (data instanceof Uint8Array) {
+                    mime = _md_sniff_mime(data);
+                }
+                this._image_cache.set(uuid,
+                    _md_bytes_to_data_url(data, mime));
+                this._refresh_image_nodes();
+            });
+        },
+        _refresh_image_nodes: function() {
+            if (!this._editor || !this._editor.view) { return; }
+            var view = this._editor.view;
+            view.dispatch(view.state.tr.setMeta('md-image-refresh', true));
+        },
+        _ensure_resource_fields: function(group) {
+            var needed = ['field', 'uuid', 'image'];
+            var missing = needed.filter(
+                (n) => !group.model.fields[n]);
+            if (!missing.length) { return jQuery.when(); }
+            return jQuery.when(group.model.execute(
+                'fields_get', [missing])).then((descs) => {
+                    group.add_fields(descs);
+                });
+        },
+        _insert_image_from_file: function(file, pos) {
+            if (!this.record) { return; }
+            if (MD_ALLOWED_IMAGE_MIMES.indexOf(file.type) === -1) {
+                this._show_image_error(
+                    Sao.i18n.gettext("Unsupported image type"));
+                return;
+            }
+            if (file.size > MD_MAX_IMAGE_BYTES) {
+                var mb = Math.floor(MD_MAX_IMAGE_BYTES / 1024 / 1024);
+                this._show_image_error(
+                    Sao.i18n.gettext("Image too large (max ") +
+                    mb + ' MB)');
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = (ev) => {
+                var bytes = new Uint8Array(ev.target.result);
+                var uuid = _md_new_uuid();
+                var group;
+                try {
+                    group = this.record.field_get_client(
+                        'markdown_resources');
+                } catch (e) {
+                    this._show_image_error(Sao.i18n.gettext(
+                        "Cannot insert image: record does not support" +
+                        " markdown resources"));
+                    return;
+                }
+                if (!group) {
+                    this._show_image_error(Sao.i18n.gettext(
+                        "Cannot insert image: markdown_resources field" +
+                        " is not loaded in this view"));
+                    return;
+                }
+                jQuery.when(this._ensure_resource_fields(group)).then(() => {
+                    this._image_cache.set(uuid,
+                        _md_bytes_to_data_url(bytes, file.type));
+                    var node = {
+                        type: 'image',
+                        attrs: {
+                            src: 'md-res:' + uuid,
+                            alt: file.name || '',
+                        },
+                    };
+                    var chain = this._editor.chain().focus();
+                    if (pos !== undefined && pos !== null) {
+                        chain.insertContentAt(pos, node);
+                    } else {
+                        chain.insertContent(node);
+                    }
+                    chain.run();
+                    this.set_value();
+                    var new_record = group.new_(false);
+                    new_record.model.fields.field.set_client(
+                        new_record, this.field_name);
+                    new_record.model.fields.uuid.set_client(
+                        new_record, uuid);
+                    new_record.model.fields.image.set_client(
+                        new_record, bytes);
+                    group.add(new_record, -1, true);
+                });
+            };
+            reader.onerror = () => {
+                this._show_image_error(
+                    Sao.i18n.gettext("Could not read image file"));
+            };
+            reader.readAsArrayBuffer(file);
+        },
+        _show_image_error: function(message) {
+            if (this._error_tip) {
+                this._error_tip.remove();
+            }
+            var tip = jQuery('<div class="md-image-error"/>').text(message);
+            this._error_tip = tip;
+            var anchor = null;
+            try {
+                var view = this._editor.view;
+                var sel = view.state.selection;
+                var coords = view.coordsAtPos(sel.from);
+                anchor = {left: coords.left, top: coords.bottom};
+            } catch (e) { /* fall through */ }
+            if (!anchor) {
+                var rect = this._mount[0].getBoundingClientRect();
+                anchor = {left: rect.left + 8, top: rect.top + 8};
+            }
+            tip.css({
+                position: 'fixed',
+                left: anchor.left + 'px',
+                top: (anchor.top + 4) + 'px',
+            }).appendTo('body');
+            tip.on('click', () => tip.remove());
+            setTimeout(() => {
+                if (tip === this._error_tip) { this._error_tip = null; }
+                tip.remove();
+            }, 4000);
         },
         focus: function() {
             if (this._source_mode) {
