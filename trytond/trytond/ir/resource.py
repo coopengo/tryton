@@ -20,6 +20,16 @@ class ResourceAccessMixin(ModelStorage):
 
     resource = fields.Reference(
         "Resource", selection='get_models', required=True)
+    last_user = fields.Function(fields.Char('Last User',
+            states={
+                'invisible': ~Eval('last_user'),
+                }),
+        'get_last_user')
+    last_modification = fields.Function(fields.DateTime('Last Modification',
+            states={
+                'invisible': ~Eval('last_modification'),
+                }),
+        'get_last_modification')
 
     @classmethod
     def __setup__(cls):
@@ -28,6 +38,7 @@ class ResourceAccessMixin(ModelStorage):
             table = cls.__table__()
             cls._sql_indexes.add(
                 Index(table, (table.resource, Index.Similarity(begin=True))))
+        cls._order.insert(0, ('last_modification', 'DESC'))
 
     @classmethod
     def default_resource(cls):
@@ -78,7 +89,12 @@ class ResourceAccessMixin(ModelStorage):
         result = super().search(
             domain, offset=offset, limit=limit, order=order,
             count=False if enforce_access else count, query=query)
-        if enforce_access:
+        if not enforce_access:
+            return result
+
+        loop = 0
+        fetched = []
+        while True:
             records = result
             resources = defaultdict(set)
             allowed = set()
@@ -95,15 +111,27 @@ class ResourceAccessMixin(ModelStorage):
                                 ('id', 'in', list(sub_ids)),
                                 ]))
 
-            records = [
+            fetched.extend([
                 r for r in records
-                if not r.resource or r.resource in allowed]
-            if count:
-                result = len(records)
-            else:
-                # re-browse to have same context
-                result = cls.browse(records)
-        return result
+                if not r.resource or r.resource in allowed])
+
+            if limit is None or len(fetched) >= limit:
+                if limit is not None:
+                    fetched = fetched[:limit]
+                break
+
+            loop += 1
+            result = super().search(
+                domain, offset=offset + loop * limit, limit=limit, order=order,
+                count=False, query=False)
+            if not result:
+                break
+
+        if count:
+            return len(fetched)
+        else:
+            # re-browse to have same context
+            return cls.browse(fetched)
 
     @classmethod
     def read(cls, ids, fields_names):
@@ -131,6 +159,19 @@ class ResourceAccessMixin(ModelStorage):
         cls.check_access([r.id for r in records], mode='create')
         return records
 
+    def get_last_user(self, name):
+        return (self.write_uid.rec_name if self.write_uid
+            else self.create_uid.rec_name)
+
+    def get_last_modification(self, name):
+        return (self.write_date if self.write_date else
+            self.create_date).replace(microsecond=0)
+
+    @classmethod
+    def order_last_modification(tables):
+        table, _ = tables[None]
+        return [Coalesce(table.write_date, table.create_date)]
+
 
 class ResourceMixin(ResourceAccessMixin, ModelStorage, ModelView):
 
@@ -143,21 +184,10 @@ class ResourceMixin(ResourceAccessMixin, ModelStorage, ModelView):
     copy_to_resources_visible = fields.Function(
         fields.Boolean("Copy to Resources Visible"),
         'on_change_with_copy_to_resources_visible')
-    last_user = fields.Function(fields.Char('Last User',
-            states={
-                'invisible': ~Eval('last_user'),
-                }),
-        'get_last_user')
-    last_modification = fields.Function(fields.DateTime('Last Modification',
-            states={
-                'invisible': ~Eval('last_modification'),
-                }),
-        'get_last_modification')
 
     @classmethod
     def __setup__(cls):
         super().__setup__()
-        cls._order.insert(0, ('last_modification', 'DESC'))
         cls.resource.required = True
 
     @fields.depends('resource')
@@ -173,19 +203,6 @@ class ResourceMixin(ResourceAccessMixin, ModelStorage, ModelView):
     @fields.depends(methods=['get_copy_to_resources'])
     def on_change_with_copy_to_resources_visible(self, name=None):
         return bool(self.get_copy_to_resources())
-
-    def get_last_user(self, name):
-        return (self.write_uid.rec_name if self.write_uid
-            else self.create_uid.rec_name)
-
-    def get_last_modification(self, name):
-        return (self.write_date if self.write_date else self.create_date
-            ).replace(microsecond=0)
-
-    @staticmethod
-    def order_last_modification(tables):
-        table, _ = tables[None]
-        return [Coalesce(table.write_date, table.create_date)]
 
 
 class ResourceCopyMixin(ModelStorage):
