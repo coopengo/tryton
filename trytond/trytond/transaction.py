@@ -128,6 +128,7 @@ class SavepointManager:
         self.__class__._count += 1
         self.previous_savepoint = transaction.current_savepoint
         self.transaction = transaction
+        self.rollbacked_transaction = False
         transaction.current_savepoint = self.name
         self.transaction.savepoints.append(self)
 
@@ -137,18 +138,21 @@ class SavepointManager:
         return self
 
     def __exit__(self, type_, value, traceback):
-        transaction_members = vars(Transaction)
-        descriptors = [transaction_members[n] for n in (
-                'log_records', 'create_records', 'delete_records',
-                'trigger_records', 'check_warnings', '_atexit',
-                '_datamanagers')]
+        if self.rollbacked_transaction:
+            self.transaction.savepoints.pop()
+            self.transaction.current_savepoint = self.previous_savepoint
+            return True
+
+        transaction_members = Transaction.__dict__
+        descriptors = [transaction_members[n]
+            for n in Transaction._savepoint_properties]
         inner = self.transaction.current_savepoint
         inner_cache_key = self.transaction._cache_key()
         self.transaction.current_savepoint = outer = self.previous_savepoint
         outer_cache_key = self.transaction._cache_key()
         if type_ is None and value is None and traceback is None:
             for d in descriptors:
-                d.merge(self.transaction, inner, outer)
+                d.update_value(self.transaction, inner, outer)
             # since the outer cache is a deepcopy of the inner cache we can
             # safely replace the inner value by the outer value when releasing
             # the savepoint
@@ -198,7 +202,17 @@ class SavepointAwareProperty:
         if not hasattr(obj, self.private_name):
             setattr(obj, self.private_name, {})
         store = getattr(obj, self.private_name)
-        return store.setdefault(obj.current_savepoint, self.factory())
+        if obj.current_savepoint not in store:
+            if len(obj.savepoints) > 1:
+                previous_savepoint = obj.savepoints[-2]
+            else:
+                previous_savepoint = None
+            if previous_savepoint in store:
+                store[obj.current_savepoint] = copy.copy(
+                    store[previous_savepoint])
+            else:
+                store[obj.current_savepoint] = self.factory()
+        return store[obj.current_savepoint]
 
     def __set__(self, obj, value):
         if not hasattr(obj, self.private_name):
@@ -206,17 +220,11 @@ class SavepointAwareProperty:
         store = getattr(obj, self.private_name)
         store[obj.current_savepoint] = value
 
-    def merge(self, transaction, from_, to):
+    def update_value(self, transaction, from_, to):
         store = getattr(transaction, self.private_name, {})
-        to_merge = store.pop(from_, _MISSING_SAVEPOINT)
-        if to_merge is not _MISSING_SAVEPOINT:
-            new_value = store.setdefault(to, self.factory())
-            if isinstance(new_value, list):
-                new_value += to_merge
-            elif isinstance(new_value, (dict, set)):
-                new_value.update(to_merge)
-            else:
-                raise TypeError
+        from_value = store.pop(from_, _MISSING_SAVEPOINT)
+        if from_value is not _MISSING_SAVEPOINT:
+            store[to] = from_value
 
 
 def with_savepoint(*, rollback_on=Exception):
@@ -574,6 +582,8 @@ class Transaction(object):
         self._clear_warnings()
         if self.connection:
             self.connection.rollback()
+        for savepoint in self.savepoints:
+            savepoint.rollbacked_transaction = True
 
     def savepoint(self, *, rollback_on=None):
         previous_cache = self.get_cache()
@@ -621,3 +631,8 @@ class Transaction(object):
     @property
     def active_records(self):
         return self.context.get('active_test', True)
+
+
+Transaction._savepoint_properties = [name
+    for name, property_ in Transaction.__dict__.items()
+    if isinstance(property_, SavepointAwareProperty)]
