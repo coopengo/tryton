@@ -488,19 +488,19 @@
             if (record_changed) {
                 this._image_cache.clear();
             }
-            var cache_prm = this._sync_image_cache();
-            jQuery.when(cache_prm).then(() => {
-                this._editor.commands.setContent(
-                    value, {contentType: 'markdown', emitUpdate: false});
-                if (this._source_mode) {
-                    this._source_textarea.val(value);
-                }
-                if (record_changed) {
-                    this.prev_record = this.record;
-                    this._editor.unregisterPlugin('history');
-                    this._editor.registerPlugin(Tiptap.History({}));
-                }
-            });
+            this._editor.commands.setContent(
+                value, {contentType: 'markdown', emitUpdate: false});
+            if (this._source_mode) {
+                this._source_textarea.val(value);
+            }
+            if (record_changed) {
+                this.prev_record = this.record;
+                this._editor.unregisterPlugin('history');
+                this._editor.registerPlugin(Tiptap.History({}));
+            }
+            // Load images asynchronously; _cache_resource calls
+            // _refresh_image_nodes() per image as data URLs become available.
+            this._sync_image_cache();
             return prm;
         },
         _get_markdown_resources_group: function() {
@@ -587,8 +587,14 @@
         },
         _refresh_image_nodes: function() {
             if (!this._editor || !this._editor.view) { return; }
-            var view = this._editor.view;
-            view.dispatch(view.state.tr.setMeta('md-image-refresh', true));
+            var dom = this._editor.view.dom;
+            jQuery(dom).find('img[data-md-res]').each((_, img) => {
+                var uuid = img.getAttribute('data-md-res');
+                var cached = this._image_cache.get(uuid);
+                if (cached) {
+                    img.src = cached;
+                }
+            });
         },
         _ensure_resource_fields: function(group) {
             var needed = ['field', 'uuid', 'image'];
