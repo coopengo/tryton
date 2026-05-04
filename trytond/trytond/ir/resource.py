@@ -5,9 +5,10 @@ from collections import defaultdict
 
 from sql.conditionals import Coalesce
 
-from trytond.i18n import lazy_gettext
+from trytond.i18n import gettext, lazy_gettext
 from trytond.model import (
     Index, Model, ModelSQL, ModelStorage, ModelView, fields)
+from trytond.model.exceptions import AccessError
 from trytond.pool import Pool
 from trytond.pyson import Eval
 from trytond.tools import grouped_slice
@@ -80,58 +81,27 @@ class ResourceAccessMixin(ModelStorage):
             (model, {'create': 'write', 'delete': 'write'}.get(mode, mode))]
 
     @classmethod
+    def check_search_access(cls, domain):
+        pool = Pool()
+        User = pool.get('res.user')
+
+        super_user = (Transaction().user == 0
+            or 1 in User.get_groups()
+            or not Transaction().check_access)
+
+        if not super_user:
+            raise AccessError(gettext(
+                    'ir.msg_access_resource_search_error',
+                    resource=cls.__name__))
+
+    @classmethod
     def search(
             cls, domain, offset=0, limit=None, order=None, count=False,
             query=False):
-        transaction = Transaction()
-        enforce_access = (
-            not query and transaction.user and transaction.check_access)
-        result = super().search(
-            domain, offset=offset, limit=limit, order=order,
-            count=False if enforce_access else count, query=query)
-        if not enforce_access:
-            return result
-
-        loop = 0
-        fetched = []
-        while True:
-            records = result
-            resources = defaultdict(set)
-            allowed = set()
-            with without_check_access():
-                records = cls.browse(records)
-            for record in records:
-                if isinstance(record.resource, Model):
-                    resources[record.resource.__class__].add(
-                        record.resource.id)
-
-            for RModel, ids in resources.items():
-                for sub_ids in grouped_slice(ids):
-                    allowed.update(RModel.search([
-                                ('id', 'in', list(sub_ids)),
-                                ]))
-
-            fetched.extend([
-                r for r in records
-                if not r.resource or r.resource in allowed])
-
-            if limit is None or len(fetched) >= limit:
-                if limit is not None:
-                    fetched = fetched[:limit]
-                break
-
-            loop += 1
-            result = super().search(
-                domain, offset=offset + loop * limit, limit=limit, order=order,
-                count=False, query=False)
-            if not result:
-                break
-
-        if count:
-            return len(fetched)
-        else:
-            # re-browse to have same context
-            return cls.browse(fetched)
+        cls.check_search_access(domain)
+        return super().search(
+            domain, offset=offset, limit=limit, order=order, count=count,
+            query=query)
 
     @classmethod
     def read(cls, ids, fields_names):
