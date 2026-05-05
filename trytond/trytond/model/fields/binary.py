@@ -1,12 +1,21 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import logging
+import shlex
+import subprocess
+import tempfile
+
 from sql import Column, Null
 
+from trytond.config import config
 from trytond.filestore import filestore
+from trytond.i18n import gettext
 from trytond.tools import cached_property, grouped_slice, reduce_ids
 from trytond.transaction import Transaction
 
 from .field import Field
+
+logger = logging.getLogger(__name__)
 
 
 def caster(d):
@@ -15,6 +24,32 @@ def caster(d):
     elif isinstance(d, memoryview):
         return bytes(d)
     return bytes(d, encoding='utf8')
+
+
+def check_content(field_name, *binaries):
+    from trytond.model.modelstorage import BinaryScanError
+
+    scanner = config.get('database', 'binary_scanner')
+    scanner_dir = config.get(
+        'database', 'binary_scanner_directory', default=tempfile.gettempdir())
+    if not scanner:
+        return
+
+    with tempfile.TemporaryDirectory(dir=scanner_dir) as tempdir:
+        for binary in binaries:
+            with tempfile.NamedTemporaryFile(dir=tempdir, delete=False) as fd:
+                fd.write(binary)
+
+        try:
+            subprocess.check_call(
+                shlex.split(scanner) + [tempdir],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError as error:
+            logger.critical(
+                "'%s %s' exited with code '%s'",
+                scanner, tempdir, error.returncode)
+            raise BinaryScanError(gettext(
+                    'ir.msg_malicious_binary', field=field_name))
 
 
 class Binary(Field):
@@ -62,7 +97,6 @@ class Binary(Field):
             '%s.%s' % (model.__name__, name), '')
         if format_ == 'size':
             converter = len
-            default = 0
 
         if self.file_id:
             table = model.__table__()
@@ -94,7 +128,7 @@ class Binary(Field):
             if i['id'] in res:
                 continue
             value = i[name]
-            if value:
+            if value is not None:
                 value = converter(value)
             else:
                 value = default
@@ -112,17 +146,26 @@ class Binary(Field):
         if prefix is None:
             prefix = transaction.database.name
 
+        self._check_contents(
+            Model.__names__(name)['field'], *((ids, value) + args)[1::2])
+
         args = iter((ids, value) + args)
         for ids, value in zip(args, args):
             if self.file_id:
                 columns = [Column(table, self.file_id), Column(table, name)]
                 values = [
-                    filestore.set(value, prefix) if value else None, None]
+                    (filestore.set(value, prefix) if value is not None
+                        else None),
+                    None]
             else:
                 columns = [Column(table, name)]
                 values = [self.sql_format(value)]
             cursor.execute(*table.update(columns, values,
                     where=reduce_ids(table.id, ids)))
+
+    @classmethod
+    def _check_contents(cls, field, *values):
+        check_content(field, *values)
 
     def definition(self, model, language):
         definition = super().definition(model, language)

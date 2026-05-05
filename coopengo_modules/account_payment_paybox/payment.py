@@ -6,6 +6,7 @@ import hmac
 import hashlib
 import datetime
 from collections import OrderedDict
+from urllib.parse import quote
 
 from trytond.i18n import gettext
 from trytond.rpc import RPC
@@ -131,9 +132,6 @@ class Group(metaclass=PoolMeta):
 
         return parameters
 
-    def encode_paybox_url_parameters(self, parameters):
-        return parameters
-
     def paybox_url_builder(self):
         config = self.journal.get_paybox_config()
         main_url = config.get('payment_url')
@@ -141,12 +139,13 @@ class Group(metaclass=PoolMeta):
 
         valid_values = [(key, value) for key, value in parameters.items()
             if value is not None]
-        encoded_params = self.encode_paybox_url_parameters(OrderedDict(valid_values))
-        url_encoded_params = '&'.join(['%s=%s' % name_var for
-                name_var in encoded_params.items()])
-
-        pbx_hmac = ('PBX_HMAC=%s' % self.generate_hmac(url_encoded_params,
+        get_url_part = '&'.join(['%s=%s' % (var_name, value) for
+                var_name, value in valid_values])
+        pbx_hmac = ('PBX_HMAC=%s' % self.generate_hmac(get_url_part,
                 config))
+
+        url_encoded_params = '&'.join(['%s=%s' % (var_name, quote(str(value))) for
+                (var_name, value) in valid_values])
         final_url = '%s?%s&%s' % (main_url, url_encoded_params, pbx_hmac)
         return final_url
 

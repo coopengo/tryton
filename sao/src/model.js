@@ -2671,10 +2671,7 @@
                         if (record2) {
                             let to_update = Object.fromEntries(
                                 Object.entries(vals).filter(
-                                    ([k, v]) => {
-                                        !Object.prototype.hasOwnProperty.call(
-                                            vals_to_set, k)
-                                    }
+                                    ([k, v]) => !Object.hasOwn(vals_to_set, k)
                                 ));
                             record2.set_on_change(to_update);
                         }
@@ -2969,7 +2966,7 @@
             return previous != value;
         },
         get_size: function(record) {
-            var data = record._values[this.name] || 0;
+            var data = record._values[this.name];
             if ((data instanceof Uint8Array) ||
                 (typeof(data) == 'string')) {
                 return data.length;

@@ -86,10 +86,9 @@ class FieldBinaryTestCase(TestCase):
         "Test create binary with empty"
         Binary = Pool().get('test.binary_required')
 
-        with self.assertRaises(RequiredValidationError):
-            binary, = Binary.create([{
-                        'binary': cast(b''),
-                        }])
+        binary, = Binary.create([{
+                    'binary': cast(b''),
+                    }])
 
     @with_transaction()
     def test_create_required_with_invalid_sql_constraint(self):
