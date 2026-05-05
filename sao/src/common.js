@@ -4273,6 +4273,7 @@
         for (var i = 0; i < input[0].files.length; i++) {
             Sao.common.get_file_data(input[0].files[i], callback, char_);
         }
+        input.val(undefined);
     };
 
     Sao.common.get_file_data = function(file, callback, char_) {
