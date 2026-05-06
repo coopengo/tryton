@@ -114,6 +114,8 @@
                 display_src = cached || '';
             }
             var out = jQuery.extend({}, attrs, {src: display_src});
+            // Keep data-md-res so _refresh_image_nodes() can patch src in-place
+            // once the async data URL resolves, without re-rendering the editor.
             if (match) {
                 out['data-md-res'] = match[1];
             }
@@ -495,6 +497,8 @@
             }
             if (record_changed) {
                 this.prev_record = this.record;
+                // tiptap-pm History has no clearHistory() API; unregister+re-register
+                // is the only way to reset undo state when switching records.
                 this._editor.unregisterPlugin('history');
                 this._editor.registerPlugin(Tiptap.History({}));
             }
@@ -512,6 +516,8 @@
             }
         },
         _live_resources: function(group) {
+            // Pending removals stay in the group array until the parent record
+            // is saved; filter them out so we don't try to load their data.
             var removed = group.record_removed || [];
             var deleted = group.record_deleted || [];
             var all = [];
@@ -545,6 +551,10 @@
                 });
         },
         _load_resources_meta: function(group, resources) {
+            // New (unsaved) records already have uuid/field set client-side.
+            // For saved records, field_get_client() would trigger a lazy fetch
+            // that may not resolve before we filter by field name, so we
+            // batch-read and inject directly into _values/_loaded.
             var to_load = resources.filter(
                 (r) => r.id >= 0 && !r.is_loaded('uuid'));
             if (!to_load.length) { return jQuery.when(); }
@@ -641,6 +651,8 @@
                     return;
                 }
                 jQuery.when(this._ensure_resource_fields(group)).then(() => {
+                    // Cache the data URL immediately so renderHTML can resolve
+                    // the md-res: src before the record is saved.
                     this._image_cache.set(uuid,
                         _md_bytes_to_data_url(bytes, file.type));
                     var node = {
@@ -657,6 +669,9 @@
                         chain.insertContent(node);
                     }
                     chain.run();
+                    // Commit the markdown text (with the md-res: token) to the
+                    // field before creating the resource record so both stay in
+                    // sync if the parent record is saved immediately.
                     this.set_value();
                     var new_record = group.new_(false);
                     new_record.model.fields.field.set_client(
