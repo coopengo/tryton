@@ -5,9 +5,10 @@ from collections import defaultdict
 
 from sql.conditionals import Coalesce
 
-from trytond.i18n import lazy_gettext
+from trytond.i18n import gettext, lazy_gettext
 from trytond.model import (
     Index, Model, ModelSQL, ModelStorage, ModelView, fields)
+from trytond.model.exceptions import AccessError
 from trytond.pool import Pool
 from trytond.pyson import Eval
 from trytond.tools import grouped_slice
@@ -20,6 +21,16 @@ class ResourceAccessMixin(ModelStorage):
 
     resource = fields.Reference(
         "Resource", selection='get_models', required=True)
+    last_user = fields.Function(fields.Char('Last User',
+            states={
+                'invisible': ~Eval('last_user'),
+                }),
+        'get_last_user')
+    last_modification = fields.Function(fields.DateTime('Last Modification',
+            states={
+                'invisible': ~Eval('last_modification'),
+                }),
+        'get_last_modification')
 
     @classmethod
     def __setup__(cls):
@@ -28,6 +39,7 @@ class ResourceAccessMixin(ModelStorage):
             table = cls.__table__()
             cls._sql_indexes.add(
                 Index(table, (table.resource, Index.Similarity(begin=True))))
+        cls._order.insert(0, ('last_modification', 'DESC'))
 
     @classmethod
     def default_resource(cls):
@@ -69,41 +81,27 @@ class ResourceAccessMixin(ModelStorage):
             (model, {'create': 'write', 'delete': 'write'}.get(mode, mode))]
 
     @classmethod
+    def check_search_access(cls, domain):
+        pool = Pool()
+        User = pool.get('res.user')
+
+        super_user = (Transaction().user == 0
+            or 1 in User.get_groups()
+            or not Transaction().check_access)
+
+        if not super_user:
+            raise AccessError(gettext(
+                    'ir.msg_access_resource_search_error',
+                    resource=cls.__name__))
+
+    @classmethod
     def search(
             cls, domain, offset=0, limit=None, order=None, count=False,
             query=False):
-        transaction = Transaction()
-        enforce_access = (
-            not query and transaction.user and transaction.check_access)
-        result = super().search(
-            domain, offset=offset, limit=limit, order=order,
-            count=False if enforce_access else count, query=query)
-        if enforce_access:
-            records = result
-            resources = defaultdict(set)
-            allowed = set()
-            with without_check_access():
-                records = cls.browse(records)
-            for record in records:
-                if isinstance(record.resource, Model):
-                    resources[record.resource.__class__].add(
-                        record.resource.id)
-
-            for RModel, ids in resources.items():
-                for sub_ids in grouped_slice(ids):
-                    allowed.update(RModel.search([
-                                ('id', 'in', list(sub_ids)),
-                                ]))
-
-            records = [
-                r for r in records
-                if not r.resource or r.resource in allowed]
-            if count:
-                result = len(records)
-            else:
-                # re-browse to have same context
-                result = cls.browse(records)
-        return result
+        cls.check_search_access(domain)
+        return super().search(
+            domain, offset=offset, limit=limit, order=order, count=count,
+            query=query)
 
     @classmethod
     def read(cls, ids, fields_names):
@@ -131,6 +129,19 @@ class ResourceAccessMixin(ModelStorage):
         cls.check_access([r.id for r in records], mode='create')
         return records
 
+    def get_last_user(self, name):
+        return (self.write_uid.rec_name if self.write_uid
+            else self.create_uid.rec_name)
+
+    def get_last_modification(self, name):
+        return (self.write_date if self.write_date else
+            self.create_date).replace(microsecond=0)
+
+    @classmethod
+    def order_last_modification(cls, tables):
+        table, _ = tables[None]
+        return [Coalesce(table.write_date, table.create_date)]
+
 
 class ResourceMixin(ResourceAccessMixin, ModelStorage, ModelView):
 
@@ -143,21 +154,10 @@ class ResourceMixin(ResourceAccessMixin, ModelStorage, ModelView):
     copy_to_resources_visible = fields.Function(
         fields.Boolean("Copy to Resources Visible"),
         'on_change_with_copy_to_resources_visible')
-    last_user = fields.Function(fields.Char('Last User',
-            states={
-                'invisible': ~Eval('last_user'),
-                }),
-        'get_last_user')
-    last_modification = fields.Function(fields.DateTime('Last Modification',
-            states={
-                'invisible': ~Eval('last_modification'),
-                }),
-        'get_last_modification')
 
     @classmethod
     def __setup__(cls):
         super().__setup__()
-        cls._order.insert(0, ('last_modification', 'DESC'))
         cls.resource.required = True
 
     @fields.depends('resource')
@@ -173,19 +173,6 @@ class ResourceMixin(ResourceAccessMixin, ModelStorage, ModelView):
     @fields.depends(methods=['get_copy_to_resources'])
     def on_change_with_copy_to_resources_visible(self, name=None):
         return bool(self.get_copy_to_resources())
-
-    def get_last_user(self, name):
-        return (self.write_uid.rec_name if self.write_uid
-            else self.create_uid.rec_name)
-
-    def get_last_modification(self, name):
-        return (self.write_date if self.write_date else self.create_date
-            ).replace(microsecond=0)
-
-    @staticmethod
-    def order_last_modification(tables):
-        table, _ = tables[None]
-        return [Coalesce(table.write_date, table.create_date)]
 
 
 class ResourceCopyMixin(ModelStorage):

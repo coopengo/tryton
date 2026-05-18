@@ -927,6 +927,12 @@ class DomainParserTestCase(TestCase):
                     'name': 'integer',
                     'type': 'integer',
                     },
+                'timestamp': {
+                    'name': 'timestamp',
+                    'string': 'Timestamp',
+                    'type': 'timestamp',
+                    'format': '"%H:%M:%S"',
+                    },
                 'selection': {
                     'string': 'Selection',
                     'name': 'selection',
