@@ -253,6 +253,7 @@
           <value>time</value>
           <value>timedelta</value>
           <value>url</value>
+          <value>billboard</value>
         </choice>
       </attribute>
     </optional>
@@ -585,6 +586,17 @@
         <choice>
           <value>0</value>
           <value>1</value>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="attlist.field" combine="interleave">
+    <optional>
+      <attribute a:defaultValue="percentage">
+        <name ns="">pie_mode</name>
+        <choice>
+          <value>percentage</value>
+          <value>number</value>
         </choice>
       </attribute>
     </optional>
