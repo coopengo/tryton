@@ -21,3 +21,18 @@ ul.contextual > li:hover > ul.contextual-submenu {
     left: 100%;
     top: 0;
 }
+
+html[theme="default"] .alert-danger {
+    background-color: #fbdfdf;
+    color: #c7201a;
+}
+
+html[theme="default"] .alert-warning {
+    background-color: #fdf7f1;
+    color: #c73f1a;
+}
+
+html[theme="default"] .alert-info {
+    background-color: #eaf5f5;
+    color: #357979;
+}
