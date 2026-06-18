@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_stock_force_expiration">
             <field name="name">Stock Force Expiration</field>
+            <field name="code">stock_force_expiration</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_stock_force_assignment">

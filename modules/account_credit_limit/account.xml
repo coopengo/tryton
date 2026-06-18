@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_credit_limit">
             <field name="name">Account Credit Limit</field>
+            <field name="code">account_credit_limit</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_credit_limit">

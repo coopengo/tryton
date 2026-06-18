@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_sale_point">
             <field name="name">POS</field>
+            <field name="code">pos</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_sale_point">
             <field name="user" ref="res.user_admin"/>
@@ -13,6 +14,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="res.group" id="group_sale_point_posting">
             <field name="name">POS Posting</field>
+            <field name="code">pos_posting</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_sale_point_posting">
             <field name="user" ref="res.user_admin"/>

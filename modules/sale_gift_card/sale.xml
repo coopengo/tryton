@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_gift_card_admin">
             <field name="name">Gift Card Administration</field>
+            <field name="code">gift_card_administration</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_gift_card_admin">
             <field name="user" ref="res.user_admin"/>

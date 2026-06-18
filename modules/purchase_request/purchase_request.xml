@@ -6,6 +6,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="res.group" id="group_purchase_request">
             <field name="name">Purchase Request</field>
+            <field name="code">purchase_request</field>
         </record>
 
         <record model="res.user-res.group"

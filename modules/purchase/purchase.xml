@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_purchase">
             <field name="name">Purchase</field>
+            <field name="code">purchase</field>
         </record>
         <record model="res.group" id="group_purchase_admin">
             <field name="name">Purchase Administrator</field>

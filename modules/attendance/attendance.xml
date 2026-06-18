@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_attendance_admin">
             <field name="name">Attendance Administration</field>
+            <field name="code">attendance_administration</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_attendance_admin">
             <field name="user" ref="res.user_admin"/>

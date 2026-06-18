@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_stock_location_movable">
             <field name="name">Stock Location Movable</field>
+            <field name="code">stock_location_movable</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_stock_location_movable">

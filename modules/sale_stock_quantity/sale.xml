@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_sale_stock_quantity">
             <field name="name">Sale Stock Quantity</field>
+            <field name="code">sale_stock_quantity</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_sale_stock_quantity">

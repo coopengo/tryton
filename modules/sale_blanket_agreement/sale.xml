@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_sale_blanket_agreement">
             <field name="name">Sale Blanket Agreement</field>
+            <field name="code">sale_blanket_agreement</field>
             <field name="parent" ref="sale.group_sale"/>
         </record>
         <record model="res.user-res.group" id="user_admin_group_sale_blanket_agreement">

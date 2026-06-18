@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_quality">
             <field name="name">Quality</field>
+            <field name="code">Quality</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_quality">
             <field name="user" ref="res.user_admin"/>

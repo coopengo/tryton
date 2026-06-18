@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_admin">
             <field name="name">Administration</field>
+            <field name="code">administration</field>
         </record>
         <record model="ir.ui.view" id="group_view_form">
             <field name="model">res.group</field>

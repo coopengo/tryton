@@ -10,6 +10,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="res.group" id="group_opportunity">
             <field name="name">Sale Opportunity</field>
+            <field name="code">sale_opportunity</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_opportunity">
             <field name="user" ref="res.user_admin"/>

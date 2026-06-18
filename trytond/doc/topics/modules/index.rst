@@ -99,6 +99,7 @@ The following snippet gives a first idea of what an XML file looks:
       <data>
           <record model="res.group" id="group_party_admin">
               <field name="name">Party Administration</field>
+              <field name="code">party_administration</field>
           </record>
           <record model="res.user-res.group"
               id="user_admin_group_party_admin">

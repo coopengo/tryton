@@ -6,6 +6,7 @@ this repository contains the full copyright notices and license terms.
     <data>
         <record model="res.group" id="group_purchase_requisition_approval">
             <field name="name">Purchase Requisition Approval</field>
+            <field name="code">purchase_requisition_approval</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_purchase_requisition_approval">

@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_production">
             <field name="name">Production</field>
+            <field name="code">production</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_production">

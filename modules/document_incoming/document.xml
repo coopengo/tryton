@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_document_incoming">
             <field name="name">Document Incoming</field>
+            <field name="code">document_incoming</field>
         </record>
         <record model="res.user-res.group" id="user_admin_group_document_incoming">
             <field name="user" ref="res.user_admin"/>

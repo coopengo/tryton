@@ -5,6 +5,7 @@ this repository contains the full copyright notices and license terms. -->
     <data>
         <record model="res.group" id="group_timesheet_admin">
             <field name="name">Timesheet Administration</field>
+            <field name="code">timesheet_administration</field>
         </record>
         <record model="res.user-res.group"
             id="user_admin_group_timesheet_admin">
