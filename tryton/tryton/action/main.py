@@ -110,15 +110,12 @@ class Action(object):
             ctx.update(rpc.CONTEXT)
             ctx['_user'] = rpc._USER
             decoder = PYSONDecoder(ctx)
-            params['context'] = context.copy()
-            params['context'].update(
-                decoder.decode(action.get('pyson_context') or '{}'))
             action_ctx = context.copy()
             action_ctx.update(
                 decoder.decode(action.get('pyson_context') or '{}'))
             action_ctx.update(data.get('extra_context', {}))
+            params['context'] = copy.deepcopy(action_ctx)
             ctx.update(params['context'])
-            ctx.update(action_ctx)
 
             ctx['context'] = ctx
             decoder = PYSONDecoder(ctx)
