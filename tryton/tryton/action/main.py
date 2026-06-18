@@ -114,7 +114,7 @@ class Action(object):
             action_ctx.update(
                 decoder.decode(action.get('pyson_context') or '{}'))
             action_ctx.update(data.get('extra_context', {}))
-            params['context'] = action_ctx.copy()
+            params['context'] = copy.deepcopy(action_ctx)
             ctx.update(params['context'])
 
             ctx['context'] = ctx
