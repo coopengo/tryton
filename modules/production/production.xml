@@ -15,6 +15,7 @@ this repository contains the full copyright notices and license terms. -->
 
         <record model="res.group" id="group_production_admin">
             <field name="name">Production Administration</field>
+            <field name="code">production_administration</field>
             <field name="parent" ref="group_production"/>
         </record>
         <record model="res.user-res.group"

@@ -7,13 +7,8 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">Accounting</field>
             <field name="code">accounting</field>
         </record>
-        <record model="res.group" id="group_account_party">
-            <field name="name">Accounting Party</field>
-            <field name="code">accounting_party</field>
-            <field name="parent" ref="group_account"/>
-        </record>
         <record model="res.group" id="group_account_admin">
-            <field name="name">Account Administration</field>
+            <field name="name">Accounting Administration</field>
             <field name="code">account_administration</field>
             <field name="parent" ref="group_account"/>
         </record>
