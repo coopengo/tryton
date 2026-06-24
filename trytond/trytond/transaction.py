@@ -566,6 +566,10 @@ class Transaction(object):
                 logger.critical('A datamanager raised an exception in'
                     ' tpc_finish, the data might be inconsistant',
                     exc_info=True)
+                from trytond.pool import Pool
+                if Pool.test:
+                    raise
+
 
     def rollback(self):
         from trytond.cache import Cache
