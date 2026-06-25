@@ -5347,6 +5347,10 @@ function hide_x2m_body(widget) {
                 this, view, attributes);
             this.filename = attributes.filename || null;
         },
+        default_filters: '',
+        get filters() {
+            return this.attributes.filters || this.default_filters;
+        },
         toolbar: function(class_) {
             var group = jQuery('<div/>', {
                 'class': class_,
@@ -5365,6 +5369,7 @@ function hide_x2m_body(widget) {
             this.input_select = jQuery('<input/>', {
                 'type': 'file',
             }).change(this.select.bind(this));
+            this.input_select.attr('accept', this.filters);
             this.but_select = jQuery('<div/>', {
                 'class': 'btn btn-default input-file',
                 'type': 'button',
@@ -5697,6 +5702,8 @@ function hide_x2m_body(widget) {
             }
             this._readonly = false;
         },
+        default_filters: (
+            'image/png,image/jpeg,image/gif,.png,.jpg,.gif,.tif,.xpm'),
         set_readonly: function(readonly) {
             Sao.View.Form.Image._super.set_readonly.call(this, readonly);
             var record = this.record;
