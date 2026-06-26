@@ -5774,7 +5774,20 @@ function hide_x2m_body(widget) {
             } else {
                 size = field.get(record).length;
             }
-            this.size.val(Sao.common.humanize(size, 'B'));
+            let file_exist = !((size === undefined) || (size === null));
+            if (file_exist) {
+                this.size.val(Sao.common.humanize(size, 'B'));
+            } else {
+                this.size.val('');
+            }
+            let filters = this.filters;
+            if (record && this.attributes.filters_field) {
+                let filters_field = this.attributes.filters_field;
+                if (Object.hasOwn(record.model.fields, filters_field)) {
+                    filters = record.field_get_client(filters_field);
+                }
+            }
+            this.input_select.attr('accept', filters);
 
             if (this.text) {
                 this.text.val(this.filename_field.get(record) || '');
