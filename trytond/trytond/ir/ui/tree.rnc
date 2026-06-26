@@ -76,6 +76,7 @@ attlist.field &= attribute view_ids { text }?
 attlist.field &= attribute symbol { text }?
 attlist.field &= [a:defaultValue = "1"] attribute grouping { "0" | "1" }?
 attlist.field &= attribute filters { text }?
+attlist.field &= attribute filters_field { text }?
 prefix = element prefix { attlist.affix, empty }
 suffix = element suffix { attlist.affix, empty }
 attlist.affix &= attribute string { text }?
