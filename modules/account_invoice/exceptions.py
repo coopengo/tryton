@@ -51,3 +51,7 @@ class InvoiceSimilarWarning(UserWarning):
 
 class CancelInvoiceMoveWarning(UserWarning):
     pass
+
+
+class InvoiceReportError(UserError):
+    pass
