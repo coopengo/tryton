@@ -1,10 +1,12 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 from sql import Literal
+from sql.aggregate import Count, Min
+from sql.functions import CurrentTimestamp
 from sql.operators import Equal
 
 from trytond.model import (
-    Check, DeactivableMixin, Exclude, ModelSQL, Unique, fields)
+    Check, DeactivableMixin, Exclude, ModelSQL, Unique, fields, materialize)
 from trytond.pool import Pool
 from trytond.pyson import Eval
 
@@ -243,6 +245,36 @@ class ModelLock(ModelSQL):
     __name__ = 'test.modelsql.lock'
 
 
+class ModelMaterializedViewData(ModelSQL):
+    "Model to provide test data to the materialized views"
+    __name__ = 'test.modelsql.materialized.data'
+    name = fields.Char("Name")
+
+
+class ModelMaterializedView(materialize(), ModelSQL):
+    "Model to test the materialized views"
+    __name__ = 'test.modelsql.materialized'
+
+    name = fields.Char("Name")
+    count = fields.Integer("Count")
+
+    @classmethod
+    def table_query(cls):
+        pool = Pool()
+        Model = pool.get('test.modelsql.materialized.data')
+        model = Model.__table__()
+
+        return model.select(
+            Min(model.id).as_('id'),
+            Min(model.create_uid).as_('create_uid'),
+            CurrentTimestamp().as_('create_date'),
+            Min(model.write_uid).as_('write_uid'),
+            CurrentTimestamp().as_('write_date'),
+            model.name.as_('name'),
+            Count(model.id).as_('count'),
+            group_by=[model.name])
+
+
 def register(module):
     Pool.register(
         ModelSQLRead,
@@ -267,4 +299,6 @@ def register(module):
         ModelUnique,
         ModelExclude,
         ModelLock,
+        ModelMaterializedViewData,
+        ModelMaterializedView,
         module=module, type_='model')

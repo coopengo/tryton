@@ -91,6 +91,7 @@ def register():
         error.Error,
         module='ir', type_='model')
     Pool.register(
+        model.RefreshMaterializedView,
         translation.TranslationSet,
         translation.TranslationClean,
         translation.TranslationUpdate,

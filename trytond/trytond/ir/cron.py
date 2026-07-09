@@ -74,6 +74,7 @@ class Cron(DeactivableMixin, ModelSQL, ModelView):
             ('ir.trigger|trigger_time', "Run On Time Triggers"),
             ('ir.queue|clean', "Clean Task Queue"),
             ('ir.error|clean', "Clean Errors"),
+            ('ir.model|materialize', "Refresh Report Cache"),
             ], "Method", required=True)
 
     @classmethod

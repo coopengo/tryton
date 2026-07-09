@@ -999,6 +999,16 @@ values is ``sequence``.
 to ``Sequence``.
 Order specifies the order direction and defaults to ``ASC NULLS FIRST``.
 
+materialize
+===========
+
+.. function:: materialize()
+
+Return a mixin_ class which marks the Model using a
+:meth:`ModelSQL.table_query` so that it uses a `materialized view`_.
+
+.. _`materialized view`: https://en.wikipedia.org/wiki/Materialized_view
+
 sort
 ====
 

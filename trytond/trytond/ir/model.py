@@ -1,5 +1,6 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import datetime as dt
 import heapq
 import json
 import logging
@@ -15,8 +16,8 @@ from sql.operators import Equal
 from trytond.cache import Cache
 from trytond.i18n import gettext
 from trytond.model import (
-    DeactivableMixin, EvalEnvironment, Exclude, Index, ModelSingleton,
-    ModelSQL, ModelView, Unique, Workflow, fields)
+    DeactivableMixin, EvalEnvironment, Exclude, Index, MaterializedViewMixin,
+    ModelSingleton, ModelSQL, ModelView, Unique, Workflow, fields)
 from trytond.model.exceptions import AccessError, ValidationError
 from trytond.pool import Pool
 from trytond.protocols.jsonrpc import JSONDecoder, JSONEncoder
@@ -26,7 +27,8 @@ from trytond.rpc import RPC
 from trytond.tools import cursor_dict, grouped_slice, is_instance_method
 from trytond.tools.string_ import StringMatcher
 from trytond.transaction import Transaction, without_check_access
-from trytond.wizard import Button, StateAction, StateView, Wizard
+from trytond.wizard import (
+    Button, StateAction, StateTransition, StateView, Wizard)
 
 from .resource import ResourceAccessMixin
 
@@ -1717,3 +1719,38 @@ class ModelWorkflowGraph(Report):
                 edge = pydot.Edge('"%s"' % from_, '"%s"' % to,
                     arrowhead='normal')
                 subgraph.add_edge(edge)
+
+    @classmethod
+    def materialize(cls):
+        pool = Pool()
+
+        now = dt.datetime.now()
+        for model_name, model in pool.iterobject():
+            if not issubclass(model, MaterializedViewMixin):
+                continue
+
+            interval = config.getint(
+                'materialized', model_name, default=model._update_interval)
+            if not interval:
+                continue
+
+            try:
+                record, = model.search([], limit=1)
+            except ValueError:
+                model.refresh_view()
+                continue
+
+            date = (record.create_date + dt.relativedelta(minutes=interval))
+            if (date <= now):
+                model.refresh_view()
+
+
+class RefreshMaterializedView(Wizard):
+    __name__ = "ir.model.refresh_materialized_view"
+    start = StateTransition()
+
+    def transition_start(self):
+        pool = Pool()
+        Model = pool.get(Transaction().context['active_model'])
+        Model.refresh_view()
+        return 'end'
