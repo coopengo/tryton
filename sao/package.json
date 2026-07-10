@@ -60,6 +60,7 @@
     "@tiptap/extension-task-list": "^3.22.3",
     "@tiptap/markdown": "^3.22",
     "@tiptap/starter-kit": "^3.22",
+    "d3": "^7.9",
     "billboard.js": "^3.17",
     "codemirror": "^5.38",
     "esbuild": "^0.25",
