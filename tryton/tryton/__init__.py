@@ -1,7 +1,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 __version__ = "8.0.6"
-__version_coog__ = "26.21"
+__version_coog__ = "26.28"
 import locale
 
 import gi
