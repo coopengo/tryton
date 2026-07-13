@@ -60,4 +60,4 @@ pack() {
         && sed -i "s;dist/tryton-sao.css;tryton-sao.css;g" dist/index.html
 }
 
-npm install --production --legacy-peer-deps && pack
+npm install --production --legacy-peer-deps && npx grunt && pack
