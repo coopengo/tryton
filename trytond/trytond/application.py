@@ -13,7 +13,7 @@ except ModuleNotFoundError:
     uwsgidecorators = None
 from io import StringIO
 
-__all__ = ['app']
+__all__ = ['app', 'application']
 
 log_file = os.environ.get('WSGI_LOG_FILE')
 log_level = os.environ.get('LOG_LEVEL', 'ERROR')
@@ -77,6 +77,10 @@ if db_names:
 # [EDIT]
 # Now with gunicorn integration python file are imported after forking, no need
 # to implement a post_fork
+
+# gunicorn is launched as `gunicorn trytond.application` (see coog bin/ep) and
+# looks up the `application` attribute by default
+application = app
 
 Pool.app_initialization_completed()
 assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
