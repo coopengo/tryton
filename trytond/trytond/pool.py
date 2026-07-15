@@ -61,12 +61,14 @@ class Pool(object):
     _pool_modules = defaultdict(list)
     _pool_instances = WeakSet()
     test = False
+    # All module defined hooks
     hooks = {
         'post_init': defaultdict(OrderedDict),
         'final_init': defaultdict(OrderedDict),
         'final_migration': defaultdict(OrderedDict),
         'callbacks': defaultdict(OrderedDict),
         }
+    # Actual hooks per pool / database
     _hooks = defaultdict(lambda: {
             'post_init': [],
             'final_init': [],
@@ -144,10 +146,10 @@ class Pool(object):
             type_ = hook_info['type_']
             depends = set(hook_info.get('depends', []))
             assert type_ in cls.hooks, f"{type_} is not a valid hook type"
-            hpool = Pool.hooks[type_][module]
+            hook_pool = Pool.hooks[type_][module]
             for hook in hooks:
-                assert hook not in hpool, f"{hook} is already registered"
-                hpool[hook] = depends
+                assert hook not in hook_pool, f"{hook} is already registered"
+                hook_pool[hook] = depends
 
     @staticmethod
     def register_post_init_hooks(hook, *, module):

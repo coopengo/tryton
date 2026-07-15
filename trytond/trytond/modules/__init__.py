@@ -128,7 +128,20 @@ def get_module_register_mixin(name, path=(), with_test=False):
 
 
 def get_module_hooks(name, path=(), with_test=False):
-    "Return classes to register from tryton.cfg"
+    """
+Return hooks to register from tryton.cfg
+
+Expected declaration is similar to the models:
+
+    [hooks]
+    post_init:
+        api.register_api_routes
+        config.check_database_configuration
+
+    [hooks authentication_saml]
+    callbacks:
+        reload_saml_configuration:saml.refresh_metadata_files
+    """
     module_config, _ = parse_module_config(name, path)
     if module_config is None:
         return
