@@ -462,7 +462,7 @@ class MemoryCache(BaseCache):
                 notifications = database.get_notifications(conn)
                 while notifications:
                     pool = Pool(dbname)
-                    callbacks = pool._notification_callbacks.get(dbname, {})
+                    callbacks = pool._hooks.get(dbname, {}).get('callbacks', {})
                     notification = notifications.pop()
                     payload = notification.payload
                     if payload and payload.startswith(REFRESH_POOL_MSG):
