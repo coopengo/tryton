@@ -107,8 +107,11 @@ def get_client(database, identity):
 def login(request, database, identity):
     client = get_client(database, identity)
     redirect_url = request.args.get('next', '')
+    logger.info(f"Redirecting to {redirect_url=}")
     if not (redirect_url.startswith(request.url_root)
             or redirect_url.startswith('http://localhost:')):
+        logger.warning(f"Bad redirect: {redirect_url=}, {request.url_root=}")
+        logger.info(f"Request headers: {request.headers=}")
         redirect_url = http_host()
     reqid, info = client.prepare_for_authenticate(relay_state=redirect_url)
     headers = dict(info['headers'])
