@@ -243,6 +243,7 @@ class Pool(object):
             # Clear before loading modules
             self._pool = defaultdict(dict)
             self._modules = []
+            self._hooks.pop(self.database_name, None)
             try:
                 with ServerContext().set_context(disable_auto_cache=True):
                     restart = not load_modules(
@@ -251,7 +252,6 @@ class Pool(object):
             except Exception:
                 self._modules = None
                 raise
-            self._hooks.pop(self.database_name, None)
             self._pools[self.database_name] = self._pool
             self._pool_modules[self.database_name] = self._modules
             self._pool_instances.clear()
