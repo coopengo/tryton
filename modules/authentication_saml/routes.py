@@ -111,7 +111,7 @@ def login(request, database, identity):
     if not (redirect_url.startswith(request.url_root)
             or redirect_url.startswith('http://localhost:')):
         logger.warning(f"Bad redirect: {redirect_url=}, {request.url_root=}")
-        logger.info(f"Request headers: {request.headers=}")
+        logger.debug(f"Request headers: {request.headers=}")
         redirect_url = http_host()
     reqid, info = client.prepare_for_authenticate(relay_state=redirect_url)
     headers = dict(info['headers'])

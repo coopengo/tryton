@@ -63,8 +63,6 @@ class Wizard(InfoBar):
         self.context['active_ids'] = self.ids
         self.context['active_model'] = self.model
         self.context['action_id'] = self.action_id
-        self.context['direct_print'] = self.direct_print
-        self.context['email_print'] = self.email_print
 
         def callback(result):
             try:
@@ -326,7 +324,6 @@ class WizardDialog(Wizard, NoModal):
         self.dia.add_accel_group(self.accel_group)
 
         self._buttons = set()
-        self._shown_screens = set()
 
         self.dia.vbox.pack_start(
             self.widget, expand=True, fill=True, padding=0)
@@ -385,14 +382,11 @@ class WizardDialog(Wizard, NoModal):
         else:
             dialog = self.page
         screen = getattr(dialog, 'screen', None)
-        # JMO: the conditions added on 'reload' are needed
-        # for https://support.coopengo.com/issues/12986
-        if action != 'reload' and self.sensible_widget == main.window:
+        if self.sensible_widget == main.window:
             screen = main.menu_screen
         if screen:
             if (screen.current_record
-                    and self.sensible_widget != main.window or
-                    action == 'reload'):
+                    and self.sensible_widget != main.window):
                 if screen.model_name == self.model:
                     ids = self.ids
                 else:
@@ -410,9 +404,6 @@ class WizardDialog(Wizard, NoModal):
 
     def show(self):
         if not self.screen:
-            return
-        if id(self.screen) in self._shown_screens:
-            self.dia.show()
             return
         view = self.screen.current_view
         if view.view_type == 'form':
@@ -439,7 +430,6 @@ class WizardDialog(Wizard, NoModal):
         screen = self.dia.get_screen()
         self.dia.resize(
             min(width, screen.width()), min(height, screen.height()))
-        self._shown_screens.add(id(self.screen))
 
     def hide(self):
         self.dia.hide()

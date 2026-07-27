@@ -1,24 +1,21 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
-import ast
 import csv
 import gettext
 import json
 import locale
-import logging
 import sys
 from collections import defaultdict
 from functools import wraps
 from io import StringIO
 from weakref import WeakValueDictionary
 
-from gi.repository import Gdk, GLib, GObject, Gtk, Pango
+from gi.repository import Gdk, GLib, GObject, Gtk
 
 import tryton.common as common
 from tryton.common import (
-    COLOR_RGB, FORMAT_ERROR, RPCException, RPCExecute, Tooltips,
-    domain_inversion, get_monitor_size, node_attributes, simplify,
-    unique_value)
+    RPCException, RPCExecute, Tooltips, domain_inversion, get_monitor_size,
+    node_attributes, simplify, unique_value)
 from tryton.common.cellrendererbutton import CellRendererButton
 from tryton.common.popup_menu import populate, popup
 from tryton.config import CONFIG
@@ -34,7 +31,6 @@ from .list_gtk.widget import (
     Reference, Selection, Text, Time, TimeDelta)
 
 _ = gettext.gettext
-logger = logging.getLogger(__name__)
 
 
 def delay(func):
@@ -62,8 +58,7 @@ def path_convert_id2pos(model, id_path):
         try:
             record = group.get(current_id)
             indexes.append(group.index(record))
-            group = record.children_group(model.children_field,
-                model.children_definitions)
+            group = record.children_group(model.children_field)
         except (KeyError, AttributeError, ValueError):
             return None
     return tuple(indexes)
@@ -71,12 +66,11 @@ def path_convert_id2pos(model, id_path):
 
 class ModelGroup(GObject.GObject, Gtk.TreeModel):
 
-    def __init__(self, group, children_field=None, children_definitions=None):
+    def __init__(self, group, children_field=None):
         super().__init__()
         self._pool = WeakValueDictionary()
         self.group = group
         self.children_field = children_field
-        self.children_definitions = children_definitions or []
         self.__removed = None  # XXX dirty hack to allow update of has_child
 
     def _get_user_data(self, iter):
@@ -101,8 +95,7 @@ class ModelGroup(GObject.GObject, Gtk.TreeModel):
             path = record.get_index_path(self.group)
             iter_ = self.get_iter(path)
             self.row_inserted(path, iter_)
-            if record.children_group(self.children_field,
-                    self.children_definitions):
+            if record.children_group(self.children_field):
                 self.row_has_child_toggled(path, iter_)
             if (record.parent
                     and record.group is not self.group):
@@ -156,8 +149,7 @@ class ModelGroup(GObject.GObject, Gtk.TreeModel):
     def move_into(self, record, path):
         iter_ = self.get_iter(path)
         parent = self.get_value(iter_, 0)
-        group = parent.children_group(self.children_field,
-            self.children_definitions)
+        group = parent.children_group(self.children_field)
         if group is not record.group:
             record.group.remove(record, remove=True, force_remove=True)
             # Don't remove record from previous group
@@ -225,10 +217,7 @@ class ModelGroup(GObject.GObject, Gtk.TreeModel):
             record = group[i]
             if not self.children_field:
                 break
-            if self.children_field not in group.fields:
-                break
-            group = record.children_group(
-                self.children_field, self.children_definitions)
+            group = record.children_group(self.children_field)
         return (True, self._create_tree_iter(record))
 
     def do_get_value(self, iter, column):
@@ -245,12 +234,7 @@ class ModelGroup(GObject.GObject, Gtk.TreeModel):
         record = self._get_user_data(parent) if parent else None
         if record is None or not self.children_field:
             return False
-        if (record.model_name not in self.children_definitions
-                or self.children_field not in
-                self.children_definitions[record.model_name]):
-            return False
-        children = record.children_group(self.children_field,
-            self.children_definitions)
+        children = record.children_group(self.children_field)
         if children is None:
             return False
         length = len(children)
@@ -265,8 +249,7 @@ class ModelGroup(GObject.GObject, Gtk.TreeModel):
             if self.group:
                 child = self.group[0]
         elif self.children_field:
-            children = record.children_group(
-                self.children_field, self.children_definitions)
+            children = record.children_group(self.children_field)
             if children:
                 child = children[0]
         if child:
@@ -280,8 +263,7 @@ class ModelGroup(GObject.GObject, Gtk.TreeModel):
             return len(self.group)
         if not self.children_field:
             return 0
-        return len(record.children_group(self.children_field,
-            self.children_definitions))
+        return len(record.children_group(self.children_field))
 
     def do_iter_nth_child(self, parent, n):
         record = self._get_user_data(parent) if parent else None
@@ -290,10 +272,8 @@ class ModelGroup(GObject.GObject, Gtk.TreeModel):
             if n < len(self.group):
                 child = self.group[n]
         elif self.children_field:
-            if n < len(record.children_group(
-                        self.children_field, self.children_definitions)):
-                child = record.children_group(
-                    self.children_field, self.children_definitions)[n]
+            if n < len(record.children_group(self.children_field)):
+                child = record.children_group(self.children_field)[n]
         if child:
             return (True, self._create_tree_iter(child))
         else:
@@ -342,10 +322,6 @@ class TreeXMLViewParser(XMLViewParser):
 
     def _parse_field(self, node, attributes):
         name = attributes['name']
-
-        # RSE Display more useful info when trying to display unexisting field
-        if 'widget' not in attributes:
-            raise Exception('Unknown field %s' % attributes['name'])
         widget = self.WIDGETS[attributes['widget']](self.view, attributes)
         self.view.widgets[name].append(widget)
 
@@ -428,9 +404,6 @@ class TreeXMLViewParser(XMLViewParser):
             required = field.get('required')
             readonly = field.get('readonly')
             common.apply_label_attributes(label, readonly, required)
-        attrlist = Pango.AttrList()
-        self._format_set(attributes, attrlist)
-        label.set_attributes(attrlist)
         label.show()
         help = attributes.get('help')
         if help:
@@ -453,8 +426,7 @@ class TreeXMLViewParser(XMLViewParser):
             sum_.set_justify(Gtk.Justification.RIGHT)
             sum_.show()
             vbox.pack_start(sum_, expand=False, fill=True, padding=0)
-            bold_sum = attributes.get('highlight_sum') == '1'
-            self.view.sum_widgets.append((attributes['name'], sum_, bold_sum))
+            self.view.sum_widgets.append((attributes['name'], sum_))
             vbox.show()
             widget = vbox
         else:
@@ -523,10 +495,8 @@ class ViewTree(View):
     xml_parser = TreeXMLViewParser
     draggable = False
 
-    def __init__(self, view_id, screen, xml, children_field,
-            children_definitions):
+    def __init__(self, view_id, screen, xml, children_field):
         self.children_field = children_field
-        self.children_definitions = children_definitions
         self.optionals = defaultdict(list)
         self.sum_widgets = []
         self.sum_box = Gtk.HBox()
@@ -535,9 +505,7 @@ class ViewTree(View):
         self._editable = bool(int(xml.getAttribute('editable') or 0))
         self._creatable = bool(int(xml.getAttribute('creatable') or 1))
         if self._editable:
-            # ABD: Pass self.attributes.get('editable_open') to constructor
-            self.treeview = EditableTreeView(
-                self, xml.getAttribute('editable_open'))
+            self.treeview = EditableTreeView(self)
             grid_lines = Gtk.TreeViewGridLines.BOTH
         else:
             self.treeview = TreeView(self)
@@ -549,7 +517,6 @@ class ViewTree(View):
         self.set_drag_and_drop()
 
         self.mnemonic_widget = self.treeview
-        self.always_expand = bool(xml.getAttribute('always_expand'))
 
         self.treeview.set_property('enable-grid-lines', grid_lines)
         self.treeview.set_fixed_height_mode(
@@ -602,8 +569,7 @@ class ViewTree(View):
                 column._type = 'optional'
                 self.treeview.insert_column(column, 0)
             image = Gtk.Image()
-            image.set_from_pixbuf(common.IconFactory.get_pixbuf(
-                    'tryton-menu', color='#ffffff'))
+            image.set_from_pixbuf(common.IconFactory.get_pixbuf('tryton-menu'))
             image.show()
             column.set_widget(image)
             column.set_fixed_width(25)
@@ -1214,75 +1180,60 @@ class ViewTree(View):
                     treeview.expand_row(path, False)
 
     def __select_changed(self, tree_sel):
-        def do_selection_changed():
-            previous_record = self.record
-            if (previous_record
-                    and (previous_record not in previous_record.group
-                        or previous_record.destroyed)):
-                previous_record = None
+        previous_record = self.record
+        if (previous_record
+                and (previous_record not in previous_record.group
+                    or previous_record.destroyed)):
+            previous_record = None
 
-            # Because do_selection_changed is call through an idle_add it can
-            # be called when the treeview of the selection has had it's
-            # underlying model modified we should thus check if the treeview
-            # linked to the selections still exists
-            has_treeview = tree_sel.get_tree_view() is not None
-            if has_treeview:
-                if tree_sel.get_mode() == Gtk.SelectionMode.SINGLE:
-                    model, iter_ = tree_sel.get_selected()
-                    if model and iter_:
-                        record = model.get_value(iter_, 0)
-                        self.record = record
-                    else:
-                        self.record = None
+        if tree_sel.get_mode() == Gtk.SelectionMode.SINGLE:
+            model, iter_ = tree_sel.get_selected()
+            if model and iter_:
+                record = model.get_value(iter_, 0)
+                self.record = record
+            else:
+                self.record = None
 
-                elif tree_sel.get_mode() == Gtk.SelectionMode.MULTIPLE:
-                    model, paths = tree_sel.get_selected_rows()
-                    if model and paths:
-                        records = []
-                        for path in paths:
-                            iter_ = model.get_iter(path)
-                            records.append(model.get_value(iter_, 0))
-                        if self.record not in records:
-                            self.record = records[0]
-                        else:
-                            # Force record_message
-                            self.record = self.record
-                    else:
-                        self.record = None
+        elif tree_sel.get_mode() == Gtk.SelectionMode.MULTIPLE:
+            model, paths = tree_sel.get_selected_rows()
+            if model and paths:
+                records = []
+                for path in paths:
+                    iter_ = model.get_iter(path)
+                    records.append(model.get_value(iter_, 0))
+                if self.record not in records:
+                    self.record = records[0]
+                else:
+                    # Force record_message
+                    self.record = self.record
+            else:
+                self.record = None
 
-            if self.editable and previous_record:
-                def go_previous():
-                    self.record = previous_record
-                    self.set_cursor()
-                if not self.screen.parent and previous_record != self.record:
+        if self.editable and previous_record:
+            def go_previous():
+                self.record = previous_record
+                self.set_cursor()
+            if not self.screen.parent and previous_record != self.record:
 
-                    def save():
-                        if not previous_record.destroyed:
-                            if not previous_record.save():
-                                go_previous()
+                def save():
+                    if not previous_record.destroyed:
+                        if not previous_record.save():
+                            go_previous()
 
-                    if not previous_record.validate(self.get_fields()):
-                        go_previous()
-                        return True
-                    # Delay the save to let GTK process the current event
-                    GLib.idle_add(save)
-                elif (previous_record != self.record
-                        and self.screen.pre_validate):
-                    def pre_validate():
-                        if not previous_record.destroyed:
-                            if not previous_record.pre_validate():
-                                go_previous()
-                    # Delay the pre_validate to let GTK process the current
-                    # event
-                    GLib.idle_add(pre_validate)
-            self.update_sum()
+                if not previous_record.validate(self.get_fields()):
+                    go_previous()
+                    return True
+                # Delay the save to let GTK process the current event
+                GLib.idle_add(save)
+            elif previous_record != self.record and self.screen.pre_validate:
 
-        if self.screen._multiview_form:
-            tree, *forms = self.screen._multiview_form.widget_groups[
-                self.screen._multiview_group]
-            for form in forms:
-                form.set_value()
-        do_selection_changed()
+                def pre_validate():
+                    if not previous_record.destroyed:
+                        if not previous_record.pre_validate():
+                            go_previous()
+                # Delay the pre_validate to let GTK process the current event
+                GLib.idle_add(pre_validate)
+        self.update_with_selection()
 
     def set_value(self):
         if self.editable:
@@ -1294,25 +1245,21 @@ class ViewTree(View):
     def display(self, force=False):
         self.treeview.display_counter += 1
         current_record = self.record
-        model = self.treeview.get_model()
         if current_record and current_record not in current_record.group:
             # current record may have been removed by on_change calls without
             # changing the current record of screen before the display
             current_record = None
         if (force
-                or not model
-                or self.group != model.group):
-            model = ModelGroup(
-                self.group, self.children_field, self.children_definitions)
+                or not self.treeview.get_model()
+                or self.group != self.treeview.get_model().group):
+            model = ModelGroup(self.group, self.children_field)
             self.treeview.set_model(model)
             # __select_changed resets current_record to None
             self.record = current_record
             if current_record:
                 selection = self.treeview.get_selection()
                 path = current_record.get_index_path(model.group)
-                # JCA : Check selection is not empty before updateing path
-                if selection:
-                    selection.select_path(path)
+                selection.select_path(path)
             # The search column must be set each time the model is changed
             self.treeview.set_search_column(0)
         selection = self.treeview.get_selection()
@@ -1328,16 +1275,11 @@ class ViewTree(View):
             self.set_state()
         self.update_arrow()
         self.update_with_selection()
-        if not self.record and self.group:
-            record = self.group[0]
-            selection = self.treeview.get_selection()
-            selection.unselect_all()
-            selection.select_path(record.get_index_path(self.group))
 
         # Set column visibility depending on attributes and domain
         domain = []
         if self.screen.domain:
-            domain.append(self.screen.get_domain())
+            domain.append(self.screen.domain)
         tab_domain = self.screen.screen_container.get_tab_domain()
         if tab_domain:
             domain.append(tab_domain)
@@ -1393,7 +1335,7 @@ class ViewTree(View):
             if isinstance(widget, ButtonMutiple):
                 widget.state_set(selected_records)
 
-        for name, label, highlight_sum_ in self.sum_widgets:
+        for name, label in self.sum_widgets:
             sum_ = None
             selected_sum = None
             loaded = True
@@ -1437,16 +1379,10 @@ class ViewTree(View):
                         '{}'.format(selected_sum or 0), True)
                     sum_ = locale.localize('{}'.format(sum_ or 0), True)
 
-                # coog specific feature #8374
-                text1 = '%s /' % (selected_sum)
-                text2 = ' %s' % (sum_)
+                text = '%s\n%s' % (selected_sum, sum_)
             else:
-                text1 = ''
-                text2 = '-'
-            if highlight_sum_ == "1":
-                label.set_markup(text1 + '<b>' + text2 + '</b>')
-            else:
-                label.set_markup(text1 + text2)
+                text = '-'
+            label.set_text(text)
 
     def set_cursor(self, new=False, reset_view=True):
         model = self.treeview.get_model()
@@ -1474,8 +1410,7 @@ class ViewTree(View):
             records.append(model.get_value(iter_, 0))
         records = []
         sel = self.treeview.get_selection()
-        if sel is not None:
-            sel.selected_foreach(_func_sel_get, records)
+        sel.selected_foreach(_func_sel_get, records)
         if not records and self.record:
             records.append(self.record)
         return records
@@ -1580,36 +1515,7 @@ class ViewTree(View):
 
     def expand_nodes(self, nodes):
         model = self.treeview.get_model()
-        # JCA : Manage always_expand attribute to force tree expansion
-        if self.view_type == 'tree' and self.always_expand:
-            group = model.group
-
-            def get_all_sub_records(group, record, cur_expand_path,
-                    to_expand):
-                if group is None:
-                    try:
-                        group = record.children_group(model.children_field,
-                            model.children_definitions)
-                    except AttributeError:
-                        return
-                if group is None:
-                    return
-                cur_expand_path.append(0)
-                for i in range(len(group)):
-                    cur_expand_path[-1] = i
-                    to_expand += [list(cur_expand_path)]
-                    get_all_sub_records(None, group[i], cur_expand_path,
-                        to_expand)
-                cur_expand_path.pop(-1)
-
-            cur_expand_path = []
-            to_expand = []
-            get_all_sub_records(group, None, cur_expand_path, to_expand)
-            for path in to_expand:
-                tree_path = Gtk.TreePath.new_from_indices(path)
-                self.treeview.expand_to_path(tree_path)
-        else:
-            for node in nodes:
-                expand_path = path_convert_id2pos(model, node)
-                if expand_path:
-                    self.treeview.expand_to_path(Gtk.TreePath(expand_path))
+        for node in nodes:
+            expand_path = path_convert_id2pos(model, node)
+            if expand_path:
+                self.treeview.expand_to_path(Gtk.TreePath(expand_path))

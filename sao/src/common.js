@@ -4080,7 +4080,7 @@
         },
         _format: function(content) {
             if (this.format) {
-                return this.format(content);
+                content = this.format(content);
             }
             if (content instanceof jQuery) {
                 return content;
@@ -4173,7 +4173,7 @@
     Sao.common.get_completion = function(el, source,
             match_selected, action_activated, search=true, create=true) {
         var format = function(content) {
-            return jQuery('<span/>').text(content.name);
+            return content.name;
         };
         var completion = new Sao.common.InputCompletion(
                 el, source, match_selected, format);
@@ -4903,8 +4903,4 @@
             }
         },
     };
-
-    Sao.common.transparent_png = document.createElement('img');
-    Sao.common.transparent_png.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-
 }());

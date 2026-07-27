@@ -1,16 +1,13 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import functools
-import logging
 
-from gi.repository import Gtk, Pango
+from gi.repository import Gtk
 
 import tryton.common as common
 from tryton.action import Action
 from tryton.config import CONFIG
-from tryton.pyson import PYSONDecoder, domain_context_vars
-
-logger = logging.getLogger(__name__)
+from tryton.pyson import PYSONDecoder
 
 
 class StateMixin(object):
@@ -55,57 +52,6 @@ class Label(StateMixin, Gtk.Label):
         common.apply_label_attributes(self, readonly, required)
         self.set_max_width_chars(80)
         self.set_line_wrap(True)
-        if field:
-            self._format_set(record, field)
-
-    def _set_background(self, value, attrlist):
-        if value not in common.COLOR_RGB:
-            logger.info('This color is not supported => %s', value)
-        color = common.COLOR_RGB.get(value, common.COLOR_RGB['black'])
-        if hasattr(Pango, 'AttrBackground'):
-            attrlist.change(Pango.AttrBackground(
-                    color[0], color[1], color[2], 0, -1))
-
-    def _set_foreground(self, value, attrlist):
-        if value not in common.COLOR_RGB:
-            logger.info('This color is not supported => %s', value)
-        color = common.COLOR_RGB.get(value, common.COLOR_RGB['black'])
-        if hasattr(Pango, 'AttrForeground'):
-            attrlist.change(Pango.AttrForeground(
-                    color[0], color[1], color[2], 0, -1))
-
-    def _set_font(self, value, attrlist):
-        attrlist.change(Pango.AttrFontDesc(
-                Pango.FontDescription(value), 0, -1))
-
-    def _format_set(self, record, field):
-        attrlist = Pango.AttrList()
-        functions = {
-            'color': self._set_foreground,
-            'fg': self._set_foreground,
-            'bg': self._set_background,
-            'font': self._set_font
-            }
-        attrs = record.expr_eval(field.get_state_attrs(record).
-            get('states', {}))
-        states = record.expr_eval(self.attrs.get('states', {})).copy()
-        states.update(attrs)
-
-        for attr in list(states.keys()):
-            if not states[attr]:
-                continue
-            key = attr.split('_')
-            if key[0] == 'field':
-                continue
-            if key[0] == 'label':
-                key = key[1:]
-            if isinstance(states[attr], str):
-                key.append(states[attr])
-            if key[0] in functions:
-                if len(key) != 2:
-                    raise ValueError(common.FORMAT_ERROR + attr)
-                functions[key[0]](key[1], attrlist)
-        self.set_attributes(attrlist)
 
 
 class VBox(StateMixin, Gtk.VBox):
@@ -188,7 +134,10 @@ class Link(StateMixin, Gtk.Button):
         if CONFIG['client.modepda']:
             self.hide()
             return
-        if record and record.id >= 0:
+        if record:
+            if record.id < 0:
+                self.hide()
+                return
             data = {
                 'model': record.model_name,
                 'id': record.id,
@@ -201,11 +150,6 @@ class Link(StateMixin, Gtk.Button):
                 'active_ids': [record.id],
                 }
             self._current = record.id
-        elif record and record.id < 0:
-            data = {}
-            pyson_ctx = {}
-            context = record.get_context()
-            self._current = None
         else:
             data = {}
             context = {}
@@ -244,26 +188,21 @@ class Link(StateMixin, Gtk.Button):
                 record.links_counts[self.action_id] = counter
             if tab_domains:
                 for i, (_, tab_domain) in enumerate(tab_domains):
-                    count_domain = ['AND', domain, tab_domain]
-                    context_vars = domain_context_vars(count_domain)
-                    if record.id >= 0 or 'active_id' not in context_vars:
-                        common.RPCExecute(
-                            'model', action['res_model'], 'search_count',
-                            count_domain, 0, 100, context=context,
-                            callback=functools.partial(
-                                self._set_count, idx=i, current=self._current,
-                                counter=counter, label=label),
-                            process_exception=False)
-            else:
-                context_vars = domain_context_vars(domain)
-                if record.id >= 0 or 'active_id' not in context_vars:
                     common.RPCExecute(
                         'model', action['res_model'], 'search_count',
-                        domain, 0, 100, context=context,
+                        ['AND', domain, tab_domain], 0, 100, context=context,
                         callback=functools.partial(
-                            self._set_count, current=self._current,
+                            self._set_count, idx=i, current=self._current,
                             counter=counter, label=label),
                         process_exception=False)
+            else:
+                common.RPCExecute(
+                    'model', action['res_model'], 'search_count',
+                    domain, 0, 100, context=context,
+                    callback=functools.partial(
+                        self._set_count, current=self._current,
+                        counter=counter, label=label),
+                    process_exception=False)
 
     def _set_count(self, value, idx=0, current=None, counter=None, label=''):
         if current != self._current or not self.get_parent():

@@ -1,3 +1,7 @@
+# French (France) translations for tryton.
+# Copyright (C) 2008-2013 B2CK
+# This file is distributed under the same license as the tryton project.
+# FIRST AUTHOR <cedric.krier@b2ck.com>, 2008-2013.
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
@@ -40,8 +44,7 @@ msgstr "spécifie le niveau de log : DEBUG, INFO, WARNING, ERROR, CRITICAL"
 
 msgid "specify the file used to output logging information"
 msgstr ""
-"spécifier le fichier utilisé pour générer les informations de "
-"journalisation"
+"spécifier le fichier utilisé pour générer les informations de journalisation"
 
 msgid "specify the login user"
 msgstr "spécifier l'identifiant de l'utilisateur"
@@ -96,6 +99,9 @@ msgstr "Enregistrer sous..."
 
 msgid "Do you want to proceed?"
 msgstr "Souhaitez-vous continuer ?"
+
+msgid "Always ignore this warning."
+msgstr "Toujours ignorer cet avertissement."
 
 msgid "No"
 msgstr "Non"
@@ -243,7 +249,7 @@ msgid "View Logs..."
 msgstr "Voir les journaux..."
 
 msgid "Attachments..."
-msgstr "Pièces jointes..."
+msgstr "Attachements..."
 
 msgid "Notes..."
 msgstr "Notes..."
@@ -556,7 +562,7 @@ msgstr ""
 
 #, python-format
 msgid "Attachments (%s)"
-msgstr "Pièces jointes (%s)"
+msgstr "Attachements (%s)"
 
 msgid "Code Scanner"
 msgstr "Scanner de codes"
@@ -621,9 +627,6 @@ msgstr "Hôte / Port"
 msgid "User name:"
 msgstr "Nom d'utilisateur :"
 
-msgid "Date:"
-msgstr "Date : "
-
 msgid "Unable to complete email entry"
 msgstr "Impossible de compléter l'entrée d'adresse électronique"
 
@@ -678,7 +681,7 @@ msgstr "Suivant"
 
 #, python-format
 msgid "Attachment (%s)"
-msgstr "Pièce jointe (%s)"
+msgstr "Attachement (%s)"
 
 #, python-format
 msgid "Note (%d/%d)"
@@ -705,9 +708,6 @@ msgstr "Sur les enregistrement(s) dupliqué(s) maintenant."
 msgid "Record saved."
 msgstr "Entrée enregistrée."
 
-msgid " of "
-msgstr " de "
-
 msgid ""
 "This record has been modified\n"
 "do you want to save it?"
@@ -730,14 +730,17 @@ msgstr "Rapport"
 msgid "Open report"
 msgstr "Ouvrir un rapport"
 
+msgid "Print"
+msgstr "Imprimer"
+
+msgid "Print report"
+msgstr "Imprimer un rapport"
+
 msgid "_Copy URL"
 msgstr "_Copier l'URL"
 
 msgid "Copy URL into clipboard"
 msgstr "Copier l'URL dans le presse-papiers"
-
-msgid "name"
-msgstr "nom"
 
 msgid "Unknown"
 msgstr "Inconnu"
@@ -850,10 +853,10 @@ msgid "Show revisions..."
 msgstr "Afficher les révisions..."
 
 msgid "A_ttachments..."
-msgstr "_Pièces jointes..."
+msgstr "_Pièce jointes..."
 
 msgid "Add an attachment to the record"
-msgstr "Ajouter une pièce jointe à l'enregistrement"
+msgstr "Ajouter un attachement à l'enregistrement"
 
 msgid "_Notes..."
 msgstr "_Notes..."
@@ -1109,14 +1112,10 @@ msgstr "« %s » n'est pas valide selon son domaine."
 
 #, python-format
 msgid "\"%s\" is required."
-msgstr "Le champ « %s » est requis."
+msgstr "« %s » est requis."
 
 #, python-format
 msgid "The values of \"%s\" are not valid."
-msgstr "Les valeurs de « %s » ne sont pas valides."
-
-#, python-format
-msgid "The value of \"%s\" is not valid."
 msgstr "Les valeurs de « %s » ne sont pas valides."
 
 msgid "Pre-validation"
@@ -1225,7 +1224,7 @@ msgid "All files"
 msgstr "Tous les fichiers"
 
 msgid "Show plain text"
-msgstr "Afficher en texte clair"
+msgstr "Montrer en text clair"
 
 #, python-format
 msgid "Select a color for \"%s\""
@@ -1272,24 +1271,6 @@ msgstr "Annuler la suppression de l'enregistrement sélectionné"
 msgid "%s%%"
 msgstr "%s%%"
 
-msgid "Replace"
-msgstr "Remplacer"
-
-msgid "Replace All"
-msgstr "Remplacer tout"
-
-msgid "L"
-msgstr "L"
-
-msgid "Message"
-msgstr "Messages"
-
-msgid "Parameters: {}"
-msgstr "Paramètres : {}"
-
-msgid "No parameters"
-msgstr "Pas de paramètres"
-
 msgid "Choose a language"
 msgstr "Choisir une langue"
 
@@ -1303,13 +1284,10 @@ msgid "Fuzzy"
 msgstr "Floue"
 
 msgid "You need to save the record before adding translations."
-msgstr "Vous devez sauvegarder l'enregistrement avant d'ajouter des traductions."
+msgstr "Vous devez enregistrer l'entrée avant d'ajouter des traductions."
 
 msgid "No other language available."
 msgstr "Pas d'autre langue disponible."
-
-msgid ": "
-msgstr " : "
 
 msgid "#ERROR"
 msgstr "#ERREUR"
