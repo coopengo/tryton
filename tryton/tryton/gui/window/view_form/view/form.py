@@ -24,7 +24,6 @@ from .form_gtk.document import Document
 from .form_gtk.float import Float
 from .form_gtk.image import Image as Image2
 from .form_gtk.integer import Integer
-from .form_gtk.json import JSON
 from .form_gtk.many2many import Many2Many
 from .form_gtk.many2one import Many2One
 from .form_gtk.multiselection import MultiSelection
@@ -37,7 +36,6 @@ from .form_gtk.richtextbox import RichTextBox
 from .form_gtk.selection import Selection
 from .form_gtk.state_widget import (
     Expander, Frame, Image, Label, Link, Notebook, ScrolledWindow, VBox)
-from .form_gtk.sourceeditor import SourceView
 from .form_gtk.textbox import TextBox
 from .form_gtk.timedelta import TimeDelta
 from .form_gtk.url import HTML, SIP, URL, CallTo, Email
@@ -179,7 +177,6 @@ class FormXMLViewParser(XMLViewParser):
         'html': HTML,
         'image': Image2,
         'integer': Integer,
-        'json': JSON,
         'many2many': Many2Many,
         'many2one': Many2One,
         'multiselection': MultiSelection,
@@ -192,7 +189,6 @@ class FormXMLViewParser(XMLViewParser):
         'reference': Reference,
         'richtext': RichTextBox,
         'selection': Selection,
-        'source': SourceView,  # Coopengo specific
         'sip': SIP,
         'text': TextBox,
         'time': Time,
@@ -238,14 +234,8 @@ class FormXMLViewParser(XMLViewParser):
         if int(attributes.get('visible', 0)):
             self.field_attrs[name]['visible'] = True
 
-        # RSE Display more useful info when trying to display unexisting field
-        if 'widget' not in attributes:
-            raise Exception('Unknown field %s' % attributes['name'])
         widget = self.WIDGETS[attributes['widget']](self.view, attributes)
         self.view.widgets[name].append(widget)
-
-        if attributes.get('group'):
-            group = attributes['group']
 
         if widget.expand:
             attributes.setdefault('yexpand', True)
@@ -456,7 +446,6 @@ class ViewForm(View):
     def __init__(self, view_id, screen, xml):
         self.notebooks = []
         self.expandables = []
-        self.widget_groups = {}
 
         vbox = Gtk.VBox()
         vp = Gtk.Viewport()
@@ -476,11 +465,6 @@ class ViewForm(View):
 
         super().__init__(view_id, screen, xml)
 
-        if CONFIG['debug.field_infos'] and self.group:
-            help = f'{self.group.model_name}:\n'
-            help += f'domain: {self.group.domain}\n'
-            help += f'context: {self.group.local_context}'
-            self.viewport.set_tooltip_text(help)
         self.creatable = bool(int(self.attributes.get('creatable', 1)))
 
         if self.attributes.get('scan_code'):
@@ -548,7 +532,7 @@ class ViewForm(View):
                         field.get_state_attrs(record)['invalid'] = False
                         widget.display()
 
-    def display(self, force=False):
+    def display(self):
         record = self.record
         if record:
             # Force to set fields in record

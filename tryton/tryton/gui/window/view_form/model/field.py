@@ -93,10 +93,6 @@ class Field(object):
         if bool(int(state_attrs.get('required') or 0)):
             if (self._is_empty(record)
                     and not bool(int(state_attrs.get('readonly') or 0))):
-                logging.getLogger('root').debug('Field %s required on %s : '
-                    'states : %s'
-                    % (self.name, record.model_name,
-                        str(self.attrs.get('states', {}))))
                 return False
         return True
 
@@ -112,16 +108,10 @@ class Field(object):
         if not softvalidation:
             if not self.check_required(record):
                 invalid = 'required'
-                logging.getLogger('root').debug('Field %s of %s is required' %
-                    (self.name, record.model_name))
         if isinstance(domain, bool):
             if not domain:
-                logging.getLogger('root').debug('Invalid domain on Field %s of'
-                    ' %s : %s' % (self.name, record.model_name, str(domain)))
                 invalid = 'domain'
         elif domain == [('id', '=', None)]:
-            logging.getLogger('root').debug('Invalid domain on Field %s of'
-                ' %s : %s' % (self.name, record.model_name, str(domain)))
             invalid = 'domain'
         else:
             screen_domain, _ = self.domains_get(record, pre_validate)
@@ -142,9 +132,8 @@ class Field(object):
                 if value is False:
                     # XXX to remove once server domains are fixed
                     value = None
-                group_domain = record.group.get_domain()
-                if group_domain:
-                    original_domain = merge(group_domain)
+                if record.group.domain:
+                    original_domain = merge(record.group.domain)
                 else:
                     original_domain = merge(domain)
                 domain_readonly = original_domain[0] == 'AND'
@@ -158,8 +147,6 @@ class Field(object):
                     state_attrs['domain_readonly'] = domain_readonly
             if not eval_domain(domain, EvalEnvironment(record)):
                 invalid = domain
-                logging.getLogger('root').debug('Invalid domain on Field %s of'
-                    ' %s : %s' % (self.name, record.model_name, str(domain)))
         state_attrs['invalid'] = invalid
         return not invalid
 
@@ -325,28 +312,10 @@ class DateTimeField(Field):
     def time_format(self, record):
         return record.expr_eval(self.attrs['format'])
 
-    def validate(self, record, softvalidation=False, pre_validate=None):
-        valid = super().validate(record, softvalidation, pre_validate)
-        state_attrs = self.get_state_attrs(record)
-        if ((v := record.value.get(self.name))
-                and not isinstance(v, datetime.datetime)):
-            state_attrs['invalid'] = 'value'
-            valid = False
-        return valid
-
 
 class DateField(Field):
 
     _default = None
-
-    def validate(self, record, softvalidation=False, pre_validate=None):
-        valid = super().validate(record, softvalidation, pre_validate)
-        state_attrs = self.get_state_attrs(record)
-        if ((v := record.value.get(self.name))
-                and not isinstance(v, datetime.date)):
-            state_attrs['invalid'] = 'value'
-            valid = False
-        return valid
 
     def set_client(self, record, value, force_change=False):
         if isinstance(value, datetime.datetime):
@@ -375,15 +344,6 @@ class TimeField(Field):
 
     def time_format(self, record):
         return record.expr_eval(self.attrs['format'])
-
-    def validate(self, record, softvalidation=False, pre_validate=None):
-        valid = super().validate(record, softvalidation, pre_validate)
-        state_attrs = self.get_state_attrs(record)
-        if ((v := record.value.get(self.name))
-                and not isinstance(v, datetime.time)):
-            state_attrs['invalid'] = 'value'
-            valid = False
-        return valid
 
 
 class TimeDeltaField(Field):
@@ -780,17 +740,16 @@ class O2MField(Field):
                     and ':' not in f
                     and not f.startswith('_'))}
             attr_fields = functools.reduce(
-                lambda a, b: a.update(b) or a,
+                operator.or_,
                 (v['fields'] for v in self.attrs.get('views', {}).values()),
                 {})
             fields = {n: attr_fields[n]
                 for n in field_names
                 if n in attr_fields}
-            to_fetch = field_names - attr_fields.keys()
-            if to_fetch:
+            if to_fetch := (field_names - attr_fields.keys()):
                 try:
-                    fields.update(RPCExecute('model', self.attrs['relation'],
-                        'fields_get', list(to_fetch), context=context))
+                    fields |= RPCExecute('model', self.attrs['relation'],
+                        'fields_get', list(to_fetch), context=context)
                 except RPCException:
                     return
 
@@ -806,7 +765,7 @@ class O2MField(Field):
                 preloaded={v['id']: v for v in (data or [])})
         else:
             for vals in value:
-                if (vals.get('id', -1) or -1) > 0:
+                if 'id' in vals:
                     new_record = group.get(vals['id'])
                     if not new_record:
                         new_record = group.new(
@@ -822,8 +781,7 @@ class O2MField(Field):
                     new_record.set(vals, modified=False)
                     group.append(new_record)
             # Trigger modified only once
-            if modified or default:
-                group.record_modified()
+            group.record_modified()
 
     def set(self, record, value, _default=False, preloaded=None):
         group = record.value.get(self.name)
@@ -874,7 +832,6 @@ class O2MField(Field):
         record.modified_fields.setdefault(self.name)
 
     def set_on_change(self, record, value):
-        record[self.name]
         record.modified_fields.setdefault(self.name)
         self._set_default_value(record)
         if isinstance(value, (list, tuple)):
@@ -1278,7 +1235,7 @@ class DictField(Field):
         context = self.get_context(record)
         try:
             new_fields = RPCExecute('model', schema_model,
-                'search_get_keys', [('id', 'in', key_ids)], context=context)
+                'get_keys', key_ids, context=context)
         except RPCException:
             new_fields = []
 
