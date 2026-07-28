@@ -982,17 +982,6 @@ var Sao = {
             this.header = jQuery('<div/>', {
                 'class': 'modal-header'
             }).appendTo(this.content);
-            if (closeable) {
-                var close_button = jQuery('<button/>', {
-                    'type': 'button',
-                    'class': 'close',
-                    'data-dismiss': 'modal',
-                    'aria-label': Sao.i18n.gettext("Close"),
-                }).append(jQuery('<span>', {
-                    'aria-hidden': true,
-                }).append('&times;'));
-                this.header.append(close_button);
-            }
             if (title) {
                 this.add_title(title, small);
             }
