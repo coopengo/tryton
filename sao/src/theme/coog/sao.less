@@ -436,6 +436,7 @@ html[theme="default"] .btn-primary {
 
 .form .form-item > .btn {
     margin:                    1px 2px 1px 2px;
+    height: 32px;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -577,6 +578,7 @@ div.form-item:has(> fieldset.form-group_ > legend) {
             clear:                      both;
             display:                    grid;
             grid-template-columns:      1fr 1fr;
+            margin-left: 0px;
         }
 
         > legend {
@@ -644,7 +646,9 @@ div.form-item:has(> fieldset.form-group_ > legend) {
 // Improve vertical usage of groups with only one item
 div.form-item:not(.yfill):has(> *:only-child), div.form-item.form-dict {
     align-items:                        center;
-    > * {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    > *:not(.btn) {
         height:                         auto;
     }
 }
@@ -659,11 +663,6 @@ div.form-group-expandable {
             font-size:                  14px;
         }
     }
-}
-
-// Remove all padding from groups without a legend
-div.form-item:not(:has(> fieldset.form-group_ > legend)) {
-    padding:                            0px;
 }
 
 fieldset {
