@@ -2,14 +2,12 @@
 # this repository contains the full copyright notices and license terms.
 
 import configparser
-import datetime
 import gettext
 import logging
 import os
 import re
 import shutil
 import threading
-import webbrowser
 from tempfile import NamedTemporaryFile
 
 from gi.repository import GLib, GObject, Gtk
@@ -17,7 +15,6 @@ from gi.repository import GLib, GObject, Gtk
 import tryton.common as common
 import tryton.rpc as rpc
 from tryton import __version__
-from tryton.common.datetime_ import Date
 from tryton.common.underline import set_underline
 from tryton.config import CONFIG, PIXMAPS_DIR, TRYTON_ICON, get_config_dir
 
@@ -400,7 +397,7 @@ class DBLogin(object):
     def __init__(self):
         # Fake windows to avoid warning about Dialog without transient
         self._window = Gtk.Window()
-        self.dialog = Gtk.Dialog(title="Coog - " + _('Login'), modal=True)
+        self.dialog = Gtk.Dialog(title="Tryton - " + _('Login'), modal=True)
         self.dialog.set_transient_for(self._window)
         self.dialog.set_icon(TRYTON_ICON)
         self.dialog.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
@@ -424,11 +421,8 @@ class DBLogin(object):
             column_spacing=3, row_spacing=3, valign=Gtk.Align.START)
         self.dialog.vbox.pack_start(grid, expand=True, fill=True, padding=0)
 
-        click_catcher = Gtk.EventBox.new()
-        click_catcher.set_above_child(True)
-        click_catcher.connect('button-press-event', self.open_log_dir)
         image = Gtk.Image()
-        image.set_from_file(os.path.join(PIXMAPS_DIR, 'coog_text.svg'))
+        image.set_from_file(os.path.join(PIXMAPS_DIR, 'tryton.svg'))
         image.set_valign(Gtk.Align.START)
         overlay = Gtk.Overlay()
         overlay.add(image)
@@ -440,8 +434,7 @@ class DBLogin(object):
         label.props.margin_right = 10
         label.props.margin_top = 5
         overlay.add_overlay(label)
-        click_catcher.add(overlay)
-        grid.attach(click_catcher, 0, 0, 3, 1)
+        grid.attach(overlay, 0, 0, 3, 1)
 
         self.profile_store = Gtk.ListStore(
             GObject.TYPE_STRING, GObject.TYPE_BOOLEAN)
@@ -514,9 +507,14 @@ class DBLogin(object):
                 temp_name = temp_file.name
             shutil.copy(self.profile_cfg, temp_name)
             logger.error(
-                f"Failed to parse {self.profile_cfg}. "
+                f"Failed to parse {self.profiles_cfg}. "
                 f"A backup can be found at {temp_name}",
                 exc_info=True)
+        if not self.profiles.sections():
+            self.profiles.add_section(current_demo)
+            self.profiles.set(current_demo, 'host', current_demo)
+            self.profiles.set(current_demo, 'database', f'demo{series}')
+            self.profiles.set(current_demo, 'username', 'demo')
         to_remove = []
         for section in self.profiles.sections():
             host = self.profiles.get(section, 'host', fallback='')
@@ -719,7 +717,3 @@ class DBLogin(object):
         self.dialog.destroy()
         self._window.destroy()
         return response == Gtk.ResponseType.OK or response > 0
-
-    def open_log_dir(self, eventbox, event):
-        if event.button == 3:
-            webbrowser.open(get_config_dir())

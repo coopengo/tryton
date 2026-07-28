@@ -2435,16 +2435,6 @@
         },
         set_editable: function() {
             var focus_widget = null;
-            let table_node = this.el[0].parentNode;
-            let tr_copy = this.el[0].cloneNode(true);
-            Object.keys(tr_copy).forEach(key => {
-                tr_copy.addEventListener(key.slice(2), (evt) => {
-                    evt.preventDefault();
-                    evt.stopPropagation();
-                });
-            });
-            table_node.replaceChild(tr_copy, this.el[0]);
-            let display_prms = [];
             for (var i = 0, len=this.tree.columns.length; i < len; i++) {
                 var td = this._get_column_td(i);
                 var col = this.tree.columns[i];
@@ -2461,7 +2451,7 @@
                     var editable_el = this.get_editable_el(td);
                     editable_el.append(widget.el);
                     editable_el.data('widget', widget);
-                    display_prms.push(widget.display(this.record, col.field));
+                    widget.display(this.record, col.field);
 
                     var static_el = this.get_static_el(td);
                     static_el.sao_hide();
@@ -2474,9 +2464,6 @@
                     }
                 }
             }
-            jQuery.when.apply(jQuery, display_prms).done(() => {
-                table_node.replaceChild(this.el[0], tr_copy);
-            });
             if (focus_widget && focus_widget.focus) {
                 focus_widget.focus();
             }
@@ -2730,9 +2717,7 @@
                     if (!value) {
                         value = field.get_client(record) || '';
                     }
-                    if (cell.text() != value) {
-                        cell.text(value);
-                    }
+                    cell.text(value);
                 }
             };
             let prm = jQuery.when();
@@ -2827,9 +2812,7 @@
         },
         update_text: function(cell, record) {
             var text = this.get_textual_value(record);
-            if (text != cell.text()) {
-                cell.text(text).attr('title', text);
-            }
+            cell.text(text).attr('title', text);
         },
         render: function(record, cell) {
             if (!cell) {
@@ -3031,9 +3014,7 @@
             if (!this.tree.editable &&
                     (this.field.name + ':string' in record._values)) {
                 var text_value = this.get_textual_value(record);
-                if (cell.text() != text_value) {
-                    cell.text(text_value).attr('title', text_value);
-                }
+                cell.text(text_value).attr('title', text_value);
             } else {
                 this.update_selection(record, () => {
                     var value = this.field.get(record);
@@ -3054,9 +3035,7 @@
                         prm = jQuery.when(text);
                     }
                     prm.done(text_value => {
-                        if (cell.text() != text_value) {
-                            cell.text(text_value).attr('title', text_value);
-                        }
+                        cell.text(text_value).attr('title', text_value);
                     });
                 });
             }
@@ -3098,15 +3077,11 @@
             if (!this.tree.editable &&
                     (this.field_name + ':string' in record._values)) {
                 var text_value = this.get_textual_value(record);
-                if (cell.text() != text_value) {
-                    cell.text(text_value).attr('title', text_value);
-                }
+                cell.text(text_value).attr('title', text_value);
             } else {
                 this.update_selection(record, () => {
                     var text_value = this.get_textual_value(record);
-                    if (cell.text() != text_value) {
-                        cell.text(text_value).attr('title', text_value);
-                    }
+                    cell.text(text_value).attr('title', text_value);
                 });
             }
         },
@@ -3164,9 +3139,7 @@
             cell.unbind('click');
             this.update_selection(record, () => {
                 var text = this.get_textual_value(record);
-                if (cell.text() != text) {
-                    cell.text(text).attr('title', text);
-                }
+                cell.text(text).attr('title', text);
                 cell.click(event => {
                     event.stopPropagation();
                     var value = this.field.get(record);
@@ -3249,10 +3222,7 @@
         },
         update_text: function(cell, record) {
             var text = this.get_textual_value(record);
-            let span = cell.children('span')
-            if (span.text() != text) {
-                span.text(text).attr('title', text);
-            }
+            cell.children('span').text(text).attr('title', text);
             var button = cell.children('button');
             if (!button.length) {
                 button = jQuery('<button/>', {
@@ -3388,10 +3358,8 @@
             var value = this.field.get(record) || 0;
             var progressbar = cell.find('.progress-bar');
             progressbar.attr('aria-valuenow', value * 100);
-            if (progressbar.text() != text) {
-                progressbar.css('width', value * 100 + '%');
-                progressbar.text(text).attr('title', text);
-            }
+            progressbar.css('width', value * 100 + '%');
+            progressbar.text(text).attr('title', text);
         }
     });
 

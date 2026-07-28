@@ -1444,6 +1444,8 @@ def _convert_action(action, data=None, *, context=None, config=None):
             'config': config,
             'context': context,
             }
+        if 'extra_context' in data:
+            context |= data['extra_context']
         if records is not None:
             kwargs['models'] = records
         elif 'model' in data:

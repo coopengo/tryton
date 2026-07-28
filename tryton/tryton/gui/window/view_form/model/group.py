@@ -5,7 +5,6 @@ import operator
 from tryton import rpc
 from tryton.common import MODELACCESS, RPCException, RPCExecute
 from tryton.common.domain_inversion import is_leaf
-from tryton.pyson import PYSONDecoder
 
 from .field import Field, M2OField, ReferenceField
 from .record import Record
@@ -61,14 +60,10 @@ class Group(list):
 
     @property
     def domain(self):
-        group_domain = self.__domain
-        if group_domain and isinstance(group_domain, str):
-            decoder = PYSONDecoder(self.context)
-            group_domain = decoder.decode(group_domain)
         if self.parent and self.child_name:
             field = self.parent.group.fields[self.child_name]
-            return [group_domain, field.domain_get(self.parent)]
-        return group_domain
+            return [self.__domain, field.domain_get(self.parent)]
+        return self.__domain
 
     def clean4inversion(self, domain):
         "This method will replace non relevant fields for domain inversion"
@@ -86,14 +81,8 @@ class Group(list):
             head = self.clean4inversion(head)
         return [head] + self.clean4inversion(tail)
 
-    def get_domain(self):
-        if not self.domain or not isinstance(self.domain, str):
-            return self.domain
-        decoder = PYSONDecoder(self.context)
-        return decoder.decode(self.domain)
-
     def __get_domain4inversion(self):
-        domain = self.get_domain()
+        domain = self.domain
         if (self.__domain4inversion is None
                 or self.__domain4inversion[0] != domain):
             self.__domain4inversion = (
@@ -255,8 +244,7 @@ class Group(list):
         if not ids:
             return True
 
-        # PJA : Select first entry in list if even if there is only one #3431
-        if len(ids) >= 1:
+        if len(ids) > 1:
             self.lock_signal = True
 
         new_records = []
@@ -269,8 +257,7 @@ class Group(list):
                 else:
                     self.insert(position, new_record)
                     position += 1
-            already_loaded = preloaded.get(id) if preloaded else None
-            if already_loaded:
+            if preloaded and (already_loaded := preloaded.get(id)):
                 new_record.set(already_loaded, modified=False, validate=False)
             new_records.append(new_record)
 
