@@ -146,13 +146,6 @@ class Eval(PYSON):
         self._value = v
         self._default = d
 
-    def __repr__(self):
-        if isinstance(self._value, str) and not self._default:
-            return f'rec.{self._value}'
-        else:
-            return f'Eval({repr(self._value)}' + (
-                ')' if not self._default else f', {repr(self._default)})')
-
     @property
     def __repr_params__(self):
         params = (self._value,)
@@ -205,17 +198,13 @@ class Not(PYSON):
         self._value = v
 
     def __repr__(self):
-        if isinstance(self._value, Not):
-            return repr(self._value._value)
-        elif (isinstance(self._value, Equal)
+        if (isinstance(self._value, Equal)
                 and isinstance(self._value._statement1, PYSON)):
-            val = self._value
-            return f'({repr(val._statement1)} ≠ {repr(val._statement2)})'
-        elif isinstance(self._value, In):
-            val = self._value
-            return f'({repr(val._key)} not in {repr(val._obj)})'
+            return '(%s != %s)' % (
+                repr(self._value._statement1),
+                repr(self._value._statement2))
         elif isinstance(self._value, PYSON):
-            return f'!({repr(self._value)})'
+            return '~%s' % repr(self._value)
         else:
             return super().__repr__()
 
@@ -242,9 +231,6 @@ class Bool(PYSON):
     def __init__(self, v):
         super().__init__()
         self._value = v
-
-    def __repr__(self):
-        return repr(self._value)
 
     @property
     def __repr_params__(self):
@@ -280,9 +266,6 @@ class And(PYSON):
         assert len(statements) >= 2, 'must have at least 2 statements'
         self._statements = statements
 
-    def __repr__(self):
-        return '(' + ' & '.join(repr(x) for x in self._statements) + ')'
-
     @property
     def __repr_params__(self):
         return tuple(self._statements)
@@ -303,9 +286,6 @@ class And(PYSON):
 
 class Or(And):
     _binary_operator = '|'
-
-    def __repr__(self):
-        return '(' + ' | '.join(repr(x) for x in self._statements) + ')'
 
     def pyson(self):
         res = super().pyson()
@@ -334,9 +314,6 @@ class Equal(PYSON):
         assert types1 == types2, 'statements must have the same type'
         self._statement1 = statement1
         self._statement2 = statement2
-
-    def __repr__(self):
-        return f'({repr(self._statement1)} = {repr(self._statement2)})'
 
     @property
     def __repr_params__(self):
@@ -383,10 +360,6 @@ class Greater(PYSON):
         self._statement1 = statement1
         self._statement2 = statement2
         self._equal = equal
-
-    def __repr__(self):
-        operator = ' ≥ ' if self._equal else ' > '
-        return f'({repr(self._statement1)} {operator} {repr(self._statement2)})'
 
     @property
     def _binary_operator(self):
@@ -446,10 +419,6 @@ class Less(Greater):
         res = super().pyson()
         res['__class__'] = 'Less'
         return res
-
-    def __repr__(self):
-        operator = ' ≤ ' if self._equal else ' < '
-        return f'({repr(self._statement1)} {operator} {repr(self._statement2)})'
 
     @staticmethod
     def eval(dct, context):
@@ -584,7 +553,8 @@ class In(PYSON):
     def __repr__(self):
         params = self.__repr_params__
         if isinstance(params[1], PYSON):
-            return f'({repr(params[0])} in {repr(params[1])})'
+            return '%s.contains(%s)' % (
+                repr(params[1]), ', '.join(map(repr, params[:1] + params[2:])))
         else:
             return super().__repr__()
 
@@ -635,11 +605,6 @@ class Date(PYSON):
         self._delta_months = delta_months
         self._delta_days = delta_days
         self._start = start
-
-    def __repr__(self):
-        if all(not x for x in self.__repr_params__):
-            return 'Today()'
-        return super().__repr__()
 
     @property
     def __repr_params__(self):
@@ -769,10 +734,7 @@ class DateTime(Date):
 
 class TimeDelta(PYSON):
 
-    def __init__(self, days=0, seconds=0, microseconds=0, **kwargs):
-        days = kwargs.get('d', days)
-        seconds = kwargs.get('s', seconds)
-        microseconds = kwargs.get('m', microseconds)
+    def __init__(self, days=0, seconds=0, microseconds=0):
         for i in [days, seconds, microseconds]:
             if isinstance(i, PYSON):
                 assert i.types().issubset({int, float}), \
@@ -857,22 +819,3 @@ CONTEXT = {
     'true': True,
     'false': False,
 }
-
-
-def domain_context_vars(domain):
-
-    def _iter_eval_fields(value):
-        if isinstance(value, Get):
-            origin = value._obj
-            if isinstance(origin, Eval) and (origin._value == 'context'):
-                yield value._key
-        elif isinstance(value, PYSON):
-            yield from _iter_eval_fields(value.pyson())
-        elif isinstance(value, (list, tuple)):
-            for part in value:
-                yield from _iter_eval_fields(part)
-        elif isinstance(value, dict):
-            for part in value.values():
-                yield from _iter_eval_fields(part)
-
-    return set(_iter_eval_fields(domain))

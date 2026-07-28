@@ -76,7 +76,7 @@ class ViewListForm(View):
         self._model = None
         self._view_forms = []
 
-    def display(self, force=False):
+    def display(self):
         if self._model is None or self._model.group is not self.group:
             self._view_forms = []
             self._model = ListBoxModel(self.group)
@@ -87,7 +87,6 @@ class ViewListForm(View):
     def _create_form(self, item):
         view_form = ListBoxViewForm(self.view_id, self.screen, self.form_xml)
         view_form.record = item.record
-        view_form.listform = self
         view_form.widget.props.margin = 3
         self._view_forms.append(view_form)
         frame = Gtk.Frame.new()
@@ -127,14 +126,10 @@ class ViewListForm(View):
     def group_list_changed(self, group, action, *args):
         if action == 'record-added':
             record, position = args
-            if group != record.group:
-                return
             self._model.emit('items-changed', position, 0, 1)
             self._view_forms.insert(position, self._view_forms.pop())
         elif action == 'record-removed':
             record, position = args
-            if group != record.group:
-                return
             self._model.emit('items-changed', position, 1, 0)
             self._view_forms.pop(position)
 

@@ -3,7 +3,7 @@
 import gettext
 import itertools
 
-from gi.repository import Gdk, Gtk, GLib
+from gi.repository import Gdk, Gtk
 
 import tryton.common as common
 from tryton.common.completion import get_completion, update_completion
@@ -16,7 +16,6 @@ from tryton.gui.window.win_search import WinSearch
 from .widget import Widget
 
 _ = gettext.gettext
-IncompatibleGroup = object()
 
 
 class One2Many(Widget):
@@ -33,7 +32,6 @@ class One2Many(Widget):
         self._readonly = True
         self._position = None
         self._length = 0
-        self._incompatible_group = False
 
         self.title_box = hbox = Gtk.HBox(homogeneous=False, spacing=0)
         hbox.set_border_width(2)
@@ -41,28 +39,7 @@ class One2Many(Widget):
         self.label = Gtk.Label(
             label=set_underline(attrs.get('string', '')),
             use_underline=True, halign=Gtk.Align.START)
-        if not attrs.get('expand_toolbar'):
-            if attrs.get('collapse_body'):
-                click_catcher = Gtk.EventBox.new()
-                click_catcher.set_above_child(True)
-                click_catcher.connect('button-press-event', self._toggle_body)
-
-                collapse_hbox = Gtk.HBox()
-                self.label_expander = Gtk.Image()
-                self.label_expander.set_from_pixbuf(
-                    common.IconFactory.get_pixbuf('tryton-arrow-down'))
-                collapse_hbox.pack_start(
-                    self.label_expander, expand=False, fill=False, padding=0)
-                collapse_hbox.pack_start(
-                    self.label, expand=False, fill=False, padding=0)
-
-                click_catcher.add(collapse_hbox)
-                click_catcher.show()
-                hbox.pack_start(
-                    click_catcher, expand=True, fill=True, padding=0)
-            else:
-                hbox.pack_start(
-                    self.label, expand=True, fill=True, padding=0)
+        hbox.pack_start(self.label, expand=True, fill=True, padding=0)
 
         hbox.pack_start(Gtk.VSeparator(), expand=False, fill=True, padding=0)
 
@@ -103,8 +80,7 @@ class One2Many(Widget):
             self.wid_text = Gtk.Entry()
             self.wid_text.set_placeholder_text(_('Search'))
             self.wid_text.set_property('width_chars', 13)
-            self.pid_focus = self.wid_text.connect(
-                'focus-out-event', self._focus_out)
+            self.wid_text.connect('focus-out-event', self._focus_out)
             hbox.pack_start(self.wid_text, expand=True, fill=True, padding=0)
 
             if int(self.attrs.get('completion', 1)):
@@ -175,12 +151,8 @@ class One2Many(Widget):
 
         frame = Gtk.Frame()
         frame.add(hbox)
-        # XXX: support expand_toolbar
-        if attrs.get('expand_toolbar'):
-            frame.set_shadow_type(Gtk.ShadowType.NONE)
-        else:
-            frame.set_shadow_type(Gtk.ShadowType.OUT)
-            vbox.pack_start(frame, expand=False, fill=True, padding=0)
+        frame.set_shadow_type(Gtk.ShadowType.OUT)
+        vbox.pack_start(frame, expand=False, fill=True, padding=0)
 
         model = attrs['relation']
         breadcrumb = list(self.view.screen.breadcrumb)
@@ -199,17 +171,6 @@ class One2Many(Widget):
             breadcrumb=breadcrumb)
         self.screen.pre_validate = bool(int(attrs.get('pre_validate', 0)))
         self.screen.windows.append(self)
-        if self.attrs.get('group'):
-            self.screen._multiview_form = view
-            self.screen._multiview_group = self.attrs['group']
-            wgroup = view.widget_groups.setdefault(self.attrs['group'], [])
-            if self.screen.current_view.view_type == 'tree':
-                if (wgroup
-                        and wgroup[0].screen.current_view.view_type == 'tree'):
-                    raise ValueError("Wrong multiview definition")
-                wgroup.insert(0, self)
-            else:
-                wgroup.append(self)
 
         vbox.pack_start(self.screen.widget, expand=True, fill=True, padding=0)
 
@@ -248,22 +209,6 @@ class One2Many(Widget):
     @property
     def delete_access(self):
         return int(self.attrs.get('delete', 1)) and self.get_access('delete')
-
-    def _toggle_body(self, eventbox, event):
-        if self.screen.widget.props.visible:
-            self.screen.widget.hide()
-            self.widget.set_vexpand(False)
-            self.widget.set_size_request(-1, -1)
-            self.label_expander.set_from_pixbuf(
-                common.IconFactory.get_pixbuf('tryton-arrow-right'))
-        else:
-            self.screen.widget.show()
-            self.widget.set_vexpand(True)
-            self.widget.set_size_request(
-                int(self.attrs.get('width', -1)),
-                int(self.attrs.get('height', -1)))
-            self.label_expander.set_from_pixbuf(
-                common.IconFactory.get_pixbuf('tryton-arrow-down'))
 
     def on_keypress(self, widget, event):
         if ((event.keyval == Gdk.KEY_F3)
@@ -308,7 +253,7 @@ class One2Many(Widget):
 
     def destroy(self):
         if self.attrs.get('add_remove'):
-            self.wid_text.disconnect(self.pid_focus)
+            self.wid_text.disconnect_by_func(self._focus_out)
         self.screen.destroy()
 
     def _on_activate(self):
@@ -316,7 +261,6 @@ class One2Many(Widget):
 
     def switch_view(self, widget):
         self.screen.switch_view()
-
         mnemonic_widget = self.screen.current_view.mnemonic_widget
         string = self.attrs.get('string', '')
         if mnemonic_widget:
@@ -326,9 +270,7 @@ class One2Many(Widget):
 
     @property
     def modified(self):
-        # JCA : Check current_view is not None
-        return (self.screen.current_view.modified if self.screen.current_view
-            else False)
+        return self.screen.current_view.modified
 
     def _readonly_set(self, value):
         super()._readonly_set(value)
@@ -343,9 +285,6 @@ class One2Many(Widget):
         else:
             o2m_size = None
             size_limit = False
-
-        has_form = ('form' in (x.view_type for x in self.screen.views)
-            or 'form' in self.screen.view_to_load)
 
         first = last = False
         if isinstance(self._position, int):
@@ -367,8 +306,7 @@ class One2Many(Widget):
         self.but_new.set_sensitive(bool(
                 not self._readonly
                 and self.create_access
-                and not size_limit
-                and (has_form or self.screen.current_view.editable)))
+                and not size_limit))
         self.but_del.set_sensitive(bool(
                 not self._readonly
                 and self.delete_access
@@ -407,8 +345,7 @@ class One2Many(Widget):
         self.view.set_value()
         record = self.screen.current_record
         if record:
-            fields = self.screen.current_view.get_fields() \
-                if self.screen.current_view else None
+            fields = self.screen.current_view.get_fields()
             if not record.validate(fields):
                 self.screen.display(set_cursor=True)
                 return False
@@ -520,7 +457,7 @@ class One2Many(Widget):
         search_set()
 
     def _sig_edit(self, widget=None):
-        if not self.but_open.props.sensitive:
+        if not common.MODELACCESS[self.screen.model_name]['read']:
             return
         if not self._validate():
             return
@@ -562,6 +499,7 @@ class One2Many(Widget):
     def _sig_add(self, *args):
         if not self.write_access or not self.read_access:
             return
+        self.view.set_value()
         domain = self.field.domain_get(self.record)
         context = self.field.get_search_context(self.record)
         domain = [domain, self.record.expr_eval(self.attrs.get('add_remove'))]
@@ -623,10 +561,7 @@ class One2Many(Widget):
             return False
         new_group = self.field.get_client(self.record)
 
-        if self.attrs.get('group') and self.attrs.get('mode') == 'form':
-            self.invisible_set(not self.visible or self._incompatible_group)
-        if (id(self.screen.group) != id(new_group)
-                and self.screen.model_name == new_group.model_name):
+        if id(self.screen.group) != id(new_group):
             self.screen.group = new_group
             if (self.screen.current_view.view_type == 'form'
                     and self.screen.group):
@@ -641,7 +576,7 @@ class One2Many(Widget):
                 size_limit = len(self.screen.group)
             else:
                 size_limit = min(size_limit, len(self.screen.group))
-        if self.screen.get_domain() != domain:
+        if self.screen.domain != domain:
             self.screen.domain = domain
         self.screen.size_limit = size_limit
         self.screen.display()

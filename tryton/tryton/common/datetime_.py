@@ -2,8 +2,8 @@
 # this repository contains the full copyright notices and license terms.
 import datetime
 import gettext
-import re
 
+from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
 from gi.repository import Gdk, GObject, Gtk
 
@@ -25,66 +25,26 @@ def _fix_format(format_):
 
 
 def date_parse(text, format_='%x'):
-    def parse_date(text):
-        formatted_date = datetime.date(1988, 7, 16).strftime(format_)
-        try:
-            dayfirst = formatted_date.index('16') == 0
-        except ValueError:
-            dayfirst = False
-        try:
-            monthfirst = formatted_date.index('7') <= 1
-        except ValueError:
-            monthfirst = False
-
-        text = re.sub('[^0-9]', '', text)
-        if len(text) not in {6, 8}:
-            raise ValueError
-
-        year_format = '%Y' if len(text) == 8 else '%y'
-        if dayfirst:
-            parse_format = '%d%m' + year_format
-        elif monthfirst:
-            parse_format = '%m%d' + year_format
-        else:
-            # Probably ISO otherwise it's very strange
-            parse_format = year_format + '%m%d'
-
-        return datetime.datetime.strptime(text, parse_format).date()
-
-    def parse_time(text):
-        h, m, *s = text.split(':', 2)
-        if s:
-            if '.' in s[0]:
-                s, us = s[0].split('.')
-            else:
-                s, us = s[0], None
-        else:
-            s, us = None, None
-        return datetime.time(
-            int(h), int(m), int(s) if s else 0,
-            int(us) if us else 0)
-
-    date, time = None, None
-    if ' ' in text:
-        date, time = text.split(' ', 1)
-    elif ':' in text:
-        time = text
-    else:
-        date = text
-
-    date = parse_date(date) if date else datetime.date.today()
-    time = parse_time(time) if time else datetime.time()
-    return datetime.datetime.combine(date, time)
+    try:
+        return datetime.datetime.strptime(text, format_)
+    except ValueError:
+        pass
+    formatted_date = datetime.date(1988, 7, 16).strftime(format_)
+    try:
+        dayfirst = formatted_date.index('16') == 0
+    except ValueError:
+        dayfirst = False
+    try:
+        monthfirst = formatted_date.index('7') <= 1
+    except ValueError:
+        monthfirst = False
+    yearfirst = not dayfirst and not monthfirst
+    return parse(text, dayfirst=dayfirst, yearfirst=yearfirst, ignoretz=True)
 
 
 class Date(Gtk.Entry):
     __gtype_name__ = 'Date'
     __gproperties__ = {
-        'valid': (GObject.TYPE_BOOLEAN,
-            _('Validity'),
-            _('Date Validity'),
-            True,
-            GObject.ParamFlags.READABLE),
         'value': (GObject.TYPE_PYOBJECT,
             _('Value'),
             _('Displayed value'),
@@ -104,7 +64,6 @@ class Date(Gtk.Entry):
     def __init__(self):
         self.__date = None
         self.__format = '%x'
-        self.__valid = True
 
         Gtk.Entry.__init__(self)
 
@@ -145,24 +104,16 @@ class Date(Gtk.Entry):
 
     def parse(self):
         text = self.get_text()
-        style_context = self.get_style_context()
+        date = None
         if text:
             try:
-                self.__date = date_parse(text, self.__format).date()
-                style_context.remove_class('invalid')
-                self.__valid = True
+                date = date_parse(text, self.__format).date()
             except (ValueError, OverflowError):
-                self.__date = None
-                self.__valid = False
-                style_context.add_class('invalid')
-        else:
-            self.__date = None
-            self.__valid = True
-            style_context.remove_class('invalid')
+                pass
+
+        self.__date = date
 
     def update_label(self):
-        if not self.__valid:
-            return
         if not self.__date:
             self.set_text('')
             return
@@ -187,7 +138,6 @@ class Date(Gtk.Entry):
     def cal_popup_changed(self, calendar):
         year, month, day = self.__calendar.get_date()
         self.__date = datetime.date(year, month + 1, day)
-        self.__valid = True
 
         self.update_label()
 
@@ -247,15 +197,10 @@ class Date(Gtk.Entry):
                 self.set_text(value)
                 self.parse()
                 value = self.__date
-            elif value is None:
-                self.__valid = True
-            elif isinstance(value, (datetime.datetime, datetime.date)):
-                self.__valid = True
+            if value:
                 if isinstance(value, datetime.datetime):
                     value = value.date()
-            else:
-                self.__valid = False
-                value = None
+                assert isinstance(value, datetime.date), value
             self.__date = value
             self.update_label()
         elif prop.name == 'format':
@@ -267,8 +212,6 @@ class Date(Gtk.Entry):
             return self.__date
         elif prop.name == 'format':
             return self.__format
-        elif prop.name == 'valid':
-            return self.__valid
 
 
 GObject.type_register(Date)
@@ -341,11 +284,6 @@ GObject.type_register(CellRendererDate)
 class Time(Gtk.ComboBox):
     __gtype_name__ = 'Time'
     __gproperties__ = {
-        'valid': (GObject.TYPE_BOOLEAN,
-            _('Validity'),
-            _('Time Validity'),
-            True,
-            GObject.ParamFlags.READABLE),
         'value': (GObject.TYPE_PYOBJECT,
             _('Value'),
             _('Displayed value'),
@@ -365,7 +303,6 @@ class Time(Gtk.ComboBox):
     def __init__(self):
         self.__time = None
         self.__format = '%X'
-        self.__valid = True
 
         Gtk.ComboBox.__init__(self, has_entry=True)
 
@@ -384,23 +321,16 @@ class Time(Gtk.ComboBox):
 
     def parse(self):
         text = self.__entry.get_text()
-        style_context = self.get_style_context()
+        time = None
         if text:
             try:
-                self.__time = date_parse(text).time()
-                style_context.remove_class('invalid')
+                time = date_parse(text).time()
             except (ValueError, OverflowError):
-                self.__time = None
-                self.__valid = False
-                style_context.add_class('invalid')
-        else:
-            self.__time = None
-            self.__valid = True
-            style_context.remove_class('invalid')
+                pass
+
+        self.__time = time
 
     def update_label(self):
-        if not self.__valid:
-            return
         if self.__time is None:
             self.__entry.set_text('')
             return
@@ -440,15 +370,9 @@ class Time(Gtk.ComboBox):
                 self.__entry.set_text(value)
                 self.parse()
                 value = self.__time
-            elif value is None:
-                self.__valid = True
-            elif isinstance(value, (datetime.datetime, datetime.time)):
-                self.__value = True
+            if value:
                 if isinstance(value, datetime.datetime):
                     value = value.time()
-            else:
-                self.__valid = False
-                value = None
             self.__time = value
             self.update_label()
         elif prop.name == 'format':
@@ -461,8 +385,6 @@ class Time(Gtk.ComboBox):
             return self.__time
         elif prop.name == 'format':
             return self.__format
-        elif prop.name == 'valid':
-            return self.__valid
 
 
 GObject.type_register(Time)
@@ -529,11 +451,6 @@ GObject.type_register(CellRendererTime)
 class DateTime(Gtk.HBox):
     __gtype_name__ = 'DateTime'
     __gproperties__ = {
-        'valid': (GObject.TYPE_BOOLEAN,
-            _('Validity'),
-            _('DateTime Validity'),
-            True,
-            GObject.ParamFlags.READABLE),
         'value': (GObject.TYPE_PYOBJECT,
             _('Value'),
             _('Displayed value'),
@@ -595,8 +512,6 @@ class DateTime(Gtk.HBox):
             return self.__date.props.format
         elif prop.name == 'time-format':
             return self.__time.props.format
-        elif prop.name == 'valid':
-            return self.__date.props.valid and self.__time.props.valid
 
     def modify_bg(self, state, color):
         self.__date.modify_bg(state, color)

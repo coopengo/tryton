@@ -127,7 +127,9 @@ class Form(TabContent):
                     attributes.get('mode') or ['tree', 'form']))
             and self.screen.local_context == attributes.get('context')
             and self.attributes.get('search_value') == (
-                attributes.get('search_value')))
+                attributes.get('search_value'))
+            and self.attributes.get('tab_domain') == (
+                attributes.get('tab_domain')))
 
     def __hash__(self):
         return id(self)
@@ -616,7 +618,8 @@ class Form(TabContent):
         if selected > 1:
             name += '#%i' % selected
         sensitive = record_id >= 0 if record_id is not None else False
-        for button_id in ['relate', 'email', 'open', 'attach', 'chat']:
+        for button_id in [
+                'print', 'relate', 'email', 'open', 'attach', 'chat']:
             button = self.buttons.get(button_id)
             if not button:
                 continue
@@ -639,16 +642,13 @@ class Form(TabContent):
         set_sensitive('previous', self.screen.has_prev())
         set_sensitive('next', self.screen.has_next())
 
-        if self.forced_count:
-            size_display_func = lambda x: str(x)
-        else:
-            size_display_func = common.humanize
-        msg = name + ' / ' + size_display_func(size)
         if size < max_size:
-            extra = ''
-            if not self.forced_count and self.screen.count_limit <= max_size:
-                extra = '+'
-            msg += _(' of ') + size_display_func(max_size) + extra
+            msg = "%s@%s/%s" % (
+                name, common.humanize(size), common.humanize(max_size))
+            if max_size >= self.screen.count_limit:
+                msg += "+"
+        else:
+            msg = "%s/%s" % (name, common.humanize(size))
         self.status_label.set_text(msg)
         self.info_bar_clear()
         self.set_buttons_sensitive()
@@ -663,9 +663,6 @@ class Form(TabContent):
                 self._chat.refresh()
             else:
                 self.buttons['chat'].set_active(False)
-        # reset forced_count to transmit the info that we're not doing accurate
-        # length computation anymore
-        self.forced_count = False
 
     def record_modified(self):
         def _record_modified():
@@ -757,14 +754,14 @@ class Form(TabContent):
             'print': 'tryton-print',
             'action': 'tryton-launch',
             'relate': 'tryton-link',
-            'email': 'tryton-email',
-            'open': 'tryton-print',
+            'open': 'tryton-open',
         }
         for action_type, special_action, action_name, tooltip in (
                 ('action', 'action', _('Action'), _('Launch action')),
                 ('relate', 'relate', _('Relate'), _('Open related records')),
                 (None,) * 4,
                 ('print', 'open', _('Report'), _('Open report')),
+                ('print', 'print', _('Print'), _('Print report')),
                 ):
             if action_type is not None:
                 tbutton = Gtk.ToggleToolButton()
@@ -792,19 +789,11 @@ class Form(TabContent):
             menu = tbutton._menu
             if menu.get_children():
                 menu.add(Gtk.SeparatorMenuItem())
-            # Coog: move available exports to a submenu
-            exports_menuitem = Gtk.MenuItem(set_underline('Exports'))
-            exports_menuitem.set_use_underline(True)
-            menu.add(exports_menuitem)
-
-            submenu = Gtk.Menu()
-            exports_menuitem.set_submenu(submenu)
-
             for export in exports:
                 menuitem = Gtk.MenuItem(set_underline(export['name']))
                 menuitem.set_use_underline(True)
                 menuitem.connect('activate', self.do_export, export)
-                submenu.add(menuitem)
+                menu.add(menuitem)
 
         last_item = gtktoolbar.get_nth_item(gtktoolbar.get_n_items() - 1)
         if not isinstance(last_item, Gtk.SeparatorToolItem):
@@ -828,36 +817,6 @@ class Form(TabContent):
         url_button.connect('toggled', self.action_popup)
         self.buttons['copy_url'] = url_button
         gtktoolbar.insert(url_button, -1)
-
-        quick_actions = toolbars.get('quick_actions', [])
-        if quick_actions:
-            gtktoolbar.insert(Gtk.SeparatorToolItem(), -1)
-        for quick_action in quick_actions:
-            icon = quick_action.get('icon.', {})
-            if not icon:
-                icon = 'tryton-executable'
-            else:
-                icon = icon.get('rec_name')
-
-            # prevent problem with variables scopes in lambda
-            # cf. https://docs.python.org/3/faq/programming.html#
-            # why-do-lambdas-defined-in-a-loop-with-different-values
-            # -all-return-the-same-result
-            def make_func(n, *args):
-                return lambda z: n(*args)
-
-            # Fix for #8825
-            common.IconFactory._get_icon(icon)
-            qbutton = Gtk.ToolButton()
-            qbutton.set_icon_widget(
-                common.IconFactory.get_image(
-                    icon, Gtk.IconSize.LARGE_TOOLBAR))
-            qbutton.set_label(quick_action['name'])
-            qbutton.connect('clicked',
-                make_func(self._action, quick_action, 'quick_actions'))
-            self.tooltips.set_tip(qbutton, _(quick_action['name']))
-            gtktoolbar.insert(qbutton, -1)
-
         return gtktoolbar
 
     def _create_popup_menu(self, widget, keyword, actions, special_action):
@@ -978,8 +937,3 @@ class Form(TabContent):
                     win_attach.add_uri(uri)
             else:
                 win_attach.add_uri(selection.get_text())
-
-    def _force_count(self, eventbox, event):
-        super()._force_count(eventbox, event)
-        domain = self.screen.screen_container.get_text()
-        self.screen._force_count(domain)
