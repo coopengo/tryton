@@ -186,7 +186,8 @@
                         this.screen.current_record.cancel();
                     }
                 }, {
-                'title': this.title.text(),
+                    title: this.title.text(),
+                    prev_view: this.screen.current_view,
                 });
             }
         },
