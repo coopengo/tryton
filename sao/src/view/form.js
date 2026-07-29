@@ -3647,6 +3647,7 @@ function hide_x2m_body(widget) {
                     screen.current_record = screen.group.get(m2o_id);
                     new Sao.Window.Form(screen, callback, {
                         save_current: true,
+                        prev_view: null,
                     });
                 });
                 return;
@@ -3717,6 +3718,7 @@ function hide_x2m_body(widget) {
                     new_: true,
                     save_current: true,
                     defaults: defaults,
+                    prev_view: null,
                 });
             });
         },
@@ -4653,6 +4655,7 @@ function hide_x2m_body(widget) {
                     new_: true,
                     defaults: defaults,
                     many: field_size,
+                    prev_view: this.screen.current_view,
                 });
             }
         },
@@ -4771,6 +4774,8 @@ function hide_x2m_body(widget) {
                     }
                     new Sao.Window.Form(this.screen, () => {
                         this._popup = false;
+                    }, {
+                        prev_view: this.screen.current_view,
                     });
                 }
             });
@@ -5273,6 +5278,7 @@ function hide_x2m_body(widget) {
                     this.screen.current_record.id);
                 new Sao.Window.Form(screen, callback, {
                     save_current: true,
+                    prev_view: screen.current_view,
                 });
             });
         },
@@ -5303,6 +5309,7 @@ function hide_x2m_body(widget) {
                     'new_': true,
                     'save_current': true,
                     'defaults': defaults,
+                    prev_view: screen.current_view,
                 });
             });
         },
