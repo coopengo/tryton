@@ -163,7 +163,7 @@
                     return label;
                 });
 
-            this.prev_view = screen.current_view;
+            this.prev_view = kwargs.prev_view;
             this.screen.screen_container.alternate_view = true;
             this.info_bar = new Sao.Window.InfoBar();
             var view_type = kwargs.view_type || 'form';
@@ -679,7 +679,7 @@
                 return Sao.i18n.gettext('Attachments (%1)', rec_name);
             });
             Sao.Window.Attachment._super.init.call(this, screen, this.callback,
-                {view_type: 'tree', title: title});
+                {view_type: 'tree', title: title, prev_view: screen.current_view});
             this.switch_prm = this.switch_prm.then(function() {
                 return screen.search_filter();
             });
@@ -788,7 +788,7 @@
                 return Sao.i18n.gettext('Notes (%1)', rec_name);
             });
             Sao.Window.Note._super.init.call(this, screen, this.callback,
-                {view_type: 'tree', title: title});
+                {view_type: 'tree', title: title, prev_view: screen.current_view});
             this.switch_prm = this.switch_prm.then(function() {
                 return screen.search_filter();
             });
@@ -956,7 +956,11 @@
                 context: context,
             });
             Sao.Window.Log._super.init.call(
-                this, screen, null, {view_type: 'tree', title: title});
+                this, screen, null, {
+                    view_type: 'tree',
+                    title: title,
+                    prev_view: screen.current_view,
+                });
             this.switch_prm = this.switch_prm.then(function() {
                 return screen.search_filter();
             });
@@ -1101,6 +1105,7 @@
                 new Sao.Window.Form(screen, callback.bind(this), {
                     new_: true,
                     save_current: true,
+                    prev_view: screen.current_view,
                 });
                 return;
             }
