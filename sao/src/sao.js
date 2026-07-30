@@ -641,7 +641,16 @@ var Sao = {
             Sao.i18n.set_direction();
             Sao.Session.server_version()
                 .then(function(version) {
-                    if (JSON.stringify(version.split('.').slice(0, 2)) !==
+                    let version_parts = version.split('.');
+                    let deployment = document.getElementById('deployment_stage');
+                    if (version_parts.length > 2) {
+                        let span = deployment.getElementsByTagName('span')[0];
+                        span.textContent = version_parts.at(-1);
+                        deployment.style.display = 'flex';
+                    } else {
+                        deployment.style.display = 'none';
+                    }
+                    if (JSON.stringify(version_parts.slice(0, 2)) !==
                         JSON.stringify(Sao.__version__.split('.').slice(0, 2)))
                     {
                         Sao.common.warning.run(
