@@ -701,4 +701,4 @@ msgstr "Annuleer"
 
 msgctxt "wizard_button:sale.point.sale.pay,payment,pay:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"

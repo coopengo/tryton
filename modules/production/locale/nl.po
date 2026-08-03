@@ -652,7 +652,7 @@ msgstr "Annuleren"
 
 msgctxt "wizard_button:production.bom.tree.open,start,tree:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 msgctxt "wizard_button:production.bom.tree.open,tree,end:"
 msgid "Close"

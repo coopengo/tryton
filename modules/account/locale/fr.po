@@ -2887,7 +2887,7 @@ msgstr "Mise à jour de plan comptable Début"
 
 msgctxt "model:account.update_chart.succeed,string:"
 msgid "Account Update Chart Succeed"
-msgstr "Mise à jour de plan comptable Résussie"
+msgstr "Mise à jour de plan comptable réussie"
 
 msgctxt "model:ir.action,name:act_account_balance_sheet"
 msgid "Accounts"

@@ -665,7 +665,7 @@ msgstr "commissies"
 
 msgctxt "wizard_button:commission.create_invoice,ask,create_:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 msgctxt "wizard_button:commission.create_invoice,ask,end:"
 msgid "Cancel"

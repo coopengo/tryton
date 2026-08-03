@@ -64,11 +64,11 @@ msgstr "Contexte du domaine"
 
 msgctxt "field:ir.action.act_window,context_model:"
 msgid "Context Model"
-msgstr "Modèle de context"
+msgstr "Modèle de contexte"
 
 msgctxt "field:ir.action.act_window,context_model_ref:"
 msgid "Context Model"
-msgstr "Modèle de context"
+msgstr "Modèle de contexte"
 
 msgctxt "field:ir.action.act_window,domain:"
 msgid "Domain Value"
@@ -2255,7 +2255,7 @@ msgid ""
 "Set a minimum time delay between call to \"Action Function\" for the same record.\n"
 "empty for no delay."
 msgstr ""
-"Défini un delai minimal entre l'appel à la « fonction de l'action » pour le même enregistrement.\n"
+"Défini un délai minimal entre l'appel à la « fonction de l'action » pour le même enregistrement.\n"
 "Vide pour aucun délai."
 
 msgctxt "help:ir.ui.view_search,domain:"
@@ -4402,7 +4402,7 @@ msgstr "Semaines"
 
 msgctxt "selection:ir.cron,method:"
 msgid "Clean Cron Logs"
-msgstr "Nettoyer les journaux des tâches plannifiées"
+msgstr "Nettoyer les journaux des tâches planifiées"
 
 msgctxt "selection:ir.cron,method:"
 msgid "Clean Errors"

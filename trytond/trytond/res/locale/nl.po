@@ -485,7 +485,7 @@ msgstr "Annuleer"
 
 msgctxt "wizard_button:res.user.config,start,user:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 msgctxt "wizard_button:res.user.config,user,add:"
 msgid "Add"

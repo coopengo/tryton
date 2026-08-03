@@ -302,7 +302,7 @@ msgstr "À traiter"
 
 msgctxt "model:ir.message,text:msg_braintree_key_modified"
 msgid "Are you sure you want to modify the keys of the Braintree account?"
-msgstr "Etes-vous sûr de vouloir modifier les clés du compte Braintree ?"
+msgstr "Êtes-vous sûr de vouloir modifier les clés du compte Braintree ?"
 
 #, python-format
 msgctxt "model:ir.message,text:msg_braintree_receivable"

@@ -4756,11 +4756,11 @@ msgstr "Annuleer"
 
 msgctxt "wizard_button:ir.module.config_wizard,done,end:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 msgctxt "wizard_button:ir.module.config_wizard,first,action:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 msgctxt "wizard_button:ir.module.config_wizard,first,end:"
 msgid "Cancel"
@@ -4784,7 +4784,7 @@ msgstr "Annuleer"
 
 msgctxt "wizard_button:ir.translation.clean,succeed,end:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 msgctxt "wizard_button:ir.translation.export,result,end:"
 msgid "Close"
@@ -4808,7 +4808,7 @@ msgstr "Actualiseren"
 
 msgctxt "wizard_button:ir.translation.set,succeed,end:"
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 msgctxt "wizard_button:ir.translation.update,start,end:"
 msgid "Cancel"

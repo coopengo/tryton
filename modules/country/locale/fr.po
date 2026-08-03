@@ -464,7 +464,7 @@ msgstr "Administration"
 
 msgctxt "selection:country.subdivision,type:"
 msgid "Administrative Region"
-msgstr "Region administrative"
+msgstr "Région administrative"
 
 msgctxt "selection:country.subdivision,type:"
 msgid "Administrative Territory"
@@ -588,7 +588,7 @@ msgstr "Chaîne (d'îles)"
 
 msgctxt "selection:country.subdivision,type:"
 msgid "Chains (of islands)"
-msgstr "Chaînes (d'iles)"
+msgstr "Chaînes (d’îles)"
 
 msgctxt "selection:country.subdivision,type:"
 msgid "City"
@@ -944,7 +944,7 @@ msgstr "Cité spéciale"
 
 msgctxt "selection:country.subdivision,type:"
 msgid "Special island authority"
-msgstr "Authorité insulaire spéciale"
+msgstr "Autorité insulaire spéciale"
 
 msgctxt "selection:country.subdivision,type:"
 msgid "Special self-governing city"
