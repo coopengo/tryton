@@ -215,7 +215,7 @@ div.wizard-form {
 // More discrete checkboxes for selection in trees
 .treeview > table.tree,table.tree-condensed > thead,tbody > tr > td.selection-state > input {
     & :after {
-        border-color:   @color-lightest-blue !important;
+        border-color:   @color-lighter-blue !important;
     }
 
     & tr:hover :after {
@@ -228,6 +228,11 @@ div.wizard-form {
 
     & tr.selected :after {
         border-color:   @color-grey !important;
+    }
+
+    & input[disabled]::after  {
+        border-color:   @color-lightest-blue !important;
+        cursor: not-allowed !important;
     }
 
 }
