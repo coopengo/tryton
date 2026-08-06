@@ -4320,113 +4320,6 @@ function hide_x2m_body(widget) {
         get _styled_el() {
             return null;
         },
-        // [Coog specific]
-        // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-        group_sync: function(screen, current_record){
-            if (this.attributes.mode == 'form')
-                return;
-            if (!this.view || !this.view.widgets)
-                return;
-
-            function is_compatible(screen, record){
-                if (!screen.current_view)
-                    return false;
-
-                return (!(screen.current_view.view_type == 'form' &&
-                    record &&
-                    screen.model_name != record.model.name));
-            }
-
-            var key;
-            var record;
-            var widget;
-            var widgets = this.view.widgets[this.field_name];
-            var to_sync = [];
-
-            // !!!> get a list of widgets affected by the new record
-            for (var j = 0; j < widgets.length; j++){
-                widget = widgets[j];
-                if (!widget.hasOwnProperty('attributes')){
-                    return;
-                }
-
-                if (widget == this ||
-                    widget.attributes.group != this.attributes.group ||
-                    !widget.hasOwnProperty('screen')){
-                    continue;
-                }
-
-                if (widget.screen.current_record == current_record){
-                    continue;
-                }
-
-                record = current_record;
-                if (!is_compatible(widget.screen, record))
-                    record = null;
-                if (!widget.validate())
-                    return;
-
-                to_sync.push({'widget': widget, 'record': record});
-            }
-            widget = null;
-            var to_display = null;
-            var to_display_prm = jQuery.when();
-            var record_load_promises, display_prm;
-
-            function display_form(widget, record) {
-                return function () {
-                    widget.display(widget.record, widget.field);
-                };
-            }
-
-            // !!!> add fields; change widget's record; display widgets
-            for (var i = 0; i < to_sync.length; i++){
-                widget = to_sync[i].widget;
-                record = to_sync[i].record;
-                record_load_promises = [];
-
-                if (!widget.screen.current_view)
-                    continue;
-
-                // !!!> add widget's fields to the record
-                if (widget.screen.current_view.view_type == 'form' &&
-                    record &&
-                    widget.screen.group.model.name == record.group.model.name){
-                    var fields = widget.screen.group.model.fields;
-                    // !!!> format fields for method "add_fields"
-                    var ret = [];
-                    for(var name in fields){
-                        ret[name] = fields[name].description;
-                    }
-                    // !!!> initiate and add new fields
-                    record.group.model.add_fields(ret);
-
-                    for (var field_name in fields) {
-                        if (!fields.hasOwnProperty(field_name)) {
-                            continue;
-                        }
-                        record_load_promises.push(record.load(field_name));
-                    }
-                }
-
-                widget.screen.current_record = record;
-                display_prm = jQuery.when.apply(jQuery, record_load_promises);
-                display_prm.done(display_form(widget, record).bind(this));
-                if (record){
-                    to_display = widget;
-                    to_display_prm = display_prm;
-                }
-            }
-            if (to_display) {
-                to_display_prm.done(function() {
-                    for (var j in to_display.view.containers) {
-                        var container = widget.view.containers[j];
-                        container.resize();
-                    }
-                    to_display.display(to_display.record, to_display.field);
-                });
-            }
-        },
         get_access: function(type) {
             var model = this.attributes.relation;
             if (model) {
@@ -4460,110 +4353,6 @@ function hide_x2m_body(widget) {
         },
         get modified() {
             return Boolean(this.screen.current_view && this.screen.current_view.modified);
-        },
-        group_sync: function(screen, current_record){
-            if (this.attributes.mode == 'form')
-                return;
-            if (!this.view || !this.view.widgets)
-                return;
-
-            function is_compatible(screen, record){
-                if (screen.current_view === undefined)
-                    return false;
-
-                return (!(screen.current_view.view_type == 'form' &&
-                    record !== undefined &&
-                    screen.model_name != record.model.name));
-            }
-
-            var key;
-            var record;
-            var widget;
-            var widgets = this.view.widgets[this.field_name];
-            var to_sync = [];
-
-            // !!!> get a list of widgets affected by the new record
-            for (var j = 0; j < widgets.length; j++){
-                widget = widgets[j];
-                if (!widget.hasOwnProperty('attributes')){
-                    return;
-                }
-
-                if (widget == this ||
-                    widget.attributes.group != this.attributes.group ||
-                    !widget.hasOwnProperty('screen')){
-                    continue;
-                }
-
-                if (widget.screen.current_record == current_record){
-                    continue;
-                }
-
-                record = current_record;
-                if (!is_compatible(widget.screen, record))
-                    record = null;
-                if (!widget.validate())
-                    return;
-
-                to_sync.push({'widget': widget, 'record': record});
-            }
-            widget = null;
-            var to_display = null;
-            var record_load_promises, display_prm;
-
-            function display_form(widget, record) {
-                return function () {
-                    widget.screen.current_record = record;
-                    widget.display(widget.record(), widget.field());
-                };
-            }
-
-            // !!!> add fields; change widget's record; display widgets
-            for (var i = 0; i < to_sync.length; i++){
-                widget = to_sync[i].widget;
-                record = to_sync[i].record;
-                record_load_promises = [];
-
-                if (widget.screen.current_view === undefined)
-                    continue;
-
-                // !!!> add widget's fields to the record
-                if (widget.screen.current_view.view_type == 'form' &&
-                    record !== undefined && record !== null &&
-                    widget.screen.group.model.name == record.group.model.name){
-                    var fields = widget.screen.group.model.fields;
-                    // !!!> format fields for method "add_fields"
-                    var ret = [];
-                    for(var name in fields){
-                        ret[name] = fields[name].description;
-                    }
-                    // !!!> initiate and add new fields
-                    record.group.model.add_fields(ret);
-
-                    for (var field_name in fields) {
-                        if (!fields.hasOwnProperty(field_name)) {
-                            continue;
-                        }
-                        record_load_promises.push(record.load(field_name));
-                    }
-                }
-
-                display_prm = jQuery.when.apply(jQuery, record_load_promises);
-                display_prm.then(display_form(widget, record).bind(this));
-                if (record){
-                    to_display = widget;
-                }
-            }
-            // !!!> resize forms to fix display width
-            if (widget){
-                for (j in widget.view.containers) {
-                    var container = widget.view.containers[j];
-                    container.resize();
-                }
-            }
-            if (to_display) {
-                to_display.display(to_display.record(), to_display.field());
-            }
         },
         set_readonly: function(readonly) {
             Sao.View.Form.One2Many._super.set_readonly.call(this, readonly);
@@ -4756,9 +4545,7 @@ function hide_x2m_body(widget) {
             if (!this.write_access || !this.read_access) {
                 return;
             }
-            // [Coog specific]
-            // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-            // this.view.set_value();
+            this.view.set_value();
             var domain = this.field.get_domain(this.record);
             var context = this.field.get_search_context(this.record);
             domain = [domain,
@@ -5032,9 +4819,7 @@ function hide_x2m_body(widget) {
         },
         validate: function() {
             var prm = jQuery.Deferred();
-            // [Coog specific]
-            // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-            // this.view.set_value();
+            this.view.set_value();
             var record = this.screen.current_record;
             if (record) {
                 var fields = this.screen.current_view.get_fields();
@@ -5052,12 +4837,6 @@ function hide_x2m_body(widget) {
         },
         set_value: function() {
             this.screen.current_view.set_value();
-            // [Coog specific]
-            // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-            if (this.screen.current_view.view_type == 'form' &&
-                this.attributes.group &&
-                this.screen.model.name != this.record.model.name)
-                return;
             if (this.screen.modified()) {  // TODO check if required
                 this.view.screen.record_modified(false);
             }

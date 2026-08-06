@@ -885,9 +885,6 @@
             this.fields_view_tree = {};
             this._domain_parser = {};
             this.pre_validate = false;
-            // [Coog specific] used for group_sync
-            this.parent = null;
-            // end
             this.switch_callback = null;
         },
         get readonly() {
@@ -992,11 +989,9 @@
             for (field in fields) {
                 this.group.model.fields[field].views.add(view_id);
             }
-            // [Coog specific] multi_mixed_view
             try {
                 var view_widget = Sao.View.parse(
-                    this, view_id, view.type, xml_view, view.field_childs,
-                    view.children_definitions);
+                    this, view_id, view.type, xml_view, view.field_childs);
             } catch (e) {
                 return null;
             }
@@ -1438,10 +1433,6 @@
                     this.update_resources();
                 }
             }
-            // [Coog specific] multi_mixed_view
-            if (this.parent) {
-                this.parent.group_sync(this, this.current_record);
-            }
         },
         load: function(ids, set_cursor=true, modified=false, position=-1) {
             this.group.load(ids, modified, position, null);
@@ -1459,8 +1450,7 @@
                 return;
             }
 
-            var [tree, ...forms] = this._multiview_form.widget_groups[
-                this._multiview_group];
+            let forms = this._multiview_form.widget_groups[this._multiview_group].slice(1);
             // Get unknown fields
             for (const widget of forms) {
                 if (widget.screen.current_view.view_type != 'form') {

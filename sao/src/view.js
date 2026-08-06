@@ -78,14 +78,10 @@
         return path;
     };
 
-    // [Coog specific] multi_mixed_view
-    Sao.View.parse = function(screen, view_id, type, xml, children_field, 
-                children_definitions) {
+    Sao.View.parse = function(screen, view_id, type, xml, children_field) {
         switch (type) {
             case 'tree':
-                // [Coog specific] multi_mixed_view
-                return new Sao.View.Tree(view_id, screen, xml, children_field,
-                    children_definitions);
+                return new Sao.View.Tree(view_id, screen, xml, children_field);
             case 'form':
                 return new Sao.View.Form(view_id, screen, xml);
             case 'graph':
