@@ -170,6 +170,28 @@ html[theme="default"] {
     }
 }
 
+#deployment_stage {
+    display: none;
+
+    position: fixed;
+    z-index: 1000;
+    bottom: 0;
+    right: 0;
+    width: 100vh;
+    transform-origin: bottom left;
+    transform: rotate(-90deg) translateY(100vh);
+    pointer-events: none;
+    opacity: 0.4;
+    background-color: @state-warning-bg;
+
+    justify-content: center;
+    align-items: center;
+
+    span {
+        font-size: xxx-large;
+    }
+}
+
 #main {
     bottom: 0;
     display: flex;
