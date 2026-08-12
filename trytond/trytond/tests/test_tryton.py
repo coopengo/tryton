@@ -1286,7 +1286,7 @@ class RouteTestCase(_DBTestCase):
 
 def db_exist(name=DB_NAME):
     database = backend.Database().connect()
-    return name in database.list()
+    return name in dict(database.list())
 
 
 def create_db(name=DB_NAME, lang='en'):
