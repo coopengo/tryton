@@ -259,10 +259,24 @@
         var dfd = jQuery.Deferred();
         var database = database_url();
 
+        let show_db_type = (session) => {
+            Sao.DB.list().then((databases) => {
+                let is_prod = databases.some(
+                    ([db, production]) => db == session.database && production
+                );
+                let sandbox = document.getElementById('sandbox');
+                if (is_prod) {
+                    sandbox.style.display = 'none';
+                } else {
+                    sandbox.style.display = 'flex';
+                }
+            });
+        };
+
         var session = new Sao.Session(database, null);
         if (session.user_id) {
             dfd.resolve(session);
-            return dfd;
+            return dfd.done(show_db_type);
         }
         var dialog = Sao.Session.login_dialog();
 
@@ -355,19 +369,54 @@
             empty_field().first().focus();
         });
 
-        jQuery.when(Sao.DB.list()).then(function(databases) {
+        Sao.DB.list().then(function(databases) {
             var el;
             databases = databases || [];
             if (databases.length == 1 ) {
-                database = databases[0];
+                database = databases[0][0];
                 el = dialog.database_input;
             } else {
+                let sandboxes = [], productions = [];
                 el = dialog.database_select;
-                for (const database of databases) {
-                    el.append(jQuery('<option/>', {
-                        'value': database,
-                        'text': database
-                    }));
+                for (let [database, production] of databases) {
+                    if (production) {
+                        productions.push(database);
+                    } else {
+                        sandboxes.push(database);
+                    }
+                }
+                if ((sandboxes.length > 0) && (productions.length > 0)) {
+                    let production_grp = jQuery('<optgroup/>', {
+                        label: Sao.i18n.gettext("Production")
+                    });
+                    productions.sort();
+                    productions.forEach((database) => {
+                        production_grp.append(jQuery('<option/>', {
+                            'value': database,
+                            'text': database
+                        }));
+                    });
+                    el.append(production_grp);
+                    let sandbox_grp = jQuery('<optgroup/>', {
+                        label: Sao.i18n.gettext("Sandboxes")
+                    });
+                    sandboxes.sort();
+                    sandboxes.forEach((database) => {
+                        sandbox_grp.append(jQuery('<option/>', {
+                            'value': database,
+                            'text': database
+                        }));
+                    });
+                    el.append(sandbox_grp);
+                } else {
+                    let databases = sandboxes.concat(productions);
+                    databases.sort();
+                    databases.forEach((database) => {
+                        el.append(jQuery('<option/>', {
+                            'value': database,
+                            'text': database
+                        }));
+                    });
                 }
             }
             el.prop('readonly', databases.length == 1);
@@ -394,7 +443,7 @@
                 }
             }
         });
-        return dfd.promise();
+        return dfd.promise().done(show_db_type);
     };
 
     Sao.Session.renew = function(session) {

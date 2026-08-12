@@ -386,8 +386,10 @@ class Database(DatabaseInterface):
                         conn = connect(params['conninfo'])
                         try:
                             with conn:
-                                if self._test(conn, hostname=hostname):
-                                    res.append(db_name)
+                                if self._test(
+                                        conn, hostname=hostname, series=True):
+                                    res.append(
+                                        (db_name, self.is_production(conn)))
                         finally:
                             conn.close()
                     except Exception:
@@ -463,6 +465,14 @@ class Database(DatabaseInterface):
                 hostnames = {h for h, in cursor if h}
                 if hostnames and hostname not in hostnames:
                     return False
+            return True
+
+    def is_production(self, connection):
+        cursor = connection.cursor()
+        try:
+            cursor.execute("SELECT production FROM ir_configuration")
+            return p[0] if (p := cursor.fetchone()) else False
+        except psycopg.errors.UndefinedColumn:
             return True
 
     def nextid(self, connection, table, count=1):

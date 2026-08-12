@@ -641,6 +641,9 @@ var Sao = {
             Sao.i18n.set_direction();
             Sao.Session.server_version()
                 .then(function(version) {
+                    let sandbox = document.getElementById('sandbox');
+                    let h4 = sandbox.getElementsByTagName('h4')[0];
+                    h4.textContent = `Sandbox. version: ${version}`;
                     if (JSON.stringify(version.split('.').slice(0, 2)) !==
                         JSON.stringify(Sao.__version__.split('.').slice(0, 2)))
                     {
