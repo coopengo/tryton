@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 def _get_pool(dbname):
     database_list = Pool.database_list()
     if dbname not in database_list:
-        db_list = Transaction().database.list()
-        if dbname not in db_list:
+        databases = dict(Transaction().database.list())
+        if dbname not in databases:
             abort(HTTPStatus.NOT_FOUND)
     pool = Pool(dbname)
     if dbname not in database_list:

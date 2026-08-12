@@ -2,6 +2,7 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import logging
+import os
 import pydoc
 import time
 
@@ -113,7 +114,7 @@ def reset_password(request, database_name, user, language=None):
 @app.route('/rpc/', methods=['POST'])
 def root(request, *args):
     methods = {
-        'common.server.version': lambda *a: __series__,
+        'common.server.version': version,
         'common.db.list': db_list,
         'common.authentication.services': authentication_services,
         }
@@ -124,6 +125,13 @@ def root(request, *args):
 @app.route('/<path:path>', methods=['OPTIONS'])
 def options(request, path=None):
     return Response(status=HTTPStatus.NO_CONTENT)
+
+
+def version(request):
+    suffix = ''
+    if os.environ.get('TRYTOND_DEPLOYMENT_VERSION'):
+        suffix = os.environ['TRYTOND_DEPLOYMENT_VERSION']
+    return __series__ + (f'.{suffix}' if suffix else '')
 
 
 def db_exist(request, database_name):
