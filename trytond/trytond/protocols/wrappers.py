@@ -300,8 +300,8 @@ def with_pool(func):
         if database_name not in database_list:
             with Transaction().start(None, 0, readonly=True) as transaction:
                 hostname = config.get_hostname(request.host)
-                db_list = transaction.database.list(hostname=hostname)
-                if database_name not in db_list:
+                databases = dict(transaction.database.list(hostname=hostname))
+                if database_name not in databases:
                     abort(HTTPStatus.NOT_FOUND)
         pool = Pool(database_name)
         if database_name not in database_list:
