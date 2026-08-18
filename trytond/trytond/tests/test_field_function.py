@@ -265,3 +265,25 @@ class FieldFunctionTestCase(TestCase):
 
         self.assertEqual(asc, sorted(asc))
         self.assertEqual(desc, sorted(asc, reverse=True))
+
+    @with_transaction()
+    def test_multiple_getter_key(self):
+        "Test calls with multiple getters are filtered according to key"
+        pool = Pool()
+        Model = pool.get('test.function.multiple_getter_key')
+
+        record = Model()
+        record.save()
+
+        with patch.object(Model, 'func_getter', autospec=True) as getter:
+            record.function1
+            self.assertEqual(getter.call_count, 1)
+            self.assertEqual(
+                set(getter.call_args.args[1]), {'function1', 'function2'})
+
+            record.function2
+            self.assertEqual(getter.call_count, 1)
+
+            record.function3
+            self.assertEqual(getter.call_count, 2)
+            self.assertEqual(set(getter.call_args.args[1]), {'function3'})
