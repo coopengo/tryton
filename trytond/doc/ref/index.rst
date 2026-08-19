@@ -14,6 +14,7 @@ Reference of the ``trytond`` API:
    fields
    wizard
    report
+   xml
    pyson
    transaction
    exceptions
