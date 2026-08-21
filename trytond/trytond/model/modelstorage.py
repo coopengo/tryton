@@ -340,11 +340,6 @@ class ModelStorage(Model):
         return bool(Transaction().check_access)
 
     @classmethod
-    def key_get_field(cls, name):
-        "Returns the key used to group getter calls of function fields"
-        return None
-
-    @classmethod
     def _before_write(cls, *args):
         pool = Pool()
         ModelAccess = pool.get('ir.model.access')
@@ -1910,13 +1905,12 @@ class ModelStorage(Model):
             name: field,
             }
         load_eager = field.loading == 'eager' and not skip_eager
-        multiple_getter, multiple_getter_key = None, None
+        multiple_getter = None
         if (field.loading == 'lazy'
                 and isinstance(field, fields.Function)
                 and field.getter_multiple(
                     getattr(self.__class__, field.getter))):
             multiple_getter = field.getter
-            multiple_getter_key = self.key_get_field(name)
 
         if load_eager or multiple_getter:
             FieldAccess = pool.get('ir.model.field.access')
@@ -1938,8 +1932,7 @@ class ModelStorage(Model):
                 if fname in to_remove:
                     return False
                 if multiple_getter:
-                    return (getattr(field, 'getter', None) == multiple_getter
-                        and self.key_get_field(fname) == multiple_getter_key)
+                    return getattr(field, 'getter', None) == multiple_getter
                 return field.loading == 'eager'
 
             ifields = filter(to_load,

@@ -1012,14 +1012,6 @@ class Account(
     def default_template_override(cls):
         return False
 
-    @classmethod
-    def key_get_field(cls, name):
-        key = super().key_get_field(name)
-        if name == 'amount_second_currency':
-            if not Transaction().context.get('cumulate'):
-                key = 'amount_second_currency'
-        return key
-
     def get_currency(self, name):
         return self.company.currency.id
 
@@ -1485,14 +1477,6 @@ class AccountParty(ActivePeriodMixin, ModelSQL):
     currency = fields.Function(fields.Many2One(
             'currency.currency', "Currency"),
         'get_currency', searcher='search_currency')
-
-    @classmethod
-    def key_get_field(cls, name):
-        key = super().key_get_field(name)
-        if name == 'amount_second_currency':
-            if not Transaction().context.get('cumulate'):
-                key = 'amount_second_currency'
-        return key
 
     @classmethod
     def table_query(cls):
