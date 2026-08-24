@@ -49,7 +49,7 @@ def database_completer(parsed_args, **kwargs):
     config.update_etc(parsed_args.configfile)
     with Transaction().start(
             None, 0, readonly=True, close=True) as transaction:
-        return transaction.database.list()
+        return [name for name, _ in transaction.database.list()]
 
 
 def module_completer(**kwargs):
@@ -187,6 +187,9 @@ def get_parser_admin():
     parser.add_argument("--export-translations", action="store_true",
         dest="export_translations",
         help="export module translations to locale folder")
+    parser.add_argument(
+        "--set-production", action=argparse.BooleanOptionalAction,
+        default=None, help="set the production flag of the database")
 
     parser.epilog = ('The first time a database is initialized '
         'or when the password is set, the admin password is read '
