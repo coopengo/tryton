@@ -84,6 +84,7 @@ class Journal(metaclass=PoolMeta):
             (None, ''),
             ('pain.001.001.03', 'pain.001.001.03'),
             ('pain.001.001.05', 'pain.001.001.05'),
+            ('pain.001.001.09', 'pain.001.001.09'),
             ('pain.001.003.03', 'pain.001.003.03'),
             ], 'Payable Flavor', states={
             'required': Eval('process_method') == 'sepa',
@@ -94,6 +95,7 @@ class Journal(metaclass=PoolMeta):
             (None, ''),
             ('pain.008.001.02', 'pain.008.001.02'),
             ('pain.008.001.04', 'pain.008.001.04'),
+            ('pain.008.001.08', 'pain.008.001.08'),
             ('pain.008.003.02', 'pain.008.003.02'),
             ], 'Receivable Flavor', states={
             'required': Eval('process_method') == 'sepa',
