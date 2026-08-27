@@ -680,6 +680,9 @@
                 {view_type: 'tree', title: title, prev_view: screen.current_view});
             this.switch_prm = this.switch_prm.then(function() {
                 return screen.search_filter();
+            }).done(() => {
+                let parent_div = screen.screen_container.alternate_viewport.parent()
+                parent_div.css('position', 'relative');
             });
         },
         callback: function(result) {
@@ -789,6 +792,9 @@
                 {view_type: 'tree', title: title, prev_view: screen.current_view});
             this.switch_prm = this.switch_prm.then(function() {
                 return screen.search_filter();
+            }).done(() => {
+                let parent_div = screen.screen_container.alternate_viewport.parent()
+                parent_div.css('position', 'relative');
             });
         },
         callback: function(result) {
@@ -961,6 +967,9 @@
                 });
             this.switch_prm = this.switch_prm.then(function() {
                 return screen.search_filter();
+            }).done(() => {
+                let parent_div = screen.screen_container.alternate_viewport.parent()
+                parent_div.css('position', 'relative');
             });
 
             this.dialog.body.prepend(form);
