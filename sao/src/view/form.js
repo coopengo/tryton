@@ -4055,9 +4055,35 @@ function hide_x2m_body(widget) {
             this._position = undefined;
             this._length = 0;
 
+            let disable_during = function(callback) {
+                return function(evt) {
+                    var button = jQuery(evt.target);
+                    button.prop('disabled', true);
+                    (callback(evt) || jQuery.when())
+                        .always(function() {
+                            button.prop('disabled', false);
+                        });
+                };
+            };
+
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default'
             });
+            let relation_model = Sao.common.MODELNAME.get(attributes.relation);
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el).append(jQuery('<p/>', {
+                'class': 'text-muted',
+            }).text(Sao.i18n.gettext('No %1 yet!', relation_model)));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(disable_during(() => this.new_()));
             this.menu = jQuery('<div/>', {
                 'class': this.class_ + '-menu panel-heading'
             });
@@ -4107,17 +4133,6 @@ function hide_x2m_body(widget) {
             var buttons = jQuery('<div/>', {
                 'class': 'input-group-btn'
             }).appendTo(group);
-
-            var disable_during = function(callback) {
-                return function(evt) {
-                    var button = jQuery(evt.target);
-                    button.prop('disabled', true);
-                    (callback(evt) || jQuery.when())
-                        .always(function() {
-                            button.prop('disabled', false);
-                        });
-                };
-            };
 
             this.but_switch = jQuery('<button/>', {
                 'class': 'btn btn-default btn-sm',
@@ -4485,6 +4500,21 @@ function hide_x2m_body(widget) {
                         this.screen.group.length) {
                         this.screen.current_record = this.screen.group[0];
                     }
+                }
+                if (this.screen.group.length == 0) {
+                    let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                    if (access.create) {
+                        this.empty_but_new.sao_show();
+                    } else {
+                        this.empty_but_new.sao_hide();
+                    }
+                    let containerPos = this.el[0].getBoundingClientRect();
+                    let contentPos = this.content[0].getBoundingClientRect();
+                    let top_offset = contentPos.top - containerPos.top;
+                    this.empty_el.css('--top-offset', `${top_offset}px`);
+                    this.empty_el.sao_show();
+                } else {
+                    this.empty_el.sao_hide();
                 }
 
                 // [Coog specific]
@@ -4885,6 +4915,21 @@ function hide_x2m_body(widget) {
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default'
             });
+            let relation_model = Sao.common.MODELNAME.get(attributes.relation);
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el).append(jQuery('<p/>', {
+                'class': 'text-muted',
+            }).text(Sao.i18n.gettext('No %1 yet!', relation_model)));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(() => this.new_());
             this.menu = jQuery('<div/>', {
                 'class': this.class_ + '-menu panel-heading'
             });
@@ -5125,6 +5170,21 @@ function hide_x2m_body(widget) {
                 var new_group = record.field_get_client(this.field_name);
                 if (new_group != this.screen.group) {
                     this.screen.set_group(new_group);
+                }
+                if (this.screen.group.length == 0) {
+                    let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                    if (access.create) {
+                        this.empty_but_new.sao_show();
+                    } else {
+                        this.empty_but_new.sao_hide();
+                    }
+                    let containerPos = this.el[0].getBoundingClientRect();
+                    let contentPos = this.content[0].getBoundingClientRect();
+                    let top_offset = contentPos.top - containerPos.top;
+                    this.empty_el.css('--top-offset', `${top_offset}px`);
+                    this.empty_el.sao_show();
+                } else {
+                    this.empty_el.sao_hide();
                 }
                 if (this.attributes.height !== undefined) {
                     this.content

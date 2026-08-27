@@ -863,6 +863,7 @@ img.icon {
     flex-direction: column;
     flex: 1;
     overflow-y: auto;
+    position: relative;
 }
 
 .tree-container {
@@ -899,6 +900,24 @@ img.icon {
         .tree-footer {
             flex-direction: column;
         }
+    }
+}
+
+.empty-overlay {
+    position: absolute;
+    height: calc(100% - var(--top-offset) - 5px);
+    top: var(--top-offset);
+    width: 100%;
+    z-index: 100;
+    background-color: @body-bg;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    p {
+        font-size: x-large;
     }
 }
 
@@ -1173,6 +1192,7 @@ img.icon {
 }
 
 .form, .board {
+    position: relative;
     width: 100%;
     height: 100%;
     .form-container, .form-hcontainer, .form-vcontainer {
@@ -1295,6 +1315,9 @@ img.icon {
     .form-many2one > .input-group {
         width: 100%;
     }
+    .form-one2many, .form-many2many {
+        position: relative;
+    }
     .form-one2many-menu::after, .form-many2many-menu::after {
         content: "";
         display: table;
@@ -1325,6 +1348,8 @@ img.icon {
     }
     .form-one2many-content, .form-many2many-content {
         padding: 5px;
+        position: relative;
+        z-index: 0;
 
         .treeview, .list-form {
             height: auto;
