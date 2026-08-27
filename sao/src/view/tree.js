@@ -120,6 +120,21 @@
             // Prevent Chrome based browser to compute a min-content
             // such that only this table has scrollbar if needed
                 .css('display', 'grid');
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el)
+                .append(jQuery('<p/>').text(Sao.i18n.gettext("No records yet")));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(() => {
+                screen.new_();
+            });
             this.scrollbar = jQuery('<div/>')
                 .appendTo(jQuery('<div/>', {
                     'class': 'scrollbar responsive',
@@ -950,6 +965,21 @@
             this.screen.button(button.attributes);
         },
         display: function(selected, expanded) {
+            if (!this.screen.group.parent && (this.screen.group.length == 0)) {
+                let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                if (access.create && (this.screen.screen_container.get_text() === "")) {
+                    this.empty_but_new.sao_show();
+                } else {
+                    this.empty_but_new.sao_hide();
+                }
+                let containerPos = this.el[0].getBoundingClientRect();
+                let tbodyPos = this.tbody[0].getBoundingClientRect();
+                let top_offset = tbodyPos.top - containerPos.top;
+                this.empty_el.css('--top-offset', `${top_offset}px`);
+                this.empty_el.sao_show();
+            } else {
+                this.empty_el.sao_hide();
+            }
             if ((this.display_size === null) && this.screen.group.length) {
                 if (this.screen.group.parent) {
                     this.display_size = 0;
