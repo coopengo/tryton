@@ -3395,10 +3395,6 @@
         button_clicked: function(event) {
             var record = event.data[0];
             var button = event.data[1];
-            if (record != this.view.screen.current_record) {
-                // Need to raise the event to get the record selected
-                return true;
-            }
             var states = record.expr_eval(this.attributes.states || {});
             if (states.invisible || states.readonly) {
                 return;
@@ -3411,7 +3407,11 @@
             if (row) {
                 row._drawed_record = null;  // force redraw the row
             }
-            this.view.screen.button(this.attributes);
+            this.view.screen.button(this.attributes).then(() => {
+                jQuery(event.target).parent().trigger('click');
+            }, () => {
+                button.el.prop('disabled', false);
+            });
         }
     });
 
