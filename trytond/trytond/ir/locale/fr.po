@@ -3035,6 +3035,10 @@ msgctxt "model:ir.message,text:msg_chat_follower_channel_email_unique"
 msgid "An email can follow a channel only once."
 msgstr "Une adresse électronique ne peut suivre un canal qu'une seule fois."
 
+msgctxt "model:ir.message,text:msg_module_deprecated"
+msgid "Module %(module)s is deprecated. Neither this module nor the modules that depend on it can be installed"
+msgstr "Le module %(module)s est obsolète. Ni ce module, ni les modules qui en dépendent ne peuvent être installés"
+
 msgctxt "model:ir.message,text:msg_chat_follower_channel_user_unique"
 msgid "A user can follow a channel only once."
 msgstr "Un utilisateur ne peut suivre un canal qu'une seule fois."

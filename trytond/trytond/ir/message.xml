@@ -511,5 +511,8 @@ this repository contains the full copyright notices and license terms. -->
         <record model="ir.message" id="msg_chat_author_email_invalid">
             <field name="text">The email address "%(email)s" is not valid.</field>
         </record>
+        <record model="ir.message" id="msg_module_deprecated">
+            <field name="text">Module %(module)s is deprecated, neither this module nor the modules that depend on it can be installed</field>
+        </record>
     </data>
 </tryton>
