@@ -896,6 +896,14 @@ img.icon {
         }
     }
 
+    .empty-overlay {
+        justify-content: flex-start;
+
+        p {
+            margin-top: 2em;
+        }
+    }
+
     @media screen and (max-width: @screen-xs-max) {
         .tree-footer {
             flex-direction: column;
@@ -904,6 +912,7 @@ img.icon {
 }
 
 .empty-overlay {
+    --top-offset: 35px;
     position: absolute;
     height: calc(100% - var(--top-offset) - 5px);
     top: var(--top-offset);
@@ -919,6 +928,10 @@ img.icon {
     p {
         font-size: x-large;
     }
+    &.coog-hidden-toolbar {
+        --top-offset: 0px;
+    }
+
 }
 
 .wizard-form {
