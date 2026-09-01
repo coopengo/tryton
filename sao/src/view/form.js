@@ -4279,6 +4279,7 @@ function hide_x2m_body(widget) {
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -4518,10 +4519,6 @@ function hide_x2m_body(widget) {
                     } else {
                         this.empty_but_new.sao_hide();
                     }
-                    let containerPos = this.el[0].getBoundingClientRect();
-                    let contentPos = this.content[0].getBoundingClientRect();
-                    let top_offset = contentPos.top - containerPos.top;
-                    this.empty_el.css('--top-offset', `${top_offset}px`);
                     this.empty_el.sao_show();
                 } else {
                     this.empty_el.sao_hide();
@@ -5061,6 +5058,7 @@ function hide_x2m_body(widget) {
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -5188,10 +5186,6 @@ function hide_x2m_body(widget) {
                     } else {
                         this.empty_but_new.sao_hide();
                     }
-                    let containerPos = this.el[0].getBoundingClientRect();
-                    let contentPos = this.content[0].getBoundingClientRect();
-                    let top_offset = contentPos.top - containerPos.top;
-                    this.empty_el.css('--top-offset', `${top_offset}px`);
                     this.empty_el.sao_show();
                 } else {
                     this.empty_el.sao_hide();
