@@ -851,4 +851,18 @@
         Sao.Tab.create(attributes, true);
     };
 
+    // Apply customcss attributes
+    for (var [key, originalWidget] of Object.entries(Sao.View.FormXMLViewParser.WIDGETS)) {
+        let patchedWidget = Sao.class_(originalWidget, {
+            init: function(view, attributes) {
+                let res = patchedWidget._super.init.call(this, view, attributes);
+                if (this.el && this.attributes.customcss) {
+                    this.attributes.customcss.split(' ').forEach(
+                        custom_class => this.el.addClass(custom_class));
+                }
+                return res;
+            },
+        });
+        Sao.View.FormXMLViewParser.WIDGETS[key] = patchedWidget;
+    };
 }());

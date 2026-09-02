@@ -65,6 +65,21 @@
         background-color:   transparent;
     }
 
+    > div.panel.coog-infinite-list > div.panel-body > div > div.content-box {
+        // Actual lists
+        > div.tree-container > div.treeview {
+            max-height:             unset !important;
+        }
+        // List forms
+        > ul.list-form {
+            max-height:             unset !important;
+        }
+    }
+
+    > div.panel.coog-disable-toolbar > div.panel-heading {
+        display:        none;
+    }
+
     > div.panel {
         background-color:       rgba(@coog-background-color, @coog-panel-opacity);
         margin-bottom:          0px;
