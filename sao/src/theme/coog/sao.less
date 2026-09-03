@@ -1328,8 +1328,8 @@ div.panel-body:has( > .markdown-source ) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     padding: 0;
     border: none;
     background: @color-white;
@@ -1364,12 +1364,13 @@ div.panel-body:has( > .markdown-source ) {
 }
 
 .form-markdown .markdown-editor {
+    min-height: 50px;
     padding: 15px;
     margin: 0 auto;
 }
 
 .form-markdown .markdown-editor .tiptap {
-    min-height: 150px;
+    min-height: 50px;
     padding: 8px 12px;
     outline: none;
     cursor: text;
@@ -1437,7 +1438,7 @@ div.panel-body > textarea.markdown-source {
     width: 100%;
     padding: 15px;
     margin: 0 auto;
-    min-height: 150px;
+    min-height: 50px;
     padding: 8px 12px;
     font-family: monospace;
     font-size: 15px;
@@ -1484,6 +1485,10 @@ div.panel-body > textarea.markdown-source {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 13px;
     line-height: 1.5;
+}
+
+p:has( > br.ProseMirror-trailingBreak) {
+    display: none;
 }
 
 .form-markdown .tiptap pre code {
