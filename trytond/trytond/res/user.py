@@ -144,7 +144,6 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
         'get_notifications', "Notifications",
         help="Notifications to subscribe to.")
 
-    status_bar = fields.Function(fields.Char('Status Bar'), 'get_status_bar')
     avatar_badge_url = fields.Function(
         fields.Char("Avatar Badge URL"), 'get_avatar_badge_url')
     warnings = fields.One2Many('res.user.warning', 'user', 'Warnings')
@@ -172,6 +171,7 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
                     },
                 })
         cls._preferences_fields = [
+            'login',
             'name',
             'password',
             'email',
@@ -179,7 +179,6 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
             'menu',
             'pyson_menu',
             'actions',
-            'status_bar',
             'avatar',
             'avatar_url',
             'avatar_badge_url',
@@ -226,9 +225,6 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
             return self.language.direction
         else:
             return Lang.default_direction()
-
-    def get_status_bar(self, name):
-        return self.name or ''
 
     def get_avatar_badge_url(self, name):
         pass
@@ -532,7 +528,12 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
                 'p_sep_by_space': language.p_sep_by_space,
                 'n_sep_by_space': language.n_sep_by_space,
             }
+        res['user_card'] = user._get_user_card()
+        print(res)
         return res
+
+    def _get_user_card(self):
+        return []
 
     @classmethod
     def get_preferences(cls, context_only=False):

@@ -687,7 +687,7 @@ var Sao = {
             Sao.main_menu_screen = null;
         }
         Sao.Tab.tabs.close(true).done(function() {
-            jQuery('#user-preferences').empty();
+            Sao.UserMenu.empty();
             jQuery('#global-search').empty();
             jQuery('#menu').empty();
             let user_id = Sao.Session.current_session.user_id;
@@ -770,37 +770,8 @@ var Sao = {
     };
 
     Sao.user_menu = function(preferences) {
-        let user_preferences = jQuery('#user-preferences');
-        user_preferences.empty();
-        var user = jQuery('<a/>', {
-            'href': '#',
-            'class': 'dropdown-toggle',
-            'data-toggle': 'dropdown',
-            'role': 'button',
-            'aria-expanded': false,
-            'aria-haspopup': true,
-            'title': preferences.status_bar,
-        }).text(preferences.status_bar);
-        user_preferences
-            .off('show.bs.dropdown')
-            .on('show.bs.dropdown', () => {
-                Sao.NotificationMenu.fill();
-                Sao.NotificationMenu.indicator.hide();
-            })
-            .append(user).append(Sao.NotificationMenu.el);
-        if (preferences.avatar_badge_url) {
-            user.prepend(jQuery('<img/>', {
-                'src': preferences.avatar_badge_url + '?s=15',
-                'class': 'img-circle img-badge',
-            }));
-        }
-        if (preferences.avatar_url) {
-            user.prepend(jQuery('<img/>', {
-                'src': preferences.avatar_url + '?s=30',
-                'class': 'img-circle',
-            }));
-        }
-        user.prepend(Sao.NotificationMenu.indicator);
+        Sao.UserMenu.update_information(preferences);
+        Sao.UserMenu.update();
     };
 
     Sao.main_menu_row_activate = function() {

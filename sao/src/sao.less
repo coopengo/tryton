@@ -437,63 +437,102 @@ html[theme="default"] {
         }
     }
 
+    div.user-card {
+        --avatar-size: 64px;
+        --gap-size: 10px;
+        --margin: 10px;
+        padding: 10px;
+        margin: var(--margin);
+        margin-bottom: 20px;
+        display: flex;
+        gap: var(--gap-size);
+        align-items: flex-start;
+        border-radius: 1rem;
+        background-color: @navbar-default-bg;
+        width: 320px;
+
+        @media screen and (max-width: @screen-sm-max) {
+            width: calc(100% - 2 * var(--margin));
+        }
+
+        div {
+            width: calc(100% - var(--gap-size) - var(--avatar-size));
+
+            p {
+                margin: 0 0 2px;
+
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+
+                &.name {
+                    font-size: large;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+
     ul.notification-menu {
         background-color: @body-bg;
         color: @text-color;
 
-        @media (min-width: @grid-float-breakpoint) {
-            width: 320px;
+        width: 100%;
+        padding: 0;
+        list-style: none;
+    }
+
+    li.notification-item {
+        padding: 2px 0;
+
+        &.notification-unread {
+            background-color: @state-selected-bg;
         }
 
-        > li.notification-item {
-            padding: 2px 0;
+        > a {
+            color: @text-color;
+            display: flex;
+            padding: 3px 10px;
 
-            &.notification-unread {
-                background-color: @state-selected-bg;
+            img.icon {
+                padding-inline-end: 3px;
+                @media screen and (max-width: @screen-xs-max) {
+                    filter: brightness(0);
+                }
             }
+
+            > div {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+
+                span {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                span.notification-label {
+                    font-weight: bold;
+                }
+
+                span.notification-description {
+                }
+            }
+        }
+
+        &.notification-action {
+            margin: 0.3em 0;
 
             > a {
-                color: @text-color;
-                display: flex;
-                padding: 3px 10px;
-
-                img.icon {
-                    padding-inline-end: 3px;
-                }
-
-                > div {
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-
-                    span {
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-
-                    span.notification-label {
-                        font-weight: bold;
-                    }
-
-                    span.notification-description {
-                    }
-                }
-            }
-
-            &.notification-action {
-                margin: 0.3em 0;
-
-                > a {
-                    display: block;
-                    text-align: center;
-                    background-color: @dropdown-link-hover-bg;
-                }
+                display: block;
+                text-align: center;
+                background-color: @dropdown-link-hover-bg;
             }
         }
+    }
 
-        > li.divider {
-            background-color: @dropdown-divider-bg;
-        }
+    li.divider {
+        background-color: @dropdown-divider-bg;
     }
 }
 
