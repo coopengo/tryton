@@ -2171,7 +2171,7 @@
             }
             return buttons;
         },
-        button: function(attributes) {
+        button: function(attributes, record) {
             var ids;
             const do_action = action => {
                 // [Coog specific]
@@ -2225,7 +2225,7 @@
                 });
             };
 
-            if (!this.current_record) {
+            if (!record && !this.current_record) {
                 return;
             }
 
@@ -2234,7 +2234,11 @@
             if (attributes.type == 'client_action') {
                 selected_records = [];
             } else if (this.current_view) {
-                selected_records = this.current_view.selected_records;
+                if (!record) {
+                    selected_records = this.current_view.selected_records;
+                } else {
+                    selected_records = [record];
+                }
                 this.current_view.set_value();
                 fields = this.current_view.get_fields();
             }
