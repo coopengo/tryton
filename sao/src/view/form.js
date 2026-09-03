@@ -3081,7 +3081,12 @@ function hide_x2m_body(widget) {
             this.select.focus();
         },
         get_value: function() {
-            return JSON.parse(this.select.val());
+            let select_node = this.select[0];
+            if (select_node.value.length > 0) {
+                 return JSON.parse(select_node.value);
+             } else {
+                 return null;
+             }
         },
         get modified() {
             if (this.record && this.field) {
