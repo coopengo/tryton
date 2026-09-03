@@ -3407,7 +3407,7 @@
             if (row) {
                 row._drawed_record = null;  // force redraw the row
             }
-            this.view.screen.button(this.attributes).then(() => {
+            this.view.screen.button(this.attributes, record).then(() => {
                 jQuery(event.target).parent().trigger('click');
             }, () => {
                 button.el.prop('disabled', false);
