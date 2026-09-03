@@ -858,7 +858,12 @@
                 let res = patchedWidget._super.init.call(this, view, attributes);
                 if (this.el && this.attributes.customcss) {
                     this.attributes.customcss.split(' ').forEach(
-                        custom_class => this.el.addClass(custom_class));
+                        custom_class => {
+                            if (custom_class !== "") {
+                                this.el.addClass(custom_class);
+                            }
+                        }
+                    );
                 }
                 return res;
             },

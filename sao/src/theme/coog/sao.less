@@ -32,6 +32,17 @@
 @coog-max-menu-width:   28em;
 @coog-card-bottom-padding: 5px;
 
+///////////////////////////////////////////////////////////////////////////////
+// Custom css classes (can be set with
+//      <field name=... customcss="coog-custom-xxx coog-custom-yyy"... />)
+///////////////////////////////////////////////////////////////////////////////
+//
+// coog-custom-infinite-list: Disable the max height on a list / list-form
+//
+///////////////////////////////////////////////////////////////////////////////
+// Tooling
+///////////////////////////////////////////////////////////////////////////////
+
 // header colors for groups
 .coog-group-header-colors {
     color:                  @color-black;
@@ -65,7 +76,7 @@
         background-color:   transparent;
     }
 
-    > div.panel.coog-infinite-list > div.panel-body > div > div.content-box {
+    > div.panel.coog-custom-infinite-list > div.panel-body > div > div.content-box {
         // Actual lists
         > div.tree-container > div.treeview {
             max-height:             unset !important;
@@ -74,10 +85,6 @@
         > ul.list-form {
             max-height:             unset !important;
         }
-    }
-
-    > div.panel.coog-disable-toolbar > div.panel-heading {
-        display:        none;
     }
 
     > div.panel {
