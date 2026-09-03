@@ -687,7 +687,7 @@ var Sao = {
             Sao.main_menu_screen = null;
         }
         Sao.Tab.tabs.close(true).done(function() {
-            jQuery('#user-preferences').empty();
+            Sao.UserMenu.empty();
             jQuery('#global-search').empty();
             jQuery('#menu').empty();
             let user_id = Sao.Session.current_session.user_id;
@@ -770,131 +770,8 @@ var Sao = {
     };
 
     Sao.user_menu = function(preferences) {
-        let user_preferences = jQuery('#user-preferences');
-        user_preferences.empty();
-        var user = jQuery('<a/>', {
-            'href': '#',
-            'class': 'dropdown-toggle',
-            'data-toggle': 'dropdown',
-            'role': 'button',
-            'aria-expanded': false,
-            'aria-haspopup': true,
-            'title': preferences.name,
-        });
-        let user_menu = jQuery('<ul/>', {
-            'class': 'dropdown-menu',
-            'role': 'menu',
-        }).appendTo(user_preferences);
-        let user_card = jQuery('<div/>', {
-            'class': 'user-card',
-        }).appendTo(
-            jQuery('<li/>', {
-            'role': 'presentation',
-            }).appendTo(user_menu));
-        let user_infos = jQuery('<div/>')
-            .append(jQuery('<p/>', {'class': 'name'}).text(preferences.name))
-            .append(jQuery('<p/>', {
-                'class': 'text-muted',
-            }).text(preferences.login))
-            .appendTo(user_card);
-        if (preferences.user_card.length > 0) {
-            preferences.user_card.forEach((item) => {
-                let info = jQuery('<p/>', {
-                    'title': item[1],
-                }).text(item[1]);
-                let icon;
-                if (item[0].length > 0) {
-                    icon = item[0];
-                } else {
-                    icon = 'tryton-info';
-                }
-                let img = jQuery('<img/>', {
-                    'class': 'icon',
-                })
-                info.prepend(img);
-                Sao.common.ICONFACTORY.get_icon_url(icon).then((url) => {
-                    img.attr('src', url);
-                    info.appendTo(user_infos);
-                });
-            });
-        }
-        if (preferences.avatar_url) {
-            user_card.append(jQuery('<img/>', {
-                'src': preferences.avatar_url + '?s=64',
-                'class': 'img-circle',
-            }));
-        }
-
-        user_menu.append(
-            jQuery('<li/>', {
-            }).append(Sao.NotificationMenu.el));
-        user_menu.append(
-            jQuery('<li/>', {
-                'role': 'separator',
-                'class': 'divider',
-            }));
-        let items = [
-            {
-                'text': Sao.i18n.gettext("Preferences..."),
-                'icon': 'tryton-launch',
-                'action': () => Sao.preferences(),
-            },
-            {
-                'text': Sao.i18n.gettext("Help..."),
-                'icon': 'tryton-question',
-                'action': () => Sao.help_dialog(),
-            },
-            {
-                'text': Sao.i18n.gettext("Logout"),
-                'icon': 'tryton-exit',
-                'action': () => Sao.logout(),
-            },
-        ];
-
-        items.forEach((item) => {
-            let item_img = jQuery('<img/>', {
-                'class': 'icon',
-            });
-            Sao.common.ICONFACTORY.get_icon_url(item.icon)
-                .then(url => {
-                    item_img.attr('src', url);
-                });
-            let item_li = jQuery('<li/>', {
-                'class': 'notification-item',
-                'role': 'presentation',
-            }).append(
-                jQuery('<a/>', {
-                    'role': 'menuitem',
-                    'href': '#',
-                    'text': item.text,
-                }).prepend(item_img
-                ).click((evt) => {
-                    evt.preventDefault();
-                    item.action();
-                }));
-            user_menu.append(item_li);
-        });
-
-        user_preferences
-            .off('show.bs.dropdown')
-            .on('show.bs.dropdown', () => {
-                Sao.NotificationMenu.fill();
-                Sao.NotificationMenu.indicator.hide();
-            })
-            .prepend(user);
-        if (preferences.avatar_badge_url) {
-            user.prepend(jQuery('<img/>', {
-                'src': preferences.avatar_badge_url + '?s=15',
-                'class': 'img-circle img-badge',
-            }));
-        }
-        if (preferences.avatar_url) {
-            user.prepend(jQuery('<img/>', {
-                'src': preferences.avatar_url + '?s=30',
-                'class': 'img-circle',
-            }));
-        }
-        user.prepend(Sao.NotificationMenu.indicator);
+        Sao.UserMenu.update_information(preferences);
+        Sao.UserMenu.update();
     };
 
     Sao.main_menu_row_activate = function() {

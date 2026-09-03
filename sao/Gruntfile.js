@@ -25,6 +25,7 @@ module.exports = function(grunt) {
       'src/bus.js',
       'src/chat.js',
       'src/notification.js',
+      'src/user_menu.js',
       'src/plugins.js',
       'src/html_sanitizer.js',
       'src/view/coog.js',
