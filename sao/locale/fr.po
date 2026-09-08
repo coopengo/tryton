@@ -29,9 +29,6 @@ msgstr "Retirer des favoris"
 msgid "Favorites"
 msgstr "Favoris"
 
-msgid "Close"
-msgstr "Fermer"
-
 msgid "Action"
 msgstr "Action"
 
@@ -103,6 +100,9 @@ msgstr "Afficher/Masquer les touches d'accès"
 
 msgid "Help"
 msgstr "Aide"
+
+msgid "Close"
+msgstr "Fermer"
 
 msgid "Documentation..."
 msgstr "Documentation..."
@@ -204,9 +204,6 @@ msgstr "v"
 msgid "False"
 msgstr "Faux"
 
-msgid "Always ignore this warning."
-msgstr "Toujours ignorer cet avertissement."
-
 msgid "Show / Hide more"
 msgstr "Afficher / Masquer la suite"
 
@@ -226,8 +223,7 @@ msgid "Concurrency Warning"
 msgstr "Avertissement de concurrence"
 
 msgid "This record has been modified while you were editing it."
-msgstr ""
-"Cet enregistrement a été modifié pendant que vous étiez en train de l'éditer."
+msgstr "Cet enregistrement a été modifié pendant que vous étiez en train de l'éditer."
 
 msgid "Choose:"
 msgstr "Choisissez :"
@@ -694,6 +690,9 @@ msgstr "Codage :"
 msgid "Lines to Skip:"
 msgstr "Lignes à ignorer :"
 
+msgid "Use field names"
+msgstr "Utiliser les noms techniques des champs"
+
 msgid "You must select an import file first."
 msgstr "Vous devez d'abord sélectionner un fichier d'import."
 
@@ -744,8 +743,11 @@ msgstr "Ignorer la limite de recherche"
 msgid "Use locale format"
 msgstr "Utiliser le format local"
 
-msgid "Add Field Names"
-msgstr "Ajouter les noms des champs"
+msgid "Add headers"
+msgstr "Ajouter les en-têtes"
+
+msgid "Use field names instead of labels"
+msgstr "Utiliser les noms techniques des champs plutôt que les libellés"
 
 msgid "%1 (string)"
 msgstr "%1 (string)"
@@ -854,20 +856,254 @@ msgstr "Déconnexion"
 msgid "Translate view"
 msgstr "Traduire la vue"
 
-msgid "Close all other tabs"
-msgstr "Fermer tous les autres onglets"
+msgid "Benchmark: nothing to export, no sample was collected."
+msgstr "Benchmark : aucune mesure n'a été collectée, il n'y a rien à exporter."
 
-msgid "Close tabs to the left"
-msgstr "Fermer les onglets à gauche"
+msgid "Benchmark: malformed action identifier \"%1\"."
+msgstr "Benchmark : identifiant d'action mal formé « %1 »."
 
-msgid "Close tabs to the right"
-msgstr "Fermer les onglets à droite"
+msgid "Benchmark: unknown action identifier \"%1\"."
+msgstr "Benchmark : identifiant d'action inconnu « %1 »."
 
-msgid "Duplicate the tab"
-msgstr "Dupliquer l'onglet"
+msgid "unknown error"
+msgstr "erreur inconnue"
 
-msgid "Open in a new browser tab"
-msgstr "Ouvrir l'onglet dans un nouvel onglet du navigateur"
+msgid "Benchmark: server entry without a method."
+msgstr "Benchmark : une entrée de plan de type serveur ne déclare aucune méthode."
+
+msgid "Benchmark: action \"%1\" is not an act_window."
+msgstr "Benchmark : l'action « %1 » n'est pas un act_window."
+
+msgid "Benchmark: action \"%1\" opens on a record (res_id); only list actions can be replayed."
+msgstr "Benchmark : l'action « %1 » ouvre directement un enregistrement (res_id). Seules les actions qui ouvrent une liste peuvent être rejouées."
+
+msgid "Benchmark: unknown plan entry type \"%1\"."
+msgstr "Benchmark : type d'entrée de plan inconnu « %1 »."
+
+msgid "no server response (request cut short or connection lost)"
+msgstr "aucune réponse du serveur (requête interrompue ou connexion perdue)"
+
+msgid "Benchmark: no open session. Log in before running a campaign."
+msgstr "Benchmark : aucune session ouverte. Connectez-vous avant de lancer une campagne."
+
+msgid "Benchmark: unable to check whether the bench module is activated: %1"
+msgstr "Benchmark : impossible de vérifier si le module bench est activé : %1"
+
+msgid "Benchmark: the \"bench\" module is not activated on this database. Activate it to run a campaign; nothing was measured."
+msgstr "Benchmark : le module « bench » n'est pas activé sur cette base. Activez-le pour lancer une campagne ; aucune mesure n'a été effectuée."
+
+msgid "Benchmark: unable to read the benchmark plan: %1"
+msgstr "Benchmark : impossible de lire le plan de benchmark : %1"
+
+msgid "A \"benchmark_table\" is left over from a previous run: the server refuses to set up a new campaign while it is there, so every future campaign is blocked until it is removed."
+msgstr "Une table « benchmark_table » subsiste d'une exécution précédente : tant qu'elle est là, le serveur refuse de préparer une nouvelle campagne, et toutes les campagnes suivantes restent bloquées."
+
+msgid "Recovery runs the teardown step of the benchmark module, which DROPS that table. It is a purely technical table created by the setup step and holds no business data, but the drop is irreversible."
+msgstr "Le rattrapage lance l'étape de nettoyage du module benchmark, qui SUPPRIME cette table. C'est une table purement technique créée par l'étape de préparation, sans aucune donnée métier, mais la suppression est irréversible."
+
+msgid "The server said: \"%1\"."
+msgstr "Réponse du serveur : « %1 »."
+
+msgid "Benchmark: the setup step needs a PostgreSQL backend and the server refused it: \"%1\". The scenarios that need the technical table cannot run on this database."
+msgstr "Benchmark : l'étape de préparation exige un backend PostgreSQL et le serveur l'a refusée : « %1 ». Les scénarios qui ont besoin de la table technique ne peuvent pas tourner sur cette base."
+
+msgid "Benchmark: the setup step failed: \"%1\"."
+msgstr "Benchmark : l'étape de préparation a échoué : « %1 »."
+
+msgid "Benchmark: a \"benchmark_table\" is left over from a previous run and the setup step refuses to run. The recovery DROPS that table and must be confirmed by the operator: start the campaign from the benchmark dialog to confirm it. The server said: \"%1\"."
+msgstr "Benchmark : une table « benchmark_table » subsiste d'une exécution précédente et l'étape de préparation refuse de s'exécuter. Le rattrapage SUPPRIME cette table et doit être confirmé par l'opérateur : lancez la campagne depuis la fenêtre Benchmark pour le confirmer. Réponse du serveur : « %1 »."
+
+msgid "Benchmark: recovery refused, the campaign was not started."
+msgstr "Benchmark : rattrapage refusé, la campagne n'a pas été lancée."
+
+msgid "Benchmark: the recovery failed, the campaign was not started: \"%1\"."
+msgstr "Benchmark : le rattrapage a échoué, la campagne n'a pas été lancée : « %1 »."
+
+msgid "Benchmark: a campaign is already running. Only one campaign can run at a time, two of them would fight over the same benchmark table."
+msgstr "Benchmark : une campagne est déjà en cours. Une seule campagne à la fois est possible : deux campagnes se disputeraient la même table technique."
+
+msgid "Benchmark: no scenario selected, nothing to measure."
+msgstr "Benchmark : aucun scénario sélectionné, il n'y a rien à mesurer."
+
+msgid "Benchmark: this tab went to the background during the campaign. A background tab throttles the browser timers, so the measurements taken from that point on are not comparable. The fact is recorded in the campaign metadata."
+msgstr "Benchmark : cet onglet est passé en arrière-plan pendant la campagne. Le navigateur ralentit alors ses minuteurs : les mesures prises à partir de ce moment ne sont plus comparables. Le fait est consigné dans les métadonnées de la campagne."
+
+msgid "Benchmark"
+msgstr "Benchmark"
+
+msgid "This campaign WRITES to the database you are connected to: the \"DB Read\" scenario inserts 100000 rows and \"DB Write\" inserts 200000, into a technical table created and dropped by the server. Do not run it on a production database without having measured the consequence."
+msgstr "Cette campagne ÉCRIT dans la base à laquelle vous êtes connecté : le scénario « DB Read » insère 100000 lignes et « DB Write » en insère 200000, dans une table technique créée puis supprimée par le serveur. Ne la lancez pas sur une base de production sans en avoir mesuré la conséquence."
+
+msgid "The server side scenarios run their own loop of 100 internal repetitions on EVERY iteration you ask for, so each of them can take several minutes per iteration. Size the number of iterations accordingly."
+msgstr "Les scénarios serveur exécutent leur propre boucle de 100 répétitions internes à CHAQUE itération demandée : chacun peut donc durer plusieurs minutes par itération. Dimensionnez le nombre d'itérations en conséquence."
+
+msgid "A scenario cut short by a proxy or a WAF guard delay is recorded as a result and the campaign carries on: the client shows the usual server error dialog, and the campaign resumes once you dismiss it."
+msgstr "Un scénario interrompu par un proxy ou par le délai de garde d'un WAF est enregistré comme un résultat et la campagne continue : le client affiche la fenêtre d'erreur serveur habituelle, et la campagne reprend dès que vous la fermez."
+
+msgid "Keep this tab in the foreground for the whole campaign and leave the server idle, otherwise the figures are not comparable. The message bus is stopped while the campaign runs and started again afterwards."
+msgstr "Gardez cet onglet au premier plan pendant toute la campagne et laissez le serveur au calme, sans quoi les chiffres ne sont pas comparables. Le bus de messages est arrêté pendant la campagne, puis relancé à la fin."
+
+msgid "Measured iterations per scenario"
+msgstr "Itérations mesurées par scénario"
+
+msgid "Warmup iterations (measured, marked, excluded from the aggregates)"
+msgstr "Itérations de préchauffage (mesurées, marquées, exclues des agrégats)"
+
+msgid "Both regimes"
+msgstr "Les deux régimes"
+
+msgid "cold - client caches purged before every iteration"
+msgstr "cold - caches client purgés avant chaque itération"
+
+msgid "warm - caches kept, the real user experience"
+msgstr "warm - caches conservés, l'expérience utilisateur réelle"
+
+msgid "Regime"
+msgstr "Régime"
+
+msgid "Arm (recorded in every CSV row)"
+msgstr "Bras (consigné sur chaque ligne des CSV)"
+
+msgid "Notes (written to the campaign metadata)"
+msgstr "Notes (écrites dans les métadonnées de la campagne)"
+
+msgid "Scenarios"
+msgstr "Scénarios"
+
+msgid "Select all"
+msgstr "Tout sélectionner"
+
+msgid "Select none"
+msgstr "Tout désélectionner"
+
+msgid "Export the three CSV files"
+msgstr "Exporter les trois fichiers CSV"
+
+msgid "Stop"
+msgstr "Arrêter"
+
+msgid "Start the campaign"
+msgstr "Lancer la campagne"
+
+msgid "The server declares no benchmark scenario."
+msgstr "Le serveur ne déclare aucun scénario de benchmark."
+
+msgid "%1 - writes to the database"
+msgstr "%1 - écrit dans la base"
+
+msgid "Reading the benchmark plan..."
+msgstr "Lecture du plan de benchmark..."
+
+msgid "Benchmark: select at least one scenario."
+msgstr "Benchmark : sélectionnez au moins un scénario."
+
+msgid "Benchmark: campaign cancelled."
+msgstr "Benchmark : campagne annulée."
+
+msgid "The selected scenarios WRITE to the database \"%1\": a technical table is created, filled with up to 100000 rows per read scenario and 200000 rows per write scenario, then dropped at the end of the campaign."
+msgstr "Les scénarios sélectionnés ÉCRIVENT dans la base « %1 » : une table technique est créée, remplie de 100000 lignes au plus par scénario de lecture et de 200000 lignes au plus par scénario d'écriture, puis supprimée à la fin de la campagne."
+
+msgid "Scenarios that write: %1."
+msgstr "Scénarios qui écrivent : %1."
+
+msgid "These benchmarks can run for several minutes each."
+msgstr "Ces benchmarks peuvent durer plusieurs minutes chacun."
+
+msgid "Drop the table and try again"
+msgstr "Supprimer la table et réessayer"
+
+msgid "Stopping after the current iteration..."
+msgstr "Arrêt après l'itération en cours..."
+
+msgid "Starting the campaign..."
+msgstr "Démarrage de la campagne..."
+
+msgid "Warmup iteration %1 of %2 - scenario \"%3\" (%4 regime)"
+msgstr "Itération de préchauffage %1 sur %2 - scénario « %3 » (régime %4)"
+
+msgid "Iteration %1 of %2 - scenario \"%3\" (%4 regime)"
+msgstr "Itération %1 sur %2 - scénario « %3 » (régime %4)"
+
+msgid "Step %1 of %2 - %3 failed so far."
+msgstr "Étape %1 sur %2 - %3 en échec à ce stade."
+
+msgid "Benchmark: campaign stopped on request after %1 of %2 iterations. The iterations already measured are kept."
+msgstr "Benchmark : campagne arrêtée à votre demande après %1 itérations sur %2. Les itérations déjà mesurées sont conservées."
+
+msgid "Benchmark: campaign finished, %1 iterations failed and are recorded with their cause in bench_raw.csv."
+msgstr "Benchmark : campagne terminée, %1 itérations ont échoué et sont consignées avec leur cause dans bench_raw.csv."
+
+msgid "Benchmark: campaign finished."
+msgstr "Benchmark : campagne terminée."
+
+msgid "Run: %1"
+msgstr "Identifiant de campagne : %1"
+
+msgid "Arm: %1"
+msgstr "Bras : %1"
+
+msgid "Iterations measured: %1 of %2 (warmup %3, excluded from the aggregates below but kept in bench_raw.csv)"
+msgstr "Itérations mesurées : %1 sur %2 (préchauffage %3, exclues des agrégats ci-dessous mais conservées dans bench_raw.csv)"
+
+msgid "Failed iterations: %1"
+msgstr "Itérations en échec : %1"
+
+msgid "Message bus: %1"
+msgstr "Bus de messages : %1"
+
+msgid "A residual benchmark table was dropped before the campaign, on your confirmation."
+msgstr "Une table de benchmark résiduelle a été supprimée avant la campagne, après votre confirmation."
+
+msgid "The teardown step failed: \"%1\". The technical table may still be there; the next campaign will offer to drop it."
+msgstr "L'étape de nettoyage a échoué : « %1 ». La table technique est peut-être encore présente ; la prochaine campagne proposera de la supprimer."
+
+msgid "This tab went to the background during the campaign: the browser throttles its timers, so the figures of that window are not comparable."
+msgstr "Cet onglet est passé en arrière-plan pendant la campagne : le navigateur ralentit alors ses minuteurs, les chiffres de cette période ne sont pas comparables."
+
+msgid "No aggregate row: every measured iteration was a warmup or a failure. The raw file still holds every sample."
+msgstr "Aucune ligne d'agrégat : toutes les itérations mesurées étaient du préchauffage ou des échecs. Le fichier brut contient malgré tout chaque mesure."
+
+msgid "Scenario"
+msgstr "Scénario"
+
+msgid "Kind"
+msgstr "Nature"
+
+msgid "Phase"
+msgstr "Phase"
+
+msgid "n"
+msgstr "n"
+
+msgid "Invalid"
+msgstr "Invalides"
+
+msgid "Median (ms)"
+msgstr "Médiane (ms)"
+
+msgid "p90 (ms)"
+msgstr "p90 (ms)"
+
+msgid "Max (ms)"
+msgstr "Max (ms)"
+
+msgid "Benchmark..."
+msgstr "Benchmark..."
 
 #~ msgid "Always ignore this warning."
 #~ msgstr "Toujours ignorer cet avertissement."
+
+#~ msgid "Close all other tabs"
+#~ msgstr "Fermer tous les autres onglets"
+
+#~ msgid "Close tabs to the left"
+#~ msgstr "Fermer les onglets à gauche"
+
+#~ msgid "Close tabs to the right"
+#~ msgstr "Fermer les onglets à droite"
+
+#~ msgid "Duplicate the tab"
+#~ msgstr "Dupliquer l'onglet"
+
+#~ msgid "Open in a new browser tab"
+#~ msgstr "Ouvrir l'onglet dans un nouvel onglet du navigateur"

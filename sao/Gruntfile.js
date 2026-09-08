@@ -28,6 +28,7 @@ module.exports = function(grunt) {
       'src/plugins.js',
       'src/html_sanitizer.js',
       'src/view/coog.js',
+      'src/benchmark.js',
   ];
   var less_paths = [
       'src',
