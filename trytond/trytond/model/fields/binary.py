@@ -33,6 +33,8 @@ def caster(d):
 def check_content(field_name, *binaries):
     from trytond.model.modelstorage import BinaryScanError
 
+    ModelField = Pool().get('ir.model.field')
+
     scanner = config.get('database', 'binary_scanner')
     scanner_dir = config.get(
         'database', 'binary_scanner_directory', default=tempfile.gettempdir())
@@ -56,8 +58,12 @@ def check_content(field_name, *binaries):
             logger.critical(
                 "'%s %s' exited with code '%s'",
                 scanner, tempdir, error.returncode)
+            for binary in to_scan:
+                ModelField.check_content_failure(binary, field_name)
             raise BinaryScanError(gettext(
                     'ir.msg_malicious_binary', field=field_name))
+        for binary in to_scan:
+            ModelField.check_content_success(binary, field_name)
 
 
 class Binary(Field):
