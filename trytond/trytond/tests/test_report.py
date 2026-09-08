@@ -10,11 +10,13 @@ try:
 except ImportError:
     mrml = None
 
+from trytond.convert import import_xml
 from trytond.model.exceptions import AccessError
 from trytond.pool import Pool
 from trytond.report.report import Report, get_email
 from trytond.tests.test_tryton import (
     TestCase, activate_module, with_transaction)
+from trytond.tools import file_open
 from trytond.transaction import Transaction
 
 
@@ -44,6 +46,9 @@ class ReportTestCase(TestCase):
     @with_transaction()
     def test_execute(self):
         "Execute report"
+        with file_open('report.xml', subdir='tests') as xml:
+            import_xml(xml)
+
         pool = Pool()
         Report = pool.get('test.test_report', type='report')
 
@@ -54,6 +59,9 @@ class ReportTestCase(TestCase):
     @with_transaction()
     def test_execute_without_access(self):
         "Execute report without model access"
+        with file_open('report.xml', subdir='tests') as xml:
+            import_xml(xml)
+
         pool = Pool()
         ActionReport = pool.get('ir.action.report')
         Group = pool.get('res.group')
@@ -73,6 +81,9 @@ class ReportTestCase(TestCase):
     @with_transaction()
     def test_execute_without_model_access(self):
         "Execute report without model access"
+        with file_open('report.xml', subdir='tests') as xml:
+            import_xml(xml)
+
         pool = Pool()
         Report = pool.get('test.test_report', type='report')
         ModelAccess = pool.get('ir.model.access')
@@ -87,6 +98,9 @@ class ReportTestCase(TestCase):
     @with_transaction()
     def test_execute_without_read_access(self):
         "Execute report without read access"
+        with file_open('report.xml', subdir='tests') as xml:
+            import_xml(xml)
+
         pool = Pool()
         Report = pool.get('test.test_report', type='report')
 
@@ -97,6 +111,9 @@ class ReportTestCase(TestCase):
     @with_transaction()
     def test_convert_mjml_to_html(self):
         "Test convert MJML to HTML"
+        with file_open('report.xml', subdir='tests') as xml:
+            import_xml(xml)
+
         pool = Pool()
         Report = pool.get('test.test_report_mjml', type='report')
 
