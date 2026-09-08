@@ -292,16 +292,9 @@ def _dispatch(request, pool, *args, **kwargs):
             logger.debug('Could not format parameters in log', exc_info=True)
 
     # AKE: add session to transaction context
-    token, session = None, None
-    auth = request.authorization
-    if request.session:
-        session = request.session.token
-    elif auth and auth.type == 'token':
-        token = {
-            'key': auth.get('token'),
-            'user': user,
-            'party': auth.get('party_id'),
-            }
+    session = None
+    if request.authorization.type == 'session':
+        session = request.authorization.get('session')
 
     retry = config.getint('database', 'retry')
     count = 0
@@ -316,11 +309,6 @@ def _dispatch(request, pool, *args, **kwargs):
             try:
                 c_args, c_kwargs, transaction.context, transaction.timestamp \
                     = rpc.convert(obj, *args, **kwargs)
-                # AKE: add session to transaction context
-                transaction.context.update({
-                        'session': session,
-                        'token': token,
-                        })
                 transaction.context['_request'] = request.context
                 meth = rpc.decorate(getattr(obj, method))
                 if (rpc.instantiate is None
