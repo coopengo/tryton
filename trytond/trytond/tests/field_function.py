@@ -109,6 +109,28 @@ class FunctionGetterLocalCache(ModelSQL):
         return index
 
 
+class FunctionMultipleGetterKey(ModelSQL):
+    __name__ = 'test.function.multiple_getter_key'
+
+    function1 = fields.Function(
+        fields.Char("Char 1"), 'func_getter')
+    function2 = fields.Function(
+        fields.Char("Char 2"), 'func_getter')
+    function3 = fields.Function(
+        fields.Char("Char 3"), 'func_getter')
+
+    @classmethod
+    def key_get_field(cls, name):
+        key = super().key_get_field(name)
+        if name == 'function3':
+            return 'function3'
+        return key
+
+    @classmethod
+    def func_getter(cls, records, names):
+        return {n: {r.id: f'{n}.{r.id}' for r in records} for n in names}
+
+
 class FunctionNoGetter(ModelSQL):
     __name__ = 'test.function.no_getter'
 
@@ -174,6 +196,7 @@ def register(module):
         FunctonGetter,
         FunctionGetterContext,
         FunctionGetterLocalCache,
+        FunctionMultipleGetterKey,
         FunctionNoGetter,
         FunctionNoGetterRelation,
         FunctionNoGetterTarget,

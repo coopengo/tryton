@@ -411,6 +411,10 @@ Class methods:
 
    Return the index to order of the calls to field get.
 
+.. classmethod:: ModelStorage.key_get_field(name)
+
+   Returns the key used to filter getter calls of function fields
+
 .. classmethod:: ModelStorage.write(records, values, [[records, values], ...])
 
    Write ``values`` on the list of records.

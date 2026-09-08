@@ -171,6 +171,7 @@ class ModelView(Model):
                     depend = depend[len('_parent_'):]
                 if dep_field := getattr(cls, depend, None):
                     if (isinstance(dep_field, fields.Function)
+                            and dep_field.getter
                             and dep_field.getter.startswith('on_change_with')):
                         meth_names.append(dep_field.getter)
 
@@ -349,25 +350,6 @@ class ModelView(Model):
         result['arch'], result['fields'] = cls.parse_view(
             tree, result['type'], view_id=view_id,
             field_children=result['field_childs'], level=level)
-
-        if result['field_childs']:
-            child_field = result['field_childs']
-            result['children_definitions'] = defs = {}
-            model = cls
-            requisite_fields = list(result['fields'].keys())
-            requisite_fields.remove(child_field)
-            while model and model.__name__ not in defs:
-                fields_to_get = [rfield for rfield in requisite_fields
-                    if hasattr(model, rfield)]
-                defs[model.__name__] = model.fields_get(fields_to_get
-                    + [child_field])
-                field = getattr(model, child_field, None)
-                if field:
-                    model = pool.get(field.model_name)
-                else:
-                    model = None
-        else:
-            result['children_definitions'] = {}
 
         if not config.getboolean(
                 'cache', 'disable_fields_view_get_cache', default=False):
