@@ -11,6 +11,11 @@ this repository contains the full copyright notices and license terms. -->
         <!-- Sao.Benchmark.Csv serializes through Papa.unparse, like the tree
         export does (tab.js:1810); index.html:19 loads it for the client. -->
         <script type="text/javascript" src="../node_modules/papaparse/papaparse.js"></script>
+        <!-- Sao.View.Tree registers the tbody of a draggable tree with
+        SortableJS (view/tree.js:748); index.html:24 loads it for the client.
+        The driver teardown has to undo that registration, so the tests need
+        the real library and not a stand-in. -->
+        <script type="text/javascript" src="../node_modules/sortablejs/Sortable.js"></script>
         <script type="text/javascript" src="../node_modules/qunit/qunit/qunit.js"></script>
         <link rel="stylesheet" type="text/css" href="../node_modules/qunit/qunit/qunit.css" media="screen"/>
         <!-- The BUNDLE, not the sources: src/benchmark.js is reachable only

@@ -2079,12 +2079,80 @@
         return el;
     };
 
+    // ---- SortableJS registrations of the draggable trees ----
+
+    // Sao.View.Tree._add_drag_n_drop (view/tree.js:747-754) calls
+    // Sortable.create on the tbody of every draggable tree -- and keeps no
+    // reference to the instance it gets back.  SortableJS holds each element
+    // in a module level `sortables` array (Sortable.js:888, pushed :1149)
+    // whose only exit is destroy() (:2171), which needs that instance.  Since
+    // holding one node of a detached tree holds the WHOLE tree, every
+    // iteration left its entire rendered screen alive: the live DOM set grew
+    // without bound and, with it, the cost of every DOM operation of the
+    // client -- which is why all the pure client phases degraded by the same
+    // factor while document.querySelectorAll('*') stayed flat.
+    //
+    // The instance is reachable from its element (Sortable.get, :2385), so the
+    // driver destroys, at teardown, exactly the registrations sitting inside
+    // its own container.  Nothing global is patched and nothing is installed:
+    // an element of the visible interface is never inside a container, so
+    // normal navigation -- and the same leak in a real Tab, which is Sao's to
+    // fix and not the benchmark's -- is left strictly alone.
+    var sortable_instances = function(root) {
+        var found = [];
+        if (!root || (typeof Sortable == 'undefined') ||
+                (typeof Sortable.get != 'function')) {
+            return found;
+        }
+        var take = function(node) {
+            var instance;
+            try {
+                instance = Sortable.get(node);
+            } catch (error) {
+                return;
+            }
+            if (instance && (typeof instance.destroy == 'function')) {
+                found.push(instance);
+            }
+        };
+        take(root);
+        var nodes = (typeof root.querySelectorAll == 'function') ?
+            root.querySelectorAll('*') : [];
+        for (var i = 0; i < nodes.length; i++) {
+            take(nodes[i]);
+        }
+        return found;
+    };
+
+    // destroy() clears the expando it is found by, so a second pass over the
+    // same subtree finds nothing: idempotent, like the rest of the teardown.
+    var release_sortables = function(root) {
+        var instances = sortable_instances(root);
+        instances.forEach(function(instance) {
+            try {
+                instance.destroy();
+            } catch (error) {
+                log_failure('Sortable destroy failed', error);
+            }
+        });
+        return instances.length;
+    };
+
+    var count_live_sortables = function() {
+        var total = 0;
+        containers.forEach(function(node) {
+            total += sortable_instances(node).length;
+        });
+        return total;
+    };
+
     var drop_container = function(el) {
         if (!el || !el.length) {
             return;
         }
         var node = el[0];
         release_observers(node);
+        release_sortables(node);
         var index = containers.indexOf(node);
         if (index >= 0) {
             containers.splice(index, 1);
@@ -2094,6 +2162,9 @@
 
     var remove_all_containers = function() {
         release_observers(null);
+        jQuery('.sao-benchmark-offscreen').each(function() {
+            release_sortables(this);
+        });
         jQuery('.sao-benchmark-offscreen').remove();
         containers = [];
     };
@@ -2201,6 +2272,11 @@
             containers: containers.length,
             dom_containers: jQuery('.sao-benchmark-offscreen').length,
             watched_targets: io_watched.length,
+            // Registrations still held by SortableJS inside our containers.
+            // Zero once the containers are gone -- and a residual here would
+            // name the leak of task 07 coming back, instead of leaving it to
+            // be re-diagnosed from a slope in the timings.
+            live_sortables: count_live_sortables(),
             action_ids: jQuery.extend({}, action_ids)
         };
     };

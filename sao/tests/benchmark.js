@@ -7,13 +7,19 @@
    without needing a session, an RPC transport or a laid out DOM.  The rest of
    the Probe, the detached screen Driver and the file delivery need all three,
    and tests/ carries no mock infrastructure for any of them: they are covered
-   by the browser verification protocol of the task instead. */
+   by the browser verification protocol of the task instead.
+
+   One exception, added with the fix of task 07: the release of the SortableJS
+   registrations at teardown needs nothing but a container and the vendor
+   library, and it guards a defect that cost a factor of ten on a long
+   campaign.  That one is worth a test rather than a protocol. */
 (function() {
     'use strict';
 
     var Stats = Sao.Benchmark.Stats;
     var Csv = Sao.Benchmark.Csv;
     var Probe = Sao.Benchmark.Probe;
+    var Driver = Sao.Benchmark.Driver;
 
     // One RPC attempt as the probe holds it while it waits for its resource
     // timing entry.  _t_end is null while the call is in flight.
@@ -747,6 +753,95 @@
                     QUnit.assert.ok(header.indexOf(name) >= 0,
                         'bench_meta.csv carries the ' + name + ' column');
                 });
+        });
+
+    // An off-screen container as the driver builds it, carrying a draggable
+    // tree: a table whose tbody is registered with SortableJS, exactly what
+    // Sao.View.Tree._add_drag_n_drop does (view/tree.js:747-754).
+    var offscreen_with_sortable = function() {
+        var container = jQuery('<div/>', {
+            'class': 'sao-benchmark-offscreen'
+        }).appendTo(document.body);
+        var tbody = jQuery('<tbody/>');
+        jQuery('<table/>').append(tbody).appendTo(container);
+        Sortable.create(tbody[0], {handle: '.draggable-handle'});
+        return {container: container, tbody: tbody[0]};
+    };
+
+    QUnit.test('Benchmark Driver releases the SortableJS registrations',
+        function() {
+            // The defect of task 07: SortableJS keeps every registered element
+            // in a module level array (Sortable.js:888, pushed :1149) whose
+            // only exit is destroy() (:2171), and Sao keeps no instance to
+            // call it with.  Holding one node of a detached tree holds the
+            // whole tree, so an iteration that only removed its container left
+            // its entire rendered screen alive, and every DOM operation of the
+            // client slowed down with the growing live set.
+            var built = offscreen_with_sortable();
+            QUnit.assert.ok(Sortable.get(built.tbody),
+                'the tbody starts out registered with SortableJS');
+
+            Driver.uninstall();
+
+            QUnit.assert.notOk(Sortable.get(built.tbody),
+                'the registration is gone once the container is dropped');
+            QUnit.assert.strictEqual(
+                jQuery('.sao-benchmark-offscreen').length, 0,
+                'and the container itself is gone');
+        });
+
+    QUnit.test('Benchmark Driver release of Sortable is idempotent',
+        function() {
+            // The teardown is reached twice on the error path -- a scenario
+            // that fails re-enters through it -- so a second pass must be a
+            // no-op and not a throw.
+            var built = offscreen_with_sortable();
+            Driver.uninstall();
+            QUnit.assert.notOk(Sortable.get(built.tbody),
+                'first pass destroys the registration');
+            Driver.uninstall();
+            QUnit.assert.notOk(Sortable.get(built.tbody),
+                'a second pass finds nothing left and says so quietly');
+            built.container.remove();
+            QUnit.assert.strictEqual(
+                jQuery('.sao-benchmark-offscreen').length, 0,
+                'nothing residual in the document');
+        });
+
+    QUnit.test('Benchmark Driver teardown holds without SortableJS',
+        function() {
+            // The plugin is loaded by the bundle, SortableJS by a separate
+            // tag (index.html:24).  A page that carries one without the other
+            // must tear down, not throw.
+            var container = jQuery('<div/>', {
+                'class': 'sao-benchmark-offscreen'
+            }).appendTo(document.body);
+            var saved = window.Sortable;
+            window.Sortable = undefined;
+            try {
+                Driver.uninstall();
+            } finally {
+                window.Sortable = saved;
+            }
+            QUnit.assert.strictEqual(
+                jQuery('.sao-benchmark-offscreen').length, 0,
+                'the container is dropped anyway');
+            container.remove();
+        });
+
+    QUnit.test('Benchmark Driver status reports the live registrations',
+        function() {
+            // A residual here names the leak coming back, instead of leaving
+            // it to be re-diagnosed from a slope in the timings.
+            var status = Driver.status();
+            QUnit.assert.ok('live_sortables' in status,
+                'status carries the live_sortables counter');
+            QUnit.assert.strictEqual(status.live_sortables, 0,
+                'and it is zero with no container open');
+            QUnit.assert.strictEqual(status.containers, 0,
+                'no container tracked');
+            QUnit.assert.strictEqual(status.dom_containers, 0,
+                'and none left in the document');
         });
 
 }());
