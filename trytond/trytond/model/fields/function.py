@@ -2,6 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 
 import copy
+import datetime
 import inspect
 from functools import wraps
 
@@ -160,6 +161,8 @@ class Function(Field):
                     and not isinstance(value, field._py_type)):
                 if field._type == 'binary' and isinstance(value, int):
                     pass
+                elif field._py_type in [datetime.date, datetime.datetime, datetime.time] and isinstance(value, str):
+                    value = field._py_type.fromisoformat(value)
                 else:
                     value = field._py_type(value)
             return value
