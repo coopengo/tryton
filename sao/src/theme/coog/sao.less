@@ -1487,8 +1487,10 @@ div.panel-body > textarea.markdown-source {
     line-height: 1.5;
 }
 
-p:has( > br.ProseMirror-trailingBreak) {
-    display: none;
+div.ProseMirror > p:last-child {
+    &:has( > br.ProseMirror-trailingBreak) {
+        display: none;
+    }
 }
 
 .form-markdown .tiptap pre code {
