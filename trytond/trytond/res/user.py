@@ -529,7 +529,6 @@ class User(avatar_mixin(100, 'login'), DeactivableMixin, ModelSQL, ModelView):
                 'n_sep_by_space': language.n_sep_by_space,
             }
         res['user_card'] = user._get_user_card()
-        print(res)
         return res
 
     def _get_user_card(self):
