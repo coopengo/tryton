@@ -161,10 +161,8 @@ class Function(Field):
                     and not isinstance(value, field._py_type)):
                 if field._type == 'binary' and isinstance(value, int):
                     pass
-                elif field._py_type in [datetime.date, datetime.datetime, datetime.time] and isinstance(value, str):
-                    value = field._py_type.fromisoformat(value)
                 else:
-                    value = field._py_type(value)
+                    value = field.sql_format(value)
             return value
 
         def convert_dict(values, name):
