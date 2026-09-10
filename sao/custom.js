@@ -851,6 +851,65 @@
         Sao.Tab.create(attributes, true);
     };
 
+    ///////////////////////////////////////////////////////////////////////////
+    // CSS status bar based on user preferences
+    ///////////////////////////////////////////////////////////////////////////
+    // little hack
+    Sao.UserMenu.prototype = Sao.UserMenu.__proto__;
+    patchedUserMenu = Sao.class_(
+        Sao.UserMenu, {
+            constructor: function() {
+                patchedUserMenu._super.constructor();
+                this.custom_status_bar_text = null;
+                this.custom_status_bar_color = null;
+                this.status_bar_default_text = null;
+                this.status_bar_default_color = null;
+            },
+            update_information: function(data) {
+                patchedUserMenu._super.update_information(data);
+                if (data.status_bar_text) {
+                    this.custom_status_bar_text = data.status_bar_text;
+                } else {
+                    this.custom_status_bar_text = null;
+                }
+                if (data.status_bar_color) {
+                    this.custom_status_bar_color = data.status_bar_color;
+                } else {
+                    this.custom_status_bar_color = null;
+                }
+            },
+            update: function() {
+                patchedUserMenu._super.update();
+                let sandbox = document.getElementById('sandbox');
+                if (this.status_bar_default_text === undefined) {
+                    if (sandbox.style.display === 'none') {
+                        this.status_bar_default_text = '';
+                    } else {
+                        this.status_bar_default_text = sandbox.children[0].textContent;
+                        this.status_bar_default_color = sandbox.style.backgroundColor;
+                    }
+                }
+                var status_bar_text = null;
+                if (this.custom_status_bar_text) {
+                    status_bar_text = this.custom_status_bar_text;
+                } else {
+                    status_bar_text = this.status_bar_default_text;
+                }
+                sandbox.children[0].textContent = status_bar_text;
+                if (status_bar_text) {
+                    sandbox.style.display = 'flex';
+                    if (this.custom_status_bar_color) {
+                        sandbox.style.backgroundColor = this.custom_status_bar_color;
+                    } else {
+                        sandbox.style.backgroundColor = this.status_bar_default_color;
+                    }
+                } else {
+                    sandbox.style.display = 'none';
+                }
+            },
+        });
+    Sao.UserMenu = new patchedUserMenu();
+
     // Apply customcss attributes
     for (var [key, originalWidget] of Object.entries(Sao.View.FormXMLViewParser.WIDGETS)) {
         let patchedWidget = Sao.class_(originalWidget, {
