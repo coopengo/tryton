@@ -1488,7 +1488,7 @@ div.panel-body > textarea.markdown-source {
 }
 
 div.ProseMirror > p:last-child {
-    &:has( > br.ProseMirror-trailingBreak) {
+    &:has( > br:only-child.ProseMirror-trailingBreak) {
         display: none;
     }
 }
