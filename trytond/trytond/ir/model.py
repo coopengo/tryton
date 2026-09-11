@@ -521,6 +521,14 @@ class ModelField(
                     del rec[field]
         return res
 
+    @classmethod
+    def check_content_success(cls, binary, field_name):
+        "Extension point: the binary passed the malware scan"
+
+    @classmethod
+    def check_content_failure(cls, binary, field_name):
+        "Extension point: the scan of the batch holding this binary failed"
+
 
 class ModelAccess(
         fields.fmany2one(
