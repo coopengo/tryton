@@ -971,7 +971,7 @@ function hide_x2m_body(widget) {
             return this.nav.find("li[role='presentation']").length;
         },
         get_nth_page: function(page_index) {
-            return jQuery(this.panes.find("div[role='tabpanel']")[page_index]);
+            return jQuery(this.panes.children("div[role='tabpanel']")[page_index]);
         },
         set_state: function(record) {
             Sao.View.Form.Notebook._super.set_state.call(this, record);
