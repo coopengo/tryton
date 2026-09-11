@@ -8,12 +8,8 @@
         constructor() {
             this.notify = this.notify.bind(this);
             this.el = jQuery('<ul/>', {
-                'class': 'notification-menu dropdown-menu',
+                'class': 'notification-menu',
                 'role': 'menu',
-            });
-            this.el.on('show.bs.dropdown', () => {
-                this.fill();
-                this.indicator.hide();
             });
             this.indicator = jQuery('<span/>', {
                 'class': 'notification-badge',
@@ -111,52 +107,6 @@
                         }))
                     );
                 }
-                this.el.append(
-                    jQuery('<li/>', {
-                        'role': 'separator',
-                        'class': 'divider',
-                    }));
-                let items = [
-                    {
-                        'text': Sao.i18n.gettext("Preferences..."),
-                        'icon': 'tryton-launch',
-                        'action': () => Sao.preferences(),
-                    },
-                    {
-                        'text': Sao.i18n.gettext("Help..."),
-                        'icon': 'tryton-question',
-                        'action': () => Sao.help_dialog(),
-                    },
-                    {
-                        'text': Sao.i18n.gettext("Logout"),
-                        'icon': 'tryton-exit',
-                        'action': () => Sao.logout(),
-                    },
-                ];
-
-                items.forEach((item) => {
-                    let item_img = jQuery('<img/>', {
-                        'class': 'icon',
-                    });
-                    Sao.common.ICONFACTORY.get_icon_url(item.icon)
-                        .then(url => {
-                            item_img.attr('src', url);
-                        });
-                    let item_li = jQuery('<li/>', {
-                        'class': 'notification-item',
-                        'role': 'presentation',
-                    }).append(
-                        jQuery('<a/>', {
-                            'role': 'menuitem',
-                            'href': '#',
-                            'text': item.text,
-                        }).prepend(item_img
-                        ).click((evt) => {
-                            evt.preventDefault();
-                            item.action();
-                        }));
-                    this.el.append(item_li);
-                });
             });
 
         }
