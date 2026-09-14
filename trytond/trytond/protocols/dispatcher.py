@@ -299,11 +299,6 @@ def _dispatch(request, pool, *args, **kwargs):
         except Exception:
             logger.debug('Could not format parameters in log', exc_info=True)
 
-    # AKE: add session to transaction context
-    session = None
-    if request.authorization.type == 'session':
-        session = request.authorization.get('session')
-
     retry = config.getint('database', 'retry')
     count = 0
     transaction_extras = {}
