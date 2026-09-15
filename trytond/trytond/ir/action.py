@@ -770,12 +770,10 @@ class ActionReport(
                         report=report.rec_name,
                         exception=exception)) from exception
 
-    @classmethod
-    def conversion_success(cls, report, output_extension):
+    def conversion_success(self, output_extension):
         "Extension point: the report was converted successfully"
 
-    @classmethod
-    def conversion_failure(cls, report, output_extension):
+    def conversion_failure(self, output_extension):
         "Extension point: the conversion of the report failed"
 
 

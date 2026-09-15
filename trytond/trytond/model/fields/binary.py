@@ -30,7 +30,7 @@ def caster(d):
     return bytes(d, encoding='utf8')
 
 
-def check_content(field_name, *binaries):
+def check_content(model_name, field_name, *binaries):
     from trytond.model.modelstorage import BinaryScanError
 
     ModelField = Pool().get('ir.model.field')
@@ -58,12 +58,12 @@ def check_content(field_name, *binaries):
             logger.critical(
                 "'%s %s' exited with code '%s'",
                 scanner, tempdir, error.returncode)
-            for binary in to_scan:
-                ModelField.check_content_failure(binary, field_name)
+            for _ in to_scan:
+                ModelField.check_content_failure(model_name, field_name)
             raise BinaryScanError(gettext(
                     'ir.msg_malicious_binary', field=field_name))
-        for binary in to_scan:
-            ModelField.check_content_success(binary, field_name)
+        for _ in to_scan:
+            ModelField.check_content_success(model_name, field_name)
 
 
 class Binary(Field):
@@ -191,7 +191,8 @@ class Binary(Field):
             prefix = transaction.database.name
 
         self._check_contents(
-            Model.__names__(name)['field'], *((ids, value) + args)[1::2])
+            Model.__name__, Model.__names__(name)['field'],
+            *((ids, value) + args)[1::2])
 
         args = iter((ids, value) + args)
         for ids, value in zip(args, args):
@@ -207,8 +208,8 @@ class Binary(Field):
                     where=SQL_OPERATORS['in'](table.id, ids)))
 
     @classmethod
-    def _check_contents(cls, field, *values):
-        check_content(field, *values)
+    def _check_contents(cls, model_name, field, *values):
+        check_content(model_name, field, *values)
 
     def definition(self, model, language):
         definition = super().definition(model, language)
