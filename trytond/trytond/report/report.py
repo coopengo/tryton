@@ -552,6 +552,7 @@ class Report(URLMixin, PoolBase):
                 r = requests.post(url, files=files, timeout=timeout,
                       data=conversion_options)
                 if r.status_code < 300:
+                    report.conversion_success(oext)
                     return oext, r.content
                 else:
                     raise UnoConversionError('Conversion of "%s" failed. '
@@ -561,6 +562,7 @@ class Report(URLMixin, PoolBase):
                 if count:
                     time.sleep(0.1)
                     continue
+                report.conversion_failure(oext)
                 user = User(Transaction().user)
                 logger.error(e.message + ' User: %s' % user.name or '')
                 raise

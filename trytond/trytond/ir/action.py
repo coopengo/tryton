@@ -770,6 +770,12 @@ class ActionReport(
                         report=report.rec_name,
                         exception=exception)) from exception
 
+    def conversion_success(self, output_extension):
+        "Extension point: the report was converted successfully"
+
+    def conversion_failure(self, output_extension):
+        "Extension point: the conversion of the report failed"
+
 
 class ActionActWindow(
         fields.fmany2one(
