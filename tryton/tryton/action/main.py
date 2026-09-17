@@ -1,6 +1,5 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
-import copy
 import gettext
 import webbrowser
 
@@ -113,12 +112,7 @@ class Action(object):
             params['context'] = context.copy()
             params['context'].update(
                 decoder.decode(action.get('pyson_context') or '{}'))
-            action_ctx = context.copy()
-            action_ctx.update(
-                decoder.decode(action.get('pyson_context') or '{}'))
-            action_ctx.update(data.get('extra_context', {}))
             ctx.update(params['context'])
-            ctx.update(action_ctx)
 
             ctx['context'] = ctx
             decoder = PYSONDecoder(ctx)
@@ -126,16 +120,8 @@ class Action(object):
             params['order'] = decoder.decode(action['pyson_order'])
             params['search_value'] = decoder.decode(
                 action['pyson_search_value'] or '[]')
-            # XXX: Evaluate tab domain later
-            # Dynamic domain evaluation in screens and tabs
-            # see : 4cfefeab5
-            action_ctx.update({
-                    'active_model': data.get('model'),
-                    'active_id': data.get('id'),
-                    'active_ids': data.get('ids', []),
-                    })
             params['tab_domain'] = [
-                (n, (ctx, d), c) for n, d, c in action['domains']]
+                (n, decoder.decode(d), c) for n, d, c in action['domains']]
 
             name = action.get('name', '')
             if action.get('keyword', ''):
@@ -146,15 +132,12 @@ class Action(object):
             params['res_id'] = action.get('res_id', data.get('res_id'))
             params['context_model'] = action.get('context_model')
             params['context_domain'] = action.get('context_domain')
-            params['show_filter'] = action.get('show_filter')
             limit = action.get('limit')
             if limit is not None:
                 params['limit'] = limit
 
             Window.create(res_model, **params)
         elif action['type'] == 'ir.action.wizard':
-            context = copy.deepcopy(context)
-            context.update(data.get('extra_context', {}))
             params['context'] = context
             params['window'] = action.get('window')
             name = action.get('name', '')

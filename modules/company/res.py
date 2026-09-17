@@ -106,19 +106,6 @@ class User(metaclass=PoolMeta):
     def default_company_filter(cls):
         return 'one'
 
-    def get_status_bar(self, name):
-        def same_company(record):
-            return record.company == self.company
-        status = super().get_status_bar(name)
-        if (self.employee
-                and len(list(filter(same_company, self.employees))) > 1):
-            status += ' - %s' % self.employee.rec_name
-        if self.company:
-            if len(self.companies) > 1:
-                status += ' - %s' % self.company.rec_name
-            status += ' [%s]' % self.company.currency.code
-        return status
-
     @fields.depends(
         'companies', 'company', 'employees', methods=['on_change_employees'])
     def on_change_companies(self):
@@ -156,6 +143,21 @@ class User(metaclass=PoolMeta):
             res['companies'] = [c.id for c in user.companies]
             res['employees'] = [e.id for e in user.employees]
         return res
+
+    def _get_user_card(self):
+        properties = super()._get_user_card()
+
+        def same_company(record):
+            return record.company == self.company
+
+        if self.company:
+            properties.append(('tryton-company', self.company.rec_name))
+            properties.append(
+                ('tryton-currency', self.company.currency.rec_name))
+        if (self.employee
+                and len(list(filter(same_company, self.employees))) > 1):
+            properties.append(('tryton-party', self.employee.rec_name))
+        return properties
 
     @classmethod
     def get_companies(cls):

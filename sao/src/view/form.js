@@ -971,7 +971,7 @@ function hide_x2m_body(widget) {
             return this.nav.find("li[role='presentation']").length;
         },
         get_nth_page: function(page_index) {
-            return jQuery(this.panes.find("div[role='tabpanel']")[page_index]);
+            return jQuery(this.panes.children("div[role='tabpanel']")[page_index]);
         },
         set_state: function(record) {
             Sao.View.Form.Notebook._super.set_state.call(this, record);
@@ -2713,6 +2713,16 @@ function hide_x2m_body(widget) {
         cast: function(value){
             return value;
         },
+        display: function() {
+            let prm = Sao.View.Form.DateTime._super.display.call(this);
+            if (this.record) {
+                let value = this.record.field_get_client(this.field_name);
+                if (value && (value.millisecond() > 0)) {
+                    Sao.Logger.debug(`Field ${this.field_name} uses milliseconds in a datetime`);
+                }
+            }
+            return prm
+        },
     });
 
     Sao.View.Form.Time = Sao.class_(Sao.View.Form.Date, {
@@ -3081,7 +3091,12 @@ function hide_x2m_body(widget) {
             this.select.focus();
         },
         get_value: function() {
-            return JSON.parse(this.select.val());
+            let select_node = this.select[0];
+            if (select_node.value.length > 0) {
+                 return JSON.parse(select_node.value);
+             } else {
+                 return null;
+             }
         },
         get modified() {
             if (this.record && this.field) {
@@ -3647,6 +3662,7 @@ function hide_x2m_body(widget) {
                     screen.current_record = screen.group.get(m2o_id);
                     new Sao.Window.Form(screen, callback, {
                         save_current: true,
+                        prev_view: null,
                     });
                 });
                 return;
@@ -3717,6 +3733,7 @@ function hide_x2m_body(widget) {
                     new_: true,
                     save_current: true,
                     defaults: defaults,
+                    prev_view: null,
                 });
             });
         },
@@ -4053,9 +4070,35 @@ function hide_x2m_body(widget) {
             this._position = undefined;
             this._length = 0;
 
+            let disable_during = function(callback) {
+                return function(evt) {
+                    var button = jQuery(evt.target);
+                    button.prop('disabled', true);
+                    (callback(evt) || jQuery.when())
+                        .always(function() {
+                            button.prop('disabled', false);
+                        });
+                };
+            };
+
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default'
             });
+            let relation_model = Sao.common.MODELNAME.get(attributes.relation);
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el).append(jQuery('<p/>', {
+                'class': 'text-muted',
+            }).text(Sao.i18n.gettext('No %1 yet!', relation_model)));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(disable_during(() => this.new_()));
             this.menu = jQuery('<div/>', {
                 'class': this.class_ + '-menu panel-heading'
             });
@@ -4105,17 +4148,6 @@ function hide_x2m_body(widget) {
             var buttons = jQuery('<div/>', {
                 'class': 'input-group-btn'
             }).appendTo(group);
-
-            var disable_during = function(callback) {
-                return function(evt) {
-                    var button = jQuery(evt.target);
-                    button.prop('disabled', true);
-                    (callback(evt) || jQuery.when())
-                        .always(function() {
-                            button.prop('disabled', false);
-                        });
-                };
-            };
 
             this.but_switch = jQuery('<button/>', {
                 'class': 'btn btn-default btn-sm',
@@ -4252,6 +4284,7 @@ function hide_x2m_body(widget) {
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -4318,113 +4351,6 @@ function hide_x2m_body(widget) {
         get _styled_el() {
             return null;
         },
-        // [Coog specific]
-        // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-        group_sync: function(screen, current_record){
-            if (this.attributes.mode == 'form')
-                return;
-            if (!this.view || !this.view.widgets)
-                return;
-
-            function is_compatible(screen, record){
-                if (!screen.current_view)
-                    return false;
-
-                return (!(screen.current_view.view_type == 'form' &&
-                    record &&
-                    screen.model_name != record.model.name));
-            }
-
-            var key;
-            var record;
-            var widget;
-            var widgets = this.view.widgets[this.field_name];
-            var to_sync = [];
-
-            // !!!> get a list of widgets affected by the new record
-            for (var j = 0; j < widgets.length; j++){
-                widget = widgets[j];
-                if (!widget.hasOwnProperty('attributes')){
-                    return;
-                }
-
-                if (widget == this ||
-                    widget.attributes.group != this.attributes.group ||
-                    !widget.hasOwnProperty('screen')){
-                    continue;
-                }
-
-                if (widget.screen.current_record == current_record){
-                    continue;
-                }
-
-                record = current_record;
-                if (!is_compatible(widget.screen, record))
-                    record = null;
-                if (!widget.validate())
-                    return;
-
-                to_sync.push({'widget': widget, 'record': record});
-            }
-            widget = null;
-            var to_display = null;
-            var to_display_prm = jQuery.when();
-            var record_load_promises, display_prm;
-
-            function display_form(widget, record) {
-                return function () {
-                    widget.display(widget.record, widget.field);
-                };
-            }
-
-            // !!!> add fields; change widget's record; display widgets
-            for (var i = 0; i < to_sync.length; i++){
-                widget = to_sync[i].widget;
-                record = to_sync[i].record;
-                record_load_promises = [];
-
-                if (!widget.screen.current_view)
-                    continue;
-
-                // !!!> add widget's fields to the record
-                if (widget.screen.current_view.view_type == 'form' &&
-                    record &&
-                    widget.screen.group.model.name == record.group.model.name){
-                    var fields = widget.screen.group.model.fields;
-                    // !!!> format fields for method "add_fields"
-                    var ret = [];
-                    for(var name in fields){
-                        ret[name] = fields[name].description;
-                    }
-                    // !!!> initiate and add new fields
-                    record.group.model.add_fields(ret);
-
-                    for (var field_name in fields) {
-                        if (!fields.hasOwnProperty(field_name)) {
-                            continue;
-                        }
-                        record_load_promises.push(record.load(field_name));
-                    }
-                }
-
-                widget.screen.current_record = record;
-                display_prm = jQuery.when.apply(jQuery, record_load_promises);
-                display_prm.done(display_form(widget, record).bind(this));
-                if (record){
-                    to_display = widget;
-                    to_display_prm = display_prm;
-                }
-            }
-            if (to_display) {
-                to_display_prm.done(function() {
-                    for (var j in to_display.view.containers) {
-                        var container = widget.view.containers[j];
-                        container.resize();
-                    }
-                    to_display.display(to_display.record, to_display.field);
-                });
-            }
-        },
         get_access: function(type) {
             var model = this.attributes.relation;
             if (model) {
@@ -4458,110 +4384,6 @@ function hide_x2m_body(widget) {
         },
         get modified() {
             return Boolean(this.screen.current_view && this.screen.current_view.modified);
-        },
-        group_sync: function(screen, current_record){
-            if (this.attributes.mode == 'form')
-                return;
-            if (!this.view || !this.view.widgets)
-                return;
-
-            function is_compatible(screen, record){
-                if (screen.current_view === undefined)
-                    return false;
-
-                return (!(screen.current_view.view_type == 'form' &&
-                    record !== undefined &&
-                    screen.model_name != record.model.name));
-            }
-
-            var key;
-            var record;
-            var widget;
-            var widgets = this.view.widgets[this.field_name];
-            var to_sync = [];
-
-            // !!!> get a list of widgets affected by the new record
-            for (var j = 0; j < widgets.length; j++){
-                widget = widgets[j];
-                if (!widget.hasOwnProperty('attributes')){
-                    return;
-                }
-
-                if (widget == this ||
-                    widget.attributes.group != this.attributes.group ||
-                    !widget.hasOwnProperty('screen')){
-                    continue;
-                }
-
-                if (widget.screen.current_record == current_record){
-                    continue;
-                }
-
-                record = current_record;
-                if (!is_compatible(widget.screen, record))
-                    record = null;
-                if (!widget.validate())
-                    return;
-
-                to_sync.push({'widget': widget, 'record': record});
-            }
-            widget = null;
-            var to_display = null;
-            var record_load_promises, display_prm;
-
-            function display_form(widget, record) {
-                return function () {
-                    widget.screen.current_record = record;
-                    widget.display(widget.record(), widget.field());
-                };
-            }
-
-            // !!!> add fields; change widget's record; display widgets
-            for (var i = 0; i < to_sync.length; i++){
-                widget = to_sync[i].widget;
-                record = to_sync[i].record;
-                record_load_promises = [];
-
-                if (widget.screen.current_view === undefined)
-                    continue;
-
-                // !!!> add widget's fields to the record
-                if (widget.screen.current_view.view_type == 'form' &&
-                    record !== undefined && record !== null &&
-                    widget.screen.group.model.name == record.group.model.name){
-                    var fields = widget.screen.group.model.fields;
-                    // !!!> format fields for method "add_fields"
-                    var ret = [];
-                    for(var name in fields){
-                        ret[name] = fields[name].description;
-                    }
-                    // !!!> initiate and add new fields
-                    record.group.model.add_fields(ret);
-
-                    for (var field_name in fields) {
-                        if (!fields.hasOwnProperty(field_name)) {
-                            continue;
-                        }
-                        record_load_promises.push(record.load(field_name));
-                    }
-                }
-
-                display_prm = jQuery.when.apply(jQuery, record_load_promises);
-                display_prm.then(display_form(widget, record).bind(this));
-                if (record){
-                    to_display = widget;
-                }
-            }
-            // !!!> resize forms to fix display width
-            if (widget){
-                for (j in widget.view.containers) {
-                    var container = widget.view.containers[j];
-                    container.resize();
-                }
-            }
-            if (to_display) {
-                to_display.display(to_display.record(), to_display.field());
-            }
         },
         set_readonly: function(readonly) {
             Sao.View.Form.One2Many._super.set_readonly.call(this, readonly);
@@ -4695,6 +4517,17 @@ function hide_x2m_body(widget) {
                         this.screen.current_record = this.screen.group[0];
                     }
                 }
+                if (this.screen.group.length == 0) {
+                    let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                    if (access.create) {
+                        this.empty_but_new.sao_show();
+                    } else {
+                        this.empty_but_new.sao_hide();
+                    }
+                    this.empty_el.sao_show();
+                } else {
+                    this.empty_el.sao_hide();
+                }
 
                 // [Coog specific]
                 // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
@@ -4754,9 +4587,7 @@ function hide_x2m_body(widget) {
             if (!this.write_access || !this.read_access) {
                 return;
             }
-            // [Coog specific]
-            // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-            // this.view.set_value();
+            this.view.set_value();
             var domain = this.field.get_domain(this.record);
             var context = this.field.get_search_context(this.record);
             domain = [domain,
@@ -4866,6 +4697,7 @@ function hide_x2m_body(widget) {
                     new_: true,
                     defaults: defaults,
                     many: field_size,
+                    prev_view: this.screen.current_view,
                 });
             }
         },
@@ -4984,6 +4816,8 @@ function hide_x2m_body(widget) {
                     }
                     new Sao.Window.Form(this.screen, () => {
                         this._popup = false;
+                    }, {
+                        prev_view: this.screen.current_view,
                     });
                 }
             });
@@ -5027,9 +4861,7 @@ function hide_x2m_body(widget) {
         },
         validate: function() {
             var prm = jQuery.Deferred();
-            // [Coog specific]
-            // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-            // this.view.set_value();
+            this.view.set_value();
             var record = this.screen.current_record;
             if (record) {
                 var fields = this.screen.current_view.get_fields();
@@ -5047,12 +4879,6 @@ function hide_x2m_body(widget) {
         },
         set_value: function() {
             this.screen.current_view.set_value();
-            // [Coog specific]
-            // > multi_mixed_view see tryton/8fa02ed59d03aa52600fb8332973f6a88d46d8c0
-            if (this.screen.current_view.view_type == 'form' &&
-                this.attributes.group &&
-                this.screen.model.name != this.record.model.name)
-                return;
             if (this.screen.modified()) {  // TODO check if required
                 this.view.screen.record_modified(false);
             }
@@ -5101,6 +4927,21 @@ function hide_x2m_body(widget) {
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default'
             });
+            let relation_model = Sao.common.MODELNAME.get(attributes.relation);
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el).append(jQuery('<p/>', {
+                'class': 'text-muted',
+            }).text(Sao.i18n.gettext('No %1 yet!', relation_model)));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(() => this.new_());
             this.menu = jQuery('<div/>', {
                 'class': this.class_ + '-menu panel-heading'
             });
@@ -5222,6 +5063,7 @@ function hide_x2m_body(widget) {
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -5341,6 +5183,17 @@ function hide_x2m_body(widget) {
                 var new_group = record.field_get_client(this.field_name);
                 if (new_group != this.screen.group) {
                     this.screen.set_group(new_group);
+                }
+                if (this.screen.group.length == 0) {
+                    let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                    if (access.create) {
+                        this.empty_but_new.sao_show();
+                    } else {
+                        this.empty_but_new.sao_hide();
+                    }
+                    this.empty_el.sao_show();
+                } else {
+                    this.empty_el.sao_hide();
                 }
                 if (this.attributes.height !== undefined) {
                     this.content
@@ -5494,6 +5347,7 @@ function hide_x2m_body(widget) {
                     this.screen.current_record.id);
                 new Sao.Window.Form(screen, callback, {
                     save_current: true,
+                    prev_view: screen.current_view,
                 });
             });
         },
@@ -5524,6 +5378,7 @@ function hide_x2m_body(widget) {
                     'new_': true,
                     'save_current': true,
                     'defaults': defaults,
+                    prev_view: screen.current_view,
                 });
             });
         },
@@ -5568,6 +5423,10 @@ function hide_x2m_body(widget) {
                 this, view, attributes);
             this.filename = attributes.filename || null;
         },
+        default_filters: '',
+        get filters() {
+            return this.attributes.filters || this.default_filters;
+        },
         toolbar: function(class_) {
             var group = jQuery('<div/>', {
                 'class': class_,
@@ -5586,6 +5445,7 @@ function hide_x2m_body(widget) {
             this.input_select = jQuery('<input/>', {
                 'type': 'file',
             }).change(this.select.bind(this));
+            this.input_select.attr('accept', this.filters);
             this.but_select = jQuery('<div/>', {
                 'class': 'btn btn-default input-file',
                 'type': 'button',
@@ -5769,7 +5629,20 @@ function hide_x2m_body(widget) {
             } else {
                 size = field.get(record).length;
             }
-            this.size.val(Sao.common.humanize(size, 'B'));
+            let file_exist = !((size === undefined) || (size === null));
+            if (file_exist) {
+                this.size.val(Sao.common.humanize(size, 'B'));
+            } else {
+                this.size.val('');
+            }
+            let filters = this.filters;
+            if (record && this.attributes.filters_field) {
+                let filters_field = this.attributes.filters_field;
+                if (Object.hasOwn(record.model.fields, filters_field)) {
+                    filters = record.field_get_client(filters_field);
+                }
+            }
+            this.input_select.attr('accept', filters);
 
             if (this.text) {
                 this.text.val(this.filename_field.get(record) || '');
@@ -5918,6 +5791,8 @@ function hide_x2m_body(widget) {
             }
             this._readonly = false;
         },
+        default_filters: (
+            'image/png,image/jpeg,image/gif,.png,.jpg,.gif,.tif,.xpm'),
         set_readonly: function(readonly) {
             Sao.View.Form.Image._super.set_readonly.call(this, readonly);
             var record = this.record;

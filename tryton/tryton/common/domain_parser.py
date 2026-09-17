@@ -103,8 +103,8 @@ def likify(value, escape='\\'):
     "Add % if needed"
     if not value:
         return '%'
-    escaped = value.replace(escape + '%', '')
-    if '%' in escaped:
+    escaped = value.replace(escape + '%', '').replace(escape + '_', '')
+    if '%' in escaped or '_' in escaped:
         return value
     else:
         return '%' + value + '%'
@@ -114,19 +114,19 @@ def is_full_text(value, escape='\\'):
     escaped = value
     if escaped.startswith('%') and escaped.endswith('%'):
         escaped = escaped[1:-1]
-    escaped = escaped.replace(escape + '%', '')
-    if '%' in escaped:
+    escaped = escaped.replace(escape + '%', '').replace(escape + '_', '')
+    if '%' in escaped or '_' in escaped:
         return False
     return value.startswith('%') and value.endswith('%')
 
 
 def is_like(value, escape='\\'):
-    escaped = value.replace(escape + '%', '')
-    return '%' in escaped
+    escaped = value.replace(escape + '%', '').replace(escape + '_', '')
+    return '%' in escaped or '_' in escaped
 
 
 def unescape(value, escape='\\'):
-    return value.replace(escape + '%', '%')
+    return value.replace(escape + '%', '%').replace(escape + '_', '_')
 
 
 def quote(value, empty=False):
@@ -734,8 +734,6 @@ class DomainParser(object):
                 name = name[:-9]
             value = target
         if name == 'rec_name':
-            if type(value) is list:
-                return
             if operator == 'ilike':
                 escaped = value.replace('%%', '__')
                 if escaped.startswith('%') and escaped.endswith('%'):

@@ -32,6 +32,17 @@
 @coog-max-menu-width:   28em;
 @coog-card-bottom-padding: 5px;
 
+///////////////////////////////////////////////////////////////////////////////
+// Custom css classes (can be set with
+//      <field name=... customcss="coog-custom-xxx coog-custom-yyy"... />)
+///////////////////////////////////////////////////////////////////////////////
+//
+// coog-custom-infinite-list: Disable the max height on a list / list-form
+//
+///////////////////////////////////////////////////////////////////////////////
+// Tooling
+///////////////////////////////////////////////////////////////////////////////
+
 // header colors for groups
 .coog-group-header-colors {
     color:                  @color-black;
@@ -63,6 +74,17 @@
     > div.panel:has(> div.panel-body.coog-hidden-toolbar) {
         box-shadow:         none;
         background-color:   transparent;
+    }
+
+    > div.panel.coog-custom-infinite-list > div.panel-body > div > div.content-box {
+        // Actual lists
+        > div.tree-container > div.treeview {
+            max-height:             unset !important;
+        }
+        // List forms
+        > ul.list-form {
+            max-height:             unset !important;
+        }
     }
 
     > div.panel {
@@ -215,7 +237,7 @@ div.wizard-form {
 // More discrete checkboxes for selection in trees
 .treeview > table.tree,table.tree-condensed > thead,tbody > tr > td.selection-state > input {
     & :after {
-        border-color:   @color-lightest-blue !important;
+        border-color:   @color-lighter-blue !important;
     }
 
     & tr:hover :after {
@@ -228,6 +250,11 @@ div.wizard-form {
 
     & tr.selected :after {
         border-color:   @color-grey !important;
+    }
+
+    & input[disabled]::after  {
+        border-color:   @color-lightest-blue !important;
+        cursor: not-allowed !important;
     }
 
 }
@@ -395,6 +422,12 @@ nav.toolbar.panel-heading {
     }
 }
 
+// Remove -15px offset
+.row{
+    margin: 0px
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Left menu
 ///////////////////////////////////////////////////////////////////////////////
@@ -436,6 +469,7 @@ html[theme="default"] .btn-primary {
 
 .form .form-item > .btn {
     margin:                    1px 2px 1px 2px;
+    height: 32px;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -577,6 +611,7 @@ div.form-item:has(> fieldset.form-group_ > legend) {
             clear:                      both;
             display:                    grid;
             grid-template-columns:      1fr 1fr;
+            margin-left: 0px;
         }
 
         > legend {
@@ -644,7 +679,9 @@ div.form-item:has(> fieldset.form-group_ > legend) {
 // Improve vertical usage of groups with only one item
 div.form-item:not(.yfill):has(> *:only-child), div.form-item.form-dict {
     align-items:                        center;
-    > * {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    > *:not(.btn) {
         height:                         auto;
     }
 }
@@ -659,11 +696,6 @@ div.form-group-expandable {
             font-size:                  14px;
         }
     }
-}
-
-// Remove all padding from groups without a legend
-div.form-item:not(:has(> fieldset.form-group_ > legend)) {
-    padding:                            0px;
 }
 
 fieldset {
@@ -1296,8 +1328,8 @@ div.panel-body:has( > .markdown-source ) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     padding: 0;
     border: none;
     background: @color-white;
@@ -1332,12 +1364,13 @@ div.panel-body:has( > .markdown-source ) {
 }
 
 .form-markdown .markdown-editor {
+    min-height: 50px;
     padding: 15px;
     margin: 0 auto;
 }
 
 .form-markdown .markdown-editor .tiptap {
-    min-height: 150px;
+    min-height: 50px;
     padding: 8px 12px;
     outline: none;
     cursor: text;
@@ -1405,7 +1438,7 @@ div.panel-body > textarea.markdown-source {
     width: 100%;
     padding: 15px;
     margin: 0 auto;
-    min-height: 150px;
+    min-height: 50px;
     padding: 8px 12px;
     font-family: monospace;
     font-size: 15px;
@@ -1452,6 +1485,12 @@ div.panel-body > textarea.markdown-source {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 13px;
     line-height: 1.5;
+}
+
+div.ProseMirror > p:last-child {
+    &:has( > br:only-child.ProseMirror-trailingBreak) {
+        display: none;
+    }
 }
 
 .form-markdown .tiptap pre code {

@@ -77,9 +77,7 @@ def main():
     screen = Gdk.Screen.get_default()
     style_context = Gtk.StyleContext()
     provider = Gtk.CssProvider()
-    # the line below injects CSS with higher priority than the custom theme
-    # -> it overrides Coog theme behavior
-    # provider.load_from_data(CSS)
+    provider.load_from_data(CSS)
     style_context.add_provider_for_screen(
         screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     theme_path = os.path.join(get_config_dir(), 'theme.css')
@@ -95,8 +93,6 @@ def main():
 
     copy_previous_configuration('tryton.conf')
     copy_previous_configuration('ca_certs')
-    copy_previous_configuration('known_hosts')
-    copy_previous_configuration('accel_map')
     copy_previous_configuration('profiles.cfg')
     copy_previous_configuration('plugins')
     copy_previous_configuration('theme.css')

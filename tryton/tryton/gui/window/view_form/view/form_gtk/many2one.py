@@ -9,7 +9,6 @@ from tryton.common.completion import get_completion, update_completion
 from tryton.common.domain_parser import quote
 from tryton.common.entry_position import reset_position
 from tryton.common.popup_menu import populate
-from tryton.gui.window import Window
 from tryton.gui.window.view_form.screen import Screen
 from tryton.gui.window.win_form import WinForm
 from tryton.gui.window.win_search import WinSearch
@@ -89,9 +88,6 @@ class Many2One(Widget):
             value = self.wid_text.get_text()
             return self.field.get_client(self.record) != value
         return False
-
-    def _color_widget(self):
-        return self.wid_text
 
     @staticmethod
     def has_target(value):
@@ -216,19 +212,6 @@ class Many2One(Widget):
         else:
             self._popup = True
         if self.has_target(value):
-            if args and not (args[0].state & Gdk.ModifierType.CONTROL_MASK):
-                with Window(hide_current=False, allow_similar=False):
-                    Window.create(
-                        model,
-                        view_ids=self.field.attrs.get(
-                            'view_ids', '').split(','),
-                        res_id=self.id_from_value(self.field.get(self.record)),
-                        mode=['form'],
-                        name=self.field.attrs.get('string'),
-                        context=self.field.get_search_context(self.record))
-                self.focus_out = True
-                self.changed = True
-                return
             m2o_id = self.id_from_value(self.field.get(self.record))
             screen = self.get_screen()
             screen.load([m2o_id])

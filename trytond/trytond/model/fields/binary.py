@@ -39,8 +39,12 @@ def check_content(field_name, *binaries):
     if not scanner:
         return
 
+    to_scan = [x for x in binaries if x is not None]
+    if not to_scan:
+        return
+
     with tempfile.TemporaryDirectory(dir=scanner_dir) as tempdir:
-        for binary in binaries:
+        for binary in to_scan:
             with tempfile.NamedTemporaryFile(dir=tempdir, delete=False) as fd:
                 fd.write(binary)
 

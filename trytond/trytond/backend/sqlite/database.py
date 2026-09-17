@@ -683,7 +683,7 @@ class Database(DatabaseInterface):
                         'Test failed for "%s"', db_name, exc_info=True)
                     continue
                 if database.test(hostname=hostname, series=True):
-                    res.append(db_name)
+                    res.append((db_name, self.is_production(database._conn)))
                 database.close()
 
         self.__class__._list_cache[hostname] = res
@@ -752,6 +752,14 @@ class Database(DatabaseInterface):
                 if hostnames and hostname not in hostnames:
                     return False
         return True
+
+    def is_production(self, connection):
+        cursor = connection.cursor()
+        try:
+            cursor.execute("SELECT production FROM ir_configuration")
+            return p[0] if (p := cursor.fetchone()) else False
+        except DatabaseOperationalError:
+            return True
 
     def setnextid(self, connection, table, value):
         cursor = connection.cursor()

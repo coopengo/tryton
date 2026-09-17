@@ -169,8 +169,7 @@ class TrytonConfigParser(configparser.ConfigParser):
         return TrytonConfigParser(overrides=overrides)
 
 
-_config = TrytonConfigParser()
-_config.apply_overriden_defaults()
+_config = TrytonConfigParser().apply_overriden_defaults()
 
 
 def update_etc(configfile=os.environ.get('TRYTOND_CONFIG')):

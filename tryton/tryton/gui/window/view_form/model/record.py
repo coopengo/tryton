@@ -2,6 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 import functools
 import logging
+import operator
 
 import tryton.common as common
 from tryton.common import RPCException, RPCExecute
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 def get_x2m_sub_fields(f_attrs, prefix):
     if f_attrs.get('visible') and f_attrs.get('views'):
         sub_fields = functools.reduce(
-            lambda a, b: a.update(b) or a,
+            operator.or_,
             (v.get('fields', {}) for v in f_attrs['views'].values()),
             {})
         x2m_sub_fields = []
@@ -39,7 +40,7 @@ def get_x2m_sub_fields(f_attrs, prefix):
 
 class Record:
 
-    id = -100000000
+    id = -1
 
     def __init__(self, model_name, obj_id, group=None):
         super().__init__()
@@ -126,15 +127,7 @@ class Record:
 
             record_context = self.get_context()
             if loading == 'eager':
-                # JCA: This controls how many lines will be fetched at once
-                # (typically when opening a list view).
-                # The "client.limit / len(fnames)" is not bad heuristic, but
-                # for models with a lot of fields, reading "one by one" is
-                # probably not the solution anyway. A minimum of 20 makes it 2
-                # calls to fill a list view, and seems good enough
-                limit = max(
-                    int(CONFIG['client.limit'] / min(len(fnames), 10)),
-                    20)
+                limit = CONFIG['client.limit'] // min(len(fnames), 10)
 
                 def filter_group(record):
                     return (not record.destroyed
@@ -204,24 +197,13 @@ class Record:
 
     @property
     def modified(self):
-        result = bool(self.modified_fields)
-        if not result:
-            return result
-        # JCA #15014 Add a way to make sure some fields are always ignored when
-        # detecting whether the record needs saving
-        for field in self.modified_fields:
-            if field not in self.group.fields:
-                break
-            if not self.group.fields[field].attrs.get(
-                    'never_modified', False):
-                break
-        else:
-            return False
         if self.modified_fields:
             logger.info(
                 "Modified fields %s of %s",
                 list(self.modified_fields.keys()), self)
-        return result
+            return True
+        else:
+            return False
 
     @property
     def parent(self):
@@ -247,29 +229,20 @@ class Record:
             parent = parent.parent
         return i
 
-    def children_group(self, field_name, children_definitions):
+    def children_group(self, field_name):
         if not field_name:
             return []
-        if field_name not in self.group.fields:
-            return None
         self._check_load([field_name])
         group = self.value.get(field_name)
         if group is None:
             return None
 
-        if group.model_name == self.group.model_name:
-            if id(group.fields) != id(self.group.fields):
-                self.group.fields.update(group.fields)
-                group.fields = self.group.fields
-            group.on_write = self.group.on_write
-            group.readonly = self.group.readonly
-            group._context.update(self.group._context)
-        else:
-            fields = children_definitions[group.model_name].copy()
-            # Force every field of the multi-model to be eager-loaded
-            for field_def in fields.values():
-                field_def['loading'] = 'eager'
-            group.load_fields(fields)
+        if id(group.fields) != id(self.group.fields):
+            self.group.fields.update(group.fields)
+            group.fields = self.group.fields
+        group.on_write = self.group.on_write
+        group.readonly = self.group.readonly
+        group._context.update(self.group._context)
         return group
 
     def get_path(self, group):
@@ -478,8 +451,6 @@ class Record:
             if field_name in {
                     self.group.exclude_field, self.group.parent_name}:
                 continue
-            if field_name == self.group.parent_name:
-                continue
             if not field.validate(self, softvalidation, pre_validate):
                 res = False
         return res
@@ -560,8 +531,8 @@ class Record:
             self._loaded.add(fieldname)
             fieldnames.append(fieldname)
         for fieldname, value in later.items():
-            field = self.group.fields[fieldname]
-            if isinstance(field, fields.O2MField):
+            if isinstance(
+                    field := self.group.fields[fieldname], fields.O2MField):
                 field.set(self, value, preloaded=val.get(f"{fieldname}."))
             self._loaded.add(fieldname)
             fieldnames.append(fieldname)

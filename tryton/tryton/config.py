@@ -1,14 +1,11 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import configparser
-import datetime
 import gettext
 import locale
 import logging
 import optparse
 import os
-import glob
-import pathlib
 import shutil
 import sys
 from tempfile import NamedTemporaryFile
@@ -72,8 +69,9 @@ class ConfigManager(object):
     "Config manager"
 
     def __init__(self):
-        demo_server = ''
-        demo_database = ''
+        short_version = '.'.join(__version__.split('.', 2)[:2])
+        demo_server = 'demo%s.tryton.org' % short_version
+        demo_database = 'demo%s' % short_version
         self.defaults = {
             'login.profile': demo_server,
             'login.login': 'demo',
@@ -82,30 +80,28 @@ class ConfigManager(object):
             'login.host': demo_server,
             'login.db': demo_database,
             'login.expanded': False,
-            'tip.autostart': False,
-            'tip.position': 0,
-            'form.toolbar': True,
-            'client.title': 'Coog',
+            'client.title': 'Tryton',
             'rpc.cache_size': 1024,
             'client.modepda': False,
             'client.toolbar': 'default',
             'client.save_tree_width': True,
-            'client.save_tree_state': False,
+            'client.save_tree_state': True,
             'client.spellcheck': False,
             'client.code_scanner_sound': True,
             'client.lang': locale.getdefaultlocale()[0],
             'client.language_direction': 'ltr',
-            # JCA: Set default limit to 100 for performances
-            'client.limit': 100,
-            'client.check_version': False,
+            'client.limit': 1000,
+            'client.check_version': True,
             'client.bus_timeout': 10 * 60,
-            'icon.colors': '#0094d2,#57a639,#cc0000',
-            'tree.colors': '#777,#dff0d8,#fcf8e3,#f2dede',
+            'icon.colors': '#3465a4,#555753,#cc0000',
+            'tree.colors': '#777,#198754,#ffc107,#dc3545',
             'calendar.colors': '#fff,#3465a4',
             'graph.color': '#3465a4',
             'image.max_size': 10 ** 6,
             'image.cache_size': 1024,
-            'bug.url': 'https://support.coopengo.com/',
+            'doc.url': 'https://docs.tryton.org/%(version)s',
+            'bug.url': 'https://bugs.tryton.org/',
+            'download.url': 'https://downloads.tryton.org/',
             'download.frequency': 60 * 60 * 8,
             'menu.pane': 320,
         }
@@ -114,7 +110,7 @@ class ConfigManager(object):
         self.arguments = []
 
     def parse(self):
-        parser = optparse.OptionParser(version=("Coog %s" % __version__),
+        parser = optparse.OptionParser(version=("Tryton %s" % __version__),
                 usage="Usage: %prog [options] [url]")
         parser.add_option("-c", "--config", dest="config",
                 help=_("specify alternate config file"))
@@ -141,25 +137,9 @@ class ConfigManager(object):
             get_config_dir(), 'tryton.conf')
         self.load()
 
-        logging_config = {
-            'format': '%(asctime)s.%(msecs)03d:%(levelname)s:%(message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-            }
+        logging_config = {}
         if opt.log_output:
             logging_config['filename'] = opt.log_output
-        else:
-            config_dir = pathlib.Path(get_config_dir())
-            # Remove old log files, keeping only 10
-            files = [
-                str(x.absolute())
-                for x in config_dir.glob('tryton-*.log')
-                if x.is_file()]
-            files.sort(reverse=True)
-            for file in files[9:]:
-                os.remove(file)
-            now = datetime.datetime.now().strftime('%Y%m%d-%Hh%Mm%Ss')
-            logging_file = config_dir / f'tryton-{now}.log'
-            logging_config['filename'] = str(logging_file)
 
         loglevels = {
             'DEBUG': logging.DEBUG,
@@ -265,4 +245,4 @@ if not os.path.isdir(SOUNDS_DIR):
         SOUNDS_DIR = pkg_resources.resource_filename('tryton', 'data/sounds')
 
 TRYTON_ICON = GdkPixbuf.Pixbuf.new_from_file(
-    os.path.join(PIXMAPS_DIR, 'coog_no_text.svg'))
+    os.path.join(PIXMAPS_DIR, 'tryton-icon.png'))

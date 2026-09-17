@@ -89,7 +89,7 @@ class ViewGraph(View):
     def reset(self):
         pass
 
-    def display(self, force=False):
+    def display(self):
         self.widgets['root'].display(self.screen.group)
         return True
 

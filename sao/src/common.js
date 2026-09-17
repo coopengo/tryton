@@ -119,16 +119,25 @@
                 let container_rect = container.getBoundingClientRect();
                 let top_ = rect.top - container_rect.top;
                 let bottom = top_ + rect.height;
+                let left = rect.left - container_rect.left;
+                let right = left + rect.width;
 
                 let target_top = container.scrollTop;
+                let target_left = container.scrollLeft;
 
                 if (top_ < 0) {
                     target_top += top_ - container.clientHeight / 2;
                 } else if (bottom > container.clientHeight) {
                     target_top += bottom - container.clientHeight / 2
                 }
+                if (left < 0) {
+                    target_left += left - container.clientWidth / 2;
+                } else if (right > container.clientWidth) {
+                    target_left += right - container.clientWidth / 2;
+                }
                 container.scrollTo({
                     top: Math.max(0, target_top),
+                    left: Math.max(0, target_left),
                 });
             }
         }
@@ -4080,7 +4089,7 @@
         },
         _format: function(content) {
             if (this.format) {
-                return this.format(content);
+                content = this.format(content);
             }
             if (content instanceof jQuery) {
                 return content;
@@ -4173,7 +4182,7 @@
     Sao.common.get_completion = function(el, source,
             match_selected, action_activated, search=true, create=true) {
         var format = function(content) {
-            return jQuery('<span/>').text(content.name);
+            return content.name;
         };
         var completion = new Sao.common.InputCompletion(
                 el, source, match_selected, format);
@@ -4903,8 +4912,4 @@
             }
         },
     };
-
-    Sao.common.transparent_png = document.createElement('img');
-    Sao.common.transparent_png.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-
 }());

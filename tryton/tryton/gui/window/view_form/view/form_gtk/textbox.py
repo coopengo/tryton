@@ -99,9 +99,6 @@ class TextBox(Widget, TranslateMixin):
         super()._readonly_set(value)
         self.textview.set_editable(not value)
 
-    def _color_widget(self):
-        return self.textview
-
     @property
     def modified(self):
         if self.record and self.field:

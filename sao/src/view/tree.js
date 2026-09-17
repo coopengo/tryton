@@ -107,7 +107,7 @@
         xml_parser: Sao.View.TreeXMLViewParser,
         draggable: false,
         display_size: null,
-        init: function(view_id, screen, xml, children_field, children_definitions) {
+        init: function(view_id, screen, xml, children_field) {
             this.children_field = children_field;
             this.optionals = [];
             this.sum_widgets = new Map();
@@ -120,6 +120,21 @@
             // Prevent Chrome based browser to compute a min-content
             // such that only this table has scrollbar if needed
                 .css('display', 'grid');
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el)
+                .append(jQuery('<p/>').text(Sao.i18n.gettext("No records yet")));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(() => {
+                screen.new_();
+            });
             this.scrollbar = jQuery('<div/>')
                 .appendTo(jQuery('<div/>', {
                     'class': 'scrollbar responsive',
@@ -143,10 +158,6 @@
             this.expanded = new Set();
 
             Sao.View.Tree._super.init.call(this, view_id, screen, xml);
-            //
-            // [Coog specific]
-            //      > used for multi_mixed_view , expand_children (?)
-            this.children_definitions = children_definitions;
             // [Coog specific]
             //      > attribute always_expand (expand tree view)
             this.always_expand = this.attributes.always_expand || null;
@@ -954,6 +965,21 @@
             this.screen.button(button.attributes);
         },
         display: function(selected, expanded) {
+            if (!this.screen.group.parent && (this.screen.group.length == 0)) {
+                let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                if (access.create && (this.screen.screen_container.get_text() === "")) {
+                    this.empty_but_new.sao_show();
+                } else {
+                    this.empty_but_new.sao_hide();
+                }
+                let containerPos = this.el[0].getBoundingClientRect();
+                let tbodyPos = this.tbody[0].getBoundingClientRect();
+                let top_offset = tbodyPos.top - containerPos.top;
+                this.empty_el.css('--top-offset', `${top_offset}px`);
+                this.empty_el.sao_show();
+            } else {
+                this.empty_el.sao_hide();
+            }
             if ((this.display_size === null) && this.screen.group.length) {
                 if (this.screen.group.parent) {
                     this.display_size = 0;
@@ -1002,10 +1028,6 @@
                     if (Sao.common.contains(expanded, path)) {
                         const children = record.field_get_client(
                             this.children_field);
-                        // JMO add_fields here is to prevent error
-                        // in field_get_client with 'multi_mixed_view'
-                        // on loan contracts. Not sure this is exactly right.
-                        children.model.add_fields(this.children_definitions[children.model.name]);
                         Array.prototype.push.apply(
                             records, group_records(children, path));
                     }
@@ -1794,8 +1816,6 @@
             this.record = record;
             this.parent_ = parent;
             this.children_field = tree.children_field;
-            // [Coog specific] multi_mixed_view
-            this.children_definitions = tree.children_definitions;
             this.expander = null;
             this._group_position = null;
             this._path = null;
@@ -2159,9 +2179,6 @@
                 if (this.rows.length === 0) {
                     var children = this.record.field_get_client(
                         this.children_field);
-                    // [Coog Specific]  needed for multi_mixed_view
-                    if (children.model.name != this.record.model.name)
-                        children.model.add_fields(this.children_definitions[children.model.name]);
                     children.forEach((record, pos, group) => {
                         // The rows are added to the tbody after being rendered
                         // to minimize browser reflow
@@ -2435,16 +2452,6 @@
         },
         set_editable: function() {
             var focus_widget = null;
-            let table_node = this.el[0].parentNode;
-            let tr_copy = this.el[0].cloneNode(true);
-            Object.keys(tr_copy).forEach(key => {
-                tr_copy.addEventListener(key.slice(2), (evt) => {
-                    evt.preventDefault();
-                    evt.stopPropagation();
-                });
-            });
-            table_node.replaceChild(tr_copy, this.el[0]);
-            let display_prms = [];
             for (var i = 0, len=this.tree.columns.length; i < len; i++) {
                 var td = this._get_column_td(i);
                 var col = this.tree.columns[i];
@@ -2461,7 +2468,7 @@
                     var editable_el = this.get_editable_el(td);
                     editable_el.append(widget.el);
                     editable_el.data('widget', widget);
-                    display_prms.push(widget.display(this.record, col.field));
+                    widget.display(this.record, col.field);
 
                     var static_el = this.get_static_el(td);
                     static_el.sao_hide();
@@ -2474,9 +2481,6 @@
                     }
                 }
             }
-            jQuery.when.apply(jQuery, display_prms).done(() => {
-                table_node.replaceChild(this.el[0], tr_copy);
-            });
             if (focus_widget && focus_widget.focus) {
                 focus_widget.focus();
             }
@@ -2730,9 +2734,7 @@
                     if (!value) {
                         value = field.get_client(record) || '';
                     }
-                    if (cell.text() != value) {
-                        cell.text(value);
-                    }
+                    cell.text(value);
                 }
             };
             let prm = jQuery.when();
@@ -2827,9 +2829,7 @@
         },
         update_text: function(cell, record) {
             var text = this.get_textual_value(record);
-            if (text != cell.text()) {
-                cell.text(text).attr('title', text);
-            }
+            cell.text(text).attr('title', text);
         },
         render: function(record, cell) {
             if (!cell) {
@@ -3031,9 +3031,7 @@
             if (!this.tree.editable &&
                     (this.field.name + ':string' in record._values)) {
                 var text_value = this.get_textual_value(record);
-                if (cell.text() != text_value) {
-                    cell.text(text_value).attr('title', text_value);
-                }
+                cell.text(text_value).attr('title', text_value);
             } else {
                 this.update_selection(record, () => {
                     var value = this.field.get(record);
@@ -3054,9 +3052,7 @@
                         prm = jQuery.when(text);
                     }
                     prm.done(text_value => {
-                        if (cell.text() != text_value) {
-                            cell.text(text_value).attr('title', text_value);
-                        }
+                        cell.text(text_value).attr('title', text_value);
                     });
                 });
             }
@@ -3098,15 +3094,11 @@
             if (!this.tree.editable &&
                     (this.field_name + ':string' in record._values)) {
                 var text_value = this.get_textual_value(record);
-                if (cell.text() != text_value) {
-                    cell.text(text_value).attr('title', text_value);
-                }
+                cell.text(text_value).attr('title', text_value);
             } else {
                 this.update_selection(record, () => {
                     var text_value = this.get_textual_value(record);
-                    if (cell.text() != text_value) {
-                        cell.text(text_value).attr('title', text_value);
-                    }
+                    cell.text(text_value).attr('title', text_value);
                 });
             }
         },
@@ -3164,9 +3156,7 @@
             cell.unbind('click');
             this.update_selection(record, () => {
                 var text = this.get_textual_value(record);
-                if (cell.text() != text) {
-                    cell.text(text).attr('title', text);
-                }
+                cell.text(text).attr('title', text);
                 cell.click(event => {
                     event.stopPropagation();
                     var value = this.field.get(record);
@@ -3249,10 +3239,7 @@
         },
         update_text: function(cell, record) {
             var text = this.get_textual_value(record);
-            let span = cell.children('span')
-            if (span.text() != text) {
-                span.text(text).attr('title', text);
-            }
+            cell.children('span').text(text).attr('title', text);
             var button = cell.children('button');
             if (!button.length) {
                 button = jQuery('<button/>', {
@@ -3388,10 +3375,8 @@
             var value = this.field.get(record) || 0;
             var progressbar = cell.find('.progress-bar');
             progressbar.attr('aria-valuenow', value * 100);
-            if (progressbar.text() != text) {
-                progressbar.css('width', value * 100 + '%');
-                progressbar.text(text).attr('title', text);
-            }
+            progressbar.css('width', value * 100 + '%');
+            progressbar.text(text).attr('title', text);
         }
     });
 
@@ -3440,10 +3425,6 @@
         button_clicked: function(event) {
             var record = event.data[0];
             var button = event.data[1];
-            if (record != this.view.screen.current_record) {
-                // Need to raise the event to get the record selected
-                return true;
-            }
             var states = record.expr_eval(this.attributes.states || {});
             if (states.invisible || states.readonly) {
                 return;
@@ -3456,7 +3437,11 @@
             if (row) {
                 row._drawed_record = null;  // force redraw the row
             }
-            this.view.screen.button(this.attributes);
+            this.view.screen.button(this.attributes, record).then(() => {
+                jQuery(event.target).parent().trigger('click');
+            }, () => {
+                button.el.prop('disabled', false);
+            });
         }
     });
 

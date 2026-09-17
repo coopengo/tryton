@@ -137,10 +137,7 @@ class IconFactory:
             try:
                 ET.register_namespace('', 'http://www.w3.org/2000/svg')
                 root = ET.fromstring(data)
-                # If the color is set on the icon, we get it otherwise we take
-                # the color defined by default
-                if not root.attrib.get('fill'):
-                    root.attrib['fill'] = color
+                root.attrib['fill'] = color
                 if view_box := root.attrib.get('viewBox'):
                     min_x, min_y, width, height = map(
                         float, view_box.split(' '))
@@ -581,18 +578,15 @@ def file_selection(title, filename='',
     return result
 
 
+_slugify_strip_re = re.compile(r'[^\w\s-]')
 _slugify_hyphenate_re = re.compile(r'[-\s]+')
 
 
 def slugify(value):
-    # remove control chars
-    value = ''.join(c for c in value
-        if not unicodedata.category(c).startswith('C'))
+    if not isinstance(value, str):
+        value = str(value)
     value = unicodedata.normalize('NFKD', value)
-    value = value.translate({
-            ord(os.sep): '_',
-            ord(os.extsep): '_',
-            }).strip()
+    value = str(_slugify_strip_re.sub('', value).strip())
     return _slugify_hyphenate_re.sub('-', value)
 
 
@@ -751,45 +745,6 @@ message = MessageDialog()
 
 class WarningDialog(MessageDialog):
 
-    def build_dialog(self, parent, message, msg_type=Gtk.MessageType.INFO,
-            buttons=Gtk.ButtonsType.OK, secondary=None):
-        tooltips = Tooltips()
-        dialog = super().build_dialog(
-            parent, message, msg_type, buttons, secondary)
-
-        content_area = dialog.get_content_area()
-        content_parent = content_area.get_parent()
-        overlay = Gtk.Overlay()
-        content_area.reparent(overlay)
-        content_parent.add(overlay)
-
-        def fill_clipboard(*args):
-            clipboard = Gtk.Clipboard.get_default(Gdk.Display.get_default())
-            clipboard.set_text(message, -1)
-            clipboard.store()
-
-            copy_button.set_image(Gtk.Image.new_from_icon_name(
-                    'object-select-symbolic', Gtk.IconSize.BUTTON))
-            GLib.timeout_add(1.5 * 1000, reset_clipboard_icon)
-
-        def reset_clipboard_icon():
-            copy_button.set_image(Gtk.Image.new_from_icon_name(
-                    'edit-copy-symbolic', Gtk.IconSize.BUTTON))
-
-        copy_button = Gtk.Button()
-        copy_button.set_image(Gtk.Image.new_from_icon_name(
-                'edit-copy-symbolic', Gtk.IconSize.BUTTON))
-        copy_button.set_relief(Gtk.ReliefStyle.NONE)
-        copy_button.connect('clicked', fill_clipboard)
-        overlay.add_overlay(copy_button)
-        copy_button.set_halign(Gtk.Align.END)
-        copy_button.set_valign(Gtk.Align.START)
-        copy_button.set_margin_top(4)
-        copy_button.set_margin_end(4)
-        tooltips.set_tip(copy_button, _('Copy to clipboard'))
-
-        return dialog
-
     def __call__(self, message, title, buttons=Gtk.ButtonsType.OK, **kwargs):
         return super().__call__(
             title, Gtk.MessageType.WARNING, buttons, message, **kwargs)
@@ -806,16 +761,15 @@ class UserWarningDialog(WarningDialog):
             label=_('Do you want to proceed?'),
             halign=Gtk.Align.FILL, valign=Gtk.Align.END)
         dialog.vbox.pack_start(label, expand=True, fill=True, padding=0)
-        # Disable Warning Automatic By Pass
-        # self.always = Gtk.CheckButton(
-        #     label=_('Always ignore this warning.'), halign=Gtk.Align.START)
-        # dialog.vbox.pack_start(self.always, expand=True, fill=False, padding=0)
+        self.always = Gtk.CheckButton(
+            label=_('Always ignore this warning.'), halign=Gtk.Align.START)
+        dialog.vbox.pack_start(self.always, expand=True, fill=False, padding=0)
         return dialog
 
     def process_response(self, response):
         if response == Gtk.ResponseType.YES:
-            # if self.always.get_active():
-            #     return 'always'
+            if self.always.get_active():
+                return 'always'
             return 'ok'
         return 'cancel'
 
@@ -942,7 +896,6 @@ concurrency = ConcurrencyDialog()
 class ErrorDialog(UniqueDialog):
 
     def build_dialog(self, parent, title, details):
-        tooltips = Tooltips()
         dialog = Gtk.MessageDialog(
             transient_for=parent, modal=True, destroy_with_parent=True,
             message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.NONE)
@@ -975,40 +928,12 @@ class ErrorDialog(UniqueDialog):
 
             viewport.add(textview)
             scrolledwindow.add(viewport)
-            overlay = Gtk.Overlay()
-            overlay.add(scrolledwindow)
             expander = Gtk.Expander()
             expander.set_label(_("Details"))
-            expander.add(overlay)
+            expander.add(scrolledwindow)
             expander.set_resize_toplevel(True)
             dialog.vbox.pack_start(
                 expander, expand=False, fill=True, padding=0)
-
-            def fill_clipboard(*args):
-                clipboard = Gtk.Clipboard.get_default(
-                    Gdk.Display.get_default())
-                clipboard.set_text(f'{title}\n{details}', -1)
-                clipboard.store()
-
-                copy_button.set_image(Gtk.Image.new_from_icon_name(
-                        'object-select-symbolic', Gtk.IconSize.BUTTON))
-                GLib.timeout_add(1.5 * 1000, reset_clipboard_icon)
-
-            def reset_clipboard_icon():
-                copy_button.set_image(Gtk.Image.new_from_icon_name(
-                        'edit-copy-symbolic', Gtk.IconSize.BUTTON))
-
-            copy_button = Gtk.Button()
-            copy_button.set_image(Gtk.Image.new_from_icon_name(
-                    'edit-copy-symbolic', Gtk.IconSize.BUTTON))
-            copy_button.set_relief(Gtk.ReliefStyle.NONE)
-            copy_button.connect('clicked', fill_clipboard)
-            overlay.add_overlay(copy_button)
-            copy_button.set_halign(Gtk.Align.END)
-            copy_button.set_valign(Gtk.Align.START)
-            copy_button.set_margin_top(4)
-            copy_button.set_margin_end(4)
-            tooltips.set_tip(copy_button, _('Copy to clipboard'))
 
         button_roundup = Gtk.LinkButton.new_with_label(
             CONFIG['bug.url'], _("Report Bug"))
@@ -1032,7 +957,52 @@ error = ErrorDialog()
 
 
 def check_version(box, version=__version__):
-    return
+    def info_bar_response(info_bar, response, box, url):
+        if response == Gtk.ResponseType.ACCEPT:
+            webbrowser_open(url)
+        box.remove(info_bar)
+
+    class HeadRequest(urllib.request.Request):
+        def get_method(self):
+            return 'HEAD'
+
+    version = version.split('.')
+    series = '.'.join(version[:2])
+    version[2] = str(int(version[2]) + 1)
+    version = '.'.join(version)
+    filename = 'tryton-%s.tar.gz' % version
+    if hasattr(sys, 'frozen'):
+        if sys.platform == 'win32':
+            bits = platform.architecture()[0]
+            filename = 'tryton-%s-%s.exe' % (bits, version)
+        elif sys.platform == 'darwin':
+            filename = 'tryton-%s.dmg' % version
+    url = list(urllib.parse.urlparse(CONFIG['download.url']))
+    url[2] = '/%s/%s' % (series, filename)
+    url = urllib.parse.urlunparse(url)
+
+    logger.info(_("Check URL: %s"), url)
+    try:
+        context = ssl.create_default_context(cafile=rpc._CA_CERTS)
+        urllib.request.urlopen(HeadRequest(url), timeout=5, context=context)
+    except (urllib.error.HTTPError, socket.timeout):
+        return True
+    except Exception:
+        logger.error(
+            _("Unable to check for new version."), exc_info=True)
+        return True
+    else:
+        if check_version(box, version):
+            info_bar = Gtk.InfoBar()
+            info_bar.get_content_area().pack_start(
+                Gtk.Label(label=_(f"A new version ({version}) is available.")),
+                expand=True, fill=True, padding=0)
+            info_bar.set_show_close_button(True)
+            info_bar.add_button(_("Download"), Gtk.ResponseType.ACCEPT)
+            info_bar.connect('response', info_bar_response, box, url)
+            box.pack_start(info_bar, expand=True, fill=True, padding=0)
+            info_bar.show_all()
+        return False
 
 
 def open_documentation():
@@ -1398,13 +1368,11 @@ def RPCContextReload(callback=None):
         return {
             k: v for k, v in context.items()
             if k != 'locale' and not k.endswith('.rec_name')}
-    from tryton.gui.main import Main
 
     def update(context):
         rpc.context_reset()
         try:
             rpc.CONTEXT.update(clean(context()))
-            Main().set_title(context.get('status_bar', ''))
         except RPCException:
             pass
         if callback:
@@ -1412,11 +1380,9 @@ def RPCContextReload(callback=None):
     context = RPCExecute(
         'model', 'res.user', 'get_preferences', True,
         callback=update if callback else None)
-
     if not callback:
         rpc.context_reset()
         rpc.CONTEXT.update(clean(context))
-        Main().set_title(context.get('status_bar', ''))
 
 
 class Tooltips(object):
@@ -1437,28 +1403,6 @@ class Tooltips(object):
         if self._tooltips:
             self._tooltips.disable()
 
-FORMAT_ERROR = "Wrong key format [type_]style_value: "
-
-# Color values: min = 0 max = 65535
-# You need to apply the percent to get the right color
-# http://www.december.com/html/spec/colorcodes.html
-
-COLOR_RGB = {
-    'red': [65535, 0, 0],
-    'green': [0, 65535, 0],
-    'blue': [0, 0, 65535],
-    'turquoise': [16383, 57670, 53738],
-    'gray': [49151, 49151, 49151],
-    'brown': [42597, 10485, 10485],
-    'maroon': [45219, 12451, 24903],
-    'violet': [60947, 33422, 60947],
-    'purple': [41287, 8519, 61602],
-    'yellow': [65535, 65535, 0],
-    'pink': [65535, 49151, 52428],
-    'beige': [62913, 62913, 56360],
-    'white': [65535, 65535, 65535],
-    'black': [0, 0, 0]
-}
 
 COLOR_SCHEMES = {
     'red': '#cf1d1d',
@@ -1467,11 +1411,6 @@ COLOR_SCHEMES = {
     'grey': '#444444',
     'black': '#000000',
     'darkcyan': '#305755',
-}
-
-COLORS = {
-    'invalid': '#ff6969',
-    'required': '#d2d2ff',
 }
 
 

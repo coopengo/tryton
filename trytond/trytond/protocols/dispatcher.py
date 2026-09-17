@@ -3,6 +3,7 @@
 # this repository contains the full copyright notices and license terms.
 import http.client
 import logging
+import os
 import pydoc
 import time
 import traceback
@@ -168,7 +169,7 @@ def reset_password(request, database_name, user, language=None):
 @app.route('/rpc/', methods=['POST'])
 def root(request, *args):
     methods = {
-        'common.server.version': lambda *a: __series__,
+        'common.server.version': version,
         'common.db.list': db_list,
         'common.authentication.services': authentication_services,
         }
@@ -179,6 +180,13 @@ def root(request, *args):
 @app.route('/<path:path>', methods=['OPTIONS'])
 def options(request, path=None):
     return Response(status=HTTPStatus.NO_CONTENT)
+
+
+def version(request):
+    suffix = ''
+    if os.environ.get('TRYTOND_DEPLOYMENT_VERSION'):
+        suffix = os.environ['TRYTOND_DEPLOYMENT_VERSION']
+    return __series__ + (f'.{suffix}' if suffix else '')
 
 
 def db_exist(request, database_name):
@@ -291,18 +299,6 @@ def _dispatch(request, pool, *args, **kwargs):
         except Exception:
             logger.debug('Could not format parameters in log', exc_info=True)
 
-    # AKE: add session to transaction context
-    token, session = None, None
-    auth = request.authorization
-    if request.session:
-        session = request.session.token
-    elif auth and auth.type == 'token':
-        token = {
-            'key': auth.get('token'),
-            'user': user,
-            'party': auth.get('party_id'),
-            }
-
     retry = config.getint('database', 'retry')
     count = 0
     transaction_extras = {}
@@ -316,11 +312,6 @@ def _dispatch(request, pool, *args, **kwargs):
             try:
                 c_args, c_kwargs, transaction.context, transaction.timestamp \
                     = rpc.convert(obj, *args, **kwargs)
-                # AKE: add session to transaction context
-                transaction.context.update({
-                        'session': session,
-                        'token': token,
-                        })
                 transaction.context['_request'] = request.context
                 meth = rpc.decorate(getattr(obj, method))
                 if (rpc.instantiate is None

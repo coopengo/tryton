@@ -69,7 +69,6 @@
             this.xfield = xfield;
             this.yfields = yfields;
             this.el = jQuery('<div/>');
-            this.el.uniqueId();
         },
         update_data: function(group) {
             var data = {};
@@ -162,27 +161,16 @@
             this.ids[key].push(id);
         },
         display: function(group) {
-            // JCA: Temporary, use setTimeout to make sure that the node id we
-            // attach to exists after all promises are resolved.
-            // Check when closing a wizard in a tab with graphs
-            // Should be fixed upstream at one point
-            let update_prm = this.update_data(group);
-            let attr_id = this.el.attr('id');
+            var update_prm = this.update_data(group);
             update_prm.done(data => {
-                let config = this._bb_config(data);
-                setTimeout(
-                _ => {
-                    if (document.getElementById(attr_id)) {
-                        bb.generate(config);
-                    }
-                }, 100);
+                bb.generate(this._bb_config(data));
             });
             return update_prm;
         },
         _bb_config: function(data) {
             var bb_config = {};
 
-            bb_config.bindto = '#' + this.el.attr('id');
+            bb_config.bindto = this.el.get(0);
             bb_config.data = data;
             bb_config.data.type = this._chart_type;
             bb_config.data.x = 'labels';

@@ -171,6 +171,7 @@ class ModelView(Model):
                     depend = depend[len('_parent_'):]
                 if dep_field := getattr(cls, depend, None):
                     if (isinstance(dep_field, fields.Function)
+                            and dep_field.getter
                             and dep_field.getter.startswith('on_change_with')):
                         meth_names.append(dep_field.getter)
 
@@ -349,25 +350,6 @@ class ModelView(Model):
         result['arch'], result['fields'] = cls.parse_view(
             tree, result['type'], view_id=view_id,
             field_children=result['field_childs'], level=level)
-
-        if result['field_childs']:
-            child_field = result['field_childs']
-            result['children_definitions'] = defs = {}
-            model = cls
-            requisite_fields = list(result['fields'].keys())
-            requisite_fields.remove(child_field)
-            while model and model.__name__ not in defs:
-                fields_to_get = [rfield for rfield in requisite_fields
-                    if hasattr(model, rfield)]
-                defs[model.__name__] = model.fields_get(fields_to_get
-                    + [child_field])
-                field = getattr(model, child_field, None)
-                if field:
-                    model = pool.get(field.model_name)
-                else:
-                    model = None
-        else:
-            result['children_definitions'] = {}
 
         if not config.getboolean(
                 'cache', 'disable_fields_view_get_cache', default=False):
@@ -626,17 +608,19 @@ class ModelView(Model):
                 # Prefetch only the first view to prevent infinite loop
                 if view_ids:
                     for view_id in view_ids:
-                        view = Relation.fields_view_get(view_id=view_id)
+                        view = Relation.fields_view_get(
+                            view_id=view_id, level=0)
                         views[str(view_id)] = view
                         break
                 else:
                     for view_type in mode:
                         views[view_type] = (
-                            Relation.fields_view_get(view_type=view_type))
+                            Relation.fields_view_get(
+                                view_type=view_type, level=0))
                         break
             return views
 
-        for attr in ('name', 'icon', 'symbol'):
+        for attr in ('name', 'icon', 'symbol', 'filters_field'):
             if not element.get(attr):
                 continue
             fields_attrs.setdefault(element.get(attr), {})
