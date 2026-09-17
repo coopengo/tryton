@@ -971,7 +971,7 @@ function hide_x2m_body(widget) {
             return this.nav.find("li[role='presentation']").length;
         },
         get_nth_page: function(page_index) {
-            return jQuery(this.panes.find("div[role='tabpanel']")[page_index]);
+            return jQuery(this.panes.children("div[role='tabpanel']")[page_index]);
         },
         set_state: function(record) {
             Sao.View.Form.Notebook._super.set_state.call(this, record);
@@ -2713,6 +2713,16 @@ function hide_x2m_body(widget) {
         cast: function(value){
             return value;
         },
+        display: function() {
+            let prm = Sao.View.Form.DateTime._super.display.call(this);
+            if (this.record) {
+                let value = this.record.field_get_client(this.field_name);
+                if (value && (value.millisecond() > 0)) {
+                    Sao.Logger.debug(`Field ${this.field_name} uses milliseconds in a datetime`);
+                }
+            }
+            return prm
+        },
     });
 
     Sao.View.Form.Time = Sao.class_(Sao.View.Form.Date, {
@@ -3081,7 +3091,12 @@ function hide_x2m_body(widget) {
             this.select.focus();
         },
         get_value: function() {
-            return JSON.parse(this.select.val());
+            let select_node = this.select[0];
+            if (select_node.value.length > 0) {
+                 return JSON.parse(select_node.value);
+             } else {
+                 return null;
+             }
         },
         get modified() {
             if (this.record && this.field) {
@@ -4055,9 +4070,35 @@ function hide_x2m_body(widget) {
             this._position = undefined;
             this._length = 0;
 
+            let disable_during = function(callback) {
+                return function(evt) {
+                    var button = jQuery(evt.target);
+                    button.prop('disabled', true);
+                    (callback(evt) || jQuery.when())
+                        .always(function() {
+                            button.prop('disabled', false);
+                        });
+                };
+            };
+
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default'
             });
+            let relation_model = Sao.common.MODELNAME.get(attributes.relation);
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el).append(jQuery('<p/>', {
+                'class': 'text-muted',
+            }).text(Sao.i18n.gettext('No %1 yet!', relation_model)));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(disable_during(() => this.new_()));
             this.menu = jQuery('<div/>', {
                 'class': this.class_ + '-menu panel-heading'
             });
@@ -4107,17 +4148,6 @@ function hide_x2m_body(widget) {
             var buttons = jQuery('<div/>', {
                 'class': 'input-group-btn'
             }).appendTo(group);
-
-            var disable_during = function(callback) {
-                return function(evt) {
-                    var button = jQuery(evt.target);
-                    button.prop('disabled', true);
-                    (callback(evt) || jQuery.when())
-                        .always(function() {
-                            button.prop('disabled', false);
-                        });
-                };
-            };
 
             this.but_switch = jQuery('<button/>', {
                 'class': 'btn btn-default btn-sm',
@@ -4254,6 +4284,7 @@ function hide_x2m_body(widget) {
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -4485,6 +4516,17 @@ function hide_x2m_body(widget) {
                         this.screen.group.length) {
                         this.screen.current_record = this.screen.group[0];
                     }
+                }
+                if (this.screen.group.length == 0) {
+                    let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                    if (access.create) {
+                        this.empty_but_new.sao_show();
+                    } else {
+                        this.empty_but_new.sao_hide();
+                    }
+                    this.empty_el.sao_show();
+                } else {
+                    this.empty_el.sao_hide();
                 }
 
                 // [Coog specific]
@@ -4885,6 +4927,21 @@ function hide_x2m_body(widget) {
             this.el = jQuery('<div/>', {
                 'class': this.class_ + ' panel panel-default'
             });
+            let relation_model = Sao.common.MODELNAME.get(attributes.relation);
+            this.empty_el = jQuery('<div/>', {
+                'class': 'empty-overlay',
+            }).appendTo(this.el).append(jQuery('<p/>', {
+                'class': 'text-muted',
+            }).text(Sao.i18n.gettext('No %1 yet!', relation_model)));
+            this.empty_but_new = jQuery('<button/>', {
+                'class': 'btn btn-default btn-lg',
+                'type': 'button',
+                'aria-label': Sao.i18n.gettext("New"),
+                'title': Sao.i18n.gettext("New"),
+                'id': 'new_',
+            }).append(Sao.common.ICONFACTORY.get_icon_img('tryton-create')
+            ).appendTo(this.empty_el);
+            this.empty_but_new.click(() => this.new_());
             this.menu = jQuery('<div/>', {
                 'class': this.class_ + '-menu panel-heading'
             });
@@ -5006,6 +5063,7 @@ function hide_x2m_body(widget) {
             if (attributes.expand_toolbar) {
                 this.menu.hide();
                 content_class += ' coog-hidden-toolbar';
+                this.empty_el.addClass('coog-hidden-toolbar')
             }
 
             this.content = jQuery('<div/>', {
@@ -5125,6 +5183,17 @@ function hide_x2m_body(widget) {
                 var new_group = record.field_get_client(this.field_name);
                 if (new_group != this.screen.group) {
                     this.screen.set_group(new_group);
+                }
+                if (this.screen.group.length == 0) {
+                    let access = Sao.common.MODELACCESS.get(this.screen.model_name);
+                    if (access.create) {
+                        this.empty_but_new.sao_show();
+                    } else {
+                        this.empty_but_new.sao_hide();
+                    }
+                    this.empty_el.sao_show();
+                } else {
+                    this.empty_el.sao_hide();
                 }
                 if (this.attributes.height !== undefined) {
                     this.content
