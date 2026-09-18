@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 def _get_pool(dbname):
     database_list = Pool.database_list()
     if dbname not in database_list:
-        db_list = Transaction().database.list()
-        if dbname not in db_list:
+        databases = dict(Transaction().database.list())
+        if dbname not in databases:
             abort(HTTPStatus.NOT_FOUND)
     pool = Pool(dbname)
     if dbname not in database_list:
@@ -189,19 +189,6 @@ def check(dbname, user, session, context=None):
         logger.debug("session valid for '%s' from '%s' on database '%s'",
             user, remote_addr, dbname)
         return user
-
-
-def check_token(dbname, token):
-    for count in range(config.getint('database', 'retry'), -1, -1):
-        with Transaction().start(dbname, 0, readonly=True):
-            pool = _get_pool(dbname)
-            Token = pool.get('api.token')
-            try:
-                return Token.check(token)
-            except backend.DatabaseOperationalError:
-                if count:
-                    continue
-                raise
 
 
 def check_timeout(dbname, user, session, context=None):

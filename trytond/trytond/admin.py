@@ -225,6 +225,8 @@ def run(options):
                     configuration = Configuration(1)
                     if init[db_name]:
                         configuration.series = __series__
+                    if options.set_production is not None:
+                        configuration.production = options.set_production
 
                     with inactive_records():
                         users = User.search([('login', '=', options.login)])
