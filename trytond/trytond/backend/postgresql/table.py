@@ -152,6 +152,22 @@ class TableHandler(TableHandlerInterface):
                 and not cls.table_exist(new_name)):
             cursor.execute(SQL('ALTER TABLE {} RENAME TO {}').format(
                     Identifier(old_name), Identifier(new_name)))
+            id_constraint = cls.convert_name(f"{old_name}_id_positive")
+            schema = transaction.database.get_table_schema(
+                transaction.connection, new_name)
+            cursor.execute(
+                'SELECT true FROM information_schema.table_constraints'
+                ' WHERE table_name = %s AND table_schema = %s'
+                ' AND constraint_name = %s',
+                (new_name, schema, id_constraint))
+            if next(cursor, None):
+                new_id_constraint = cls.convert_name(f"{new_name}_id_positive")
+                cursor.execute(
+                    SQL('ALTER TABLE {} RENAME CONSTRAINT {} TO {}')
+                    .format(
+                        Identifier(new_name),
+                        Identifier(id_constraint),
+                        Identifier(new_id_constraint)))
         # Migrate from 6.6: rename old sequence
         old_sequence = old_name + '_id_seq'
         new_sequence = new_name + '_id_seq'
@@ -554,6 +570,21 @@ class TableHandler(TableHandlerInterface):
         cursor.execute(
             SQL('ALTER TABLE {} DROP CONSTRAINT {} CASCADE').format(
                 Identifier(self.table_name), Identifier(ident)))
+        self._update_definitions(constraints=True)
+
+    def rename_constraint(self, ident, new_ident=None, old_table_name=None):
+        if new_ident is None:
+            new_ident = ident
+        ident = self.convert_name(
+            f"{(old_table_name or self.table_name)}_{ident}")
+        new_ident = self.convert_name(f"{self.table_name}_{new_ident}")
+        if ident not in self._constraints:
+            return
+        cursor = ClientCursor(Transaction().connection)
+        cursor.execute(
+            SQL('ALTER TABLE {} RENAME CONSTRAINT {} TO {}').format(
+                Identifier(self.table_name), Identifier(ident),
+                Identifier(new_ident)))
         self._update_definitions(constraints=True)
 
     def set_indexes(self, indexes, concurrently=False):

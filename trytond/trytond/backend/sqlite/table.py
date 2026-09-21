@@ -64,6 +64,8 @@ class TableHandler(TableHandlerInterface):
         cursor = Transaction().connection.cursor()
         if (cls.table_exist(old_name)
                 and not cls.table_exist(new_name)):
+            # We do not support CHECK constraints on sqlite hence there is no
+            # need to migrate the id_positive constraint
             cursor.execute('ALTER TABLE %s RENAME TO %s'
                 % (_escape_identifier(old_name), _escape_identifier(new_name)))
         # Rename history table
