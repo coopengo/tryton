@@ -157,15 +157,15 @@ class TableHandler(TableHandlerInterface):
                 transaction.connection, new_name)
             cursor.execute(
                 'SELECT true FROM information_schema.table_constraints'
-                'WHERE table_name = %s AND table_schema = %s'
+                ' WHERE table_name = %s AND table_schema = %s'
                 ' AND constraint_name = %s',
                 (new_name, schema, id_constraint))
             if next(cursor, None):
                 new_id_constraint = cls.convert_name(f"{new_name}_id_positive")
                 cursor.execute(
-                    SQL('ALTER TABLE {} ALTER CONSTRAINT {} RENAME TO {}')
+                    SQL('ALTER TABLE {} RENAME CONSTRAINT {} TO {}')
                     .format(
-                        Identifier(old_name),
+                        Identifier(new_name),
                         Identifier(id_constraint),
                         Identifier(new_id_constraint)))
         # Migrate from 6.6: rename old sequence
@@ -582,7 +582,7 @@ class TableHandler(TableHandlerInterface):
             return
         cursor = ClientCursor(Transaction().connection)
         cursor.execute(
-            SQL('ALTER TABLE {} ALTER CONSTRAINT {} RENAME TO {}').format(
+            SQL('ALTER TABLE {} RENAME CONSTRAINT {} TO {}').format(
                 Identifier(self.table_name), Identifier(ident),
                 Identifier(new_ident)))
         self._update_definitions(constraints=True)
