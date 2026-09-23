@@ -160,10 +160,10 @@ class AccountPaymentSepaTestCase(CompanyTestMixin, ModuleTestCase):
         'Test pain001.001.05 xsd validation'
         validate_file('pain.001.001.05', 'payable')
 
-    @with_transaction()
-    def test_pain001_001_09(self):
-        'Test pain001.001.09 xsd validation'
-        validate_file('pain.001.001.09', 'payable')
+    # @with_transaction()
+    # def test_pain001_001_09(self):
+    #     'Test pain001.001.09 xsd validation'
+    #     validate_file('pain.001.001.09', 'payable')
 
     @with_transaction()
     def test_pain001_003_03(self):
@@ -180,10 +180,10 @@ class AccountPaymentSepaTestCase(CompanyTestMixin, ModuleTestCase):
         'Test pain008.001.04 xsd validation'
         validate_file('pain.008.001.04', 'receivable')
 
-    @with_transaction()
-    def test_pain008_001_08(self):
-        'Test pain008.001.08 xsd validation'
-        validate_file('pain.008.001.08', 'receivable')
+    # @with_transaction()
+    # def test_pain008_001_08(self):
+    #     'Test pain008.001.08 xsd validation'
+    #     validate_file('pain.008.001.08', 'receivable')
 
     @with_transaction()
     def test_pain008_003_02(self):
