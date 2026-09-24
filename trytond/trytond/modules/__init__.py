@@ -594,12 +594,15 @@ def load_modules(
                 table_select = Table(table_name)
                 table_fields = [Column(table_select, field)
                                 for field in fields]
+                # This query identify if the instance exist in the module to merge
                 select = table_select.select(
                     *table_fields,
                     where=table_select.module.in_([old_name, new_name]),
                     group_by=table_fields,
                     having=Count(table_select.module) > 1)
                 where_clause = (table.module == Literal(old_name))
+                # If the table is ir_model_data, we need to change the fs_id
+                # to handle a better cleaning of the old module records
                 if table_name == 'ir_model_data':
                     query = table.update(
                         columns=[table.fs_id],
@@ -609,6 +612,8 @@ def load_modules(
                             table.fs_id == select.fs_id) & (
                             table.model == select.model)
                     )
+                # But if it's a view and the old module views name are similar to
+                # the new module views name, we will delete the old views name.
                 else:
                     sub_table_select = Table(table_name)
                     sub_query = sub_table_select.join(
