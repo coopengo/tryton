@@ -66,7 +66,12 @@
                 var data = {};
                 if (this.screen) {
                     data[this.screen_state] = this.screen.get_on_change_value();
+                    this.screen.save_tree_state();
                 }
+                ctx.screen_size = [
+                    window.visualViewport.width,
+                    window.visualViewport.height,
+                ];
                 return Sao.rpc({
                     'method': 'wizard.' + this.action + '.execute',
                     'params': [this.session_id, data, this.state, ctx]
