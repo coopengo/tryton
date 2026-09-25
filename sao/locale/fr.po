@@ -29,9 +29,6 @@ msgstr "Retirer des favoris"
 msgid "Favorites"
 msgstr "Favoris"
 
-msgid "Close"
-msgstr "Fermer"
-
 msgid "Action"
 msgstr "Action"
 
@@ -104,6 +101,9 @@ msgstr "Afficher/Masquer les touches d'accès"
 msgid "Help"
 msgstr "Aide"
 
+msgid "Close"
+msgstr "Fermer"
+
 msgid "Documentation..."
 msgstr "Documentation..."
 
@@ -130,6 +130,12 @@ msgstr "Base de données"
 
 msgid "User name"
 msgstr "Nom d'utilisateur"
+
+msgid "Production"
+msgstr "Production"
+
+msgid "Sandboxes"
+msgstr "Environnements de test"
 
 msgid "Login with"
 msgstr "Connexion avec"
@@ -203,9 +209,6 @@ msgstr "v"
 
 msgid "False"
 msgstr "Faux"
-
-msgid "Always ignore this warning."
-msgstr "Toujours ignorer cet avertissement."
 
 msgid "Show / Hide more"
 msgstr "Afficher / Masquer la suite"
@@ -531,6 +534,9 @@ msgstr "Effacer le champ"
 msgid "Search a record"
 msgstr "Chercher un enregistrement"
 
+msgid "No %1 yet!"
+msgstr "Vide"
+
 msgid "Add"
 msgstr "Ajouter"
 
@@ -567,6 +573,9 @@ msgstr "Choisir une langue"
 #, javascript-format
 msgid "%1%"
 msgstr "%1%"
+
+msgid "No records yet"
+msgstr "Vide"
 
 msgid "Menu"
 msgstr "Menu"
@@ -694,6 +703,9 @@ msgstr "Codage :"
 msgid "Lines to Skip:"
 msgstr "Lignes à ignorer :"
 
+msgid "Use field names"
+msgstr "Utilise les noms des champs"
+
 msgid "You must select an import file first."
 msgstr "Vous devez d'abord sélectionner un fichier d'import."
 
@@ -744,8 +756,11 @@ msgstr "Ignorer la limite de recherche"
 msgid "Use locale format"
 msgstr "Utiliser le format local"
 
-msgid "Add Field Names"
-msgstr "Ajouter les noms des champs"
+msgid "Add headers"
+msgstr "Ajouter un titre"
+
+msgid "Use field names instead of labels"
+msgstr "Utiliser les noms plutôt que les libellés"
 
 msgid "%1 (string)"
 msgstr "%1 (string)"
@@ -854,6 +869,101 @@ msgstr "Déconnexion"
 msgid "Translate view"
 msgstr "Traduire la vue"
 
+msgid "Undo"
+msgstr "Annuler"
+
+msgid "Redo"
+msgstr "Refaire"
+
+msgid "Strikethrough"
+msgstr "Barrer"
+
+msgid "Inline code"
+msgstr "Largeur fixe"
+
+msgid "Heading 1"
+msgstr "Titre 1"
+
+msgid "Heading 2"
+msgstr "Titre 2"
+
+msgid "Heading 3"
+msgstr "Titre 3"
+
+msgid "Bullet list"
+msgstr "Liste"
+
+msgid "Ordered list"
+msgstr "Liste ordonnée"
+
+msgid "Task list"
+msgstr "Tâches"
+
+msgid "Blockquote"
+msgstr "Citation"
+
+msgid "Code block"
+msgstr "Bloc de code"
+
+msgid "Insert table"
+msgstr "Ajouter une table"
+
+msgid "Horizontal rule"
+msgstr "Séparateur"
+
+msgid "Insert image"
+msgstr "Image"
+
+msgid "Link"
+msgstr "Lien"
+
+msgid "Link URL"
+msgstr "Url du lien"
+
+msgid "Toggle source"
+msgstr "Afficher la source"
+
+msgid "Add row above"
+msgstr "Ajouter une ligne au-dessus"
+
+msgid "Add row below"
+msgstr "Ajouter une ligne en dessous"
+
+msgid "Delete row"
+msgstr "Supprimer la ligne"
+
+msgid "Add column before"
+msgstr "Ajouter une colonne avant"
+
+msgid "Add column after"
+msgstr "Ajouter une colonne après"
+
+msgid "Delete column"
+msgstr "Supprimer la colonne"
+
+msgid "Delete table"
+msgstr "Supprimer la table"
+
+msgid "Unsupported image type"
+msgstr "Type d'image "
+
+msgid "Image too large (max "
+msgstr "Image trop volumineuse (max "
+
+msgid "Cannot insert image: record does not support markdown resources"
+msgstr ""
+"Impossible d'insérer l'image : le modèle ne supporte pas les ressources "
+"markdown"
+
+msgid ""
+"Cannot insert image: markdown_resources field is not loaded in this view"
+msgstr ""
+"Impossible d'insérer l'image : les ressources markdown ne sont pas chargées "
+"sur cet écran"
+
+msgid "Could not read image file"
+msgstr "Impossible de lire le fichier d'image"
+
 msgid "Close all other tabs"
 msgstr "Fermer tous les autres onglets"
 
@@ -868,6 +978,3 @@ msgstr "Dupliquer l'onglet"
 
 msgid "Open in a new browser tab"
 msgstr "Ouvrir l'onglet dans un nouvel onglet du navigateur"
-
-#~ msgid "Always ignore this warning."
-#~ msgstr "Toujours ignorer cet avertissement."
