@@ -515,7 +515,8 @@ def register_classes(with_test=False):
         trytond.tests.register()
 
     for node in create_graph(
-            get_modules(with_test=with_test), with_test=with_test):
+            get_modules(with_test=with_test),
+            with_test=config.getboolean('env', 'testing', default=with_test)):
         module_name = node.name
         if module_name in base_modules:
             MODULES.append(module_name)
