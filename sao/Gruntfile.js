@@ -67,7 +67,7 @@ module.exports = function(grunt) {
                 "--language=JavaScript --from-code=UTF-8 " +
                 "--omit-header --no-location " +
                 "-o locale/messages.pot " +
-                jsfiles.join(" "))
+                jsfiles.join(" ") + " custom.js")
         }
     },
     po2json: {
