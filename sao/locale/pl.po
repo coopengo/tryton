@@ -45,6 +45,9 @@ msgstr ""
 msgid "Favorites"
 msgstr "Ulubione"
 
+msgid "Close"
+msgstr "Zamknij"
+
 msgid "Action"
 msgstr "Akcja"
 
@@ -88,10 +91,6 @@ msgstr "Załącznik"
 msgid "Note"
 msgstr "Notatka"
 
-#, fuzzy
-msgid "Toggle Menu"
-msgstr "Przełącz dźwięk"
-
 msgid "Relate"
 msgstr "Odnośnik"
 
@@ -119,9 +118,6 @@ msgstr "Pokaż/Ukryj klawisze dostępu"
 
 msgid "Help"
 msgstr "Pomoc"
-
-msgid "Close"
-msgstr "Zamknij"
 
 msgid "Documentation..."
 msgstr "Dokumentacja..."
@@ -224,12 +220,6 @@ msgid "False"
 msgstr "Nie"
 
 msgid "Show / Hide more"
-msgstr ""
-
-msgid "Copy"
-msgstr ""
-
-msgid "Copied!"
 msgstr ""
 
 msgid "Do you want to proceed?"
@@ -716,10 +706,6 @@ msgstr "Kodowanie:"
 msgid "Lines to Skip:"
 msgstr "Wiersze do ominięcia:"
 
-#, fuzzy
-msgid "Use field names"
-msgstr "Dodaj nazwy pól"
-
 msgid "You must select an import file first."
 msgstr "Wybierz plik do zaimportowania."
 
@@ -771,12 +757,8 @@ msgstr "Ignoruj limit wyszukiwań"
 msgid "Use locale format"
 msgstr "Użyj formatu lokalnego"
 
-#, fuzzy
-msgid "Add headers"
-msgstr "Dodaj i utwórz nowy"
-
-msgid "Use field names instead of labels"
-msgstr ""
+msgid "Add Field Names"
+msgstr "Dodaj nazwy pól"
 
 msgid "%1 (string)"
 msgstr "%1 (string)"
@@ -889,298 +871,21 @@ msgstr "Wyloguj"
 msgid "Translate view"
 msgstr "Widok tłumaczenia"
 
-msgid "Benchmark: nothing to export, no sample was collected."
+msgid "Close all other tabs"
 msgstr ""
 
-msgid "Benchmark: malformed action identifier \"%1\"."
+msgid "Close tabs to the left"
 msgstr ""
 
-msgid "Benchmark: unknown action identifier \"%1\"."
-msgstr ""
-
-#, fuzzy
-msgid "unknown error"
-msgstr "Błąd połączenia"
-
-msgid "Benchmark: server entry without a method."
-msgstr ""
-
-msgid "Benchmark: action \"%1\" is not an act_window."
-msgstr ""
-
-msgid ""
-"Benchmark: action \"%1\" opens on a record (res_id); only list actions can "
-"be replayed."
-msgstr ""
-
-msgid "Benchmark: unknown plan entry type \"%1\"."
-msgstr ""
-
-msgid "no server response (request cut short or connection lost)"
-msgstr ""
-
-msgid "Benchmark: no open session. Log in before running a campaign."
-msgstr ""
-
-msgid "Benchmark: unable to check whether the bench module is activated: %1"
-msgstr ""
-
-msgid ""
-"Benchmark: the \"bench\" module is not activated on this database. Activate "
-"it to run a campaign; nothing was measured."
-msgstr ""
-
-msgid "Benchmark: unable to read the benchmark plan: %1"
-msgstr ""
-
-msgid ""
-"A \"benchmark_table\" is left over from a previous run: the server refuses "
-"to set up a new campaign while it is there, so every future campaign is "
-"blocked until it is removed."
-msgstr ""
-
-msgid ""
-"Recovery runs the teardown step of the benchmark module, which DROPS that "
-"table. It is a purely technical table created by the setup step and holds no "
-"business data, but the drop is irreversible."
-msgstr ""
-
-msgid "The server said: \"%1\"."
-msgstr ""
-
-msgid ""
-"Benchmark: the setup step needs a PostgreSQL backend and the server refused "
-"it: \"%1\". The scenarios that need the technical table cannot run on this "
-"database."
-msgstr ""
-
-msgid "Benchmark: the setup step failed: \"%1\"."
-msgstr ""
-
-msgid ""
-"Benchmark: a \"benchmark_table\" is left over from a previous run and the "
-"setup step refuses to run. The recovery DROPS that table and must be "
-"confirmed by the operator: start the campaign from the benchmark dialog to "
-"confirm it. The server said: \"%1\"."
-msgstr ""
-
-msgid "Benchmark: recovery refused, the campaign was not started."
-msgstr ""
-
-msgid "Benchmark: the recovery failed, the campaign was not started: \"%1\"."
-msgstr ""
-
-msgid ""
-"Benchmark: a campaign is already running. Only one campaign can run at a "
-"time, two of them would fight over the same benchmark table."
-msgstr ""
-
-msgid "Benchmark: no scenario selected, nothing to measure."
-msgstr ""
-
-msgid ""
-"Benchmark: this tab went to the background during the campaign. A background "
-"tab throttles the browser timers, so the measurements taken from that point "
-"on are not comparable. The fact is recorded in the campaign metadata."
-msgstr ""
-
-msgid "Benchmark"
-msgstr ""
-
-msgid ""
-"This campaign WRITES to the database you are connected to: the \"DB Read\" "
-"scenario inserts 100000 rows and \"DB Write\" inserts 200000, into a "
-"technical table created and dropped by the server. Do not run it on a "
-"production database without having measured the consequence."
-msgstr ""
-
-msgid ""
-"The server side scenarios run their own loop of 100 internal repetitions on "
-"EVERY iteration you ask for, so each of them can take several minutes per "
-"iteration. Size the number of iterations accordingly."
-msgstr ""
-
-msgid ""
-"A scenario cut short by a proxy or a WAF guard delay is recorded as a result "
-"and the campaign carries on: the client shows the usual server error dialog, "
-"and the campaign resumes once you dismiss it."
-msgstr ""
-
-msgid ""
-"Keep this tab in the foreground for the whole campaign and leave the server "
-"idle, otherwise the figures are not comparable. The message bus is stopped "
-"while the campaign runs and started again afterwards."
-msgstr ""
-
-msgid "Measured iterations per scenario"
-msgstr ""
-
-msgid "Warmup iterations (measured, marked, excluded from the aggregates)"
-msgstr ""
-
-msgid "Both regimes"
-msgstr ""
-
-msgid "cold - client caches purged before every iteration"
-msgstr ""
-
-msgid "warm - caches kept, the real user experience"
-msgstr ""
-
-msgid "Regime"
-msgstr ""
-
-msgid "Arm (recorded in every CSV row)"
-msgstr ""
-
-msgid "Notes (written to the campaign metadata)"
-msgstr ""
-
-msgid "Scenarios"
+msgid "Close tabs to the right"
 msgstr ""
 
 #, fuzzy
-msgid "Select all"
-msgstr "Wybierz"
+msgid "Duplicate the tab"
+msgstr "Duplikuj"
 
-#, fuzzy
-msgid "Select none"
-msgstr "Wybierz"
-
-msgid "Export the three CSV files"
+msgid "Open in a new browser tab"
 msgstr ""
-
-msgid "Stop"
-msgstr ""
-
-msgid "Start the campaign"
-msgstr ""
-
-msgid "The server declares no benchmark scenario."
-msgstr ""
-
-msgid "%1 - writes to the database"
-msgstr ""
-
-msgid "Reading the benchmark plan..."
-msgstr ""
-
-msgid "Benchmark: select at least one scenario."
-msgstr ""
-
-msgid "Benchmark: campaign cancelled."
-msgstr ""
-
-msgid ""
-"The selected scenarios WRITE to the database \"%1\": a technical table is "
-"created, filled with up to 100000 rows per read scenario and 200000 rows per "
-"write scenario, then dropped at the end of the campaign."
-msgstr ""
-
-msgid "Scenarios that write: %1."
-msgstr ""
-
-msgid "These benchmarks can run for several minutes each."
-msgstr ""
-
-msgid "Drop the table and try again"
-msgstr ""
-
-msgid "Stopping after the current iteration..."
-msgstr ""
-
-msgid "Starting the campaign..."
-msgstr ""
-
-msgid "Warmup iteration %1 of %2 - scenario \"%3\" (%4 regime)"
-msgstr ""
-
-msgid "Iteration %1 of %2 - scenario \"%3\" (%4 regime)"
-msgstr ""
-
-msgid "Step %1 of %2 - %3 failed so far."
-msgstr ""
-
-msgid ""
-"Benchmark: campaign stopped on request after %1 of %2 iterations. The "
-"iterations already measured are kept."
-msgstr ""
-
-msgid ""
-"Benchmark: campaign finished, %1 iterations failed and are recorded with "
-"their cause in bench_raw.csv."
-msgstr ""
-
-msgid "Benchmark: campaign finished."
-msgstr ""
-
-msgid "Run: %1"
-msgstr ""
-
-msgid "Arm: %1"
-msgstr ""
-
-msgid ""
-"Iterations measured: %1 of %2 (warmup %3, excluded from the aggregates below "
-"but kept in bench_raw.csv)"
-msgstr ""
-
-msgid "Failed iterations: %1"
-msgstr ""
-
-msgid "Message bus: %1"
-msgstr ""
-
-msgid ""
-"A residual benchmark table was dropped before the campaign, on your "
-"confirmation."
-msgstr ""
-
-msgid ""
-"The teardown step failed: \"%1\". The technical table may still be there; "
-"the next campaign will offer to drop it."
-msgstr ""
-
-msgid ""
-"This tab went to the background during the campaign: the browser throttles "
-"its timers, so the figures of that window are not comparable."
-msgstr ""
-
-msgid ""
-"No aggregate row: every measured iteration was a warmup or a failure. The "
-"raw file still holds every sample."
-msgstr ""
-
-msgid "Scenario"
-msgstr ""
-
-msgid "Kind"
-msgstr ""
-
-msgid "Phase"
-msgstr ""
-
-msgid "n"
-msgstr ""
-
-msgid "Invalid"
-msgstr ""
-
-msgid "Median (ms)"
-msgstr ""
-
-msgid "p90 (ms)"
-msgstr ""
-
-msgid "Max (ms)"
-msgstr ""
-
-msgid "Benchmark..."
-msgstr ""
-
-#, fuzzy
-#~ msgid "Duplicate the tab"
-#~ msgstr "Duplikuj"
 
 #~ msgid "Always ignore this warning."
 #~ msgstr "Zawsze ignoruj takie ostrzeżenie."
