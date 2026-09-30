@@ -82,7 +82,8 @@ class StateView(State):
             view_id = ModelData.get_id(module, fs_id)
         else:
             view_id = None
-        return Model_.fields_view_get(view_id=view_id, view_type='form')
+        with Transaction().set_context(view_tree_width=True):
+            return Model_.fields_view_get(view_id=view_id, view_type='form')
 
     def get_defaults(self, wizard, state_name, fields):
         '''
