@@ -12,9 +12,10 @@ from collections import defaultdict
 from functools import cache
 from glob import iglob
 
-from sql import Table
+from sql import Table, Literal, Column, With
 from sql.functions import CurrentTimestamp
 from sql.aggregate import Count
+from sql.operators import Concat
 
 from trytond import __series__, config, convert, tools
 from trytond.const import MODULES_GROUP
@@ -590,18 +591,42 @@ def load_modules(
             if table_name == 'ir_ui_view':
                 fields = ['model', 'name']
             if fields:
-                query = ('DELETE from %(table)s where '
-                    '(%(fields)s) in ('
-                        'SELECT %(fields)s FROM %(table)s WHERE '
-                        '"module" IN (\'%(old_name)s\', \'%(new_name)s\') '
-                        'GROUP BY %(fields)s '
-                        'HAVING COUNT("module") > 1) '
-                    'and "module" = \'%(old_name)s\';' % {
-                        'table': table_name,
-                        'old_name': old_name,
-                        'new_name': new_name,
-                        'fields': (', '.join('"' + f + '"' for f in fields))})
-                cursor.execute(query)
+                table_select = Table(table_name)
+                table_fields = [Column(table_select, field)
+                                for field in fields]
+                # This query identify if the instance exist in the module to merge
+                select = table_select.select(
+                    *table_fields,
+                    where=table_select.module.in_([old_name, new_name]),
+                    group_by=table_fields,
+                    having=Count(table_select.module) > 1)
+                where_clause = (table.module == Literal(old_name))
+                # If the table is ir_model_data, we need to change the fs_id
+                # to handle a better cleaning of the old module records
+                if table_name == 'ir_model_data':
+                    query = table.update(
+                        columns=[table.fs_id],
+                        from_=[select],
+                        values=[Concat(old_name, select.fs_id)],
+                        where=where_clause & (
+                            table.fs_id == select.fs_id) & (
+                            table.model == select.model)
+                    )
+                # But if it's a view and the old module views name are similar to
+                # the new module views name, we will delete the old views name.
+                else:
+                    sub_table_select = Table(table_name)
+                    sub_query = sub_table_select.join(
+                        select, condition=(sub_table_select.model == select.model) & (
+                            sub_table_select.name == select.name)
+                    ).select(
+                        sub_table_select.id,
+                        where=where_clause
+                    )
+                    query = table.delete(
+                        where=table.id.in_(sub_query)
+                    )
+                cursor.execute(*query)
 
             query = table.update([getattr(table, var_name)],
                     [new_name],
