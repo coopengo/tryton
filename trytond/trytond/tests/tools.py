@@ -27,7 +27,8 @@ def activate_modules(modules, *setup, cache_file_name=None):
     cache_name = cache_file_name or '-'.join(modules)
     if setup_name := '|'.join(_func_name(f) for f in setup):
         cache_name += f'--{setup_name}'
-    if restore_db_cache(cache_name):
+    # proteus initializes the pool itself
+    if restore_db_cache(cache_name, init_pool=False):
         return _get_config()
     drop_create()
 
