@@ -972,6 +972,9 @@
                 });
             this.switch_prm = this.switch_prm.then(function() {
                 return screen.search_filter();
+            }).done(() => {
+                let parent_div = screen.screen_container.alternate_viewport.parent()
+                parent_div.css('position', 'relative');
             });
 
             this.dialog.body.prepend(form);
