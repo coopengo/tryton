@@ -127,6 +127,7 @@
                     if (!result || !this.screen) {
                         this.state = this.end_state;
                         this.end();
+                        return;
                     }
                     this.state = current_state;
                     this.__processing = false;
