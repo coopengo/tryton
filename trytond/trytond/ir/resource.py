@@ -97,8 +97,12 @@ class ResourceAccessMixin(ModelStorage):
                     case ('resource', 'in', resources):
                         models = defaultdict(list)
                         for resource in resources:
-                            model, id_ = resource.split(',', 1)
-                            id_ = int(id_)
+                            if isinstance(resource, str):
+                                model, id_ = resource.split(',', 1)
+                                id_ = int(id_)
+                            else:
+                                model = resource.__name__
+                                id_ = resource.id
                             models[model].append(id_)
                         for model, ids in models.items():
                             ModelAccess.check(model, mode='read')
