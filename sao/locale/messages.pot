@@ -22,9 +22,6 @@ msgstr ""
 msgid "Remove from favorites"
 msgstr ""
 
-msgid "Close"
-msgstr ""
-
 msgid "Favorites"
 msgstr ""
 
@@ -70,6 +67,9 @@ msgstr ""
 msgid "Note"
 msgstr ""
 
+msgid "Toggle Menu"
+msgstr ""
+
 msgid "Relate"
 msgstr ""
 
@@ -97,6 +97,9 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
+msgid "Close"
+msgstr ""
+
 msgid "Documentation..."
 msgstr ""
 
@@ -122,6 +125,12 @@ msgid "Database"
 msgstr ""
 
 msgid "User name"
+msgstr ""
+
+msgid "Production"
+msgstr ""
+
+msgid "Sandboxes"
 msgstr ""
 
 msgid "Login with"
@@ -195,16 +204,13 @@ msgstr ""
 msgid "False"
 msgstr ""
 
-msgid "Always ignore this warning."
+msgid "Show / Hide more"
 msgstr ""
 
 msgid "Copy"
 msgstr ""
 
 msgid "Copied!"
-msgstr ""
-
-msgid "Show / Hide more"
 msgstr ""
 
 msgid "Do you want to proceed?"
@@ -517,6 +523,9 @@ msgstr ""
 msgid "Search a record"
 msgstr ""
 
+msgid "No %1 yet!"
+msgstr ""
+
 msgid "Add"
 msgstr ""
 
@@ -552,6 +561,9 @@ msgstr ""
 
 #, javascript-format
 msgid "%1%"
+msgstr ""
+
+msgid "No records yet"
 msgstr ""
 
 msgid "Menu"
@@ -680,6 +692,9 @@ msgstr ""
 msgid "Lines to Skip:"
 msgstr ""
 
+msgid "Use field names"
+msgstr ""
+
 msgid "You must select an import file first."
 msgstr ""
 
@@ -730,7 +745,10 @@ msgstr ""
 msgid "Use locale format"
 msgstr ""
 
-msgid "Add Field Names"
+msgid "Add headers"
+msgstr ""
+
+msgid "Use field names instead of labels"
 msgstr ""
 
 msgid "%1 (string)"
@@ -838,6 +856,97 @@ msgid "Logout"
 msgstr ""
 
 msgid "Translate view"
+msgstr ""
+
+msgid "Undo"
+msgstr ""
+
+msgid "Redo"
+msgstr ""
+
+msgid "Strikethrough"
+msgstr ""
+
+msgid "Inline code"
+msgstr ""
+
+msgid "Heading 1"
+msgstr ""
+
+msgid "Heading 2"
+msgstr ""
+
+msgid "Heading 3"
+msgstr ""
+
+msgid "Bullet list"
+msgstr ""
+
+msgid "Ordered list"
+msgstr ""
+
+msgid "Task list"
+msgstr ""
+
+msgid "Blockquote"
+msgstr ""
+
+msgid "Code block"
+msgstr ""
+
+msgid "Insert table"
+msgstr ""
+
+msgid "Horizontal rule"
+msgstr ""
+
+msgid "Insert image"
+msgstr ""
+
+msgid "Link"
+msgstr ""
+
+msgid "Link URL"
+msgstr ""
+
+msgid "Toggle source"
+msgstr ""
+
+msgid "Add row above"
+msgstr ""
+
+msgid "Add row below"
+msgstr ""
+
+msgid "Delete row"
+msgstr ""
+
+msgid "Add column before"
+msgstr ""
+
+msgid "Add column after"
+msgstr ""
+
+msgid "Delete column"
+msgstr ""
+
+msgid "Delete table"
+msgstr ""
+
+msgid "Unsupported image type"
+msgstr ""
+
+msgid "Image too large (max "
+msgstr ""
+
+msgid "Cannot insert image: record does not support markdown resources"
+msgstr ""
+
+msgid ""
+"Cannot insert image: markdown_resources field is not loaded in this view"
+msgstr ""
+
+msgid "Could not read image file"
 msgstr ""
 
 msgid "Close all other tabs"
