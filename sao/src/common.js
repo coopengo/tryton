@@ -96,13 +96,16 @@
         function getScrollableAncestors(el) {
             let ancestors = [];
             let parent = el.parentElement;
-            while (parent && parent !== document.body) {
+            while (parent && (parent !== document.body ||
+                !parent.classList.contains('modal'))) {
                 if (isScrollable(parent)) {
                     ancestors.push(parent);
                 }
                 parent = parent.parentElement;
             }
-            ancestors.push(window);
+            if (!parent.classList.contains('modal')) {
+                ancestors.push(window);
+            }
             return ancestors;
         }
 
@@ -4129,7 +4132,7 @@
             this.menu.css('display', 'block');
         },
         _hide: function() {
-            if (!this.dropdown.hasClass('open')) {
+            if (this.dropdown.hasClass('open')) {
                 this.menu.dropdown('toggle');
             }
             this.menu.css('display', 'none');
