@@ -347,7 +347,11 @@ class ModelSQL(ModelStorage):
             rec_name_field = getattr(cls, cls._rec_name, None)
             if (isinstance(rec_name_field, fields.Field)
                     and not hasattr(rec_name_field, 'set')):
-                column = Coalesce(Column(table, cls._rec_name), '')
+                # Backport of upstream 23d9c20172ad: keep in sync with
+                # Char._domain_column so the index matches the query
+                column = Column(table, cls._rec_name)
+                if not rec_name_field.required:
+                    column = Coalesce(column, '')
                 if getattr(rec_name_field, 'search_unaccented', False):
                     column = Index.Unaccent(column)
                 cls._sql_indexes.add(
