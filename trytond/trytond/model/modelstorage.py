@@ -1730,7 +1730,9 @@ class ModelStorage(Model):
                         for record in records:
                             digits_test(record, field.digits, field_name)
 
-                if hasattr(field, 'forbidden_chars'):
+                if (getattr(field, 'forbidden_chars', None)
+                        and not (isinstance(field, fields.Function)
+                            and not field.setter)):
                     for record in records:
                         value = getattr(record, field_name)
                         if value and any(
