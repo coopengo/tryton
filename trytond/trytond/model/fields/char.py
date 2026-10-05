@@ -114,7 +114,10 @@ class Char(FieldTranslate):
 
     def _domain_column(self, operator, column):
         column = super()._domain_column(operator, column)
-        column = Coalesce(column, '')
+        # Backport of upstream 23d9c20172ad: COALESCE prevents the use of
+        # plain indexes, and a required column can not be NULL
+        if not self.required:
+            column = Coalesce(column, '')
         if self.search_unaccented and operator.endswith('ilike'):
             database = Transaction().database
             column = database.unaccent(column)
