@@ -45,19 +45,12 @@ db_list = []
 if db_names:
     from trytond import backend
 
-    def initializer(name):
+    # Read with csv so database name can include special chars
+    reader = csv.reader(StringIO(db_names))
+    for name in next(reader):
         Pool(name).init()
         db_list.append(name)
         backend.Database(name).close()
-    # Read with csv so database name can include special chars
-    reader = csv.reader(StringIO(db_names))
-    threads = []
-    for name in next(reader):
-        thread = threading.Thread(target=initializer, args=(name,))
-        thread.start()
-        threads.append(thread)
-    for thread in threads:
-        thread.join()
 
 
 # JCA: if for some reason the server works properly when starting with
@@ -83,7 +76,10 @@ if db_names:
 application = app
 
 Pool.app_initialization_completed()
-assert len(threads := threading.enumerate()) == 1, f"len({threads}) != 1"
+if len(threads := threading.enumerate()) != 1:
+    raise RuntimeError(
+        f"There are {len(threads)} threads running after initializing"
+        " the Pool")
 
 
 def skip_on_gunicorn(func):
