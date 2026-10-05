@@ -174,8 +174,7 @@ class Model(
             Transaction().context.get('language', None))
         items = cls._get_names_cache.get(key)
         if items is None:
-            models = cls.search([])
-            items = ((m.name, m.string) for m in models)
+            items = cls._get_name_items()
             if classes:
                 def pool_get(model):
                     # During update existing model may not yet be in the pool
@@ -188,6 +187,10 @@ class Model(
                     if issubclass(pool_get(m), classes))
             items = cls._get_names_cache.set(key, list(items))
         return list(items)
+
+    @classmethod
+    def _get_name_items(cls):
+        return ((m.name, m.string) for m in cls.search([]))
 
     @classmethod
     @without_check_access
