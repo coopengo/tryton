@@ -86,67 +86,11 @@
     };
 
     Sao.common.scrollIntoViewIfNeeded = function(element) {
-        function isScrollable(el) {
-            let style = getComputedStyle(el);
-            return /(auto|scroll|overlay)/.test(
-                style.overflow + style.overflowY + style.overflowX
-            );
-        }
-
-        function getScrollableAncestors(el) {
-            let ancestors = [];
-            let parent = el.parentElement;
-            while (parent && parent !== document.body) {
-                if (isScrollable(parent)) {
-                    ancestors.push(parent);
-                }
-                parent = parent.parentElement;
-            }
-            ancestors.push(window);
-            return ancestors;
-        }
-
-        function scrollIntoViewWithin(el, container) {
-            let rect = el.getBoundingClientRect();
-
-            if (container === window) {
-                if (rect.top < 0 || rect.bottom > window.innerHeight) {
-                    el.scrollIntoView({
-                        block: 'center',
-                    });
-                }
-            } else {
-                let container_rect = container.getBoundingClientRect();
-                let top_ = rect.top - container_rect.top;
-                let bottom = top_ + rect.height;
-                let left = rect.left - container_rect.left;
-                let right = left + rect.width;
-
-                let target_top = container.scrollTop;
-                let target_left = container.scrollLeft;
-
-                if (top_ < 0) {
-                    target_top += top_ - container.clientHeight / 2;
-                } else if (bottom > container.clientHeight) {
-                    target_top += bottom - container.clientHeight / 2
-                }
-                if (left < 0) {
-                    target_left += left - container.clientWidth / 2;
-                } else if (right > container.clientWidth) {
-                    target_left += right - container.clientWidth / 2;
-                }
-                container.scrollTo({
-                    top: Math.max(0, target_top),
-                    left: Math.max(0, target_left),
-                });
-            }
-        }
-
         element.each(function() {
-            let ancestors = getScrollableAncestors(this);
-            for (let ancestor of ancestors) {
-                scrollIntoViewWithin(this, ancestor);
-            }
+            this.scrollIntoView({
+                block: 'nearest',
+                inline: 'nearest',
+            });
         });
     };
 
