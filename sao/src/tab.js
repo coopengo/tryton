@@ -432,7 +432,7 @@
         tab.close();
     };
 
-    Sao.Tab.create = function(attributes, skip_duplicate_check = false) {
+    Sao.Tab.create = function(attributes, skip_duplicate_check = false, new_context = true) {
         var tablist = jQuery('#tablist');
         if (attributes.context === undefined) {
             attributes.context = {};
@@ -453,14 +453,13 @@
             tab = new Sao.Tab.Board(attributes);
         }
         return tab.view_prm.then(function() {
-            Sao.Tab.add(tab);
+            Sao.Tab.add(tab, new_context);
             return tab;
         });
     };
 
-    Sao.Tab.add = function(tab) {
+    Sao.Tab.add = function(tab, new_context = true) {
         var tabs = jQuery('#tabs');
-        var tablist = jQuery('#tablist');
         var tabcontent = jQuery('#tabcontent');
         var tab_link = jQuery('<a/>', {
             'aria-controls': tab.id,
@@ -488,13 +487,20 @@
             tab.close();
         }))
         .append(tab.name_el);
-        jQuery('<li/>', {
+        let tab_label =jQuery('<li/>', {
             'role': 'presentation',
             'data-placement': 'bottom',
             id: 'nav-' + tab.id
         }).append(tab_link)
-        .appendTo(tablist)
         .data('tab', tab);
+        if (new_context) {
+            let tablist = jQuery('#tablist');
+            tab_label.appendTo(tablist);
+        } else {
+            let current_tab = jQuery('#tablist').find('li.active');
+            tab_label.insertAfter(current_tab);
+        }
+
         jQuery('<div/>', {
             role: 'tabpanel',
             'class': 'tab-pane',
@@ -757,7 +763,9 @@
                         .click(evt => {
                             evt.preventDefault();
                             this.modified_save().then(function() {
-                                var exec_action = jQuery.extend({}, action);
+                                let exec_action = jQuery.extend({
+                                    new_context: false,
+                                }, action);
                                 var record_id = null;
                                 if (screen.current_record) {
                                     record_id = screen.current_record.id;
