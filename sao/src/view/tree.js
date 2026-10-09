@@ -160,7 +160,10 @@
             Sao.View.Tree._super.init.call(this, view_id, screen, xml);
             // [Coog specific]
             //      > attribute always_expand (expand tree view)
-            this.always_expand = this.attributes.always_expand || null;
+            this.always_expand = Boolean(
+                parseInt(this.attributes.always_expand || '0', 10));
+            // ids of records collapsed by the user, never auto-expanded again
+            this.collapsed = new Set();
 
             // Table of records
             this.rows = [];
@@ -1025,7 +1028,9 @@
                 for (const record of group) {
                     records.push(record);
                     let path = root.concat([record.id]);
-                    if (Sao.common.contains(expanded, path)) {
+                    if (Sao.common.contains(expanded, path) ||
+                        (this.must_auto_expand(record) &&
+                            record.is_loaded(this.children_field))) {
                         const children = record.field_get_client(
                             this.children_field);
                         Array.prototype.push.apply(
@@ -1197,6 +1202,11 @@
                 }).map(function(row) {
                     return row.el;
                 }));
+                for (const row of this.rows) {
+                    if (row.is_expanded()) {
+                        insert_subtree(row.el, row.rows);
+                    }
+                }
                 this.update_selection(); // update after new rows has been added
                 this.update_visible();
                 if (scroll && selected && selected.length ) {
@@ -1279,6 +1289,9 @@
         },
         redraw: function(selected, expanded) {
             return redraw_async(this.rows, selected, expanded);
+        },
+        must_auto_expand: function(record) {
+            return this.always_expand && !this.collapsed.has(record.id);
         },
         switch_: function(path) {
             this.screen.row_activate();
@@ -1784,9 +1797,25 @@
         }
     });
 
+    // Children drawn while their parent row was still detached could not be
+    // inserted, so (re)place the whole expanded subtree once it is attached
+    function insert_subtree(anchor, rows) {
+        for (const row of rows) {
+            if (!row.el.parent().length) {
+                anchor.after(row.el);
+            }
+            anchor = row.el;
+            if (row.is_expanded()) {
+                anchor = insert_subtree(anchor, row.rows);
+            }
+        }
+        return anchor;
+    }
+
     function redraw_async(rows, selected, expanded) {
         var dfd= jQuery.Deferred(),
-            i = 0;
+            i = 0,
+            prms = [];
         var redraw = function() {
             for (; i < rows.length; i++) {
                 var row = rows[i];
@@ -1806,10 +1835,12 @@
                     record.load(field_name, true, false).done(redraw);
                     return;
                 } else {
-                    row.redraw(selected, expanded);
+                    // Wait for the expansion of the children so the caller
+                    // is resolved only once the whole subtree is drawn
+                    prms.push(row.redraw(selected, expanded));
                 }
             }
-            dfd.resolve();
+            jQuery.when.apply(jQuery, prms).always(() => dfd.resolve());
         };
         redraw();
         return dfd.promise();
@@ -2088,6 +2119,7 @@
 
             var row_id_path = this.get_id_path();
             this.set_selection(Sao.common.contains(selected, row_id_path));
+            let children_prm = jQuery.when();
             if (this.children_field) {
                 var depth = this.path.split('.').length;
                 var margin = 'margin-left';
@@ -2101,11 +2133,12 @@
                         this.children_field).length;
                     if (length && (
                         this.is_expanded() ||
+                        this.tree.must_auto_expand(this.record) ||
                         Sao.common.contains(expanded, row_id_path))) {
                         this.expander.css('visibility', 'visible');
                         this.tree.expanded.add(this);
-                        this.expand_children(selected, expanded);
                         this.update_expander(true);
+                        return this.expand_children(selected, expanded);
                     } else {
                         this.expander.css('visibility',
                             length ? 'visible' : 'hidden');
@@ -2113,10 +2146,11 @@
                     }
                 };
                 if (!this.record.is_loaded(this.children_field)) {
-                    this.record.load(this.children_field, true, false)
-                        .done(update_expander);
+                    children_prm = this.record.load(
+                        this.children_field, true, false)
+                        .then(update_expander);
                 } else {
-                    update_expander();
+                    children_prm = jQuery.when(update_expander());
                 }
             }
             let visual = this.record.expr_eval(this.tree.attributes.visual);
@@ -2129,6 +2163,7 @@
                 this.el.css('text-decoration', 'inherit');
             }
             apply_visual(this.el, visual);
+            return children_prm;
         },
         toggle_row: function() {
             if (this.is_expanded()) {
@@ -2145,6 +2180,7 @@
             } else {
                 this.update_expander(true);
                 this.tree.expanded.add(this);
+                this.tree.collapsed.delete(this.record.id);
                 this.expand_children();
             }
         },
@@ -2156,6 +2192,7 @@
             }
             this.update_expander(false);
             this.tree.expanded.delete(this);
+            this.tree.collapsed.add(this.record.id);
             this.collapse_children();
         },
         update_expander: function(expanded) {
@@ -2179,7 +2216,7 @@
         },
         expand_children: function(selected, expanded) {
             return this.record.load(
-            this.children_field, true, false).done(() => {
+            this.children_field, true, false).then(() => {
                 if (this.rows.length === 0) {
                     var children = this.record.field_get_client(
                         this.children_field);
@@ -2190,12 +2227,10 @@
                             this.tree, record, pos, this));
                     });
                 }
-                redraw_async(this.rows, selected, expanded).then(() => {
-                    this.el.after(this.rows.filter(function(row) {
-                        return !row.el.parent().length;
-                    }).map(function(row) {
-                        return row.el;
-                    }));
+                return redraw_async(this.rows, selected, expanded).then(() => {
+                    if (this.el.parent().length) {
+                        insert_subtree(this.el, this.rows);
+                    }
                     this.tree.update_selection();
                     this.tree.update_visible();
                 });
@@ -2362,8 +2397,8 @@
         redraw: function(selected, expanded) {
             var i, cell, widget;
 
-            Sao.View.Tree.RowEditable._super.redraw.call(this, selected,
-                    expanded);
+            var prm = Sao.View.Tree.RowEditable._super.redraw.call(
+                this, selected, expanded);
             const display_callback = widget => {
                 var record = this.record;
                 return function() {
@@ -2388,6 +2423,7 @@
                     }
                 }
             }
+            return prm;
         },
         select_column: function(index) {
             this.edited_column = index;
