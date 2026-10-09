@@ -145,6 +145,7 @@
             Sao.View.Form.Markdown._super.init.call(this, view, attributes);
             this._show_toolbar = parseInt(attributes.toolbar || '1', 10) !== 0;
             this._source_mode = false;
+            this._baseline = '';
             this._image_cache = new Map();
             this._file_input = jQuery('<input/>', {
                 'type': 'file',
@@ -434,6 +435,10 @@
                 this._mount.show();
                 this._editor.commands.setContent(
                     md, {contentType: 'markdown', emitUpdate: false});
+                if (md == this._baseline) {
+                    // Untouched source: absorb a non-idempotent re-serialization
+                    this._baseline = this._editor.getMarkdown();
+                }
                 this.send_modified();
                 this._toolbar_btns.source.removeClass('is-active');
                 this.toolbar.find('.md-btn').prop('disabled', false);
@@ -492,8 +497,13 @@
             }
             this._editor.commands.setContent(
                 value, {contentType: 'markdown', emitUpdate: false});
+            // tiptap re-serializes the stored markdown (ADF imports, API,
+            // older tiptap versions): compare user edits against that
+            // normalized form, not the raw value, or merely displaying a
+            // record would mark it as modified.
+            this._baseline = this._editor.getMarkdown();
             if (this._source_mode) {
-                this._source_textarea.val(value);
+                this._source_textarea.val(this._baseline);
             }
             if (record_changed) {
                 this.prev_record = this.record;
@@ -731,11 +741,16 @@
             return this._editor.getMarkdown();
         },
         set_value: function() {
-            this.field.set_client(this.record, this.get_value());
+            if (!this.modified) {
+                return;
+            }
+            var value = this.get_value();
+            this.field.set_client(this.record, value);
+            this._baseline = value;
         },
         get modified() {
             if (this.record && this.field) {
-                return this.field.get_client(this.record) != this.get_value();
+                return this._baseline != this.get_value();
             }
             return false;
         },
