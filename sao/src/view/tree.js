@@ -964,7 +964,7 @@
             button.el.prop('disabled', true);  // state will be reset at display
             this.screen.button(button.attributes);
         },
-        display: function(selected, expanded) {
+        display: function(selected, expanded, scroll = true) {
             if (!this.screen.group.parent && (this.screen.group.length == 0)) {
                 let access = Sao.common.MODELACCESS.get(this.screen.model_name);
                 if (access.create && (this.screen.screen_container.get_text() === "")) {
@@ -1199,6 +1199,12 @@
                 }));
                 this.update_selection(); // update after new rows has been added
                 this.update_visible();
+                if (scroll && selected && selected.length ) {
+                    let first_element = this.find_row(selected[0]);
+                    if (first_element) {
+                        Sao.common.scrollIntoViewIfNeeded(first_element.el);
+                    }
+                }
                 if ((display_size < this.group.length) &&
                     (!this.tbody.children().last().hasClass('more-row'))) {
                     var more_row = jQuery('<tr/>', {
@@ -1216,7 +1222,7 @@
                         this.tbody.find('tr.more-row').remove();
                         var height = this.table.height();
                         this.display_size += Sao.config.display_size;
-                        this.display();
+                        this.display(undefined, undefined, false);
                         height -= this.treeview.height();
                         height -= 50;
                         if (this.tfoot) {
@@ -2082,9 +2088,6 @@
 
             var row_id_path = this.get_id_path();
             this.set_selection(Sao.common.contains(selected, row_id_path));
-            if (selected.length && Sao.common.compare(selected[0], row_id_path)) {
-                Sao.common.scrollIntoViewIfNeeded(this.el);
-            }
             if (this.children_field) {
                 var depth = this.path.split('.').length;
                 var margin = 'margin-left';
