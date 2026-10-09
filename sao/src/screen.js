@@ -398,8 +398,9 @@
                 counter.css('visibility', 'visible');
             }
         },
-        do_search: function() {
-            return this.screen.search_filter(this.get_text());
+        do_search: function(grab_focus=true) {
+            return this.screen.search_filter(
+                this.get_text(), undefined, grab_focus);
         },
         show_filter: function() {
             this.but_bookmark.prop(
@@ -857,22 +858,17 @@
 
             this.context_screen = null;
             if (attributes.context_model) {
+                this.context_screen.parent_screen = this;
+                this.context_screen = new ContextScreen(
+                    this.screen_container, attributes.context_model, {
+                        'mode': ['form'],
+                        'context': attributes.context,
+                    });
                 this.context_screen = new Sao.Screen(
                         attributes.context_model, {
                             'mode': ['form'],
                             'context': attributes.context });
-                this.context_screen.parent_screen = this;
 
-                this.context_screen_prm = this.context_screen.switch_view()
-                    .then(() => {
-                        jQuery('<div/>', {
-                            'class': 'row'
-                        }).append(jQuery('<div/>', {
-                            'class': 'col-md-12'
-                        }).append(this.context_screen.screen_container.el))
-                        .prependTo(this.screen_container.filter_box);
-                        return this.context_screen.new_();
-                    });
             }
 
             if (!attributes.row_activate) {
@@ -1120,11 +1116,11 @@
             };
             return _switch();
         },
-        search_filter: function(search_string, only_ids) {
+        search_filter: function(search_string, only_ids, grab_focus=true) {
             only_ids = only_ids || false;
             if (this.context_screen && !only_ids) {
-                if (this.context_screen_prm.state() == 'pending') {
-                    return this.context_screen_prm.then(
+                if (this.context_screen.prm.state() == 'pending') {
+                    return this.context_screen.prm.then(
                         () => this.search_filter(search_string));
                 }
                 var context_record = this.context_screen.current_record;
@@ -1196,7 +1192,9 @@
                             return ids;
                         }
                         this.clear();
-                        this.screen_container.search_entry.focus();
+                        if (grab_focus) {
+                            this.screen_container.search_entry.focus();
+                        }
                         return this.load(ids).then(() => {
                             this.count_tab_domain();
                         });
@@ -2605,4 +2603,28 @@
     });
     Sao.Screen.tree_column_width = {};
     Sao.Screen.tree_column_optional = {};
+
+    class ContextScreen extends Sao.Screen {
+        constructor(container, name, attributes) {
+            super(name, attributes);
+            this.el = jQuery('<div/>', {
+                'class': 'row',
+            });
+            this.el.change(() => {
+                // Delay the search until after all the form display has been
+                // resolved
+                window.setTimeout(() => {
+                    container.do_search(false);
+                });
+            });
+            this.prm = this.switch_view().then(() => {
+                this.el.append(
+                    jQuery('<div/>', {
+                        'class': 'col-md-12'
+                    }).append(this.screen_container.el)
+                ).prependTo(container.filter_box);
+                return this.new_();
+            });
+        }
+    }
 }());
