@@ -4073,7 +4073,7 @@
             this.menu.css('display', 'block');
         },
         _hide: function() {
-            if (!this.dropdown.hasClass('open')) {
+            if (this.dropdown.hasClass('open')) {
                 this.menu.dropdown('toggle');
             }
             this.menu.css('display', 'none');
