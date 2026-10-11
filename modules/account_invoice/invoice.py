@@ -3219,6 +3219,10 @@ class InvoiceLineTax(ModelSQL):
         # Migration from 7.0: rename to standard name
         backend.TableHandler.table_rename(
             'account_invoice_line_account_tax', cls._table)
+        table = cls.__table_handler__(module)
+        table.rename_constraint(
+            'line_tax_unique',
+            old_table_name='account_invoice_line_account_tax')
         super().__register__(module)
 
 
