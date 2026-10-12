@@ -563,11 +563,14 @@ class ViewTreeWidth(
 
     @classmethod
     def get_width(cls, model, width):
-        for screen_width in WIDTH_BREAKPOINTS:
-            if width >= screen_width:
-                break
-        else:
+        if width is None:
             screen_width = None
+        else:
+            for screen_width in WIDTH_BREAKPOINTS:
+                if width >= screen_width:
+                    break
+            else:
+                screen_width = None
 
         user = Transaction().user
         records = cls.search([

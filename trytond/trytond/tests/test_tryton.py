@@ -146,7 +146,7 @@ def clear_db_cache(cache_path):
         os.rmdir(cache_path)
 
 
-def restore_db_cache(name):
+def restore_db_cache(name, init_pool=True):
     result = False
     if DB_CACHE:
         cache_file = _db_cache_file(DB_CACHE, name)
@@ -157,7 +157,7 @@ def restore_db_cache(name):
         elif backend.name == 'postgresql':
             result = _pg_restore(cache_file)
             backend.Database._extensions.clear()
-    if result:
+    if result and init_pool:
         Pool(DB_NAME).init()
     return result
 
@@ -284,10 +284,18 @@ def _pg_dump(cache_file):
             return False
         # Ensure any connection is left open
         backend.Database(DB_NAME).close()
-        with Transaction().start(
-                None, 0, close=True, autocommit=True) as transaction:
-            transaction.database.create(
-                transaction.connection, cache_name, DB_NAME)
+        from psycopg.errors import DuplicateDatabase, UniqueViolation
+        try:
+            with Transaction().start(
+                    None, 0, close=True, autocommit=True) as transaction:
+                transaction.database.create(
+                    transaction.connection, cache_name, DB_NAME)
+        except (DuplicateDatabase, UniqueViolation):
+            # Another process created the same cache concurrently
+            # (db_exist is not atomic with CREATE DATABASE) so its
+            # template is as good as ours
+            backend.Database._list_cache.clear()
+            return False
         return True
 
     def dump_on_file():
