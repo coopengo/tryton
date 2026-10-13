@@ -440,6 +440,16 @@ channels if the back-end supports them.
 
 Default: ``300``
 
+.. _config-cache.pool_refresh_callback:
+
+pool_refresh_callback
+~~~~~~~~~~~~~~~~~~~~~
+
+The fully qualified name of a function that will be called when the pool is
+refreshed through a bus notification. If left empty no function is called.
+
+Default: ``''``
+
 .. _config-cache.select_timeout:
 
 select_timeout

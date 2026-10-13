@@ -1,12 +1,15 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 import copy
+import csv
 import datetime as dt
 import json
 import logging
+import os
 import selectors
 import threading
 from collections import OrderedDict, defaultdict
+from io import StringIO
 from types import MappingProxyType
 from uuid import uuid4
 from weakref import WeakKeyDictionary
@@ -471,6 +474,13 @@ class MemoryCache(BaseCache):
                         if remote_id != process_id:
                             Pool.refresh(dbname, _get_modules(cursor),
                                 force=True)
+                            if (init_callback := config.get(
+                                        'cache', 'pool_refresh_callback')):
+                                db_names = set(
+                                    csv.reader(StringIO(os.environ.get(
+                                                'TRYTOND_DATABASE_NAMES'))))
+                                if dbname in db_names:
+                                    resolve(init_callback)(dbname)
                     elif isinstance(payload, str) and payload in callbacks:
                         callbacks[payload](pool)
                     elif payload:
