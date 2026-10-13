@@ -5,7 +5,6 @@
 import glob
 import logging
 import os
-import threading
 
 import trytond.commandline as commandline
 import trytond.config as config
@@ -33,13 +32,8 @@ def main():
         if (os.environ.get('WERKZEUG_RUN_MAIN') == 'true'
                 or not options.dev or options.coroutine):
             Pool.start()
-            threads = []
             for name in options.database_names:
-                thread = threading.Thread(target=lambda: Pool(name).init())
-                thread.start()
-                threads.append(thread)
-            for thread in threads:
-                thread.join()
+                Pool(name).init()
         hostname, port = config.split_netloc(config.get('web', 'listen'))
 
         # JCA: Load static files in werkzeug
