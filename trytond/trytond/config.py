@@ -79,6 +79,7 @@ class TrytonConfigParser(configparser.ConfigParser):
             str(2 * 1024 * 1024 * 1024))
         self.set('request', 'timeout', str(60))
         self.add_section('cache')
+        self.set('cache', 'pool_refresh_callback', '')
         self.set('cache', 'transaction', '10')
         self.set('cache', 'model', '200')
         self.set('cache', 'record', '2000')
