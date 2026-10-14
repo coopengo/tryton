@@ -118,7 +118,7 @@
                 }
                 return name_prm.then(function(name) {
                     params.name = name;
-                    return Sao.Tab.create(params);
+                    return Sao.Tab.create(params, false, action.new_context);
                 });
             case 'ir.action.wizard':
                 params.action = action.wiz_name;
