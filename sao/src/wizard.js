@@ -309,6 +309,7 @@
                     }
                 }
             });
+            this.dialog.data('sao:object', this);
             dialog.body.append(this.widget).append(this.info_bar.el);
         },
         clean: function() {
@@ -346,25 +347,28 @@
         },
         destroy: function(action) {
             Sao.Wizard.Dialog._super.destroy.call(this, action);
-            let modal_dialog_elem = this.dialog[0];
             let is_menu = false;
-            // Don't use an arrow function as "this" will point to each element
-            // found by jQuery
-            let dialog = jQuery('.wizard-dialog').filter(function(idx) {
-                return this !== modal_dialog_elem;
-            }).filter(':visible')[0];
+            let dialog = jQuery('.wizard-dialog,.window-form').filter(':visible').last();
             let screen;
-            if (!dialog) {
+            let from_jquery;
+            if (!dialog.length) {
                 dialog = Sao.Tab.tabs.get_current();
+                from_jquery = false;
+            } else {
+                from_jquery = true;
             }
-            if (!dialog ||
+            if (!dialog.length ||
                 !this.model ||
                 (Sao.main_menu_screen &&
                 (Sao.main_menu_screen.model_name == this.model))) {
                 is_menu = true;
                 screen = Sao.main_menu_screen;
             } else {
-                screen = dialog.screen;
+                if (from_jquery) {
+                    screen = dialog.data('sao:object').screen;
+                } else {
+                    screen = dialog.screen;
+                }
             }
             let destroy_prm = jQuery.Deferred();
             const destroy = () => {

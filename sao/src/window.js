@@ -184,6 +184,7 @@
                     this.response('RESPONSE_CANCEL');
                 }
             });
+            this.el.data('sao:object', this);
 
             var readonly = this.screen.group.readonly;
 
