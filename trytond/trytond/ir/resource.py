@@ -113,10 +113,12 @@ class ResourceAccessMixin(ModelStorage):
                             return True
             return False
 
-        user_groups = {g.id for g in User(Transaction().user).groups}
+        transaction = Transaction()
+        if not transaction.user or not transaction.check_access:
+            return
+        user_groups = {g.id for g in User(transaction.user).groups}
         admin_group = ModelData.get_id('res', 'group_admin')
-        if (Transaction().check_access
-                and admin_group not in user_groups
+        if (admin_group not in user_groups
                 and not check_ressource_in_domain(domain)):
             raise AccessError(gettext(
                     'ir.msg_access_resource_search_error',
