@@ -1589,3 +1589,27 @@ div.ProseMirror > p:last-child {
     cursor: pointer;
     max-width: 320px;
 }
+
+// Billboard chart grid: a white outline separates adjacent bars, since
+// bar.padding widens the group of bars beyond its category
+.form-billboard-grid .bb-chart-bar .bb-bar {
+    stroke: #fff;
+    stroke-width: 4px;
+}
+
+.form-billboard-grid .form-billboard-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.form-billboard-grid .form-billboard-title {
+    font-size: 14px;
+    text-align: center;
+}
+
+.form-billboard-grid .form-billboard-chart {
+    flex: 1 1 auto;
+    min-height: 0;
+}
