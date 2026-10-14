@@ -107,17 +107,30 @@
                 if (!chart.data) {
                     continue;
                 }
-                let node = jQuery('<div/>').css({
+                let cell = jQuery('<div/>', {
+                    'class': 'form-billboard-cell',
+                }).css({
                     'height': (this.attributes.height || 320) + 'px',
-                    'min-width': 0,
-                    'overflow': 'hidden',
                 }).appendTo(grid);
-                node.uniqueId();
                 chart = structuredClone(chart);
+                // billboard lays a right legend from the top of the chart,
+                // under its title: the title is drawn above the chart instead.
+                if (chart.title && chart.title.text) {
+                    jQuery('<div/>', {
+                        'class': 'form-billboard-title',
+                        'text': chart.title.text,
+                    }).appendTo(cell);
+                    delete chart.title;
+                }
+                let node = jQuery('<div/>', {
+                    'class': 'form-billboard-chart',
+                }).appendTo(cell);
+                node.uniqueId();
                 if (['pie', 'donut'].includes(chart.data.type)) {
                     this._set_pie_mode(chart);
                 }
                 this._set_formats(chart);
+                this._set_legend_format(chart);
                 this._focus_on_hover(chart);
                 this._set_action(chart);
                 chart.bindto = `#${node.attr('id')}`;
@@ -178,6 +191,22 @@
             if (labels && (labels.format == 'short')) {
                 labels.format = short;
             }
+        },
+        // billboard gives the legend all the width its labels need, down to
+        // a chart squeezed under it: long labels are cut, the tooltip keeps
+        // them whole.
+        _set_legend_format: function(value) {
+            if (value.legend && value.legend.format) {
+                return;
+            }
+            const max_length = 30;
+            value.legend = Object.assign({}, value.legend, {
+                format: (name) => {
+                    name = String(name);
+                    return (name.length > max_length) ?
+                        name.slice(0, max_length - 1) + '…' : name;
+                },
+            });
         },
         // Hovering a bar or a slice focuses its series, legend included, and
         // the tooltip lists that series only. A line keeps its grouped one.
