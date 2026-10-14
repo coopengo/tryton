@@ -2260,6 +2260,9 @@
             if (attributes.confirm) {
                 prm = Sao.common.sur.run(attributes.confirm);
             }
+            if (record) {
+                this.current_record = record;
+            }
             return prm.then(() => {
                 var record = this.current_record;
                 if (attributes.type === 'instance') {
