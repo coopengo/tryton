@@ -55,27 +55,7 @@
             }
 
             let value = this.field.get_client(this.record) || {};
-            if (value.charts) {
-                this._display_charts(value.charts);
-                return prm;
-            }
-            if (!value.data) {
-                return prm;
-            }
-            if (['pie', 'donut'].includes(value.data.type)) {
-                this._set_pie_mode(value);
-            }
-            this._set_formats(value);
-            Object.assign(value, {
-                bindto: `#${this.el.attr('id')}`,
-            });
-            if (value.data && Object.keys(value.data).length != 0) {
-                this._set_action(value);
-            }
-            let bb_node = document.getElementById(this.el.attr('id'));
-            if (bb_node && Object.keys(value).length != 0) {
-                bb.generate(value);
-            }
+            this._display_charts(value.charts || []);
             return prm;
         },
         // x-sao.ids maps each series to one id list per x index; a pie has a
@@ -99,8 +79,8 @@
                 }, ctx, false);
             };
         },
-        // A {"charts": [...]} value is drawn as a grid of charts, each one
-        // `height` pixels high.
+        // The value is always {"charts": [...]}, drawn as a grid of charts,
+        // each one `height` pixels high.
         _display_charts: function(charts) {
             if (this._resize_observer) {
                 this._resize_observer.disconnect();
