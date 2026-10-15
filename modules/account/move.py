@@ -370,7 +370,8 @@ class Move(DescriptionOriginMixin, ModelSQL, ModelView):
                 cursor.execute(*line.update(
                         [line.state],
                         ['valid'],
-                        where=line.move.in_(valid_move_query)))
+                        where=line.move.in_(valid_move_query)
+                        & (line.state != 'valid')))
 
                 draft_move_query = line.select(
                     line.move,
@@ -382,7 +383,8 @@ class Move(DescriptionOriginMixin, ModelSQL, ModelView):
                 cursor.execute(*line.update(
                         [line.state],
                         ['draft'],
-                        where=line.move.in_(draft_move_query)))
+                        where=line.move.in_(draft_move_query)
+                        & (line.state != 'draft')))
 
         Transaction().counter += 1
         for cache in Transaction().cache.values():
