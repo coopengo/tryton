@@ -1347,7 +1347,9 @@
                 if (!this.get_loaded([fname])) {
                     continue;
                 }
-                if (field.description.readonly) {
+                if (field.description.readonly &&
+                    !((field instanceof Sao.field.One2Many) ||
+                        (field instanceof Sao.field.Many2Many))) {
                     continue;
                 }
                 if ([this.group.exclude_field, this.group.parent_name].includes(fname)) {
