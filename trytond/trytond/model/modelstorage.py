@@ -94,6 +94,10 @@ class _UnsavedRecordError(ValueError):
         self.record = record
 
 
+class BinaryScanError(ValidationError):
+    pass
+
+
 def is_leaf(expression):
     return (isinstance(expression, (list, tuple))
         and len(expression) > 2
