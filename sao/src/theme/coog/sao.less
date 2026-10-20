@@ -41,8 +41,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // coog-custom-infinite-list: Disable the max height on a list / list-form
-// coog-custom-highlight-card: On a boolean of a list-form, highlight the card
-//      (background + accent bar) when it is checked
+// coog-custom-highlight-card: On a boolean of a list-form or form, highlight
+//      the card or form (background + accent bar) when it is checked
 // coog-custom-highlight: Highlight a markdown field the same way
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -556,6 +556,15 @@ ul.list-group.list-form {
             background-color:   @color-lighter-yellow;
         }
     }
+}
+
+// Form mode: the innermost form holding the checked box, so a parent form
+// embedding it is left alone (list-form cards have their own rule above)
+div.form:not(li.list-form-item > div.form):has(
+        .coog-custom-highlight-card input:checked):not(:has(
+        div.form .coog-custom-highlight-card input:checked)) {
+    background-color:       @color-lightest-yellow;
+    box-shadow:             inset 4px 0 0 @color-amber;
 }
 
 // Make room for box-shadows
