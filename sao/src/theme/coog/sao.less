@@ -14,6 +14,8 @@
 @color-amber:           rgb(245, 158, 11);  // #f59e0b
 @color-lightest-yellow: rgb(255, 251, 221); // #fffbdd
 @color-lighter-yellow:  rgb(255, 244, 184); // #fff4b8
+@color-markdown-readonly: #d4e4f14f;
+@color-highlight-readonly: rgba(0, 0, 0, 0.05);
 
 @coog-background:       @color-white;
 
@@ -41,13 +43,75 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // coog-custom-infinite-list: Disable the max height on a list / list-form
-// coog-custom-highlight-card: On a boolean of a list-form or form, highlight
-//      the card or form (background + accent bar) when it is checked
-// coog-custom-highlight: Highlight a markdown field the same way
+// coog-custom-highlight: Yellow background + amber accent bar
+//      - on a boolean: highlights its list-form card, or its form in form
+//        mode, while it is checked
+//      - on a markdown field: highlights the field while it has content
 //
 ///////////////////////////////////////////////////////////////////////////////
 // Tooling
 ///////////////////////////////////////////////////////////////////////////////
+
+// coog-custom-highlight: yellow background + amber accent bar
+.coog-highlight-mixin() {
+    background-color:       @color-lightest-yellow;
+    box-shadow:             inset 4px 0 0 @color-amber;
+}
+
+// Highlighted markdown panel: toolbar in the highlight color (kept opaque: it
+// is sticky and the text scrolls under it), and no white flash on the
+// focused editor
+.coog-highlight-markdown-mixin() {
+    > div.panel-heading,
+    .md-toolbar {
+        background-color:   @color-lightest-yellow;
+    }
+
+    .tiptap.ProseMirror-focused {
+        background-color:   transparent;
+    }
+}
+
+// Highlighted card or form
+.coog-highlight-container-mixin() {
+    .coog-highlight-mixin();
+
+    // Expandable groups lose their frame: their content sits on the highlight
+    div.form-group-expandable {
+        background-color:   transparent;
+        border-color:       transparent;
+        box-shadow:         none;
+
+        > div.panel-heading {
+            background-color:   transparent;
+        }
+    }
+
+    // Editable markdown sits on the highlight: only a readonly one keeps its
+    // tint, which would otherwise read as locked
+    div.form-markdown.panel {
+        background-color:   transparent;
+        .coog-highlight-markdown-mixin();
+
+        &:has(> div.panel-body > div.markdown-editor
+                > div.tiptap[contenteditable="false"]) {
+            background-color:   @color-markdown-readonly;
+        }
+    }
+
+    // Readonly fields (see .coog-readonly-field-mixin) stay greyed, with a
+    // translucent grey so the yellow shows through. Set once on the group,
+    // its input stays transparent so the tint does not stack
+    div.readonly > div.input-group,
+    div.readonly select.form-control:disabled,
+    div.readonly textarea.form-control {
+        background-color:   @color-highlight-readonly;
+    }
+
+    div.readonly > div.input-group > input {
+        background-color:   transparent;
+    }
+}
 
 // header colors for groups
 .coog-group-header-colors {
@@ -547,13 +611,17 @@ ul.list-group.list-form {
         background-color:       rgba(@color-lightest-blue, 0.6);
     }
 
-    > li.list-group-item:has(.coog-custom-highlight-card input:checked) {
-        background-color:       @color-lightest-yellow;
-        box-shadow:             inset 4px 0 0 @color-amber;
+    > li.list-group-item:has(div.form-boolean.coog-custom-highlight input:checked) {
+        .coog-highlight-container-mixin();
 
         // A deeper shade keeps the selected card distinguishable
         &.list-group-item-selected {
             background-color:   @color-lighter-yellow;
+
+            div.form-markdown.panel > div.panel-heading,
+            div.form-markdown.panel .md-toolbar {
+                background-color:   @color-lighter-yellow;
+            }
         }
     }
 }
@@ -561,10 +629,9 @@ ul.list-group.list-form {
 // Form mode: the innermost form holding the checked box, so a parent form
 // embedding it is left alone (list-form cards have their own rule above)
 div.form:not(li.list-form-item > div.form):has(
-        .coog-custom-highlight-card input:checked):not(:has(
-        div.form .coog-custom-highlight-card input:checked)) {
-    background-color:       @color-lightest-yellow;
-    box-shadow:             inset 4px 0 0 @color-amber;
+        div.form-boolean.coog-custom-highlight input:checked):not(:has(
+        div.form div.form-boolean.coog-custom-highlight input:checked)) {
+    .coog-highlight-container-mixin();
 }
 
 // Make room for box-shadows
@@ -1421,20 +1488,23 @@ div.panel-body:has( > .markdown-source ) {
 }
 
 div.form-markdown.panel:has(> div.panel-body > div.markdown-editor > div.tiptap[contenteditable="false"]) {
-    background-color: #d4e4f14f;
+    background-color: @color-markdown-readonly;
 }
 
 .form-markdown .markdown-editor .tiptap[contenteditable="false"] {
     user-select: text
 }
 
-// On the body, so it wins over the readonly panel background
 // Only when there is content: an empty editor holds a lone paragraph with its
 // trailing break, and must stay as neutral as any empty markdown field
-.form-markdown.coog-custom-highlight > .panel-body:not(:has(
+div.form-markdown.coog-custom-highlight:not(:has(> div.panel-body
         .tiptap > p:only-child > br.ProseMirror-trailingBreak:only-child)) {
-    background-color:   @color-lightest-yellow;
-    box-shadow:         inset 4px 0 0 @color-amber;
+    .coog-highlight-markdown-mixin();
+
+    // On the body, so it wins over the readonly panel background
+    > div.panel-body {
+        .coog-highlight-mixin();
+    }
 }
 
 .form-markdown .tiptap table {
