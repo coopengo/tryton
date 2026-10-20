@@ -13,7 +13,8 @@ import uuid
 import trytond.config as config
 from trytond import backend
 from trytond.protocols.jsonrpc import JSONDecoder, JSONEncoder
-from trytond.protocols.wrappers import HTTPStatus, Response, abort, exceptions
+from trytond.protocols.wrappers import (
+    HTTPStatus, Response, abort, allow_credentials, exceptions)
 from trytond.tools import resolve
 from trytond.transaction import Transaction
 from trytond.wsgi import app
@@ -219,6 +220,7 @@ else:
 
 
 @app.route('/<string:database_name>/bus', methods=['POST'])
+@allow_credentials
 @app.session_valid
 def subscribe(request, database_name):
     if not config.getboolean('bus', 'allow_subscribe'):
