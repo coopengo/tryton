@@ -14,7 +14,6 @@
 @color-amber:           rgb(245, 158, 11);  // #f59e0b
 @color-lightest-yellow: rgb(255, 251, 221); // #fffbdd
 @color-lighter-yellow:  rgb(255, 244, 184); // #fff4b8
-@color-markdown-readonly: #d4e4f14f;
 @color-highlight-readonly: rgba(0, 0, 0, 0.05);
 
 @coog-background:       @color-white;
@@ -87,29 +86,36 @@
         }
     }
 
-    // Editable markdown sits on the highlight: only a readonly one keeps its
-    // tint, which would otherwise read as locked
+    // Editable markdown sits on the highlight: only a readonly one is greyed,
+    // like the readonly fields below
     div.form-markdown.panel {
         background-color:   transparent;
         .coog-highlight-markdown-mixin();
 
         &:has(> div.panel-body > div.markdown-editor
                 > div.tiptap[contenteditable="false"]) {
-            background-color:   @color-markdown-readonly;
+            background-color:   @color-highlight-readonly;
         }
     }
 
-    // Readonly fields (see .coog-readonly-field-mixin) stay greyed, with a
-    // translucent grey so the yellow shows through. Set once on the group,
-    // its input stays transparent so the tint does not stack
-    div.readonly > div.input-group,
-    div.readonly select.form-control:disabled,
-    div.readonly textarea.form-control {
-        background-color:   @color-highlight-readonly;
+    // Readonly fields stay greyed, with a translucent grey so the yellow shows
+    // through. Same widgets as the .coog-readonly-field-mixin rules (a boolean
+    // has none: its stretched group would draw a grey strip). Set once on the
+    // group, its input stays transparent so the tint does not stack
+    div.form-many2one, div.form-selection, div.form-date, div.form-datetime,
+    div.form-char, div.form-float, div.form-integer {
+        &.readonly > div.input-group,
+        &.readonly select.form-control:disabled {
+            background-color:   @color-highlight-readonly;
+        }
+
+        &.readonly > div.input-group > input {
+            background-color:   transparent;
+        }
     }
 
-    div.readonly > div.input-group > input {
-        background-color:   transparent;
+    div.form-text.readonly textarea.form-control {
+        background-color:   @color-highlight-readonly;
     }
 }
 
@@ -1488,7 +1494,7 @@ div.panel-body:has( > .markdown-source ) {
 }
 
 div.form-markdown.panel:has(> div.panel-body > div.markdown-editor > div.tiptap[contenteditable="false"]) {
-    background-color: @color-markdown-readonly;
+    background-color: #d4e4f14f;
 }
 
 .form-markdown .markdown-editor .tiptap[contenteditable="false"] {
