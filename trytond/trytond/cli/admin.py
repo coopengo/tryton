@@ -11,7 +11,7 @@ def main():
     commandline.set_autocomplete(parser)
     options = parser.parse_args()
     if options.indexes is None:
-        options.indexes = bool(options.update)
+        options.indexes = bool(options.update or options.check_update)
     if options.check_update and options.update:
         raise Exception\
             ("Starting update and check update together is not allowed!")
