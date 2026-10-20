@@ -147,6 +147,21 @@ class TrytondWSGI(object):
                     response = rv
             return response
 
+    def _allow_credentials(self, request):
+        "Return True if the endpoint accepts cross-origin credentials"
+        method = request.method
+        if method == 'OPTIONS':
+            # Preflight requests must be answered for the actual endpoint
+            method = request.headers.get('Access-Control-Request-Method')
+            if not method:
+                return False
+        adapter = self.url_map.bind_to_environ(request.environ)
+        try:
+            endpoint, _ = adapter.match(method=method)
+        except exceptions.HTTPException:
+            return False
+        return getattr(endpoint, 'allow_credentials', False)
+
     def make_response(self, request, data):
         for cls in self.protocols:
             for mimetype, _ in request.accept_mimetypes:
@@ -189,6 +204,7 @@ class TrytondWSGI(object):
             origin_host = (
                 urllib.parse.urlparse(origin).netloc if origin else '')
             host = request.headers.get('Host')
+            allow_credentials = False
             if origin and origin != 'null' and origin_host != host:
                 cors = filter(
                     None, config.get('web', 'cors', default='').splitlines())
@@ -199,6 +215,8 @@ class TrytondWSGI(object):
                     else:
                         logger.info('bad cors: %s unauthorized' % str(origin))
                         abort(HTTPStatus.FORBIDDEN)
+                else:
+                    allow_credentials = self._allow_credentials(request)
             if origin == 'null':
                 adapter = self.url_map.bind_to_environ(request.environ)
                 endpoint = adapter.match()[0]
@@ -215,6 +233,9 @@ class TrytondWSGI(object):
 
             if origin and isinstance(response, BaseResponse):
                 response.headers['Access-Control-Allow-Origin'] = origin
+                if allow_credentials:
+                    response.headers[
+                        'Access-Control-Allow-Credentials'] = 'true'
                 response.headers['Vary'] = 'Origin'
                 method = request.headers.get('Access-Control-Request-Method')
                 if method:
