@@ -11,6 +11,9 @@
 @color-lightest-blue:   rgb(231, 244, 252); // #E7F4FC
 @color-hint-blue:       rgb(247, 252, 255); // #F7FCFF
 @color-lightest-red:    rgb(255, 208, 205); // #ffd0cd
+@color-amber:           rgb(245, 158, 11);  // #f59e0b
+@color-lightest-yellow: rgb(255, 251, 221); // #fffbdd
+@color-lighter-yellow:  rgb(255, 244, 184); // #fff4b8
 
 @coog-background:       @color-white;
 
@@ -38,6 +41,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // coog-custom-infinite-list: Disable the max height on a list / list-form
+// coog-custom-highlight-card: On a boolean of a list-form, highlight the card
+//      (background + accent bar) when it is checked
+// coog-custom-highlight: Highlight a markdown field the same way
 //
 ///////////////////////////////////////////////////////////////////////////////
 // Tooling
@@ -539,6 +545,16 @@ ul.list-group.list-form {
         color:                  @color-black;
         // background-color:       rgba(@coog-background-color, @coog-main-opacity);
         background-color:       rgba(@color-lightest-blue, 0.6);
+    }
+
+    > li.list-group-item:has(.coog-custom-highlight-card input:checked) {
+        background-color:       @color-lightest-yellow;
+        box-shadow:             inset 4px 0 0 @color-amber;
+
+        // A deeper shade keeps the selected card distinguishable
+        &.list-group-item-selected {
+            background-color:   @color-lighter-yellow;
+        }
     }
 }
 
@@ -1401,6 +1417,15 @@ div.form-markdown.panel:has(> div.panel-body > div.markdown-editor > div.tiptap[
 
 .form-markdown .markdown-editor .tiptap[contenteditable="false"] {
     user-select: text
+}
+
+// On the body, so it wins over the readonly panel background
+// Only when there is content: an empty editor holds a lone paragraph with its
+// trailing break, and must stay as neutral as any empty markdown field
+.form-markdown.coog-custom-highlight > .panel-body:not(:has(
+        .tiptap > p:only-child > br.ProseMirror-trailingBreak:only-child)) {
+    background-color:   @color-lightest-yellow;
+    box-shadow:         inset 4px 0 0 @color-amber;
 }
 
 .form-markdown .tiptap table {
