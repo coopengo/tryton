@@ -878,6 +878,14 @@ msgstr "Refaire"
 msgid "Strikethrough"
 msgstr "Barrer"
 
+msgid "Show more (%1 line)"
+msgid_plural "Show more (%1 lines)"
+msgstr[0] "Afficher plus (%1 ligne)"
+msgstr[1] "Afficher plus (%1 lignes)"
+
+msgid "Show less"
+msgstr "Afficher moins"
+
 msgid "Inline code"
 msgstr "Largeur fixe"
 
