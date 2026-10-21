@@ -1418,8 +1418,10 @@ div.panel-body:has( > .markdown-source ) {
     background-color: #fff;
 }
 
-// Markdown fields are light cards
+// Markdown fields are light cards, editable or not: only the focused editor
+// turns white, like the toolbar shows only then
 div.form-markdown.panel {
+    background-color: @color-sky-blue;
     border: 1px solid @color-sky-border;
     border-radius: @border-radius-base;
     box-shadow: none;
@@ -1448,10 +1450,6 @@ div.form-markdown:not(:focus-within) > div.panel-heading {
     display: none !important;
 }
 
-div.form-markdown.panel:has(> div.panel-body > div.markdown-editor > div.tiptap[contenteditable="false"]) {
-    background-color: @color-sky-blue;
-}
-
 // preview_lines: the folded content fades out above the toggle button
 div.form-markdown.md-preview {
     &.md-collapsed.md-overflow > div.panel-body > div.markdown-editor {
@@ -1461,11 +1459,37 @@ div.form-markdown.md-preview {
         mask-image: linear-gradient(to bottom, #000 50%, transparent);
     }
 
+    // A white button on the left so its text stands out from the card, light
+    // blue on hover only. Every state is set: the button states of the base
+    // theme are grey
     > button.md-preview-toggle {
         display: none;
-        padding: 0px 12px 6px 12px;
+        margin: 0px auto 6px 12px;
+        padding: 2px 10px;
         color: @color-blue;
         font-size: 13px;
+        background-color: @color-white;
+        border: 1px solid @color-sky-border;
+        border-radius: @border-radius-base;
+        box-shadow: none;
+        text-decoration: none;
+
+        &:focus,
+        &:active,
+        &:active:focus {
+            color: @color-blue;
+            background-color: @color-white;
+            box-shadow: none;
+            outline: none;
+            text-decoration: none;
+        }
+
+        &:hover,
+        &:active:hover {
+            color: @color-blue;
+            background-color: @color-lightest-blue;
+            text-decoration: none;
+        }
     }
 
     &.md-overflow > button.md-preview-toggle {
