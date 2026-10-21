@@ -1441,6 +1441,13 @@ div.form-markdown.panel {
     }
 }
 
+// The toolbar of an editable markdown shows only while it holds the focus: a
+// click elsewhere hides it. !important because the widget shows its toolbar
+// with an inline display
+div.form-markdown:not(:focus-within) > div.panel-heading {
+    display: none !important;
+}
+
 div.form-markdown.panel:has(> div.panel-body > div.markdown-editor > div.tiptap[contenteditable="false"]) {
     background-color: @color-sky-blue;
 }
@@ -1551,11 +1558,9 @@ ul.list-group.list-form:has(div.form-markdown) {
         }
     }
 
-    // The toolbar of an editable item shows while it is selected and holds
-    // the focus: a click elsewhere hides it, the selection stays for the
-    // buttons of the panel. !important because the widget shows its toolbar
-    // with an inline display
-    > li.list-group-item:not(.list-group-item-selected:focus-within)
+    // On top of the focus, the toolbar of an item shows only while it is
+    // selected: the selection stays for the buttons of the panel
+    > li.list-group-item:not(.list-group-item-selected)
             div.form-markdown > div.panel-heading {
         display: none !important;
     }
