@@ -144,8 +144,7 @@
         init: function(view, attributes) {
             Sao.View.Form.Markdown._super.init.call(this, view, attributes);
             this._show_toolbar = parseInt(attributes.toolbar || '1', 10) !== 0;
-            // preview_lines="N" folds the content to its first N lines, with a
-            // button to show the rest
+            // View attributes documented on MarkdownMixin (coog_core)
             this._preview_lines = parseInt(attributes.preview_lines || '0', 10);
             this._expanded = true;
             this._source_mode = false;
@@ -170,9 +169,6 @@
                 'class': this.class_ + ' panel panel-default',
             });
             this.el.append(this._file_input);
-            // show_title="1" heads the card with the string of the field,
-            // title_field="<field>" with the value of that field for the
-            // record, after a circle with the initials of avatar_field
             this._title_field = attributes.title_field;
             this._avatar_field = attributes.avatar_field;
             if (parseInt(attributes.show_title || '0', 10) ||
@@ -833,25 +829,20 @@
             }
         },
         _display_title: function(record) {
-            // Both fields must be loaded with the view: declared in it, or
-            // added by the fields_view_get of the model
-            var get = (name) => (record && (name in record.model.fields)) ?
+            var get = (name) => record ?
                 (record.field_get_client(name) || '') : '';
             var title = get(this._title_field);
             // No title on a record being typed: nothing posted yet
             this._title.toggle(Boolean(title));
             this._title_text.text(title);
             if (this._avatar) {
-                var name = get(this._avatar_field);
-                var words = name.split(/\s+/).filter(Boolean);
-                var initials = words.length ? words[0][0] +
-                    (words.length > 1 ? words[words.length - 1][0] : '') : '';
-                // The same name always gets the same color
+                var initials = get(this._avatar_field);
+                // The same initials always get the same color
                 var hash = 0;
-                for (const c of name) {
+                for (const c of initials) {
                     hash = (hash * 31 + c.charCodeAt(0)) | 0;
                 }
-                this._avatar.text(initials.toUpperCase())
+                this._avatar.text(initials)
                     .css('background-color',
                         `hsl(${Math.abs(hash) % 360}, 45%, 50%)`)
                     .toggle(Boolean(initials));
