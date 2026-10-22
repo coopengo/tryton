@@ -1590,6 +1590,112 @@ div.ProseMirror > p:last-child {
     max-width: 320px;
 }
 
+.form-markdown .tiptap .md-mention {
+    display: inline-block;
+    padding: 0 6px;
+    border-radius: 10px;
+    background-color: @color-lightest-blue;
+    color: @color-blue;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+// Internal and external parties differ by colour and by icon, so that the
+// difference does not rest on colour alone. Not yellow nor amber, which the
+// coog-custom-highlight cards use for internal content
+@color-mention-external:          rgb(109, 40, 217); // #6d28d9
+@color-mention-external-lightest: rgb(243, 232, 255); // #f3e8ff
+
+.form-markdown .tiptap .md-mention-external {
+    background-color: @color-mention-external-lightest;
+    color: @color-mention-external;
+}
+
+.form-markdown .tiptap .md-mention-unknown {
+    background-color: @color-lightest-grey;
+    color: @color-median-grey;
+}
+
+.md-mention-internal::before,
+.md-mention-external::before {
+    margin-right: 3px;
+    font-family: 'Glyphicons Halflings';
+    font-size: 0.85em;
+    font-weight: normal;
+}
+
+.md-mention-internal::before {
+    content: "\e008";
+}
+
+.md-mention-external::before {
+    content: "\e139";
+}
+
+.md-mention-popup {
+    position: fixed;
+    z-index: 2000;
+    min-width: 200px;
+    max-width: 320px;
+    padding: 4px 0;
+    background: @color-white;
+    border: 1px solid #d0d8e4;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+}
+
+.md-mention-option {
+    padding: 4px 10px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-active,
+    &:hover {
+        background-color: @color-lightest-blue;
+        color: @color-blue;
+    }
+
+    small {
+        color: #888;
+    }
+
+    &.md-mention-internal::before {
+        color: @color-blue;
+    }
+
+    &.md-mention-external::before {
+        color: @color-mention-external;
+    }
+
+    &.md-mention-external.is-active,
+    &.md-mention-external:hover {
+        background-color: @color-mention-external-lightest;
+        color: @color-mention-external;
+    }
+}
+
+.md-mention-heading {
+    padding: 4px 10px 2px;
+    color: #888;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    .md-mention-option + & {
+        margin-top: 4px;
+        border-top: 1px solid #e5e9ef;
+    }
+}
+
+.md-mention-status {
+    padding: 4px 10px;
+    color: #888;
+}
+
 // Billboard chart grid: a white outline separates adjacent bars, since
 // bar.padding widens the group of bars beyond its category
 .form-billboard-grid .bb-chart-bar .bb-bar {

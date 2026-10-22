@@ -964,6 +964,15 @@ msgstr ""
 msgid "Could not read image file"
 msgstr "Impossible de lire le fichier d'image"
 
+msgid "Loading..."
+msgstr "Chargement..."
+
+msgid "No matching person"
+msgstr "Aucune personne ne correspond"
+
+msgid "No one can be mentioned here"
+msgstr "Personne ne peut être mentionné ici"
+
 msgid "Close all other tabs"
 msgstr "Fermer tous les autres onglets"
 
