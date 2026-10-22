@@ -48,6 +48,7 @@
     "tryton"
   ],
   "dependencies": {
+    "@floating-ui/dom": "^1.7",
     "@tiptap/core": "^3.22",
     "@tiptap/extension-code-block-lowlight": "^3.22.3",
     "@tiptap/extension-mention": "^3.22.3",
