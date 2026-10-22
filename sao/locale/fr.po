@@ -973,6 +973,12 @@ msgstr "Aucune personne ne correspond"
 msgid "No one can be mentioned here"
 msgstr "Personne ne peut être mentionné ici"
 
+msgid "Internal"
+msgstr "Interne"
+
+msgid "External"
+msgstr "Externe"
+
 msgid "Close all other tabs"
 msgstr "Fermer tous les autres onglets"
 
