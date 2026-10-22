@@ -34,6 +34,7 @@
     var MD_ALLOWED_IMAGE_MIMES = [
         'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
     var MD_RES_RE = /^md-res:([0-9a-f]{32})$/;
+    var MD_MENTION_MAX_ITEMS = 8;
 
     var _md_bytes_to_data_url = function(bytes, mime) {
         if (!bytes) { return null; }
@@ -147,6 +148,9 @@
             this._source_mode = false;
             this._baseline = '';
             this._image_cache = new Map();
+            this._mention_field = attributes.mention_field || null;
+            this._mention_names = new Map();
+            this._mention_loading = null;
             this._file_input = jQuery('<input/>', {
                 'type': 'file',
                 'accept': MD_ALLOWED_IMAGE_MIMES.join(','),
@@ -190,21 +194,34 @@
                 .on('blur', () => {
                     Sao.View.Form.Markdown._super.focus_out.call(this);
                 });
+            var extensions = [
+                Tiptap.StarterKit.configure({codeBlock: false, link: false}),
+                Tiptap.Markdown,
+                Tiptap.CodeBlockLowlight.configure({lowlight: Tiptap.lowlight}),
+                Tiptap.Link.configure({openOnClick: false}),
+                Tiptap.MarkdownTable.configure({resizable: false}),
+                Tiptap.MarkdownTableRow,
+                Tiptap.MarkdownTableCell,
+                Tiptap.MarkdownTableHeader,
+                Tiptap.MarkdownTaskList,
+                Tiptap.MarkdownTaskItem.configure({nested: true}),
+                MD_IMAGE_NODE.configure({widget: this}),
+            ];
+            if (this._mention_field) {
+                extensions.push(Tiptap.PartyMention.configure({
+                    renderHTML: (props) => this._render_mention(props),
+                    suggestion: {
+                        char: '@',
+                        findSuggestionMatch: Tiptap.findPartyMentionMatch,
+                        allow: Tiptap.allowPartyMention,
+                        items: (props) => this._mention_items(props.query),
+                        render: () => this._mention_picker(),
+                    },
+                }));
+            }
             this._editor = new Tiptap.Editor({
                 element: this._mount[0],
-                extensions: [
-                    Tiptap.StarterKit.configure({codeBlock: false, link: false}),
-                    Tiptap.Markdown,
-                    Tiptap.CodeBlockLowlight.configure({lowlight: Tiptap.lowlight}),
-                    Tiptap.Link.configure({openOnClick: false}),
-                    Tiptap.MarkdownTable.configure({resizable: false}),
-                    Tiptap.MarkdownTableRow,
-                    Tiptap.MarkdownTableCell,
-                    Tiptap.MarkdownTableHeader,
-                    Tiptap.MarkdownTaskList,
-                    Tiptap.MarkdownTaskItem.configure({nested: true}),
-                    MD_IMAGE_NODE.configure({widget: this}),
-                ],
+                extensions: extensions,
                 content: '',
                 marked: {
                     gfm: true,
@@ -219,6 +236,9 @@
                     this._update_toolbar_state();
                 },
                 onBlur: () => {
+                    if (this._close_mention_picker) {
+                        this._close_mention_picker();
+                    }
                     Sao.View.Form.Markdown._super.focus_out.call(this);
                 },
                 editorProps: {
@@ -495,6 +515,7 @@
             if (record_changed) {
                 this._image_cache.clear();
             }
+            this._update_mention_names();
             this._editor.commands.setContent(
                 value, {contentType: 'markdown', emitUpdate: false});
             // tiptap re-serializes the stored markdown (ADF imports, API,
@@ -515,7 +536,205 @@
             // Load images asynchronously; _cache_resource calls
             // _refresh_image_nodes() per image as data URLs become available.
             this._sync_image_cache();
+            this._load_mention_names();
             return prm;
+        },
+        _get_mention_group: function() {
+            if (!this.record || !this._mention_field) { return null; }
+            try {
+                return this.record.field_get_client(this._mention_field);
+            } catch (e) {
+                return null;
+            }
+        },
+        _mention_items: function(query) {
+            return Tiptap.filterParties(this._mention_parties(), query)
+                .slice(0, MD_MENTION_MAX_ITEMS);
+        },
+        _mention_parties: function() {
+            var parties = [];
+            this._mention_names.forEach((label, id) => {
+                parties.push({id: id, label: label});
+            });
+            return parties;
+        },
+        _update_mention_names: function() {
+            this._mention_names = new Map();
+            var group = this._get_mention_group();
+            if (!group) { return; }
+            for (var i = 0; i < group.length; i++) {
+                var party = group[i];
+                var name = party._values.rec_name;
+                if (party.id >= 0 && name) {
+                    this._mention_names.set(String(party.id), name);
+                }
+            }
+        },
+        _load_mention_names: function() {
+            // The parties are read with the record, as bare ids: their names
+            // are fetched in one call and kept on the records of the group,
+            // so a reloaded record shows the current names.
+            var group = this._get_mention_group();
+            this._mention_loading = null;
+            if (!group) { return jQuery.when(); }
+            var to_load = [];
+            for (var i = 0; i < group.length; i++) {
+                if (group[i].id >= 0 &&
+                        group[i]._values.rec_name === undefined) {
+                    to_load.push(group[i]);
+                }
+            }
+            if (!to_load.length) { return jQuery.when(); }
+            var ids = to_load.map((r) => r.id);
+            var prm = jQuery.when(group.model.execute(
+                'read', [ids, ['rec_name']], group.context)).then((rows) => {
+                    var by_id = {};
+                    rows.forEach((row) => { by_id[row.id] = row; });
+                    to_load.forEach((r) => {
+                        var row = by_id[r.id];
+                        r._values.rec_name = row ? row.rec_name : '';
+                    });
+                    if (group === this._get_mention_group()) {
+                        this._update_mention_names();
+                        this._refresh_mention_nodes();
+                    }
+                });
+            this._mention_loading = prm;
+            prm.always(() => {
+                if (this._mention_loading === prm) {
+                    this._mention_loading = null;
+                    if (this._refresh_mention_picker) {
+                        this._refresh_mention_picker();
+                    }
+                }
+            });
+            return prm;
+        },
+        _mention_label: function(attrs) {
+            var name = this._mention_names.get(String(attrs.id));
+            return '@' + (name || attrs.label || attrs.id);
+        },
+        _render_mention: function(props) {
+            return ['span', jQuery.extend({}, props.options.HTMLAttributes, {
+                'class': 'md-mention',
+            }), this._mention_label(props.node.attrs)];
+        },
+        _refresh_mention_nodes: function() {
+            if (!this._editor || !this._editor.view) { return; }
+            var dom = this._editor.view.dom;
+            jQuery(dom).find('span[data-type="mention"]').each((_, span) => {
+                span.textContent = this._mention_label({
+                    id: span.getAttribute('data-id'),
+                    label: span.getAttribute('data-label'),
+                });
+            });
+        },
+        _mention_picker: function() {
+            var popup = null;
+            var props = null;
+            var active = 0;
+            var close = () => {
+                if (popup) {
+                    popup.remove();
+                    popup = null;
+                }
+            };
+            this._close_mention_picker = close;
+            // The names may still be loading when the picker opens: draw it
+            // again with the full list once they are there.
+            this._refresh_mention_picker = () => {
+                if (popup && props) {
+                    props = jQuery.extend({}, props, {
+                        items: this._mention_items(props.query),
+                    });
+                    draw();
+                }
+            };
+            var choose = (index) => {
+                var party = props && props.items[index];
+                if (party) {
+                    props.command({id: party.id, label: party.label});
+                }
+            };
+            var draw = () => {
+                if (!popup) {
+                    popup = jQuery('<div class="md-mention-popup"/>')
+                        .appendTo('body');
+                }
+                popup.empty();
+                var items = props.items;
+                if (!items.length) {
+                    var status;
+                    if (this._mention_loading) {
+                        status = Sao.i18n.gettext("Loading...");
+                    } else if (this._mention_names.size) {
+                        status = Sao.i18n.gettext("No matching person");
+                    } else {
+                        status = Sao.i18n.gettext(
+                            "No one can be mentioned here");
+                    }
+                    jQuery('<div class="md-mention-status"/>').text(status)
+                        .appendTo(popup);
+                }
+                var names = this._mention_parties().map((p) => p.label);
+                items.forEach((party, index) => {
+                    var option = jQuery('<div class="md-mention-option"/>')
+                        .toggleClass('is-active', index === active)
+                        .text(party.label)
+                        .on('mousedown', (ev) => {
+                            ev.preventDefault();
+                            choose(index);
+                        })
+                        .appendTo(popup);
+                    if (names.indexOf(party.label) !==
+                            names.lastIndexOf(party.label)) {
+                        jQuery('<small/>').text(' #' + party.id)
+                            .appendTo(option);
+                    }
+                });
+                var rect = props.clientRect && props.clientRect();
+                if (rect) {
+                    popup.css({
+                        left: rect.left + 'px',
+                        top: (rect.bottom + 4) + 'px',
+                    });
+                }
+            };
+            return {
+                onStart: (start_props) => {
+                    props = start_props;
+                    active = 0;
+                    draw();
+                },
+                onUpdate: (update_props) => {
+                    if (update_props.query !== props.query) {
+                        active = 0;
+                    }
+                    props = update_props;
+                    draw();
+                },
+                onKeyDown: (key_props) => {
+                    var event = key_props.event;
+                    if (event.key === 'Escape') {
+                        close();
+                        return true;
+                    }
+                    if (!props || !props.items.length) { return false; }
+                    var count = props.items.length;
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        active = (active +
+                            (event.key === 'ArrowDown' ? 1 : -1) + count) % count;
+                        draw();
+                        return true;
+                    }
+                    if (event.key === 'Enter') {
+                        choose(active);
+                        return true;
+                    }
+                    return false;
+                },
+                onExit: close,
+            };
         },
         _get_markdown_resources_group: function() {
             if (!this.record) { return null; }

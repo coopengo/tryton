@@ -1590,6 +1590,53 @@ div.ProseMirror > p:last-child {
     max-width: 320px;
 }
 
+.form-markdown .tiptap .md-mention {
+    display: inline-block;
+    padding: 0 6px;
+    border-radius: 10px;
+    background-color: @color-lightest-blue;
+    color: @color-blue;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.md-mention-popup {
+    position: fixed;
+    z-index: 2000;
+    min-width: 200px;
+    max-width: 320px;
+    padding: 4px 0;
+    background: @color-white;
+    border: 1px solid #d0d8e4;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+}
+
+.md-mention-option {
+    padding: 4px 10px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-active,
+    &:hover {
+        background-color: @color-lightest-blue;
+        color: @color-blue;
+    }
+
+    small {
+        color: #888;
+    }
+}
+
+.md-mention-status {
+    padding: 4px 10px;
+    color: #888;
+}
+
 // Billboard chart grid: a white outline separates adjacent bars, since
 // bar.padding widens the group of bars beyond its category
 .form-billboard-grid .bb-chart-bar .bb-bar {
