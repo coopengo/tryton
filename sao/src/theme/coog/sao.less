@@ -10,7 +10,14 @@
 @color-lighter-blue:    rgb(162, 218, 244); // #a2daf4
 @color-lightest-blue:   rgb(231, 244, 252); // #E7F4FC
 @color-hint-blue:       rgb(247, 252, 255); // #F7FCFF
+@color-sky-blue:        rgb(240, 249, 255); // #F0F9FF
+@color-sky-border:      rgb(186, 230, 253); // #BAE6FD
 @color-lightest-red:    rgb(255, 208, 205); // #ffd0cd
+@color-amber-dark:      rgb(180, 83, 9);    // #b45309
+@color-amber-border:    rgb(253, 230, 138); // #fde68a
+@color-lightest-yellow: rgb(255, 251, 221); // #fffbdd
+@color-lighter-yellow:  rgb(255, 244, 184); // #fff4b8
+@color-highlight-readonly: rgba(0, 0, 0, 0.05);
 
 @coog-background:       @color-white;
 
@@ -38,10 +45,81 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // coog-custom-infinite-list: Disable the max height on a list / list-form
+// coog-custom-highlight: the yellow and amber colors of the cards instead of
+//      the blue ones
+//      - on a boolean: highlights its list-form card, or its form in form
+//        mode, while it is checked
+//      - on a markdown field: highlights the field while it has content
 //
 ///////////////////////////////////////////////////////////////////////////////
 // Tooling
 ///////////////////////////////////////////////////////////////////////////////
+
+// coog-custom-highlight: a markdown card in yellow and amber. The toolbar is
+// kept opaque (it is sticky and the text scrolls under it). The focused
+// editor turns white like any markdown field: the text being written stands
+// out from the highlight
+.coog-highlight-markdown-mixin() {
+    border-color:           @color-amber-border;
+
+    > div.md-title {
+        color:              @color-amber-dark;
+        background-color:   @color-lightest-yellow;
+    }
+
+    > div.panel-heading {
+        background-color:   @color-lightest-yellow;
+        border-bottom-color: @color-amber-border;
+
+        > div.md-toolbar {
+            background:     @color-lightest-yellow;
+        }
+    }
+
+    > button.md-preview-toggle {
+        color:              @color-amber-dark;
+    }
+}
+
+// coog-custom-highlight: a highlighted list-form card or form
+.coog-highlight-container-mixin() {
+    background-color:       @color-lightest-yellow;
+
+    // Expandable groups lose their frame: their content sits on the highlight
+    div.form-group-expandable {
+        background-color:   transparent;
+        border-color:       transparent;
+        box-shadow:         none;
+
+        > div.panel-heading {
+            background-color:   transparent;
+        }
+    }
+
+    div.form-markdown.panel {
+        .coog-highlight-markdown-mixin();
+    }
+
+    // Readonly fields stay greyed, with a translucent grey so the yellow shows
+    // through. Same widgets as the .coog-readonly-field-mixin rules (a boolean
+    // has none: its stretched group would draw a grey strip). Set once on the
+    // group, its input stays transparent so the tint does not stack
+    div.form-many2one, div.form-selection, div.form-date, div.form-datetime,
+    div.form-char, div.form-float, div.form-integer {
+        &.readonly > div.input-group,
+        &.readonly select.form-control:disabled {
+            background-color:   @color-highlight-readonly;
+        }
+
+        &.readonly > div.input-group > input {
+            background-color:   transparent;
+        }
+    }
+
+    div.form-text.readonly textarea.form-control {
+        background-color:   @color-highlight-readonly;
+    }
+}
 
 // header colors for groups
 .coog-group-header-colors {
@@ -1297,6 +1375,7 @@ div.empty-overlay {
 // Markdown
 ///////////////////////////////////////////////////////////////////////////////
 //
+
 .form-markdown .ProseMirror {
     h1, h2, h3, h4, h5, h6 {
         font-weight: bold;
@@ -1326,15 +1405,33 @@ div.panel-body:has( > .markdown-source ) {
     z-index: 20;
 }
 
+// Always on one line: buttons shrink first, then the toolbar scrolls.
+// width 0 + min-width 100% keeps the toolbar out of the intrinsic width of
+// the form, so it never widens its column
 .md-toolbar {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
+    justify-content: safe center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    width: 0;
+    // As wide as the editor below (800px at most): the buttons are centered
+    // over the text
+    min-width: ~"min(100%, 800px)";
     min-height: 44px;
     padding: 0 6px;
     background: @color-lightest-blue;
     gap: 1px;
+
+    > .md-btn {
+        flex: 0 1 30px;
+        min-width: 22px;
+    }
+
+    > .md-sep {
+        margin: 0 2px;
+    }
 }
 
 .md-btn {
@@ -1376,9 +1473,11 @@ div.panel-body:has( > .markdown-source ) {
     flex-shrink: 0;
 }
 
+// The editor holds the padding: the text lines up with the title and the
+// preview button
 .form-markdown .markdown-editor {
     min-height: 50px;
-    padding: 15px;
+    padding: 0px;
     margin: 0 auto;
 }
 
@@ -1395,8 +1494,239 @@ div.panel-body:has( > .markdown-source ) {
     background-color: #fff;
 }
 
-div.form-markdown.panel:has(> div.panel-body > div.markdown-editor > div.tiptap[contenteditable="false"]) {
-    background-color: #d4e4f14f;
+// Markdown fields are light cards, editable or not: only the focused editor
+// turns white, like the toolbar shows only then
+div.form-markdown.panel {
+    background-color: @color-sky-blue;
+    border: 1px solid @color-sky-border;
+    border-radius: @border-radius-base;
+    box-shadow: none;
+
+    > div.panel-heading,
+    > div.panel-heading > div.md-toolbar {
+        border-top-left-radius: (@border-radius-base - 1px);
+        border-top-right-radius: (@border-radius-base - 1px);
+    }
+
+    // The toolbar takes the color of the card
+    > div.panel-heading {
+        background-color: @color-sky-blue;
+        border-bottom-color: @color-sky-border;
+
+        > div.md-toolbar {
+            background: @color-sky-blue;
+        }
+    }
+}
+
+// The toolbar of an editable markdown shows only while it holds the focus: a
+// click elsewhere hides it. !important because the widget shows its toolbar
+// with an inline display
+div.form-markdown:not(:focus-within) > div.panel-heading {
+    display: none !important;
+}
+
+// preview_lines: the folded content fades out above the toggle button
+div.form-markdown.md-preview {
+    &.md-collapsed.md-overflow > div.panel-body > div.markdown-editor {
+        max-height: var(--md-preview-height);
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent);
+        mask-image: linear-gradient(to bottom, #000 50%, transparent);
+    }
+
+    // A white button on the left so its text stands out from the card, light
+    // blue on hover only. Every state is set: the button states of the base
+    // theme are grey
+    > button.md-preview-toggle {
+        display: none;
+        margin: 0px auto 6px 12px;
+        padding: 2px 10px;
+        color: @color-blue;
+        font-size: 13px;
+        background-color: @color-white;
+        border: 1px solid @color-sky-border;
+        border-radius: @border-radius-base;
+        box-shadow: none;
+        text-decoration: none;
+
+        &:focus,
+        &:active,
+        &:active:focus {
+            color: @color-blue;
+            background-color: @color-white;
+            box-shadow: none;
+            outline: none;
+            text-decoration: none;
+        }
+
+        &:hover,
+        &:active:hover {
+            color: @color-blue;
+            background-color: @color-lightest-blue;
+            text-decoration: none;
+        }
+    }
+
+    &.md-overflow > button.md-preview-toggle {
+        display: block;
+    }
+}
+
+// show_title / title_field: a title heads the card, in its color, after the
+// initials of avatar_field
+div.form-markdown.panel > div.md-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    font-size: 14px;
+    color: @color-blue;
+    background-color: @color-sky-blue;
+    border-top-left-radius: (@border-radius-base - 1px);
+    border-top-right-radius: (@border-radius-base - 1px);
+
+    > span.md-avatar {
+        flex: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        color: @color-white;
+        font-size: 11px;
+        font-weight: bold;
+        line-height: 24px;
+        text-align: center;
+    }
+
+    // The toolbar is no longer the top of the card
+    + div.panel-heading,
+    + div.panel-heading > div.md-toolbar {
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+    }
+}
+
+// Markdown fields in a XXX2Many fill their cell, like everywhere else
+div.form-item:has(> div.form-one2many, > div.form-many2many) > div.panel
+        > div.panel-body div.form-markdown.panel {
+    margin: 0px;
+}
+
+// List-forms of markdown fields (comments, notes...): each item is the card,
+// the straight separators of the list replace its rounded frame
+ul.list-group.list-form:has(div.form-markdown) {
+    // The white gap of the items runs around them too: the shadowed edge of
+    // the panel reads as its frame, not as a link between two items
+    padding: 6px;
+
+    > li.list-group-item {
+        padding: 0px;
+        background-color: @color-sky-blue;
+        border-color: @color-sky-border;
+        border-radius: 0px;
+        // A white gap between the items, each one keeping its whole border
+        margin-bottom: 6px;
+
+        &:last-child {
+            margin-bottom: 0px;
+        }
+
+        > div.form {
+            padding: 0px;
+        }
+
+        // The markdown fills the item edge to edge, without a frame
+        div.form-container:has(> div.form-item > div.form-markdown) {
+            margin-left: 0px;
+
+            > div.form-item {
+                padding-left: 0px;
+            }
+        }
+
+        div.form-item > div.form-markdown.panel {
+            margin: 0px;
+            border: none;
+            border-radius: 0px;
+            background-color: transparent;
+
+            > div.md-title,
+            > div.panel-heading,
+            > div.panel-heading > div.md-toolbar {
+                border-radius: 0px;
+            }
+        }
+    }
+
+    // On top of the focus, the toolbar of an item shows only while it is
+    // selected: the selection stays for the buttons of the panel
+    > li.list-group-item:not(.list-group-item-selected)
+            div.form-markdown > div.panel-heading {
+        display: none !important;
+    }
+
+    // Selection is a blue bar on the left, not a background. Drawn over the
+    // content, whose title, toolbar and editor have their own background, so
+    // it spans the whole item without shifting it
+    > li.list-group-item.list-group-item-selected {
+        background-color: @color-sky-blue;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            bottom: -1px;
+            left: -1px;
+            width: 4px;
+            background-color: @color-blue;
+            // Above the sticky markdown toolbar
+            z-index: 21;
+        }
+    }
+}
+
+// coog-custom-highlight on a markdown field, only when there is content: an
+// empty editor holds a lone paragraph with its trailing break, and must stay
+// as neutral as any empty markdown field. Readonly or not, the card is yellow
+div.form-markdown.panel.coog-custom-highlight:not(:has(> div.panel-body
+        .tiptap > p:only-child > br.ProseMirror-trailingBreak:only-child)) {
+    background-color: @color-lightest-yellow;
+    .coog-highlight-markdown-mixin();
+}
+
+// coog-custom-highlight on a boolean of a list-form: its card is yellow while
+// the box is checked. The selection keeps its blue bar on the cards of
+// markdown fields, other cards take a deeper yellow
+ul.list-group.list-form > li.list-group-item:has(
+        div.form-boolean.coog-custom-highlight input:checked) {
+    border-color: @color-amber-border;
+    .coog-highlight-container-mixin();
+}
+
+ul.list-group.list-form:not(:has(div.form-markdown))
+        > li.list-group-item.list-group-item-selected:has(
+        div.form-boolean.coog-custom-highlight input:checked) {
+    background-color: @color-lighter-yellow;
+}
+
+// coog-custom-highlight on a boolean in form mode: the innermost form holding
+// the checked box, so a parent form embedding it is left alone (list-form
+// cards have their own rule above)
+div.form:not(li.list-form-item > div.form):has(
+        div.form-boolean.coog-custom-highlight input:checked):not(:has(
+        div.form div.form-boolean.coog-custom-highlight input:checked)) {
+    .coog-highlight-container-mixin();
+
+    // Editable markdown sits on the highlight: only a readonly one is greyed,
+    // like the readonly fields
+    div.form-markdown.panel {
+        background-color: transparent;
+
+        &:has(> div.panel-body > div.markdown-editor
+                > div.tiptap[contenteditable="false"]) {
+            background-color: @color-highlight-readonly;
+        }
+    }
 }
 
 .form-markdown .markdown-editor .tiptap[contenteditable="false"] {
