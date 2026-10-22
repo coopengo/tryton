@@ -1210,7 +1210,7 @@
                 this.update_selection(); // update after new rows has been added
                 this.update_visible();
                 if (scroll && selected && selected.length ) {
-                    let first_element = this.find_row(selected[0]);
+                    let first_element = this.find_row_by_id_path(selected[0]);
                     if (first_element) {
                         Sao.common.scrollIntoViewIfNeeded(first_element.el);
                     }
@@ -1593,11 +1593,31 @@
             var group = this.rows;
             for (var i=0, len=path.length; i < len; i++) {
                 index = path[i];
-                if (!group || index >= group.length) {
+                if (!group || index < 0 || index >= group.length) {
                     return null;
                 }
                 row = group[index];
                 group = row.rows;
+                if (!this.children_field) {
+                    break;
+                }
+            }
+            return row;
+        },
+        find_row_by_id_path: function(id_path) {
+            var row = null;
+            var rows = this.rows;
+            for (var i=0, len=id_path.length; i < len; i++) {
+                if (!rows) {
+                    return null;
+                }
+                row = rows.find(function(r) {
+                    return r.record && (r.record.id === id_path[i]);
+                });
+                if (!row) {
+                    return null;
+                }
+                rows = row.rows;
                 if (!this.children_field) {
                     break;
                 }
