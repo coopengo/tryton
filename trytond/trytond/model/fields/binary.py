@@ -7,6 +7,7 @@ import tempfile
 
 from sql import Column, Null
 
+from trytond.pool import Pool
 from trytond.config import config
 from trytond.filestore import filestore
 from trytond.i18n import gettext
