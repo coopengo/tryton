@@ -13,6 +13,11 @@
 @color-sky-blue:        rgb(240, 249, 255); // #F0F9FF
 @color-sky-border:      rgb(186, 230, 253); // #BAE6FD
 @color-lightest-red:    rgb(255, 208, 205); // #ffd0cd
+@color-amber-dark:      rgb(180, 83, 9);    // #b45309
+@color-amber-border:    rgb(253, 230, 138); // #fde68a
+@color-lightest-yellow: rgb(255, 251, 221); // #fffbdd
+@color-lighter-yellow:  rgb(255, 244, 184); // #fff4b8
+@color-highlight-readonly: rgba(0, 0, 0, 0.05);
 
 @coog-background:       @color-white;
 
@@ -40,10 +45,81 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // coog-custom-infinite-list: Disable the max height on a list / list-form
+// coog-custom-highlight: the yellow and amber colors of the cards instead of
+//      the blue ones
+//      - on a boolean: highlights its list-form card, or its form in form
+//        mode, while it is checked
+//      - on a markdown field: highlights the field while it has content
 //
 ///////////////////////////////////////////////////////////////////////////////
 // Tooling
 ///////////////////////////////////////////////////////////////////////////////
+
+// coog-custom-highlight: a markdown card in yellow and amber. The toolbar is
+// kept opaque (it is sticky and the text scrolls under it). The focused
+// editor turns white like any markdown field: the text being written stands
+// out from the highlight
+.coog-highlight-markdown-mixin() {
+    border-color:           @color-amber-border;
+
+    > div.md-title {
+        color:              @color-amber-dark;
+        background-color:   @color-lightest-yellow;
+    }
+
+    > div.panel-heading {
+        background-color:   @color-lightest-yellow;
+        border-bottom-color: @color-amber-border;
+
+        > div.md-toolbar {
+            background:     @color-lightest-yellow;
+        }
+    }
+
+    > button.md-preview-toggle {
+        color:              @color-amber-dark;
+    }
+}
+
+// coog-custom-highlight: a highlighted list-form card or form
+.coog-highlight-container-mixin() {
+    background-color:       @color-lightest-yellow;
+
+    // Expandable groups lose their frame: their content sits on the highlight
+    div.form-group-expandable {
+        background-color:   transparent;
+        border-color:       transparent;
+        box-shadow:         none;
+
+        > div.panel-heading {
+            background-color:   transparent;
+        }
+    }
+
+    div.form-markdown.panel {
+        .coog-highlight-markdown-mixin();
+    }
+
+    // Readonly fields stay greyed, with a translucent grey so the yellow shows
+    // through. Same widgets as the .coog-readonly-field-mixin rules (a boolean
+    // has none: its stretched group would draw a grey strip). Set once on the
+    // group, its input stays transparent so the tint does not stack
+    div.form-many2one, div.form-selection, div.form-date, div.form-datetime,
+    div.form-char, div.form-float, div.form-integer {
+        &.readonly > div.input-group,
+        &.readonly select.form-control:disabled {
+            background-color:   @color-highlight-readonly;
+        }
+
+        &.readonly > div.input-group > input {
+            background-color:   transparent;
+        }
+    }
+
+    div.form-text.readonly textarea.form-control {
+        background-color:   @color-highlight-readonly;
+    }
+}
 
 // header colors for groups
 .coog-group-header-colors {
@@ -1605,6 +1681,50 @@ ul.list-group.list-form:has(div.form-markdown) {
             background-color: @color-blue;
             // Above the sticky markdown toolbar
             z-index: 21;
+        }
+    }
+}
+
+// coog-custom-highlight on a markdown field, only when there is content: an
+// empty editor holds a lone paragraph with its trailing break, and must stay
+// as neutral as any empty markdown field. Readonly or not, the card is yellow
+div.form-markdown.panel.coog-custom-highlight:not(:has(> div.panel-body
+        .tiptap > p:only-child > br.ProseMirror-trailingBreak:only-child)) {
+    background-color: @color-lightest-yellow;
+    .coog-highlight-markdown-mixin();
+}
+
+// coog-custom-highlight on a boolean of a list-form: its card is yellow while
+// the box is checked. The selection keeps its blue bar on the cards of
+// markdown fields, other cards take a deeper yellow
+ul.list-group.list-form > li.list-group-item:has(
+        div.form-boolean.coog-custom-highlight input:checked) {
+    border-color: @color-amber-border;
+    .coog-highlight-container-mixin();
+}
+
+ul.list-group.list-form:not(:has(div.form-markdown))
+        > li.list-group-item.list-group-item-selected:has(
+        div.form-boolean.coog-custom-highlight input:checked) {
+    background-color: @color-lighter-yellow;
+}
+
+// coog-custom-highlight on a boolean in form mode: the innermost form holding
+// the checked box, so a parent form embedding it is left alone (list-form
+// cards have their own rule above)
+div.form:not(li.list-form-item > div.form):has(
+        div.form-boolean.coog-custom-highlight input:checked):not(:has(
+        div.form div.form-boolean.coog-custom-highlight input:checked)) {
+    .coog-highlight-container-mixin();
+
+    // Editable markdown sits on the highlight: only a readonly one is greyed,
+    // like the readonly fields
+    div.form-markdown.panel {
+        background-color: transparent;
+
+        &:has(> div.panel-body > div.markdown-editor
+                > div.tiptap[contenteditable="false"]) {
+            background-color: @color-highlight-readonly;
         }
     }
 }
