@@ -861,6 +861,14 @@ msgstr ""
 msgid "Strikethrough"
 msgstr ""
 
+msgid "Show more (%1 line)"
+msgid_plural "Show more (%1 lines)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Show less"
+msgstr ""
+
 msgid "Inline code"
 msgstr ""
 
