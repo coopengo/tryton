@@ -144,6 +144,9 @@
         init: function(view, attributes) {
             Sao.View.Form.Markdown._super.init.call(this, view, attributes);
             this._show_toolbar = parseInt(attributes.toolbar || '1', 10) !== 0;
+            // View attributes documented on MarkdownMixin (coog_core)
+            this._preview_lines = parseInt(attributes.preview_lines || '0', 10);
+            this._expanded = true;
             this._source_mode = false;
             this._baseline = '';
             this._image_cache = new Map();
@@ -166,6 +169,23 @@
                 'class': this.class_ + ' panel panel-default',
             });
             this.el.append(this._file_input);
+            this._title_field = attributes.title_field;
+            this._avatar_field = attributes.avatar_field;
+            if (parseInt(attributes.show_title || '0', 10) ||
+                    this._title_field) {
+                this._title = jQuery('<div/>', {
+                    'class': 'md-title',
+                }).appendTo(this.el);
+                if (this._avatar_field) {
+                    this._avatar = jQuery('<span/>', {
+                        'class': 'md-avatar',
+                    }).appendTo(this._title);
+                }
+                this._title_text = jQuery('<span/>', {
+                    'class': 'md-title-text',
+                    'text': this._title_field ? '' : (attributes.string || ''),
+                }).appendTo(this._title);
+            }
             this.prev_record = undefined;
             this._toolbar_heading = jQuery('<div/>', {
                 'class': 'panel-heading',
@@ -217,6 +237,11 @@
                 },
                 onSelectionUpdate: () => {
                     this._update_toolbar_state();
+                },
+                onFocus: () => {
+                    if (this._preview_lines > 0) {
+                        this._set_expanded(true);
+                    }
                 },
                 onBlur: () => {
                     Sao.View.Form.Markdown._super.focus_out.call(this);
@@ -282,6 +307,27 @@
                     },
                 },
             });
+            // A click in the editor of the selected list-form item must not
+            // unselect it
+            this.el.on('click', (ev) => {
+                if (this.el.closest('li.list-group-item-selected').length) {
+                    ev.stopPropagation();
+                }
+            });
+            if (this._preview_lines > 0) {
+                this.el.addClass('md-preview');
+                this._preview_toggle = jQuery('<button/>', {
+                    'class': 'btn btn-link md-preview-toggle',
+                    'type': 'button',
+                }).appendTo(this.el).click((ev) => {
+                    // Folding never changes the list-form selection
+                    ev.stopPropagation();
+                    this._set_expanded(!this._expanded);
+                });
+                this._set_expanded(false);
+                new ResizeObserver(() => this._update_preview()).observe(
+                    this._editor.view.dom);
+            }
         },
         _build_toolbar: function() {
             var toolbar = jQuery('<div class="md-toolbar"/>');
@@ -494,6 +540,12 @@
             var record_changed = (this.record !== this.prev_record);
             if (record_changed) {
                 this._image_cache.clear();
+            }
+            if (record_changed && (this._preview_lines > 0)) {
+                this._set_expanded(false);
+            }
+            if (this._title_field) {
+                this._display_title(record);
             }
             this._editor.commands.setContent(
                 value, {contentType: 'markdown', emitUpdate: false});
@@ -762,7 +814,11 @@
             this._source_textarea.prop('readonly', disabled);
             this.toolbar.find('button').prop('disabled', disabled);
             this._table_toolbar.find('button').prop('disabled', disabled);
-            if (disabled || !this._show_toolbar) {
+            this._disabled = disabled;
+            this._update_toolbar_visibility();
+        },
+        _update_toolbar_visibility: function() {
+            if (this._disabled || !this._show_toolbar) {
                 this._toolbar_heading.hide();
             } else {
                 this._toolbar_heading.show();
@@ -771,6 +827,54 @@
                         .prop('disabled', true);
                 }
             }
+        },
+        _display_title: function(record) {
+            var get = (name) => record ?
+                (record.field_get_client(name) || '') : '';
+            var title = get(this._title_field);
+            // No title on a record being typed: nothing posted yet
+            this._title.toggle(Boolean(title));
+            this._title_text.text(title);
+            if (this._avatar) {
+                var initials = get(this._avatar_field);
+                // The same initials always get the same color
+                var hash = 0;
+                for (const c of initials) {
+                    hash = (hash * 31 + c.charCodeAt(0)) | 0;
+                }
+                this._avatar.text(initials)
+                    .css('background-color',
+                        `hsl(${Math.abs(hash) % 360}, 45%, 50%)`)
+                    .toggle(Boolean(initials));
+            }
+        },
+        _set_expanded: function(expanded) {
+            this._expanded = expanded;
+            this.el.toggleClass('md-collapsed', !expanded);
+            this._update_preview_toggle();
+        },
+        _update_preview_toggle: function() {
+            var lines = this._hidden_lines || 0;
+            this._preview_toggle.text(this._expanded ?
+                Sao.i18n.gettext("Show less") :
+                Sao.i18n.ngettext(
+                    "Show more (%1 line)", "Show more (%1 lines)",
+                    lines, lines));
+        },
+        _update_preview: function() {
+            // Short content is never folded: no fade and no button
+            var dom = this._editor.view.dom;
+            var style = window.getComputedStyle(dom);
+            var line_height = parseFloat(style.lineHeight) || 24;
+            var height = (parseFloat(style.paddingTop) || 0) +
+                line_height * this._preview_lines;
+            this.el[0].style.setProperty('--md-preview-height', height + 'px');
+            this.el.toggleClass('md-overflow', dom.offsetHeight > height + 1);
+            // In lines of text: margins, headings and images make it an
+            // estimate
+            this._hidden_lines = Math.max(1, Math.ceil(
+                (dom.offsetHeight - height) / line_height));
+            this._update_preview_toggle();
         },
     });
     Sao.View.FormXMLViewParser.WIDGETS['markdown'] =
