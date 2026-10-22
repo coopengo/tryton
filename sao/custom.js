@@ -34,7 +34,51 @@
     var MD_ALLOWED_IMAGE_MIMES = [
         'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
     var MD_RES_RE = /^md-res:([0-9a-f]{32})$/;
-    var MD_MENTION_MAX_ITEMS = 8;
+    var MD_MENTION_MAX_PER_KIND = 5;
+
+    // Every Markdown widget of a one2many (one per comment) needs the names
+    // of the same parties: the reads asked in the same tick are merged into
+    // one call, and an id already being read reuses that call. Nothing is
+    // kept once the call returns, so a reloaded record gets the current names.
+    var _md_name_reads = new Map();
+    var _md_read_names = function(model, ids, context) {
+        var key = model.name + ' ' + JSON.stringify(context || {});
+        var reads = _md_name_reads.get(key);
+        if (!reads) {
+            reads = {pending: new Map(), batch: null};
+            _md_name_reads.set(key, reads);
+        }
+        var prms = ids.map((id) => {
+            if (!reads.pending.has(id)) {
+                if (!reads.batch) {
+                    var batch = reads.batch = {ids: [], dfd: jQuery.Deferred()};
+                    setTimeout(() => {
+                        reads.batch = null;
+                        jQuery.when(model.execute(
+                            'read', [batch.ids, ['rec_name']], context))
+                            .then(batch.dfd.resolve, batch.dfd.reject)
+                            .always(() => {
+                                batch.ids.forEach(
+                                    (id) => reads.pending.delete(id));
+                            });
+                    });
+                }
+                reads.batch.ids.push(id);
+                reads.pending.set(id, reads.batch.dfd.then((rows) => {
+                    var row = rows.find((row) => row.id === id);
+                    return row ? row.rec_name : '';
+                }));
+            }
+            return reads.pending.get(id);
+        });
+        return jQuery.when.apply(jQuery, prms).then(function() {
+            var names = {};
+            for (var i = 0; i < ids.length; i++) {
+                names[ids[i]] = arguments[i];
+            }
+            return names;
+        });
+    };
 
     var _md_bytes_to_data_url = function(bytes, mime) {
         if (!bytes) { return null; }
@@ -149,7 +193,10 @@
             this._baseline = '';
             this._image_cache = new Map();
             this._mention_field = attributes.mention_field || null;
+            this._mention_internal_field =
+                attributes.mention_internal_field || null;
             this._mention_names = new Map();
+            this._mention_internal_ids = new Set();
             this._mention_loading = null;
             this._file_input = jQuery('<input/>', {
                 'type': 'file',
@@ -523,6 +570,10 @@
             // normalized form, not the raw value, or merely displaying a
             // record would mark it as modified.
             this._baseline = this._editor.getMarkdown();
+            // ProseMirror keeps the DOM of the mentions whose attributes did
+            // not change: give them the kind and name of the current lists,
+            // which an on_change may have shrunk without any name to load.
+            this._refresh_mention_nodes();
             if (this._source_mode) {
                 this._source_textarea.val(this._baseline);
             }
@@ -548,51 +599,82 @@
             }
         },
         _mention_items: function(query) {
-            return Tiptap.filterParties(this._mention_parties(), query)
-                .slice(0, MD_MENTION_MAX_ITEMS);
+            // Internal parties first, each kind capped on its own so that a
+            // short query matching many internals still shows the externals.
+            var parties = Tiptap.filterParties(this._mention_parties(), query);
+            var internals = parties.filter((p) => p.kind === 'internal');
+            var others = parties.filter((p) => p.kind !== 'internal');
+            return internals.slice(0, MD_MENTION_MAX_PER_KIND).concat(
+                others.slice(0, MD_MENTION_MAX_PER_KIND));
         },
         _mention_parties: function() {
             var parties = [];
             this._mention_names.forEach((label, id) => {
-                parties.push({id: id, label: label});
+                parties.push({
+                    id: id,
+                    label: label,
+                    kind: this._mention_kind(id),
+                });
             });
             return parties;
         },
+        _mention_kind: function(id) {
+            // '' when the field does not tell internal parties apart, 'unknown'
+            // for a party no longer mentionable here.
+            if (!this._mention_internal_field) { return ''; }
+            id = String(id);
+            if (this._mention_internal_ids.has(id)) { return 'internal'; }
+            if (this._mention_names.has(id)) { return 'external'; }
+            return 'unknown';
+        },
+        _mention_class: function(id) {
+            var kind = this._mention_kind(id);
+            return 'md-mention' + (kind ? ' md-mention-' + kind : '');
+        },
         _update_mention_names: function() {
             this._mention_names = new Map();
+            this._mention_internal_ids = new Set();
             var group = this._get_mention_group();
             if (!group) { return; }
-            for (var i = 0; i < group.length; i++) {
-                var party = group[i];
+            // An on_change shrinking the list only flags the parties it drops
+            // until the record is saved: they must not be offered meanwhile.
+            this._live_resources(group).forEach((party) => {
                 var name = party._values.rec_name;
                 if (party.id >= 0 && name) {
                     this._mention_names.set(String(party.id), name);
+                }
+            });
+            if (this._mention_internal_field) {
+                var internals = null;
+                try {
+                    internals = this.record.field_get_client(
+                        this._mention_internal_field);
+                } catch (e) {
+                    internals = null;
+                }
+                if (internals) {
+                    this._live_resources(internals).forEach((party) => {
+                        this._mention_internal_ids.add(String(party.id));
+                    });
                 }
             }
         },
         _load_mention_names: function() {
             // The parties are read with the record, as bare ids: their names
-            // are fetched in one call and kept on the records of the group,
-            // so a reloaded record shows the current names.
+            // are fetched in one call shared with the other widgets and kept
+            // on the records of the group, so a reloaded record shows the
+            // current names.
             var group = this._get_mention_group();
             this._mention_loading = null;
             if (!group) { return jQuery.when(); }
-            var to_load = [];
-            for (var i = 0; i < group.length; i++) {
-                if (group[i].id >= 0 &&
-                        group[i]._values.rec_name === undefined) {
-                    to_load.push(group[i]);
-                }
-            }
+            var to_load = this._live_resources(group).filter(
+                (r) => r.id >= 0 && r._values.rec_name === undefined);
             if (!to_load.length) { return jQuery.when(); }
             var ids = to_load.map((r) => r.id);
-            var prm = jQuery.when(group.model.execute(
-                'read', [ids, ['rec_name']], group.context)).then((rows) => {
-                    var by_id = {};
-                    rows.forEach((row) => { by_id[row.id] = row; });
+            var prm = _md_read_names(group.model, ids, group.context).then(
+                (names) => {
                     to_load.forEach((r) => {
-                        var row = by_id[r.id];
-                        r._values.rec_name = row ? row.rec_name : '';
+                        r._values.rec_name = names[r.id];
                     });
                     if (group === this._get_mention_group()) {
                         this._update_mention_names();
@@ -616,17 +698,19 @@
         },
         _render_mention: function(props) {
             return ['span', jQuery.extend({}, props.options.HTMLAttributes, {
-                'class': 'md-mention',
+                'class': this._mention_class(props.node.attrs.id),
             }), this._mention_label(props.node.attrs)];
         },
         _refresh_mention_nodes: function() {
             if (!this._editor || !this._editor.view) { return; }
             var dom = this._editor.view.dom;
             jQuery(dom).find('span[data-type="mention"]').each((_, span) => {
+                var id = span.getAttribute('data-id');
                 span.textContent = this._mention_label({
-                    id: span.getAttribute('data-id'),
+                    id: id,
                     label: span.getAttribute('data-label'),
                 });
+                span.className = this._mention_class(id);
             });
         },
         _mention_picker: function() {
@@ -677,9 +761,22 @@
                         .appendTo(popup);
                 }
                 var names = this._mention_parties().map((p) => p.label);
+                // A heading per kind, only when both kinds are offered
+                var split = items.some((p) => p.kind === 'internal') &&
+                    items.some((p) => p.kind !== 'internal');
                 items.forEach((party, index) => {
+                    var internal = party.kind === 'internal';
+                    if (split && (index === 0 ||
+                            internal !== (items[index - 1].kind === 'internal'))) {
+                        jQuery('<div class="md-mention-heading"/>')
+                            .text(internal ?
+                                Sao.i18n.gettext("Internal") :
+                                Sao.i18n.gettext("External"))
+                            .appendTo(popup);
+                    }
                     var option = jQuery('<div class="md-mention-option"/>')
                         .toggleClass('is-active', index === active)
+                        .addClass(party.kind ? 'md-mention-' + party.kind : '')
                         .text(party.label)
                         .on('mousedown', (ev) => {
                             ev.preventDefault();
