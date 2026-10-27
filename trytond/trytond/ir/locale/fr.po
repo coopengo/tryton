@@ -3137,7 +3137,7 @@ msgstr "Domaine"
 
 msgctxt "model:ir.message,text:msg_dict_schema_float"
 msgid "Float"
-msgstr "Float"
+msgstr "Flottant"
 
 msgctxt "model:ir.message,text:msg_dict_schema_help"
 msgid "Help"
@@ -3210,6 +3210,10 @@ msgstr "Si la sélection doit être triée par label."
 msgctxt "model:ir.message,text:msg_dict_schema_string"
 msgid "String"
 msgstr "Chaîne de caractères"
+
+msgctxt "model:ir.message,text:msg_dict_schema_text"
+msgid "Text"
+msgstr "Texte"
 
 msgctxt "model:ir.message,text:msg_dict_schema_type"
 msgid "Type"
