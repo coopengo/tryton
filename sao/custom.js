@@ -34,6 +34,97 @@
     var MD_ALLOWED_IMAGE_MIMES = [
         'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
     var MD_RES_RE = /^md-res:([0-9a-f]{32})$/;
+    var MD_REFERENCE_SEARCH_LIMIT = 10;
+    var MD_REFERENCE_SEARCH_DEBOUNCE = 200;
+    // A trigger is one ASCII punctuation character, that a plain label
+    // escapes, except the escape and the brackets of the link
+    var MD_TRIGGER_CHAR_RE = /^[!-/:-@^-`{-~]$/;
+    // The colours of a mention chip, picked by the value of the variant field
+    // its trigger names, the first one by default: complete from the start so
+    // that a module adds a variant without touching Sao.
+    var MD_CHIP_COLOURS = ['blue', 'violet', 'green', 'orange', 'red', 'grey'];
+
+    // Built per call: a Sao.Model holds the session it was created in
+    var _md_model = function(model_name) {
+        return new Sao.Model(model_name);
+    };
+
+    // Whether the records of a model have an avatar (avatar_url), asked once
+    // per session; a failed call is asked again next time
+    var _md_avatar_models = new WeakMap();
+    var _md_has_avatar = function(model_name) {
+        var session = Sao.Session.current_session;
+        var models = _md_avatar_models.get(session);
+        if (!models) {
+            models = new Map();
+            _md_avatar_models.set(session, models);
+        }
+        if (!models.has(model_name)) {
+            models.set(model_name, _md_model(model_name).execute(
+                'fields_get', [['avatar_url']], {}, true, false).then(
+                (fields) => Boolean(fields && fields.avatar_url),
+                () => {
+                    models.delete(model_name);
+                    return false;
+                }));
+        }
+        return models.get(model_name);
+    };
+
+    // Every Markdown widget of a one2many (one per comment) reads the records
+    // its references point at: the reads asked in the same tick are merged
+    // into one call per model, and an id already being read reuses that call.
+    // A search_read rather than a read, so that a record deleted or out of the
+    // user's rules is missing instead of failing the others; a call refused
+    // (no access to the model) leaves them all missing. Nothing is kept once
+    // the call returns.
+    var _md_reference_reads = new Map();
+    var _md_read_references = function(model_name, ids, fields, context) {
+        var key = [
+            model_name, fields.join(','), JSON.stringify(context || {}),
+        ].join(' ');
+        var reads = _md_reference_reads.get(key);
+        if (!reads) {
+            reads = {pending: new Map(), batch: null};
+            _md_reference_reads.set(key, reads);
+        }
+        var prms = ids.map((id) => {
+            if (!reads.pending.has(id)) {
+                if (!reads.batch) {
+                    var batch = reads.batch = {ids: [], dfd: jQuery.Deferred()};
+                    setTimeout(() => {
+                        reads.batch = null;
+                        jQuery.when(_md_model(model_name).execute(
+                            'search_read',
+                            [[['id', 'in', batch.ids]], 0, null, null, fields],
+                            jQuery.extend({}, context, {active_test: false}),
+                            true, false))
+                            .then(batch.dfd.resolve, () => batch.dfd.resolve([]))
+                            .always(() => {
+                                batch.ids.forEach(
+                                    (id) => reads.pending.delete(id));
+                            });
+                    });
+                }
+                reads.batch.ids.push(id);
+                reads.pending.set(id, reads.batch.dfd.then(
+                    (rows) => rows.find((row) => row.id === id) || null));
+            }
+            return reads.pending.get(id);
+        });
+        return jQuery.when.apply(jQuery, prms).then(function() {
+            var rows = {};
+            for (var i = 0; i < ids.length; i++) {
+                rows[ids[i]] = arguments[i];
+            }
+            return rows;
+        });
+    };
+
+    var _md_initials = function(name) {
+        return name.split(/\s+/).filter(Boolean).slice(0, 2)
+            .map((word) => Array.from(word)[0]).join('').toUpperCase();
+    };
 
     var _md_bytes_to_data_url = function(bytes, mime) {
         if (!bytes) { return null; }
@@ -150,6 +241,15 @@
             this._source_mode = false;
             this._baseline = '';
             this._image_cache = new Map();
+            this._triggers = this._parse_triggers(
+                attributes.reference_triggers);
+            // What was read of the records the references point at, per
+            // loading of the record: a reloaded record reads them again
+            this._references = new WeakMap();
+            this._picker_closers = [];
+            // The trigger and query of the last search answered, to tell a
+            // search running from one that found nothing
+            this._search_answered = null;
             this._file_input = jQuery('<input/>', {
                 'type': 'file',
                 'accept': MD_ALLOWED_IMAGE_MIMES.join(','),
@@ -199,7 +299,13 @@
             }).appendTo(this.el);
             this._mount = jQuery('<div/>', {
                 'class': 'markdown-editor mousetrap',
-            }).appendTo(body);
+            }).appendTo(body).on('click', 'span.md-reference-link', (ev) => {
+                ev.preventDefault();
+                var span = ev.currentTarget;
+                this._open_reference(
+                    span.getAttribute('data-model'),
+                    Number(span.getAttribute('data-id')));
+            });
             this._source_textarea = jQuery('<textarea/>', {
                 'class': 'markdown-source',
             }).appendTo(body).hide()
@@ -210,21 +316,38 @@
                 .on('blur', () => {
                     Sao.View.Form.Markdown._super.focus_out.call(this);
                 });
+            var extensions = [
+                Tiptap.StarterKit.configure({codeBlock: false, link: false}),
+                Tiptap.Markdown,
+                Tiptap.CodeBlockLowlight.configure({lowlight: Tiptap.lowlight}),
+                Tiptap.Link.configure({openOnClick: false}),
+                Tiptap.MarkdownTable.configure({resizable: false}),
+                Tiptap.MarkdownTableRow,
+                Tiptap.MarkdownTableCell,
+                Tiptap.MarkdownTableHeader,
+                Tiptap.MarkdownTaskList,
+                Tiptap.MarkdownTaskItem.configure({nested: true}),
+                MD_IMAGE_NODE.configure({widget: this}),
+            ];
+            extensions.push(Tiptap.TrytonReference.configure({
+                renderHTML: (props) => this._render_reference(props),
+                suggestions: this._triggers.filter((t) => t.char).map(
+                    (trigger) => ({
+                    char: trigger.char,
+                    debounce: MD_REFERENCE_SEARCH_DEBOUNCE,
+                    items: (props) => this._search_references(
+                        trigger, props.query),
+                    render: () => this._reference_picker(trigger),
+                })),
+                words: this._triggers.filter((t) => !t.char).map(
+                    (trigger) => ({
+                        pattern: trigger.pattern,
+                        resolve: (word) => this._resolve_word(trigger, word),
+                    })),
+            }));
             this._editor = new Tiptap.Editor({
                 element: this._mount[0],
-                extensions: [
-                    Tiptap.StarterKit.configure({codeBlock: false, link: false}),
-                    Tiptap.Markdown,
-                    Tiptap.CodeBlockLowlight.configure({lowlight: Tiptap.lowlight}),
-                    Tiptap.Link.configure({openOnClick: false}),
-                    Tiptap.MarkdownTable.configure({resizable: false}),
-                    Tiptap.MarkdownTableRow,
-                    Tiptap.MarkdownTableCell,
-                    Tiptap.MarkdownTableHeader,
-                    Tiptap.MarkdownTaskList,
-                    Tiptap.MarkdownTaskItem.configure({nested: true}),
-                    MD_IMAGE_NODE.configure({widget: this}),
-                ],
+                extensions: extensions,
                 content: '',
                 marked: {
                     gfm: true,
@@ -244,6 +367,7 @@
                     }
                 },
                 onBlur: () => {
+                    this._picker_closers.forEach((close) => close());
                     Sao.View.Form.Markdown._super.focus_out.call(this);
                 },
                 editorProps: {
@@ -554,6 +678,9 @@
             // normalized form, not the raw value, or merely displaying a
             // record would mark it as modified.
             this._baseline = this._editor.getMarkdown();
+            // ProseMirror keeps the DOM of the references whose attributes
+            // did not change: give them what was read for this record.
+            this._refresh_reference_nodes();
             if (this._source_mode) {
                 this._source_textarea.val(this._baseline);
             }
@@ -567,7 +694,329 @@
             // Load images asynchronously; _cache_resource calls
             // _refresh_image_nodes() per image as data URLs become available.
             this._sync_image_cache();
+            this._load_references();
             return prm;
+        },
+        _parse_triggers: function(value) {
+            // Evaluated on the record when searching: only the plain values
+            // are read here
+            if (!value) { return []; }
+            // A trigger is either a character or the pattern of a word
+            var triggers = new Sao.PYSON.Decoder({}, true).decode(value);
+            return (triggers || []).filter((t) => t.model && (t.char ?
+                MD_TRIGGER_CHAR_RE.test(t.char) :
+                typeof t.pattern === 'string' && Boolean(t.match_field)));
+        },
+        _trigger_for: function(model_name) {
+            return this._triggers.find((t) => t.model === model_name) || {};
+        },
+        _reference_cache: function() {
+            if (!this.record) { return new Map(); }
+            var cache = this._references.get(this.record._values);
+            if (!cache) {
+                cache = new Map();
+                this._references.set(this.record._values, cache);
+            }
+            return cache;
+        },
+        _reference_entry: function(trigger, row) {
+            var label_field = trigger.label_field || 'rec_name';
+            return {
+                label: row[label_field] || row.rec_name || String(row.id),
+                variant: trigger.variant_field ?
+                    row[trigger.variant_field] : null,
+                avatar_url: row.avatar_url || null,
+            };
+        },
+        _reference_fields: function(trigger, avatar) {
+            var fields = ['rec_name', trigger.label_field || 'rec_name'];
+            if (trigger.variant_field) {
+                fields.push(trigger.variant_field);
+            }
+            if (avatar) {
+                fields.push('avatar_url');
+            }
+            return fields.filter((f, i) => fields.indexOf(f) === i);
+        },
+        _reference_context: function() {
+            return this.record ? this.field.get_context(this.record) : {};
+        },
+        _evaluated_trigger: function(trigger) {
+            // The domain and order of trigger, evaluated on the record as it
+            // is now
+            return (this.record.expr_eval(
+                this.attributes.reference_triggers) || []).find((t) =>
+                t.char === trigger.char && t.pattern === trigger.pattern) ||
+                {};
+        },
+        _search_references: function(trigger, query) {
+            if (!this.record || query.length < (trigger.min_chars || 0)) {
+                return Promise.resolve([]);
+            }
+            var evaluated = this._evaluated_trigger(trigger);
+            var domain = [
+                evaluated.domain || [],
+                ['rec_name', 'ilike', '%' + query + '%'],
+            ];
+            var context = this._reference_context();
+            var prm = jQuery.when(
+                trigger.mention ? _md_has_avatar(trigger.model) : false)
+                .then((avatar) => _md_model(trigger.model).execute(
+                    'search_read',
+                    [domain, 0, MD_REFERENCE_SEARCH_LIMIT,
+                        evaluated.order || null,
+                        this._reference_fields(trigger, avatar)],
+                    context, true, false))
+                .then((rows) => rows.map((row) => {
+                    var entry = this._reference_entry(trigger, row);
+                    return {
+                        model: trigger.model,
+                        id: String(row.id),
+                        name: row.rec_name || entry.label,
+                        label: entry.label,
+                        mention: trigger.mention ? trigger.char : null,
+                        entry: entry,
+                    };
+                }))
+                .always(() => {
+                    this._search_answered = trigger.char + '\n' + query;
+                });
+            return Promise.resolve(prm);
+        },
+        _resolve_word: function(trigger, word) {
+            // The reference a word typed in full stands for: the one record
+            // whose match field holds it, nothing when there are none or
+            // several
+            var record = this.record;
+            if (!record) { return Promise.resolve(null); }
+            var domain = [
+                this._evaluated_trigger(trigger).domain || [],
+                [trigger.match_field, '=', word],
+            ];
+            var cache = this._reference_cache();
+            return Promise.resolve(_md_model(trigger.model).execute(
+                'search_read',
+                [domain, 0, 2, null, this._reference_fields(trigger, false)],
+                this._reference_context(), true, false).then((rows) => {
+                // Another record may be displayed by now
+                if (rows.length !== 1 || this.record !== record) {
+                    return null;
+                }
+                var entry = this._reference_entry(trigger, rows[0]);
+                // Shown as read at once, without waiting for a reload
+                cache.set(trigger.model + ':' + rows[0].id, entry);
+                return {
+                    model: trigger.model,
+                    id: rows[0].id,
+                    label: entry.label,
+                };
+            }, () => null));
+        },
+        _load_references: function() {
+            // Reads what is not known yet of the records the references point
+            // at, the label refreshed from the label field of the trigger of
+            // their model, rec_name by default
+            if (!this.record || !this._editor) { return; }
+            var cache = this._reference_cache();
+            var wanted = new Map();
+            this._editor.state.doc.descendants((node) => {
+                if (node.type.name !== 'trytonReference') { return; }
+                var key = node.attrs.model + ':' + node.attrs.id;
+                if (cache.has(key)) { return; }
+                var want = wanted.get(node.attrs.model);
+                if (!want) {
+                    want = {ids: new Set(), mention: false};
+                    wanted.set(node.attrs.model, want);
+                }
+                want.ids.add(Number(node.attrs.id));
+                want.mention = want.mention || Boolean(node.attrs.mention);
+            });
+            var context = this._reference_context();
+            wanted.forEach((want, model_name) => {
+                var trigger = this._trigger_for(model_name);
+                var ids = Array.from(want.ids);
+                jQuery.when(want.mention ? _md_has_avatar(model_name) : false)
+                    .then((avatar) => _md_read_references(
+                        model_name, ids,
+                        this._reference_fields(trigger, avatar), context))
+                    .then((rows) => {
+                        ids.forEach((id) => {
+                            var row = rows[id];
+                            cache.set(model_name + ':' + id, row ?
+                                this._reference_entry(trigger, row) : null);
+                        });
+                        if (cache === this._reference_cache()) {
+                            this._refresh_reference_nodes();
+                        }
+                    });
+            });
+        },
+        _fill_reference: function(el, attrs) {
+            // A reference not read yet (undefined) or unreadable (null) shows
+            // its stored label and opens nothing
+            var entry = this._reference_cache().get(
+                attrs.model + ':' + attrs.id);
+            var label = (entry && entry.label) || attrs.label || attrs.id || '';
+            var span = jQuery(el).empty().attr('class', 'md-reference')
+                .toggleClass('md-reference-link', Boolean(entry));
+            if (!attrs.mention) {
+                span.text(label);
+                return;
+            }
+            var colour = entry && MD_CHIP_COLOURS.indexOf(entry.variant) >= 0 ?
+                entry.variant : MD_CHIP_COLOURS[0];
+            span.addClass('md-mention md-chip-' + colour);
+            if (entry && entry.avatar_url) {
+                jQuery('<img/>', {
+                    'class': 'md-mention-avatar',
+                    'src': entry.avatar_url + '?s=32',
+                    'alt': '',
+                }).appendTo(span);
+            } else {
+                jQuery('<span/>', {'class': 'md-mention-avatar'})
+                    .text(_md_initials(label)).appendTo(span);
+            }
+            span.append(document.createTextNode(attrs.mention + label));
+        },
+        _render_reference: function(props) {
+            var el = document.createElement('span');
+            for (var name in props.HTMLAttributes) {
+                el.setAttribute(name, props.HTMLAttributes[name]);
+            }
+            this._fill_reference(el, props.node.attrs);
+            return el;
+        },
+        _refresh_reference_nodes: function() {
+            if (!this._editor || !this._editor.view) { return; }
+            var dom = this._editor.view.dom;
+            jQuery(dom).find('span[data-type="trytonReference"]').each(
+                (_, span) => {
+                    this._fill_reference(span, {
+                        model: span.getAttribute('data-model'),
+                        id: span.getAttribute('data-id'),
+                        label: span.getAttribute('data-label'),
+                        mention: span.getAttribute('data-mention'),
+                    });
+                });
+        },
+        _open_reference: function(model_name, id) {
+            Sao.Tab.create({
+                'model': model_name,
+                'res_id': id,
+                'mode': ['form'],
+                'domain': [['id', '=', id]],
+                'context': this._reference_context(),
+                'name': Sao.common.MODELNAME.get(model_name),
+            });
+        },
+        _reference_picker: function(trigger) {
+            var popup = null;
+            var props = null;
+            var active = 0;
+            var close = () => {
+                if (popup) {
+                    popup.remove();
+                    popup = null;
+                }
+            };
+            this._picker_closers.push(close);
+            var choose = (index) => {
+                var item = props && props.items[index];
+                if (item) {
+                    // Shown as read at once, without waiting for a reload
+                    this._reference_cache().set(
+                        item.model + ':' + item.id, item.entry);
+                    props.command({
+                        model: item.model,
+                        id: item.id,
+                        label: item.label,
+                        mention: item.mention,
+                    });
+                }
+            };
+            var draw = () => {
+                if (!popup) {
+                    popup = jQuery('<div class="md-reference-popup"/>')
+                        .appendTo('body');
+                }
+                popup.empty();
+                var items = props.items || [];
+                if (!items.length) {
+                    var min_chars = trigger.min_chars || 0;
+                    var status;
+                    if (props.query.length < min_chars) {
+                        status = Sao.i18n.gettext(
+                            "Type at least %1 characters", min_chars);
+                    } else if (this._search_answered !==
+                            trigger.char + '\n' + props.query) {
+                        status = Sao.i18n.gettext("Loading...");
+                    } else {
+                        status = Sao.i18n.gettext("No match");
+                    }
+                    jQuery('<div class="md-reference-status"/>')
+                        .text(status).appendTo(popup);
+                }
+                var names = items.map((item) => item.name);
+                items.forEach((item, index) => {
+                    var option = jQuery('<div class="md-reference-option"/>')
+                        .toggleClass('is-active', index === active)
+                        .text(item.name)
+                        .on('mousedown', (ev) => {
+                            ev.preventDefault();
+                            choose(index);
+                        })
+                        .appendTo(popup);
+                    if (names.indexOf(item.name) !==
+                            names.lastIndexOf(item.name)) {
+                        jQuery('<small/>').text(' #' + item.id)
+                            .appendTo(option);
+                    }
+                });
+                var rect = props.clientRect && props.clientRect();
+                if (rect) {
+                    popup.css({
+                        left: rect.left + 'px',
+                        top: (rect.bottom + 4) + 'px',
+                    });
+                }
+            };
+            return {
+                onStart: (start_props) => {
+                    props = start_props;
+                    active = 0;
+                    this._search_answered = null;
+                    draw();
+                },
+                onUpdate: (update_props) => {
+                    if (update_props.query !== props.query) {
+                        active = 0;
+                        this._search_answered = null;
+                    }
+                    props = update_props;
+                    draw();
+                },
+                onKeyDown: (key_props) => {
+                    var event = key_props.event;
+                    if (event.key === 'Escape') {
+                        close();
+                        return true;
+                    }
+                    if (!props || !props.items.length) { return false; }
+                    var count = props.items.length;
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        active = (active +
+                            (event.key === 'ArrowDown' ? 1 : -1) + count) % count;
+                        draw();
+                        return true;
+                    }
+                    if (event.key === 'Enter') {
+                        choose(active);
+                        return true;
+                    }
+                    return false;
+                },
+                onExit: close,
+            };
         },
         _get_markdown_resources_group: function() {
             if (!this.record) { return null; }

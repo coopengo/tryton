@@ -1920,6 +1920,113 @@ div.ProseMirror > p:last-child {
     max-width: 320px;
 }
 
+// References to records: a link, or a chip for a mention
+.form-markdown .tiptap .md-reference-link {
+    color: @color-blue;
+    cursor: pointer;
+
+    &:not(.md-mention):hover {
+        text-decoration: underline;
+    }
+}
+
+// The chip palette: a background / text pair per colour, the text dark
+// enough to read on its own background whatever the page behind it
+@color-chip-blue-background:   rgb(231, 244, 252); // #e7f4fc
+@color-chip-blue-text:         rgb(0, 95, 135); // #005f87
+@color-chip-violet-background: rgb(243, 232, 255); // #f3e8ff
+@color-chip-violet-text:       rgb(109, 40, 217); // #6d28d9
+@color-chip-green-background:  rgb(220, 252, 231); // #dcfce7
+@color-chip-green-text:        rgb(22, 101, 52); // #166534
+@color-chip-orange-background: rgb(255, 237, 213); // #ffedd5
+@color-chip-orange-text:       rgb(154, 52, 18); // #9a3412
+@color-chip-red-background:    rgb(254, 226, 226); // #fee2e2
+@color-chip-red-text:          rgb(153, 27, 27); // #991b1b
+@color-chip-grey-background:   rgb(240, 240, 240); // #f0f0f0
+@color-chip-grey-text:         rgb(85, 85, 85); // #555555
+
+.md-chip(@name) {
+    @background: "color-chip-@{name}-background";
+    @text: "color-chip-@{name}-text";
+    .form-markdown .tiptap .md-chip-@{name} {
+        background-color: @@background;
+        color: @@text;
+
+        .md-mention-avatar {
+            background-color: @@text;
+            color: @@background;
+        }
+    }
+}
+.md-chip(blue);
+.md-chip(violet);
+.md-chip(green);
+.md-chip(orange);
+.md-chip(red);
+.md-chip(grey);
+
+.form-markdown .tiptap .md-mention {
+    display: inline-block;
+    padding: 0 6px 0 2px;
+    border-radius: 10px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+
+    &:not(.md-reference-link) {
+        cursor: default;
+    }
+}
+
+.form-markdown .tiptap .md-mention-avatar {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    margin-right: 3px;
+    border-radius: 50%;
+    font-size: 0.75em;
+    line-height: 1.3em;
+    text-align: center;
+    vertical-align: middle;
+    object-fit: cover;
+}
+
+.md-reference-popup {
+    position: fixed;
+    z-index: 2000;
+    min-width: 200px;
+    max-width: 320px;
+    padding: 4px 0;
+    background: @color-white;
+    border: 1px solid #d0d8e4;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+}
+
+.md-reference-option {
+    padding: 4px 10px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-active,
+    &:hover {
+        background-color: @color-lightest-blue;
+        color: @color-blue;
+    }
+
+    small {
+        color: #888;
+    }
+}
+
+.md-reference-status {
+    padding: 4px 10px;
+    color: #888;
+}
+
 // Billboard chart grid: a white outline separates adjacent bars, since
 // bar.padding widens the group of bars beyond its category
 .form-billboard-grid .bb-chart-bar .bb-bar {
