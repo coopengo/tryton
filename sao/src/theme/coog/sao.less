@@ -1590,50 +1590,78 @@ div.ProseMirror > p:last-child {
     max-width: 320px;
 }
 
+// References to records: a link, or a chip for a mention
+.form-markdown .tiptap .md-reference-link {
+    color: @color-blue;
+    cursor: pointer;
+
+    &:not(.md-mention):hover {
+        text-decoration: underline;
+    }
+}
+
+// The chip palette: a background / text pair per colour, the text dark
+// enough to read on its own background whatever the page behind it
+@color-chip-blue-background:   rgb(231, 244, 252); // #e7f4fc
+@color-chip-blue-text:         rgb(0, 95, 135); // #005f87
+@color-chip-violet-background: rgb(243, 232, 255); // #f3e8ff
+@color-chip-violet-text:       rgb(109, 40, 217); // #6d28d9
+@color-chip-green-background:  rgb(220, 252, 231); // #dcfce7
+@color-chip-green-text:        rgb(22, 101, 52); // #166534
+@color-chip-orange-background: rgb(255, 237, 213); // #ffedd5
+@color-chip-orange-text:       rgb(154, 52, 18); // #9a3412
+@color-chip-red-background:    rgb(254, 226, 226); // #fee2e2
+@color-chip-red-text:          rgb(153, 27, 27); // #991b1b
+@color-chip-grey-background:   rgb(240, 240, 240); // #f0f0f0
+@color-chip-grey-text:         rgb(85, 85, 85); // #555555
+
+.md-chip(@name) {
+    @background: "color-chip-@{name}-background";
+    @text: "color-chip-@{name}-text";
+    .form-markdown .tiptap .md-chip-@{name} {
+        background-color: @@background;
+        color: @@text;
+
+        .md-mention-avatar {
+            background-color: @@text;
+            color: @@background;
+        }
+    }
+}
+.md-chip(blue);
+.md-chip(violet);
+.md-chip(green);
+.md-chip(orange);
+.md-chip(red);
+.md-chip(grey);
+
 .form-markdown .tiptap .md-mention {
     display: inline-block;
-    padding: 0 6px;
+    padding: 0 6px 0 2px;
     border-radius: 10px;
-    background-color: @color-lightest-blue;
-    color: @color-blue;
     font-weight: 600;
     line-height: 1.4;
     white-space: nowrap;
+
+    &:not(.md-reference-link) {
+        cursor: default;
+    }
 }
 
-// Internal and external parties differ by colour and by icon, so that the
-// difference does not rest on colour alone. Not yellow nor amber, which the
-// coog-custom-highlight cards use for internal content
-@color-mention-external:          rgb(109, 40, 217); // #6d28d9
-@color-mention-external-lightest: rgb(243, 232, 255); // #f3e8ff
-
-.form-markdown .tiptap .md-mention-external {
-    background-color: @color-mention-external-lightest;
-    color: @color-mention-external;
-}
-
-.form-markdown .tiptap .md-mention-unknown {
-    background-color: @color-lightest-grey;
-    color: @color-median-grey;
-}
-
-.md-mention-internal::before,
-.md-mention-external::before {
+.form-markdown .tiptap .md-mention-avatar {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
     margin-right: 3px;
-    font-family: 'Glyphicons Halflings';
-    font-size: 0.85em;
-    font-weight: normal;
+    border-radius: 50%;
+    font-size: 0.75em;
+    line-height: 1.3em;
+    text-align: center;
+    vertical-align: middle;
+    object-fit: cover;
 }
 
-.md-mention-internal::before {
-    content: "\e008";
-}
-
-.md-mention-external::before {
-    content: "\e139";
-}
-
-.md-mention-popup {
+.md-reference-popup {
     position: fixed;
     z-index: 2000;
     min-width: 200px;
@@ -1646,7 +1674,7 @@ div.ProseMirror > p:last-child {
     font-size: 13px;
 }
 
-.md-mention-option {
+.md-reference-option {
     padding: 4px 10px;
     cursor: pointer;
     overflow: hidden;
@@ -1662,36 +1690,9 @@ div.ProseMirror > p:last-child {
     small {
         color: #888;
     }
-
-    &.md-mention-internal::before {
-        color: @color-blue;
-    }
-
-    &.md-mention-external::before {
-        color: @color-mention-external;
-    }
-
-    &.md-mention-external.is-active,
-    &.md-mention-external:hover {
-        background-color: @color-mention-external-lightest;
-        color: @color-mention-external;
-    }
 }
 
-.md-mention-heading {
-    padding: 4px 10px 2px;
-    color: #888;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-
-    .md-mention-option + & {
-        margin-top: 4px;
-        border-top: 1px solid #e5e9ef;
-    }
-}
-
-.md-mention-status {
+.md-reference-status {
     padding: 4px 10px;
     color: #888;
 }

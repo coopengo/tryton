@@ -1,4 +1,6 @@
-import { Editor, InputRule, Node, renderNestedMarkdownContent } from '@tiptap/core';
+import {
+    Editor, InputRule, Node, mergeAttributes, renderNestedMarkdownContent,
+} from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import { createLowlight } from 'lowlight';
@@ -21,26 +23,33 @@ import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TaskList } from '@tiptap/extension-task-list';
 import { TaskItem } from '@tiptap/extension-task-item';
-import { Mention } from '@tiptap/extension-mention';
+import { PluginKey } from '@tiptap/pm/state';
+import { Suggestion } from '@tiptap/suggestion';
 
 const History = history;
 
-// Party mentions are written `[@Name](party:<id>)`, the format of the portal
-// editor: the reading, the escaping and the trigger rules below mirror it so
-// a text survives a round trip between the two clients.
-const PARTY_MENTION_RE = /^\[@((?:\\[^\n]|[^\\\]\n])*)\]\(party:([1-9]\d*)\)/;
-const MAX_PARTY_ID = 2147483647;
+// A reference to a Tryton record is written `[Label](tryton:<model>:<id>)`,
+// a mention being a reference whose label starts with "@". The reading, the
+// escaping and the trigger rules below mirror the server reader
+// (coog_core/markdown_reference.py) so a text survives a round trip.
+const REFERENCE_RE = /^\[((?:\\[^\n]|[^\\\]\n])+)\]\(tryton:([a-z_][a-z0-9_]*(?:[.-][a-z0-9_]+)*):([1-9]\d*)\)/;
+const MODEL_RE = /^[a-z_][a-z0-9_]*(?:[.-][a-z0-9_]+)*$/;
+const MAX_RECORD_ID = 2147483647;
+const MENTION_PREFIX = '@';
 const LEAF_PLACEHOLDER = '￼';
 
-const partyIdFrom = (value) => {
+const recordIdFrom = (value) => {
     const id = value === null || value === undefined ? '' : String(value);
-    return /^[1-9]\d*$/.test(id) && Number(id) <= MAX_PARTY_ID ? id : null;
+    return /^[1-9]\d*$/.test(id) && Number(id) <= MAX_RECORD_ID ? id : null;
 };
 
-const escapePartyLabel = (name) =>
-    name.replace(/[\r\n]+/g, ' ').replace(/([\\*`~+[\]|])/g, '\\$1');
+// A leading "@" is escaped too: only a mention starts with one
+const escapeReferenceLabel = (label) =>
+    label.replace(/[\r\n]+/g, ' ').replace(/([\\*`~+[\]|])/g, '\\$1')
+        .replace(/^@/, '\\@');
 
-const unescapePartyLabel = (label) => label.replace(/\\([^\n])/g, '$1');
+const unescapeReferenceLabel = (label) =>
+    label.replace(/\\([!-/:-@[-`{-~])/g, '$1');
 
 const isInMarkdownCodeContext = (before) => {
     const lines = before.split('\n');
@@ -52,19 +61,19 @@ const isInMarkdownCodeContext = (before) => {
     return (current.match(/`/g) || []).length % 2 === 1;
 };
 
-const matchPartyTrigger = (before) => {
+const matchTrigger = (before, char) => {
     if (isInMarkdownCodeContext(before)) {
         return null;
     }
-    const from = before.lastIndexOf('@');
+    const from = before.lastIndexOf(char);
     if (from < 0 || (from > 0 && !/[\s([>]/.test(before[from - 1] || ''))) {
         return null;
     }
-    const query = before.slice(from + 1);
+    const query = before.slice(from + char.length);
     if (query.length > 80 || /[^\p{L}\p{M}\p{N} '’-]/u.test(query)) {
         return null;
     }
-    // A link label or destination is another inline construct, not a mention
+    // A link label or destination is another inline construct
     const prefix = before.slice(0, from);
     if (/\[[^\]\n]*$/.test(prefix) || /\]\([^)\n]*$/.test(prefix)) {
         return null;
@@ -72,14 +81,14 @@ const matchPartyTrigger = (before) => {
     return { from, query };
 };
 
-const findPartyMentionMatch = ({ $position }) => {
+const findTriggerMatch = ({ char, $position }) => {
     if (!$position.parent.isTextblock) {
         return null;
     }
     // One character per inline leaf keeps string offsets and positions 1:1
     const before = $position.parent.textBetween(
         0, $position.parentOffset, undefined, LEAF_PLACEHOLDER);
-    const match = matchPartyTrigger(before);
+    const match = matchTrigger(before, char);
     if (!match) {
         return null;
     }
@@ -91,7 +100,7 @@ const findPartyMentionMatch = ({ $position }) => {
     };
 };
 
-const allowPartyMention = ({ state, range }) => {
+const allowReference = ({ state, range }) => {
     const $from = state.doc.resolve(range.from);
     if ($from.parent.type.spec.code) {
         return false;
@@ -110,53 +119,139 @@ const allowPartyMention = ({ state, range }) => {
         return false;
     }
     return Boolean($from.parent.type.contentMatch.matchType(
-        state.schema.nodes.mention));
+        state.schema.nodes.trytonReference));
 };
 
-const foldName = (text) =>
-    text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
+const referenceText = (node) =>
+    (node.attrs.mention ? MENTION_PREFIX : '') + (node.attrs.label || '');
 
-const filterParties = (parties, query) => {
-    const needle = foldName(query.trim());
-    return parties
-        .filter(party => foldName(party.label).includes(needle))
-        .sort((a, b) =>
-            Number(foldName(b.label).startsWith(needle)) -
-                Number(foldName(a.label).startsWith(needle)) ||
-            a.label.localeCompare(b.label) ||
-            Number(a.id) - Number(b.id));
+const insertReference = ({ editor, range, props }) => {
+    // Swallow the space that follows, as one is inserted after the reference
+    const nodeAfter = editor.view.state.selection.$to.nodeAfter;
+    if (nodeAfter && nodeAfter.text && nodeAfter.text.startsWith(' ')) {
+        range.to += 1;
+    }
+    editor.chain().focus().insertContentAt(range, [
+        {
+            type: 'trytonReference',
+            attrs: {
+                model: props.model,
+                id: String(props.id),
+                label: props.label,
+                mention: Boolean(props.mention),
+            },
+        },
+        { type: 'text', text: ' ' },
+    ]).run();
 };
 
-const PartyMention = Mention.extend({
-    markdownTokenName: 'partyMention',
+// Options:
+// - renderHTML({node, HTMLAttributes}): the DOM of a reference, a DOM node or
+//   a DOMOutputSpec; by default its label in a span
+// - suggestions: one @tiptap/suggestion configuration per trigger, at least
+//   its char and items; the item chosen is inserted, {model, id, label,
+//   mention} being its attributes
+const TrytonReference = Node.create({
+    name: 'trytonReference',
+    group: 'inline',
+    inline: true,
+    atom: true,
+    selectable: false,
+
+    addOptions() {
+        return { HTMLAttributes: {}, renderHTML: null, suggestions: [] };
+    },
+
+    addAttributes() {
+        const dataAttribute = (name) => ({
+            default: null,
+            parseHTML: element => element.getAttribute(`data-${name}`),
+            renderHTML: attributes => (
+                attributes[name] ? { [`data-${name}`]: attributes[name] } : {}),
+        });
+        return {
+            model: dataAttribute('model'),
+            id: dataAttribute('id'),
+            label: dataAttribute('label'),
+            mention: {
+                default: false,
+                parseHTML: element => element.getAttribute('data-mention') === 'true',
+                renderHTML: attributes => (
+                    attributes.mention ? { 'data-mention': 'true' } : {}),
+            },
+        };
+    },
+
+    parseHTML() {
+        return [{ tag: `span[data-type="${this.name}"]` }];
+    },
+
+    renderHTML({ node, HTMLAttributes }) {
+        const attributes = mergeAttributes(
+            { 'data-type': this.name }, this.options.HTMLAttributes, HTMLAttributes);
+        if (this.options.renderHTML) {
+            return this.options.renderHTML({ node, HTMLAttributes: attributes });
+        }
+        return ['span', attributes, referenceText(node)];
+    },
+
+    renderText({ node }) {
+        return referenceText(node);
+    },
+
+    markdownTokenName: 'trytonReference',
 
     markdownTokenizer: {
-        name: 'partyMention',
+        name: 'trytonReference',
         level: 'inline',
-        start: (src) => src.indexOf('[@'),
+        start: (src) => src.indexOf('['),
         tokenize: (src) => {
-            const match = PARTY_MENTION_RE.exec(src);
-            if (!match || !partyIdFrom(match[2])) {
+            const match = REFERENCE_RE.exec(src);
+            if (!match || !recordIdFrom(match[3])) {
                 return undefined;
             }
+            const mention = match[1].startsWith(MENTION_PREFIX);
             return {
-                type: 'partyMention',
+                type: 'trytonReference',
                 raw: match[0],
-                id: match[2],
-                label: unescapePartyLabel(match[1]),
+                model: match[2],
+                id: match[3],
+                label: unescapeReferenceLabel(
+                    mention ? match[1].slice(MENTION_PREFIX.length) : match[1]),
+                mention,
             };
         },
     },
 
     parseMarkdown(token, helpers) {
-        return helpers.createNode('mention', { id: token.id, label: token.label });
+        return helpers.createNode('trytonReference', {
+            model: token.model,
+            id: token.id,
+            label: token.label,
+            mention: token.mention,
+        });
     },
 
     renderMarkdown(node) {
         const attrs = node.attrs || {};
-        const label = escapePartyLabel(String(attrs.label || ''));
-        const id = partyIdFrom(attrs.id);
-        return id ? `[@${label}](party:${id})` : `@${label}`;
+        const id = recordIdFrom(attrs.id);
+        const label = escapeReferenceLabel(String(attrs.label || attrs.id || ''));
+        const text = (attrs.mention ? MENTION_PREFIX : '') + label;
+        if (!id || !MODEL_RE.test(attrs.model || '')) {
+            return text;
+        }
+        return `[${text}](tryton:${attrs.model}:${id})`;
+    },
+
+    addProseMirrorPlugins() {
+        return this.options.suggestions.map(suggestion => Suggestion({
+            editor: this.editor,
+            pluginKey: new PluginKey(`${this.name}${suggestion.char}`),
+            findSuggestionMatch: findTriggerMatch,
+            allow: allowReference,
+            command: insertReference,
+            ...suggestion,
+        }));
     },
 });
 
@@ -287,8 +382,5 @@ export {
     MarkdownTaskList,
     MarkdownTaskItem,
     History,
-    PartyMention,
-    findPartyMentionMatch,
-    allowPartyMention,
-    filterParties,
+    TrytonReference,
 };
