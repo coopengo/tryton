@@ -949,6 +949,15 @@ msgstr ""
 msgid "Could not read image file"
 msgstr ""
 
+msgid "Loading..."
+msgstr ""
+
+msgid "No match"
+msgstr ""
+
+msgid "Type at least %1 characters"
+msgstr ""
+
 msgid "Close all other tabs"
 msgstr ""
 

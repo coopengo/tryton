@@ -970,6 +970,9 @@ msgstr "Chargement..."
 msgid "No match"
 msgstr "Aucun résultat"
 
+msgid "Type at least %1 characters"
+msgstr "Saisissez au moins %1 caractères"
+
 msgid "Close all other tabs"
 msgstr "Fermer tous les autres onglets"
 
