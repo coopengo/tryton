@@ -15,7 +15,7 @@ lowlight.register('javascript', javascript);
 lowlight.register('sql', sql);
 lowlight.register('xml', xml);
 import { Markdown } from '@tiptap/markdown';
-import { history } from '@tiptap/pm/history';
+import { closeHistory, history } from '@tiptap/pm/history';
 import { Link } from '@tiptap/extension-link';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -29,13 +29,17 @@ import { Suggestion } from '@tiptap/suggestion';
 const History = history;
 
 // A reference to a Tryton record is written `[Label](tryton:<model>:<id>)`,
-// a mention being a reference whose label starts with "@". The reading, the
-// escaping and the trigger rules below mirror the server reader
-// (coog_core/markdown_reference.py) so a text survives a round trip.
+// a mention being a reference whose label starts with an unescaped ASCII
+// punctuation character, its marker: the character of the trigger that
+// inserted it, e.g. "@". The reading, the escaping and the trigger rules below
+// mirror the server reader (coog_core/markdown_reference.py) so a text
+// survives a round trip in any widget, with or without triggers.
 const REFERENCE_RE = /^\[((?:\\[^\n]|[^\\\]\n])+)\]\(tryton:([a-z_][a-z0-9_]*(?:[.-][a-z0-9_]+)*):([1-9]\d*)\)/;
 const MODEL_RE = /^[a-z_][a-z0-9_]*(?:[.-][a-z0-9_]+)*$/;
 const MAX_RECORD_ID = 2147483647;
-const MENTION_PREFIX = '@';
+// An ASCII punctuation character other than the escape: the marker of a
+// mention when it opens a label as written, escaped in a plain label
+const MENTION_MARKER_RE = /^[!-/:-@[\]-`{-~]/;
 const LEAF_PLACEHOLDER = '￼';
 
 const recordIdFrom = (value) => {
@@ -43,10 +47,11 @@ const recordIdFrom = (value) => {
     return /^[1-9]\d*$/.test(id) && Number(id) <= MAX_RECORD_ID ? id : null;
 };
 
-// A leading "@" is escaped too: only a mention starts with one
+// A leading punctuation character is escaped too: only a mention starts
+// with one, its marker
 const escapeReferenceLabel = (label) =>
     label.replace(/[\r\n]+/g, ' ').replace(/([\\*`~+[\]|])/g, '\\$1')
-        .replace(/^@/, '\\@');
+        .replace(MENTION_MARKER_RE, '\\$&');
 
 const unescapeReferenceLabel = (label) =>
     label.replace(/\\([!-/:-@[-`{-~])/g, '$1');
@@ -61,21 +66,33 @@ const isInMarkdownCodeContext = (before) => {
     return (current.match(/`/g) || []).length % 2 === 1;
 };
 
+// Whether text typed after before is plain text: not code, nor the label or
+// destination of a link, which are other inline constructs
+const isPlainTextContext = (before) => !isInMarkdownCodeContext(before) &&
+    !/\[[^\]\n]*$/.test(before) && !/\]\([^)\n]*$/.test(before);
+
+// What a trigger character or a typed word follows, besides the start of its
+// block: a space, an opening bracket or an opening quote
+const WORD_OPENERS = '\\s([>"\'«“‘';
+const WORD_OPENER_RE = new RegExp(`[${WORD_OPENERS}]`, 'u');
+// What ends a typed word: a space or a punctuation character, except those
+// joining words in keys, paths and branch names (dash, slash, underscore)
+const WORD_END = '(?![-/_])[\\s\\p{P}]';
+const WORD_END_RE = new RegExp(`^${WORD_END}$`, 'u');
+
 const matchTrigger = (before, char) => {
     if (isInMarkdownCodeContext(before)) {
         return null;
     }
     const from = before.lastIndexOf(char);
-    if (from < 0 || (from > 0 && !/[\s([>]/.test(before[from - 1] || ''))) {
+    if (from < 0 || (from > 0 && !WORD_OPENER_RE.test(before[from - 1] || ''))) {
         return null;
     }
     const query = before.slice(from + char.length);
     if (query.length > 80 || /[^\p{L}\p{M}\p{N} '’-]/u.test(query)) {
         return null;
     }
-    // A link label or destination is another inline construct
-    const prefix = before.slice(0, from);
-    if (/\[[^\]\n]*$/.test(prefix) || /\]\([^)\n]*$/.test(prefix)) {
+    if (!isPlainTextContext(before.slice(0, from))) {
         return null;
     }
     return { from, query };
@@ -100,18 +117,18 @@ const findTriggerMatch = ({ char, $position }) => {
     };
 };
 
-const allowReference = ({ state, range }) => {
-    const $from = state.doc.resolve(range.from);
-    if ($from.parent.type.spec.code) {
-        return false;
-    }
-    const excluded = (mark) => mark.type.spec.code || mark.type.name === 'link';
-    if (state.selection.$from.marks().some(excluded)) {
+const excludedMark = (mark) => mark.type.spec.code || mark.type.name === 'link';
+
+// Whether the text between from and to may become a reference: plain text
+// of a block that holds references
+const canHoldReference = (state, from, to) => {
+    const $from = state.doc.resolve(from);
+    if (!$from.parent.isTextblock || $from.parent.type.spec.code) {
         return false;
     }
     let marked = false;
-    state.doc.nodesBetween(range.from, range.to, (node) => {
-        if (node.isText && node.marks.some(excluded)) {
+    state.doc.nodesBetween(from, to, (node) => {
+        if (node.isText && node.marks.some(excludedMark)) {
             marked = true;
         }
     });
@@ -122,8 +139,80 @@ const allowReference = ({ state, range }) => {
         state.schema.nodes.trytonReference));
 };
 
+const allowReference = ({ state, range }) =>
+    !state.selection.$from.marks().some(excludedMark) &&
+    canHoldReference(state, range.from, range.to);
+
+// A word typed in full that matches pattern, between a WORD_OPENERS character
+// (or the start of its block) and a WORD_END one, is given to resolve(word),
+// which answers the {model, id, label} of the reference replacing it, or
+// nothing. Answered asynchronously: the word is replaced only if it is still
+// where it was typed, as an undoable step of its own. A pattern that does not
+// compile (as a JavaScript regular expression with the u flag), or matches an
+// empty word, gives no rule.
+const wordReferenceRule = (editor, { pattern, resolve }) => {
+    let find, whole;
+    try {
+        find = new RegExp(
+            `(^|[${WORD_OPENERS}])(?:${pattern})${WORD_END}$`, 'u');
+        whole = new RegExp(`^(?:${pattern})$`, 'u');
+    } catch (error) {
+        return null;
+    }
+    if (whole.test('')) {
+        return null;
+    }
+    // Whether word is still at from, a whole word followed by its end
+    const wordAt = (state, from, to, word) => {
+        if (to >= state.doc.content.size) {
+            return false;
+        }
+        const $from = state.doc.resolve(from);
+        const offset = $from.parentOffset;
+        if (!$from.parent.isTextblock ||
+                offset + word.length + 1 > $from.parent.content.size ||
+                state.doc.textBetween(from, to) !== word) {
+            return false;
+        }
+        const text = $from.parent.textBetween(
+            0, offset + word.length + 1, undefined, LEAF_PLACEHOLDER);
+        return (offset === 0 || WORD_OPENER_RE.test(text[offset - 1])) &&
+            WORD_END_RE.test(text[offset + word.length] || '') &&
+            isPlainTextContext(text.slice(0, offset)) &&
+            canHoldReference(state, from, to);
+    };
+    return new InputRule({
+        find,
+        handler: ({ state, range, match }) => {
+            const from = range.from + match[1].length;
+            const word = match[0].slice(match[1].length, -1);
+            const to = from + word.length;
+            if (!whole.test(word) || !wordAt(state, from, to, word)) {
+                return null;
+            }
+            Promise.resolve(resolve(word)).then((reference) => {
+                const current = editor.state;
+                if (!reference || editor.isDestroyed ||
+                        !wordAt(current, from, to, word)) {
+                    return;
+                }
+                const tr = closeHistory(current.tr).replaceWith(from, to,
+                    current.schema.nodes.trytonReference.create({
+                        model: reference.model,
+                        id: String(reference.id),
+                        label: reference.label,
+                        mention: null,
+                    }));
+                editor.view.dispatch(tr);
+            }, () => {});
+            // The word is typed as is: it is replaced later, if ever
+            return null;
+        },
+    });
+};
+
 const referenceText = (node) =>
-    (node.attrs.mention ? MENTION_PREFIX : '') + (node.attrs.label || '');
+    (node.attrs.mention || '') + (node.attrs.label || '');
 
 const insertReference = ({ editor, range, props }) => {
     // Swallow the space that follows, as one is inserted after the reference
@@ -138,7 +227,7 @@ const insertReference = ({ editor, range, props }) => {
                 model: props.model,
                 id: String(props.id),
                 label: props.label,
-                mention: Boolean(props.mention),
+                mention: props.mention || null,
             },
         },
         { type: 'text', text: ' ' },
@@ -150,7 +239,9 @@ const insertReference = ({ editor, range, props }) => {
 //   a DOMOutputSpec; by default its label in a span
 // - suggestions: one @tiptap/suggestion configuration per trigger, at least
 //   its char and items; the item chosen is inserted, {model, id, label,
-//   mention} being its attributes
+//   mention} being its attributes, mention the marker of a mention
+// - words: the {pattern, resolve} of the words converted when typed, see
+//   wordReferenceRule
 const TrytonReference = Node.create({
     name: 'trytonReference',
     group: 'inline',
@@ -159,7 +250,9 @@ const TrytonReference = Node.create({
     selectable: false,
 
     addOptions() {
-        return { HTMLAttributes: {}, renderHTML: null, suggestions: [] };
+        return {
+            HTMLAttributes: {}, renderHTML: null, suggestions: [], words: [],
+        };
     },
 
     addAttributes() {
@@ -173,12 +266,7 @@ const TrytonReference = Node.create({
             model: dataAttribute('model'),
             id: dataAttribute('id'),
             label: dataAttribute('label'),
-            mention: {
-                default: false,
-                parseHTML: element => element.getAttribute('data-mention') === 'true',
-                renderHTML: attributes => (
-                    attributes.mention ? { 'data-mention': 'true' } : {}),
-            },
+            mention: dataAttribute('mention'),
         };
     },
 
@@ -210,25 +298,25 @@ const TrytonReference = Node.create({
             if (!match || !recordIdFrom(match[3])) {
                 return undefined;
             }
-            const mention = match[1].startsWith(MENTION_PREFIX);
             return {
                 type: 'trytonReference',
                 raw: match[0],
                 model: match[2],
                 id: match[3],
-                label: unescapeReferenceLabel(
-                    mention ? match[1].slice(MENTION_PREFIX.length) : match[1]),
-                mention,
+                label: match[1],
             };
         },
     },
 
     parseMarkdown(token, helpers) {
+        const marker = MENTION_MARKER_RE.exec(token.label);
+        const mention = marker ? marker[0] : null;
         return helpers.createNode('trytonReference', {
             model: token.model,
             id: token.id,
-            label: token.label,
-            mention: token.mention,
+            label: unescapeReferenceLabel(
+                mention ? token.label.slice(mention.length) : token.label),
+            mention,
         });
     },
 
@@ -236,11 +324,17 @@ const TrytonReference = Node.create({
         const attrs = node.attrs || {};
         const id = recordIdFrom(attrs.id);
         const label = escapeReferenceLabel(String(attrs.label || attrs.id || ''));
-        const text = (attrs.mention ? MENTION_PREFIX : '') + label;
+        const text = (attrs.mention || '') + label;
         if (!id || !MODEL_RE.test(attrs.model || '')) {
             return text;
         }
         return `[${text}](tryton:${attrs.model}:${id})`;
+    },
+
+    addInputRules() {
+        return this.options.words
+            .map((word) => wordReferenceRule(this.editor, word))
+            .filter(Boolean);
     },
 
     addProseMirrorPlugins() {

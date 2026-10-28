@@ -36,6 +36,9 @@
     var MD_RES_RE = /^md-res:([0-9a-f]{32})$/;
     var MD_REFERENCE_SEARCH_LIMIT = 10;
     var MD_REFERENCE_SEARCH_DEBOUNCE = 200;
+    // A trigger is one ASCII punctuation character, that a plain label
+    // escapes, except the escape and the brackets of the link
+    var MD_TRIGGER_CHAR_RE = /^[!-/:-@^-`{-~]$/;
     // The colours of a mention chip, picked by the value of the variant field
     // its trigger names, the first one by default: complete from the start so
     // that a module adds a variant without touching Sao.
@@ -308,13 +311,19 @@
             ];
             extensions.push(Tiptap.TrytonReference.configure({
                 renderHTML: (props) => this._render_reference(props),
-                suggestions: this._triggers.map((trigger) => ({
+                suggestions: this._triggers.filter((t) => t.char).map(
+                    (trigger) => ({
                     char: trigger.char,
                     debounce: MD_REFERENCE_SEARCH_DEBOUNCE,
                     items: (props) => this._search_references(
                         trigger, props.query),
                     render: () => this._reference_picker(trigger),
                 })),
+                words: this._triggers.filter((t) => !t.char).map(
+                    (trigger) => ({
+                        pattern: trigger.pattern,
+                        resolve: (word) => this._resolve_word(trigger, word),
+                    })),
             }));
             this._editor = new Tiptap.Editor({
                 element: this._mount[0],
@@ -640,8 +649,11 @@
             // Evaluated on the record when searching: only the plain values
             // are read here
             if (!value) { return []; }
+            // A trigger is either a character or the pattern of a word
             var triggers = new Sao.PYSON.Decoder({}, true).decode(value);
-            return (triggers || []).filter((t) => t.char && t.model);
+            return (triggers || []).filter((t) => t.model && (t.char ?
+                MD_TRIGGER_CHAR_RE.test(t.char) :
+                typeof t.pattern === 'string' && Boolean(t.match_field)));
         },
         _trigger_for: function(model_name) {
             return this._triggers.find((t) => t.model === model_name) || {};
@@ -677,13 +689,19 @@
         _reference_context: function() {
             return this.record ? this.field.get_context(this.record) : {};
         },
+        _evaluated_trigger: function(trigger) {
+            // The domain and order of trigger, evaluated on the record as it
+            // is now
+            return (this.record.expr_eval(
+                this.attributes.reference_triggers) || []).find((t) =>
+                t.char === trigger.char && t.pattern === trigger.pattern) ||
+                {};
+        },
         _search_references: function(trigger, query) {
-            var record = this.record;
-            if (!record) { return Promise.resolve([]); }
-            // The domain is evaluated on the record as it is now
-            var evaluated = (record.expr_eval(
-                this.attributes.reference_triggers) || []).find(
-                (t) => t.char === trigger.char) || {};
+            if (!this.record || query.length < (trigger.min_chars || 0)) {
+                return Promise.resolve([]);
+            }
+            var evaluated = this._evaluated_trigger(trigger);
             var domain = [
                 evaluated.domain || [],
                 ['rec_name', 'ilike', '%' + query + '%'],
@@ -693,7 +711,8 @@
                 trigger.mention ? _md_has_avatar(trigger.model) : false)
                 .then((avatar) => _md_model(trigger.model).execute(
                     'search_read',
-                    [domain, 0, MD_REFERENCE_SEARCH_LIMIT, null,
+                    [domain, 0, MD_REFERENCE_SEARCH_LIMIT,
+                        evaluated.order || null,
                         this._reference_fields(trigger, avatar)],
                     context, true, false))
                 .then((rows) => rows.map((row) => {
@@ -703,7 +722,7 @@
                         id: String(row.id),
                         name: row.rec_name || entry.label,
                         label: entry.label,
-                        mention: Boolean(trigger.mention),
+                        mention: trigger.mention ? trigger.char : null,
                         entry: entry,
                     };
                 }))
@@ -711,6 +730,35 @@
                     this._search_answered = trigger.char + '\n' + query;
                 });
             return Promise.resolve(prm);
+        },
+        _resolve_word: function(trigger, word) {
+            // The reference a word typed in full stands for: the one record
+            // whose match field holds it, nothing when there are none or
+            // several
+            var record = this.record;
+            if (!record) { return Promise.resolve(null); }
+            var domain = [
+                this._evaluated_trigger(trigger).domain || [],
+                [trigger.match_field, '=', word],
+            ];
+            var cache = this._reference_cache();
+            return Promise.resolve(_md_model(trigger.model).execute(
+                'search_read',
+                [domain, 0, 2, null, this._reference_fields(trigger, false)],
+                this._reference_context(), true, false).then((rows) => {
+                // Another record may be displayed by now
+                if (rows.length !== 1 || this.record !== record) {
+                    return null;
+                }
+                var entry = this._reference_entry(trigger, rows[0]);
+                // Shown as read at once, without waiting for a reload
+                cache.set(trigger.model + ':' + rows[0].id, entry);
+                return {
+                    model: trigger.model,
+                    id: rows[0].id,
+                    label: entry.label,
+                };
+            }, () => null));
         },
         _load_references: function() {
             // Reads what is not known yet of the records the references point
@@ -776,7 +824,7 @@
                 jQuery('<span/>', {'class': 'md-mention-avatar'})
                     .text(_md_initials(label)).appendTo(span);
             }
-            span.append(document.createTextNode('@' + label));
+            span.append(document.createTextNode(attrs.mention + label));
         },
         _render_reference: function(props) {
             var el = document.createElement('span');
@@ -795,7 +843,7 @@
                         model: span.getAttribute('data-model'),
                         id: span.getAttribute('data-id'),
                         label: span.getAttribute('data-label'),
-                        mention: span.getAttribute('data-mention') === 'true',
+                        mention: span.getAttribute('data-mention'),
                     });
                 });
         },
@@ -842,12 +890,19 @@
                 popup.empty();
                 var items = props.items || [];
                 if (!items.length) {
+                    var min_chars = trigger.min_chars || 0;
+                    var status;
+                    if (props.query.length < min_chars) {
+                        status = Sao.i18n.gettext(
+                            "Type at least %1 characters", min_chars);
+                    } else if (this._search_answered !==
+                            trigger.char + '\n' + props.query) {
+                        status = Sao.i18n.gettext("Loading...");
+                    } else {
+                        status = Sao.i18n.gettext("No match");
+                    }
                     jQuery('<div class="md-reference-status"/>')
-                        .text(this._search_answered !==
-                                trigger.char + '\n' + props.query ?
-                            Sao.i18n.gettext("Loading...") :
-                            Sao.i18n.gettext("No match"))
-                        .appendTo(popup);
+                        .text(status).appendTo(popup);
                 }
                 var names = items.map((item) => item.name);
                 items.forEach((item, index) => {
