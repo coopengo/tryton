@@ -35,6 +35,10 @@ from .modelstorage import (
 from .modelview import ModelView
 
 
+# [CUSTOM] See ModelSQL.validate
+_EMULATED_CONSTRAINT_CHUNK = 50
+
+
 class ForeignKeyError(ValidationError):
     pass
 
@@ -2342,34 +2346,42 @@ class ModelSQL(ModelStorage):
 
                 cursor.execute(*table.select(*columns, where=where))
 
-                where = Literal(False)
-                for row in cursor:
-                    row = list(row)
-                    clause = table.id != row.pop(0)
-                    if not database.has_range():
-                        values = []
-                        for col in sql.columns:
-                            if isinstance(col, Range):
-                                range_ = col.__class__(
-                                    row.pop(0), row.pop(0), row.pop(0))
-                                values.append(range_)
-                            else:
-                                values.append(row.pop(0))
-                    else:
-                        values = row
-                    for column, operator, value in zip(
-                            sql.columns, sql.operators, values):
-                        if value is None:
-                            # NULL is always unique
-                            clause &= Literal(False)
-                        clause &= operator(column, value)
-                    where |= clause
-                if isinstance(sql, Exclude) and sql.where:
-                    where &= sql.where
-                cursor.execute(
-                    *table.select(table.id, where=where, limit=1))
-                if cursor.fetchone():
-                    raise SQLConstraintError(gettext(error))
+                # [CUSTOM] Check the rows by chunks with a flat OR: a single
+                # query OR-ing one clause per row (left-nested by python-sql)
+                # overflows the SQLite parser stack beyond ~85 rows
+                # ("parser stack overflow") and a flat OR hits SQLite's
+                # expression depth limit (1000) beyond a few hundred rows.
+                for sub_rows in grouped_slice(
+                        cursor.fetchall(), _EMULATED_CONSTRAINT_CHUNK):
+                    clauses = []
+                    for row in sub_rows:
+                        row = list(row)
+                        clause = table.id != row.pop(0)
+                        if not database.has_range():
+                            values = []
+                            for col in sql.columns:
+                                if isinstance(col, Range):
+                                    range_ = col.__class__(
+                                        row.pop(0), row.pop(0), row.pop(0))
+                                    values.append(range_)
+                                else:
+                                    values.append(row.pop(0))
+                        else:
+                            values = row
+                        for column, operator, value in zip(
+                                sql.columns, sql.operators, values):
+                            if value is None:
+                                # NULL is always unique
+                                clause &= Literal(False)
+                            clause &= operator(column, value)
+                        clauses.append(clause)
+                    where = Or(clauses)
+                    if isinstance(sql, Exclude) and sql.where:
+                        where &= sql.where
+                    cursor.execute(
+                        *table.select(table.id, where=where, limit=1))
+                    if cursor.fetchone():
+                        raise SQLConstraintError(gettext(error))
             elif isinstance(sql, Check):
                 cursor.execute(*table.select(table.id,
                         where=~sql.expression
