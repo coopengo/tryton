@@ -9,7 +9,7 @@ from trytond.exceptions import UserError
 from trytond.i18n import gettext
 from trytond.model import ModelSQL, ModelView, Unique, fields, sequence_ordered
 from trytond.model.exceptions import AccessError
-from trytond.modules import get_module_info, get_modules
+from trytond.modules import get_module_info, get_modules, is_module_deprecated
 from trytond.pool import Pool
 from trytond.pyson import Eval, If
 from trytond.rpc import RPC
@@ -164,7 +164,16 @@ class Module(ModelSQL, ModelView):
             return parents
 
         for module in modules:
-            modules_activated.update((m for m in get_parents(module)
+            parents = get_parents(module)
+            deprecated = is_module_deprecated([module.name] + [x.name for x in parents])
+            if deprecated:
+                raise UserError(
+                    gettext(
+                        'ir.msg_module_deprecated',
+                        module=deprecated
+                    )
+                )
+            modules_activated.update((m for m in parents
                     if m.state == 'not activated'))
         cls.write(list(modules_activated), {
                 'state': 'to activate',
