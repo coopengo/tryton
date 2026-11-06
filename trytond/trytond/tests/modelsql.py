@@ -2,7 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from sql import Literal
 from sql.aggregate import Count, Min
-from sql.operators import Equal
+from sql.operators import Equal, NotEqual
 
 from trytond.model import (
     Check, DeactivableMixin, Exclude, ModelSQL, Unique, fields)
@@ -264,6 +264,22 @@ class ModelExclude(ModelSQL):
             ]
 
 
+class ModelExcludeMixed(ModelSQL):
+    "Exclude emulated on SQLite and on PostgreSQL without btree_gist [CUSTOM]"
+    __name__ = 'test.modelsql.exclude.mixed'
+    value = fields.Integer("Value")
+    other = fields.Integer("Other")
+
+    @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        t = cls.__table__()
+        cls._sql_constraints = [
+            ('exclude', Exclude(t, (t.value, Equal), (t.other, NotEqual)),
+                'tests.msg_modelsql_exclude'),
+            ]
+
+
 class ModelLock(ModelSQL):
     __name__ = 'test.modelsql.lock'
 
@@ -327,6 +343,7 @@ def register(module):
         ModelCheck,
         ModelUnique,
         ModelExclude,
+        ModelExcludeMixed,
         ModelLock,
         ModelMaterializedViewData,
         ModelMaterializedView,

@@ -903,6 +903,28 @@ class ModelSQLTestCase(TestCase):
         with self.assertRaises(SQLConstraintError):
             Model.create([{'value': 42}, {'value': 42}])
 
+    @with_transaction()
+    def test_constraint_exclude_many(self):
+        "Test exclude constraint on many records [CUSTOM]"
+        pool = Pool()
+        Model = pool.get('test.modelsql.exclude.mixed')
+
+        records = Model.create([{'value': i, 'other': i} for i in range(500)])
+
+        self.assertEqual(len(records), 500)
+
+    @with_transaction()
+    def test_constraint_exclude_many_invalid(self):
+        "Test invalid exclude constraint on many records [CUSTOM]"
+        pool = Pool()
+        Model = pool.get('test.modelsql.exclude.mixed')
+
+        # The conflicting rows are in different chunks of the emulated check
+        with self.assertRaises(SQLConstraintError):
+            Model.create(
+                [{'value': i, 'other': i} for i in range(500)]
+                + [{'value': 0, 'other': 1}])
+
     @unittest.skipIf(backend.name == 'sqlite',
         'SQLite does not have lock at table level but on file')
     @with_transaction()
