@@ -230,10 +230,18 @@
             }
             this.events =  [];
             var promisses = [];
+            // Load the attribute fields explicitly: a field shared with
+            // another view does not load the calendar-only eager ones
+            var fnames = this.fields.concat([
+                this.attributes.dtstart,
+                this.attributes.dtend,
+                this.attributes.color,
+                this.attributes.background_color,
+            ].filter(Boolean));
             prm.then(() => {
                 this.group.forEach(record => {
                     var record_promisses = [];
-                    for (const name of this.fields) {
+                    for (const name of fnames) {
                         record_promisses.push(record.load(name));
                     }
                     var prm = jQuery.when.apply(jQuery, record_promisses).then(
