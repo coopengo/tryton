@@ -34,6 +34,10 @@
             url: url,
             type: 'POST',
             timeout: Sao.config.bus_timeout,
+            // The bus may be on another origin, send the session cookie
+            xhrFields: {
+                withCredentials: true,
+            },
         });
 
         Sao.Bus.request.done(function(response) {

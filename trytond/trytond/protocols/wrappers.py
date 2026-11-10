@@ -31,6 +31,7 @@ __all__ = [
     'Request',
     'Response',
     'abort',
+    'allow_credentials',
     'allow_null_origin',
     'exceptions',
     'redirect',
@@ -286,6 +287,11 @@ def set_max_request_size(size):
 
 def allow_null_origin(func):
     func.allow_null_origin = True
+    return func
+
+
+def allow_credentials(func):
+    func.allow_credentials = True
     return func
 
 

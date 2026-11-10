@@ -7,12 +7,12 @@ from unittest.mock import Mock, sentinel
 
 from werkzeug.routing import Map, Rule
 
-from trytond import security
+from trytond import config, security
 from trytond.exceptions import TrytonException
 from trytond.pool import Pool
 from trytond.protocols.wrappers import (
-    TRYTON_SESSION_COOKIE, Response, decode_session_cookie,
-    encode_session_cookie)
+    TRYTON_SESSION_COOKIE, Response, allow_credentials, decode_session_cookie,
+    encode_session_cookie, exceptions)
 from trytond.tests.test_tryton import Client, RouteTestCase, TestCase
 from trytond.transaction import Transaction
 from trytond.wsgi import Base64Converter, TrytondWSGI, app
@@ -140,6 +140,92 @@ class WSGIAppTestCase(TestCase):
 
         self.assertEqual(next(response.response), b'baz')
         self.assertEqual(response.status, "418 I'M A TEAPOT")
+
+    def _cors_app(self):
+        cors = config.get('web', 'cors', default='')
+        config.set('web', 'cors', 'https://allowed.example.com')
+        self.addCleanup(config.set, 'web', 'cors', cors)
+
+        app = TrytondWSGI()
+
+        @app.route('/credentials', methods=['POST'])
+        @allow_credentials
+        def _credentials(request):
+            return Response(b'')
+
+        @app.route('/no_credentials', methods=['POST'])
+        def _no_credentials(request):
+            return Response(b'')
+
+        @app.route('/<path:path>', methods=['OPTIONS'])
+        def _options(request, path=None):
+            return Response(status=HTTPStatus.NO_CONTENT)
+
+        return Client(app, Response)
+
+    def test_cors_allow_credentials(self):
+        "Test CORS allows credentials on endpoint allowing it"
+        client = self._cors_app()
+
+        response = client.post('/credentials', headers={
+                'Origin': 'https://allowed.example.com',
+                })
+
+        self.assertEqual(
+            response.headers.get('Access-Control-Allow-Origin'),
+            'https://allowed.example.com')
+        self.assertEqual(
+            response.headers.get('Access-Control-Allow-Credentials'), 'true')
+
+    def test_cors_allow_credentials_preflight(self):
+        "Test CORS preflight allows credentials on endpoint allowing it"
+        client = self._cors_app()
+
+        response = client.options('/credentials', headers={
+                'Origin': 'https://allowed.example.com',
+                'Access-Control-Request-Method': 'POST',
+                })
+
+        self.assertEqual(
+            response.headers.get('Access-Control-Allow-Credentials'), 'true')
+
+    def test_cors_no_credentials(self):
+        "Test CORS does not allow credentials by default"
+        client = self._cors_app()
+
+        response = client.post('/no_credentials', headers={
+                'Origin': 'https://allowed.example.com',
+                })
+        preflight = client.options('/no_credentials', headers={
+                'Origin': 'https://allowed.example.com',
+                'Access-Control-Request-Method': 'POST',
+                })
+
+        self.assertEqual(
+            response.headers.get('Access-Control-Allow-Origin'),
+            'https://allowed.example.com')
+        self.assertNotIn('Access-Control-Allow-Credentials', response.headers)
+        self.assertNotIn(
+            'Access-Control-Allow-Credentials', preflight.headers)
+
+    def test_cors_credentials_unknown_origin(self):
+        "Test CORS refuses credentials from unknown origin"
+        client = self._cors_app()
+
+        with self.assertRaises(exceptions.Forbidden):
+            client.post('/credentials', headers={
+                    'Origin': 'https://evil.example.com',
+                    })
+
+    def test_cors_credentials_same_origin(self):
+        "Test same origin requests do not get credentials header"
+        client = self._cors_app()
+
+        response = client.post('/credentials', headers={
+                'Origin': 'http://localhost',
+                })
+
+        self.assertNotIn('Access-Control-Allow-Credentials', response.headers)
 
 
 class TrytonWSGITestCase(RouteTestCase):
