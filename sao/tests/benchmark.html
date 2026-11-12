@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<html>
+    <head>
+        <title>Sao Benchmark Test Suite</title>
+        <script type="text/javascript" src="../node_modules/jquery/dist/jquery.js"></script>
+        <script type="text/javascript" src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
+        <script type="text/javascript" src="../node_modules/moment/moment.js"></script>
+        <script type="text/javascript" src="../node_modules/gettext.js/dist/gettext.iife.js"></script>
+        <!-- Sao.Benchmark.Csv serializes through Papa.unparse, like the tree
+        export does (tab.js:1810); index.html:19 loads it for the client. -->
+        <script type="text/javascript" src="../node_modules/papaparse/papaparse.js"></script>
+        <!-- Sao.View.Tree registers the tbody of a draggable tree with
+        SortableJS (view/tree.js:748); index.html:24 loads it for the client.
+        The driver teardown has to undo that registration, so the tests need
+        the real library and not a stand-in. -->
+        <script type="text/javascript" src="../node_modules/sortablejs/Sortable.js"></script>
+        <script type="text/javascript" src="../node_modules/qunit/qunit/qunit.js"></script>
+        <link rel="stylesheet" type="text/css" href="../node_modules/qunit/qunit/qunit.css" media="screen"/>
+        <!-- The BUNDLE, not the sources: src/benchmark.js is reachable only
+        through the jsfiles list of Gruntfile.js, and `grunt test` runs concat
+        first (pattern of tests/index.html:13). -->
+        <script type="text/javascript" src="../dist/tryton-sao.js"></script>
+        <script type="text/javascript" src="./benchmark.js"></script>
+    </head>
+    <body>
+        <div id="qunit"></div>
+    </body>
+</html>
