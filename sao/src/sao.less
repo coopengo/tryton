@@ -1381,6 +1381,9 @@ img.icon {
     }
     .form-one2many, .form-many2many {
         position: relative;
+        &:has(.dropdown.open) {
+            z-index: 101;
+        }
     }
     .form-one2many-menu::after, .form-many2many-menu::after {
         content: "";
