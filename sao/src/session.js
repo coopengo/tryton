@@ -201,6 +201,23 @@
         });
     };
 
+    Sao.Session.server_title = function() {
+        let args = {
+                'id': 0,
+                'method': 'common.server.title',
+                'params': []
+            };
+        return jQuery.ajax({
+            'contentType': 'application/json',
+            'data': JSON.stringify(args),
+            'dataType': 'json',
+            'url': 'rpc/#' + args.method,
+            'type': 'post',
+        }).then(function(data) {
+            return data.result;
+        });
+    };
+
     Sao.Session.login_dialog = function() {
         var dialog = new Sao.Dialog(
             Sao.i18n.gettext("Login"), 'login-dialog', 'md', true,
