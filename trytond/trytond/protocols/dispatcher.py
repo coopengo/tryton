@@ -170,6 +170,7 @@ def reset_password(request, database_name, user, language=None):
 def root(request, *args):
     methods = {
         'common.server.version': version,
+        'common.server.title': title,
         'common.db.list': db_list,
         'common.authentication.services': authentication_services,
         }
@@ -187,6 +188,10 @@ def version(request):
     if os.environ.get('TRYTOND_DEPLOYMENT_VERSION'):
         suffix = os.environ['TRYTOND_DEPLOYMENT_VERSION']
     return __series__ + (f'.{suffix}' if suffix else '')
+
+
+def title(request):
+    return config.get('web', 'title', default='coog')
 
 
 def db_exist(request, database_name):

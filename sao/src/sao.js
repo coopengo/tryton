@@ -458,7 +458,7 @@ var Sao = {
     };
 
     Sao.set_title = function(name) {
-        var title = [name, Sao.config.title];
+        var title = [Sao.config.title, name];
         document.title = title.filter(function(e) {return e;}).join(' - ');
         jQuery('#title').text(Sao.config.title);
     };
@@ -639,6 +639,12 @@ var Sao = {
 
     Sao.login = function() {
         Sao.set_title();
+        Sao.Session.server_title().then(function(title) {
+            if (title) {
+                Sao.config.title = title;
+                Sao.set_title();
+            }
+        });
         Sao.i18n.setlang().always(function() {
             Sao.i18n.set_direction();
             Sao.Session.server_version()

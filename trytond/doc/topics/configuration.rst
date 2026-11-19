@@ -103,6 +103,16 @@ The cache timeout in seconds.
 
 Default: 12h
 
+.. _config-web.title:
+
+title
+~~~~~
+
+The title displayed by the web client in the browser tab, typically
+``<client>_<environment>`` to tell deployments apart.
+
+Default: ``coog``
+
 .. _config-web.cors:
 
 cors
