@@ -153,6 +153,11 @@ def acs(request, pool, identity):
             break
     else:
         abort(HTTPStatus.FORBIDDEN, "Unknown user")
+    if (hasattr(User, 'check_saml_login')
+            and not User.check_saml_login(user_id, identity)):
+        logger.warning(
+            "SSO access denied: login=%s, identity=%s", login, identity)
+        abort(HTTPStatus.FORBIDDEN, "SSO access denied")
     with Transaction().set_user(user_id):
         session = Session.new()
 
