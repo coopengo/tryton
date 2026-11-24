@@ -1,12 +1,16 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+import unittest
 from unittest.mock import MagicMock, patch
+
+from werkzeug.test import Client
 
 from trytond.modules.authentication_saml import routes
 from trytond.pool import Pool
-from trytond.protocols.wrappers import HTTPStatus
+from trytond.protocols.wrappers import HTTPStatus, Response
 from trytond.tests.test_tryton import (
-    DB_NAME, ModuleTestCase, RouteTestCase)
+    DB_NAME, ModuleTestCase, activate_module, drop_db)
+from trytond.wsgi import app
 
 
 class AuthenticationSamlTestCase(ModuleTestCase):
@@ -14,10 +18,26 @@ class AuthenticationSamlTestCase(ModuleTestCase):
     module = 'authentication_saml'
 
 
-class AuthenticationSamlRouteTestCase(RouteTestCase):
+class AuthenticationSamlRouteTestCase(unittest.TestCase):
     "Test Authentication Saml routes"
+    # trytond 6.8 has no RouteTestCase: same database setup and client
     module = 'authentication_saml'
+    db_name = DB_NAME
     identity = 'test'
+
+    @classmethod
+    def setUpClass(cls):
+        drop_db()
+        activate_module([cls.module])
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        drop_db()
+
+    def client(self):
+        return Client(app, Response)
 
     def setUp(self):
         super().setUp()
@@ -58,4 +78,4 @@ class AuthenticationSamlRouteTestCase(RouteTestCase):
                 check.assert_called_once_with(1, self.identity)
 
 
-del ModuleTestCase, RouteTestCase
+del ModuleTestCase
