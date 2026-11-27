@@ -430,10 +430,6 @@ msgctxt "model:ir.action,name:act_model_debug"
 msgid "Debug Model"
 msgstr "Débugger l'instance"
 
-msgctxt "model:ir.action,name:act_model_developper_view"
-msgid "Developper View"
-msgstr "Vue développeur"
-
 msgctxt "model:ir.action,name:act_open_initial"
 msgid "Open Initial Frame"
 msgstr "Ouvrir la définition"
