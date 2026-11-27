@@ -10,7 +10,6 @@ import inspect
 import re
 import logging
 
-from trytond.pool import Pool
 
 logger = logging.getLogger('trytond:debug_module')
 
@@ -321,92 +320,3 @@ def detect_api_changes(pool):
                         and 'trytond.pool' not in str(module)):
                     logger.warning('    %s : %s' % (
                             m_name(module), str(arg_data[:-1])))
-
-
-def enable_debug_views(pool, update):
-    if update:
-        return
-
-    from trytond import config
-
-    enabled = config.getboolean('debug', 'debug_views')
-    if not enabled:
-        return
-
-    logger.warning('Enabling debugging views')
-
-    from trytond.model import ModelView, ModelSQL, fields
-    from trytond.transaction import Transaction
-
-    previous_fields_view_get = ModelView.fields_view_get.__func__
-
-    @classmethod
-    def patched_fields_view_get(cls, view_id=None, view_type='form',
-            level=None):
-        if not Transaction().context.get('developper_view'):
-            return previous_fields_view_get(cls, view_id, view_type, level)
-        if not issubclass(cls, ModelSQL):
-            return previous_fields_view_get(cls, view_id, view_type, level)
-
-        # Specific feature in tryton fork
-        expand_toolbar = bool(
-            Pool().get('ir.module').search([('name', '=', 'coog_core')]))
-        result = {
-            'model': cls.__name__,
-            'type': view_type,
-            'field_childs': None,
-            'view_id': 0,
-            }
-        xml = '<?xml version="1.0"?>'
-        fnames = []
-        if view_type == 'tree':
-            xml += '<tree>'
-            xml += '<field name="id" expand="0"/>'
-            xml += '<field name="rec_name" expand="1"/>'
-            xml += '</tree>'
-            fnames += ['rec_name', 'id']
-        else:
-            res = cls.fields_get()
-            xml += '<form col="2">'
-            for fname in sorted(res):
-                if res[fname]['type'] in ('timestamp'):
-                    continue
-                relation = res[fname].get('relation', None)
-                if relation:
-                    Target = Pool().get(relation)
-                    if not issubclass(Target, ModelView):
-                        continue
-                field_type = res[fname]['type']
-                if field_type == 'dict':
-                    xml += f'<field name="{fname}" colspan="2" height="200"/>'
-                elif field_type in ('one2many', 'many2many', 'text'):
-                    xml += f'<group name="{fname}" colspan="2" height="200">'
-                    xml += '<field name="%s" colspan="2"' % fname
-                    if field_type == 'one2many':
-                        xml += ' widget="many2many"'
-                    if expand_toolbar:
-                        # expand_toolbar is available
-                        xml += ' expand_toolbar="0"/>'
-                    else:
-                        xml += '/>'
-                    xml += "</group>"
-                else:
-                    xml += '<label name="%s"/><field name="%s"/>' % (
-                        fname, fname)
-                fnames.append(fname)
-            xml += '</form>'
-        result['arch'] = xml
-        result['fields'] = cls.fields_get(fnames)
-        for fname in fnames:
-            name = result['fields'][fname]['string'] + ' (%s)' % fname
-            if issubclass(type(cls._fields[fname]), fields.Function):
-                name += ' [Function]'
-            result['fields'][fname].update({
-                    'string': name,
-                    'states': '{"readonly": true}',
-                    'on_change': [],
-                    'on_change_with': [],
-                    })
-        return result
-
-    setattr(ModelView, 'fields_view_get', patched_fields_view_get)
