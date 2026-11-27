@@ -371,6 +371,12 @@
                     Sao.View.Form.Markdown._super.focus_out.call(this);
                 },
                 editorProps: {
+                    // height: the standard field attribute sizes the area the
+                    // text is typed in, not only the card around it
+                    attributes: attributes.height ? {
+                        'style': 'min-height: ' +
+                            parseInt(attributes.height, 10) + 'px',
+                    } : {},
                     handleDrop: (view, event, slice, moved) => {
                         if (moved) { return false; }
                         var files = event.dataTransfer &&
